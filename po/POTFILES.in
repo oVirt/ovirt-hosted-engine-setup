@@ -1,0 +1,4 @@
+./src/ovirt_hosted_engine_setup/constants.py
+./src/ovirt_hosted_engine_setup/__init__.py
+./src/plugins/ovirt-hosted-engine-setup/core/__init__.py
+./src/plugins/ovirt-hosted-engine-setup/core/misc.py

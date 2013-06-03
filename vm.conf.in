@@ -1,0 +1,11 @@
+vmId=@VM_UUID@
+memSize=@MEM_SIZE@
+macAddr=@MAC_ADDR@
+display=vnc
+drive=pool:@SP_UUID@,domain:@SD_UUID@,image:@IMG_UUID@,volume:@VOL_UUID@
+boot=@BOOT@
+vmName=@NAME@
+spiceSecureChannels=smain,sdisplay,sinputs,scursor,splayback,srecord,ssmartcard,susbredir
+bridge=ovirtmgmt
+nicModel=virtio
+@CDROM@

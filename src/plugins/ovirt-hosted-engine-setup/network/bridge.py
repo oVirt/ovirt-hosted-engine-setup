@@ -1,0 +1,126 @@
+#
+# ovirt-hosted-engine-setup -- ovirt hosted engine setup
+# Copyright (C) 2013 Red Hat, Inc.
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#
+
+
+"""
+bridge configuration plugin.
+"""
+
+
+import gettext
+import sys
+
+
+from otopi import util
+from otopi import plugin
+
+
+from ovirt_hosted_engine_setup import constants as ohostedcons
+
+
+_ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
+
+
+@util.export
+class Plugin(plugin.PluginBase):
+    """
+    bridge configuration plugin.
+    """
+
+    def __init__(self, context):
+        super(Plugin, self).__init__(context=context)
+        sys.path.append(ohostedcons.FileLocations.VDS_CLIENT_DIR)
+        self.configNetwork = util.loadModule(
+            path=ohostedcons.FileLocations.VDS_CLIENT_DIR,
+            name='configNetwork'
+        )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_INIT,
+    )
+    def _init(self):
+        self.environment.setdefault(
+            ohostedcons.NetworkEnv.BRIDGE_IF,
+            None
+        )
+        self.environment.setdefault(
+            ohostedcons.NetworkEnv.BRIDGE_NAME,
+            ohostedcons.Defaults.DEFAULT_BRIDGE_NAME
+        )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CUSTOMIZATION,
+    )
+    def _customization(self):
+        #TODO: customize device and name for bridge creation
+        #TODO: provide a list of possible physical interfaces
+        interactive = self.environment[
+            ohostedcons.NetworkEnv.BRIDGE_IF
+        ] is None
+        if interactive:
+            self.environment[
+                ohostedcons.NetworkEnv.BRIDGE_IF
+            ] = self.dialog.queryString(
+                name='ovehosted_bridge_if',
+                note=_(
+                    'Please indicate a nic to set '
+                    '{bridge} bridge on [@DEFAULT@]: '
+                ).format(
+                    bridge=self.environment[
+                        ohostedcons.NetworkEnv.BRIDGE_NAME
+                    ]
+                ),
+                prompt=True,
+                caseSensitive=True,
+                default=ohostedcons.Defaults.DEFAULT_BRIDGE_IF,
+            )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_MISC,
+        name=ohostedcons.Stages.BRIDGE_AVAILABLE,
+    )
+    def _misc(self):
+        self.logger.info(_('Configuring the management bridge'))
+        nic = self.environment[ohostedcons.NetworkEnv.BRIDGE_IF]
+        bridge = self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME]
+
+        self.configNetwork.addNetwork(
+            network=bridge,
+            nics=[nic],
+            force=False,
+            bridged=True,
+            BOOTPROTO='dhcp',
+            ONBOOT='yes',
+            blockingdhcp='true',
+        )
+
+        for state in (False, True):
+            self.services.state(
+                name='network',
+                state=state,
+            )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CLOSEUP,
+    )
+    def _closeup(self):
+        self.services.startup('network', True)
+
+
+# vim: expandtab tabstop=4 shiftwidth=4

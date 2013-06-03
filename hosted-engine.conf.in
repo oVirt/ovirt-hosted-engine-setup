@@ -1,0 +1,4 @@
+fqdn=@FQDN@
+vm_disk_id=@VM_DISK_ID@
+storage=@SHARED_STORAGE@
+service_start_time=0

@@ -1,0 +1,84 @@
+#
+# ovirt-hosted-engine-setup -- ovirt hosted engine setup
+# Copyright (C) 2012-2013 Red Hat, Inc.
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#
+
+%global         package_version @PACKAGE_VERSION@
+%global         package_maven_version @PACKAGE_MAVEN_VERSION@
+%global         ovirt_hosted_engine_setup_templates %{_datadir}/%{name}/templates
+%global         ovirt_hosted_engine_setup_scripts %{_datadir}/%{name}/scripts
+
+
+Summary:        oVirt hosted engine setup tool
+Name:           @PACKAGE_NAME@
+Version:        @PACKAGE_RPM_VERSION@
+Release:        @PACKAGE_RPM_RELEASE@%{?release_suffix}%{?dist}
+License:        LGPLv2+
+URL:            http://www.ovirt.org
+Source:         http://resources.ovirt.org/releases/stable/3.3/%{name}-%{package_version}.tar.gz
+Group:          Applications/System
+
+BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+BuildArch:      noarch
+
+Requires:       python
+Requires:       otopi
+Requires:       vdsm
+Requires:       vdsm-cli
+Requires:       vdsm-gluster
+Requires:       ovirt-host-deploy
+Requires:       openssh-server
+Requires:       python-paramiko
+BuildRequires:  gettext
+BuildRequires:  otopi-devel
+BuildRequires:  python2-devel
+
+%description
+Hosted engine tool for oVirt project.
+
+%prep
+%setup -q -n %{name}-%{package_version}
+
+%build
+%configure \
+        --docdir="%{_docdir}/%{name}-%{version}" \
+        --disable-python-syntax-check \
+        %{?conf}
+make %{?_smp_mflags}
+
+%install
+rm -rf "%{buildroot}"
+make %{?_smp_mflags} install DESTDIR="%{buildroot}"
+
+%files
+%doc COPYING
+%doc README
+%{_sbindir}/hosted-engine
+%dir %{python_sitelib}/ovirt_hosted_engine_setup
+%{python_sitelib}/ovirt_hosted_engine_setup/*.py*
+%dir %{_datadir}/%{name}
+%{_datadir}/%{name}/plugins/%{name}/*/*.py*
+#%{_datadir}/otopi/plugins/%{name}
+%{ovirt_hosted_engine_setup_templates}/vm.conf.in
+%{ovirt_hosted_engine_setup_templates}/hosted-engine.conf.in
+%{ovirt_hosted_engine_setup_scripts}/%{name}
+%{ovirt_hosted_engine_setup_scripts}/%{name}.env
+#%{_datadir}/locale/*/*/%{name}.mo
+
+%changelog
+* Fri May 31 2013 Yedidyah Bar David <didi@redhat.com> - 0.0.0-0.0.master
+- Initial add.

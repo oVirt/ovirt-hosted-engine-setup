@@ -1,0 +1,3 @@
+#!/bin/sh
+
+exec @datadir@/ovirt-hosted-engine-setup/scripts/ovirt-hosted-engine-setup "$@"
