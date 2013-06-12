@@ -47,6 +47,10 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
+        after=[
+            ohostedcons.Stages.VM_IMAGE_AVAILABLE,
+            ohostedcons.Stages.BRIDGE_AVAILABLE,
+        ],
         name=ohostedcons.Stages.SAVE_CONFIG,
     )
     def _misc(self):
@@ -75,7 +79,11 @@ class Plugin(plugin.PluginBase):
                 ],
                 '@CONSOLE_TYPE@': self.environment[
                     ohostedcons.VMEnv.CONSOLE_TYPE
-                ]
+                ],
+                '@VM_UUID@': self.environment[
+                    ohostedcons.VMEnv.VM_UUID
+                ],
+                '@CONF_FILE@': ohostedcons.FileLocations.ENGINE_VM_CONF,
             }
         )
         with transaction.Transaction() as localtransaction:

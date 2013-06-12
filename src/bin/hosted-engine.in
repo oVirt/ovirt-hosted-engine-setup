@@ -1,3 +1,76 @@
 #!/bin/sh
 
-exec @datadir@/ovirt-hosted-engine-setup/scripts/ovirt-hosted-engine-setup "$@"
+HOSTED_ENGINE_CONF='/etc/ovirt-hosted-engine/hosted-engine.conf'
+
+if [ -r "${HOSTED_ENGINE_CONF}" ] ; then
+    source "${HOSTED_ENGINE_CONF}"
+fi
+
+rc=1
+
+usage() {
+    cat << __EOF__
+Usage: $0
+    --help
+        show this help.
+    --deploy
+        run ovirt-hosted-engine deployment
+    --vm-start
+        start VM on this host
+    --vm-stop
+        stop VM on this host
+    --vm-status
+        VM status according to sanlock
+    --add-console-password=<password>
+        Create a temporary password for vnc/spice connection
+
+__EOF__
+    exit $rc
+}
+
+if [ -z "$1" ] ; then
+    usage
+fi
+
+while [ -n "$1" ]; do
+    x="$1"
+    v="${x#*=}"
+    shift
+    case "${x}" in
+        --deploy)
+            exec @datadir@/ovirt-hosted-engine-setup/scripts/ovirt-hosted-engine-setup "$@"
+        ;;
+        --vm-start)
+            # TODO: Check first the sanlock status, and if allows:
+            if [ -r "${conf}" ] ; then
+                vdsClient -s localhost create "${conf}"
+            else
+                echo "You must run --deploy first"
+            fi
+        ;;
+        --vm-stop)
+            if [ -n "${vmid}" ] ; then
+                vdsClient -s localhost shutdown "${vmid}" 120 "VM is shutting down!"
+            else
+                echo "You must run --deploy first"
+            fi
+        ;;
+        --vm-status)
+            echo "This option is not yet supported"
+        ;;
+        --add-console-password=*)
+            if [ -n "${vmid}" ] ; then
+                vdsClient -s localhost setVmTicket "${vmid}" "${v}" 120
+            else
+                echo "You must run --deploy first"
+            fi
+        ;;
+        --help)
+            rc=0
+            usage
+        ;;
+        *)
+            die "Invalid option '${x}'"
+        ;;
+    esac
+done

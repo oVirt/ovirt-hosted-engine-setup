@@ -1,4 +1,6 @@
 fqdn=@FQDN@
 vm_disk_id=@VM_DISK_ID@
+vmid=@VM_UUID@
 storage=@SHARED_STORAGE@
+conf=@CONF_FILE@
 service_start_time=0
