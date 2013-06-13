@@ -289,6 +289,9 @@ class Plugin(plugin.PluginBase):
             '@NAME@': self.environment[
                 ohostedcons.VMEnv.NAME
             ],
+            '@CONSOLE_TYPE@': self.environment[
+                ohostedcons.VMEnv.CONSOLE_TYPE
+            ],
         }
 
         if self.environment[

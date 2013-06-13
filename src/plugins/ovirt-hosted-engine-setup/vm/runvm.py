@@ -26,6 +26,7 @@ VM configuration plugin.
 import string
 import random
 import gettext
+import re
 
 
 from otopi import util
@@ -45,6 +46,17 @@ class Plugin(plugin.PluginBase):
     VM configuration plugin.
     """
 
+    _RE_SUBJECT = re.compile(
+        flags=re.VERBOSE,
+        pattern=r"""
+            ^
+            \s+
+            Subject:\s*
+            (?P<subject>O=\w+, CN=.*)
+            $
+        """
+    )
+
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
 
@@ -56,6 +68,60 @@ class Plugin(plugin.PluginBase):
             ''.join([random.choice(string.digits) for i in range(4)]),
             ''.join([random.choice(string.letters) for i in range(4)]),
         )
+
+    def _generateUserMessage(self, console_type):
+        if console_type == 'vnc':
+            return _(
+                'You can now connect to the VM with the following command:\n'
+                '\t{remote} vnc://localhost:5900\nUse temporary password '
+                '"{password}" to connect to vnc console.'
+            ).format(
+                remote=self.command.get('remote-viewer'),
+                password=self.environment[
+                    ohostedcons.VMEnv.VM_PASSWD
+                ],
+            )
+        elif console_type == 'spice':
+            subject = ''
+            out, rc = self.execute(
+                (
+                    self.command.get('openssl'),
+                    'x509',
+                    '-noout',
+                    '-text',
+                    '-in', ohostedcons.FileLocations.LIBVIRT_SERVER_CERT
+                ),
+                raiseOnError=True
+            )
+            for line in out.splitlines():
+                matcher = self._RE_SUBJECT.match(line)
+                if matcher is not None:
+                    subject = matcher.group('param')
+                    break
+
+            return _(
+                'You can now connect to the VM with the following command:\n'
+                '\t{remote} --spice-ca-file={ca_cert} '
+                'spice://localhost?tls-port=5900 '
+                '"--spice-host-subject=${subject}"\nUse temporary password '
+                '"{password}" to connect to spice console.'
+            ).format(
+                remote=self.command.get('remove-viewer'),
+                ca_cert=ohostedcons.FileLocations.LIBVIRT_CA_CERT,
+                subject=subject,
+                password=self.environment[
+                    ohostedcons.VMEnv.VM_PASSWD
+                ],
+            )
+
+        else:
+            raise RuntimeError(
+                _(
+                    'Unsuppored console type "{console}" requested'.format(
+                        console=console_type
+                    )
+                )
+            )
 
     def _create(self):
         waiter = tasks.TaskWaiter(self.environment)
@@ -93,15 +159,10 @@ class Plugin(plugin.PluginBase):
             except RuntimeError as e:
                 self.logger.debug(str(e))
         self.dialog.note(
-            _(
-                'You can now connect to the VM with the following command:\n'
-                '\t{remote} vnc://localhost:5900\nUse temporary password '
-                '"{password}" to connect to vnc.'
-            ).format(
-                remote=self.command.get('remote-viewer'),
-                password=self.environment[
-                    ohostedcons.VMEnv.VM_PASSWD
-                ],
+            self._generateUserMessage(
+                self.environment[
+                    ohostedcons.VMEnv.CONSOLE_TYPE
+                ]
             )
         )
 
@@ -117,6 +178,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VMEnv.VM_PASSWD_VALIDITY_SECS,
             ohostedcons.Defaults.DEFAULT_VM_PASSWD_VALIDITY_SECS
         )
+        self.environment.setdefault(
+            ohostedcons.VMEnv.CONSOLE_TYPE,
+            None
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -125,6 +190,50 @@ class Plugin(plugin.PluginBase):
         # Can't use python api here, it will call sys.exit
         self.command.detect('vdsClient')
         self.command.detect('remote-viewer')
+        self.command.detect('openssl')
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CUSTOMIZATION,
+    )
+    def _customization(self):
+        validConsole = False
+        interactive = self.environment[
+            ohostedcons.VMEnv.CONSOLE_TYPE
+        ] is None
+        while not validConsole:
+            if self.environment[
+                ohostedcons.VMEnv.CONSOLE_TYPE
+            ] is None:
+                self.environment[
+                    ohostedcons.VMEnv.CONSOLE_TYPE
+                ] = self.dialog.queryString(
+                    name='OVEHOSTED_VM_CONSOLE_TYPE',
+                    note=_(
+                        'Please specify the console type '
+                        'you would like to use to connect '
+                        'to the VM (@VALUES@) [@DEFAULT@]: '
+                    ),
+                    prompt=True,
+                    caseSensitive=False,
+                    validValues=[
+                        'vnc',
+                        'spice',
+                    ],
+                    default='vnc',
+                )
+
+                if self.environment[
+                    ohostedcons.VMEnv.CONSOLE_TYPE
+                ] in ('vnc', 'spice'):
+                    validConsole = True
+                elif interactive:
+                    self.logger.error(
+                        'Unsuppored console type provided.'
+                    )
+                else:
+                    raise RuntimeError(
+                        _('Unsuppored console type provided.')
+                    )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,

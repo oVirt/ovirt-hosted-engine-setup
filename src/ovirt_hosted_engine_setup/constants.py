@@ -112,6 +112,13 @@ class FileLocations(object):
         'libvirt-spice',
         'server-cert.pem'
     )
+    LIBVIRT_CA_CERT = os.path.join(
+        SYSCONFDIR,
+        'pki',
+        'vdsm',
+        'libvirt-spice',
+        'ca-cert.pem'
+    )
     LIBVIRT_QEMU_CONF = os.path.join(
         SYSCONFDIR,
         'libvirt',
@@ -269,6 +276,7 @@ class VMEnv(object):
     VM_PASSWD = 'OVEHOSTED_VDSM/passwd'
     VM_PASSWD_VALIDITY_SECS = 'OVEHOSTED_VDSM/passwdValiditySecs'
     SUBST = 'OVEHOSTED_VM/subst'
+    CONSOLE_TYPE = 'OVEHOSTED_VDSM/consoleType'
 
 
 @util.export

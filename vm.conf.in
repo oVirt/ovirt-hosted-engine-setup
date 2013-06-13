@@ -1,7 +1,7 @@
 vmId=@VM_UUID@
 memSize=@MEM_SIZE@
 macAddr=@MAC_ADDR@
-display=vnc
+display=@CONSOLE_TYPE@
 drive=pool:@SP_UUID@,domain:@SD_UUID@,image:@IMG_UUID@,volume:@VOL_UUID@
 boot=@BOOT@
 vmName=@NAME@

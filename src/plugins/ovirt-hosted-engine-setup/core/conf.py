@@ -52,6 +52,15 @@ class Plugin(plugin.PluginBase):
     def _misc(self):
         # TODO: what's an VM_DISK_ID and how can it change to another value?
         self.logger.info(_('Updating hosted-engine configuration'))
+
+        # Update spice display name
+        if self.environment[
+            ohostedcons.VMEnv.CONSOLE_TYPE
+        ] == 'spice':
+            self.environment[
+                ohostedcons.VMEnv.CONSOLE_TYPE
+            ] = 'qxl'
+
         content = ohostedutil.processTemplate(
             template=ohostedcons.FileLocations.OVIRT_HOSTED_ENGINE_TEMPLATE,
             subst={
@@ -64,6 +73,9 @@ class Plugin(plugin.PluginBase):
                 '@SHARED_STORAGE@': self.environment[
                     ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
                 ],
+                '@CONSOLE_TYPE@': self.environment[
+                    ohostedcons.VMEnv.CONSOLE_TYPE
+                ]
             }
         )
         with transaction.Transaction() as localtransaction:
