@@ -25,11 +25,13 @@ from otopi import util
 
 
 from . import health
+from . import add_host
 
 
 @util.export
 def createPlugins(context):
     health.Plugin(context=context)
+    add_host.Plugin(context=context)
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

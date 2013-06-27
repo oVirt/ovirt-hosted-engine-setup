@@ -42,6 +42,7 @@ Requires:       vdsm >= 4.11.0
 Requires:       vdsm-cli >= 4.11.0
 Requires:       vdsm-gluster >= 4.11.0
 Requires:       ovirt-host-deploy >= 1.1.0
+Requires:       ovirt-engine-sdk >= 3.3.0
 Requires:       openssh-server
 Requires:       python-paramiko
 Requires:       virt-viewer
