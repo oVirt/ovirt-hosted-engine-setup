@@ -72,12 +72,10 @@ make %{?_smp_mflags} install DESTDIR="%{buildroot}"
 %{python_sitelib}/ovirt_hosted_engine_setup/*.py*
 %dir %{_datadir}/%{name}
 %{_datadir}/%{name}/plugins/%{name}/*/*.py*
-#%{_datadir}/otopi/plugins/%{name}
 %{ovirt_hosted_engine_setup_templates}/vm.conf.in
 %{ovirt_hosted_engine_setup_templates}/hosted-engine.conf.in
 %{ovirt_hosted_engine_setup_scripts}/%{name}
 %{ovirt_hosted_engine_setup_scripts}/%{name}.env
-#%{_datadir}/locale/*/*/%{name}.mo
 
 %changelog
 * Fri May 31 2013 Yedidyah Bar David <didi@redhat.com> - 0.0.0-0.0.master
