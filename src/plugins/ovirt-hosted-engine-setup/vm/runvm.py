@@ -57,38 +57,7 @@ class Plugin(plugin.PluginBase):
             ''.join([random.choice(string.letters) for i in range(4)]),
         )
 
-    @plugin.event(
-        stage=plugin.Stages.STAGE_INIT,
-    )
-    def _init(self):
-        self.environment.setdefault(
-            ohostedcons.VMEnv.VM_PASSWD,
-            self._generateTempVncPassword()
-        )
-        self.environment.setdefault(
-            ohostedcons.VMEnv.VM_PASSWD_VALIDITY_SECS,
-            ohostedcons.Defaults.DEFAULT_VM_PASSWD_VALIDITY_SECS
-        )
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_SETUP,
-    )
-    def _setup(self):
-        # Can't use python api here, it will call sys.exit
-        self.command.detect('vdsClient')
-        self.command.detect('remote-viewer')
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_MISC,
-        after=[
-            ohostedcons.Stages.VM_CONFIGURED,
-            ohostedcons.Stages.VM_IMAGE_AVAILABLE,
-            ohostedcons.Stages.LIBVIRT_CONFIGURED,
-            ohostedcons.Stages.SSHD_START,
-        ],
-        name=ohostedcons.Stages.VM_RUNNING,
-    )
-    def _misc(self):
+    def _create(self):
         waiter = tasks.TaskWaiter(self.environment)
         waiter.wait()
         self.logger.info(_('Creating VM'))
@@ -135,6 +104,50 @@ class Plugin(plugin.PluginBase):
                 ],
             )
         )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_INIT,
+    )
+    def _init(self):
+        self.environment.setdefault(
+            ohostedcons.VMEnv.VM_PASSWD,
+            self._generateTempVncPassword()
+        )
+        self.environment.setdefault(
+            ohostedcons.VMEnv.VM_PASSWD_VALIDITY_SECS,
+            ohostedcons.Defaults.DEFAULT_VM_PASSWD_VALIDITY_SECS
+        )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_SETUP,
+    )
+    def _setup(self):
+        # Can't use python api here, it will call sys.exit
+        self.command.detect('vdsClient')
+        self.command.detect('remote-viewer')
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_MISC,
+        after=[
+            ohostedcons.Stages.VM_CONFIGURED,
+            ohostedcons.Stages.VM_IMAGE_AVAILABLE,
+            ohostedcons.Stages.LIBVIRT_CONFIGURED,
+            ohostedcons.Stages.SSHD_START,
+        ],
+        name=ohostedcons.Stages.VM_RUNNING,
+    )
+    def _boot_from_install_media(self):
+        self._create()
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_MISC,
+        after=[
+            ohostedcons.Stages.OS_INSTALLED,
+        ],
+        name=ohostedcons.Stages.INSTALLED_VM_RUNNING,
+    )
+    def _boot_from_hd(self):
+        self._create()
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

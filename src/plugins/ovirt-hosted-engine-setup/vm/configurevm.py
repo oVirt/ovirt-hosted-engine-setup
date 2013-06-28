@@ -22,6 +22,7 @@
 VM configuration plugin.
 """
 
+
 import uuid
 import gettext
 import os
@@ -108,6 +109,7 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VMEnv.NAME,
             ohostedcons.Defaults.DEFAULT_NAME
         )
+        self.environment[ohostedcons.VMEnv.SUBST] = {}
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
@@ -263,7 +265,7 @@ class Plugin(plugin.PluginBase):
             template=ohostedcons.FileLocations.ENGINE_VM_TEMPLATE,
             subst=subst,
         )
-
+        self.environment[ohostedcons.VMEnv.SUBST] = subst
         with transaction.Transaction() as localtransaction:
             localtransaction.append(
                 filetransaction.FileTransaction(

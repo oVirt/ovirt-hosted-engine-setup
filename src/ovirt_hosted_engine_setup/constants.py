@@ -268,6 +268,7 @@ class VMEnv(object):
     NAME = 'OVEHOSTED_VM/vmName'
     VM_PASSWD = 'OVEHOSTED_VDSM/passwd'
     VM_PASSWD_VALIDITY_SECS = 'OVEHOSTED_VDSM/passwdValiditySecs'
+    SUBST = 'OVEHOSTED_VM/subst'
 
 
 @util.export
@@ -303,6 +304,8 @@ class Stages(object):
     LIBVIRT_CONFIGURED = 'ohosted.libvirt.configured'
     SAVE_CONFIG = 'ohosted.save.config'
     SSHD_START = 'ohosted.sshd.started'
+    OS_INSTALLED = 'ohosted.vm.state.os.installed'
+    INSTALLED_VM_RUNNING = 'ohosted.vm.state.os.installed.running'
     ENGINE_ALIVE = 'ohosted.engine.alive'
 
 

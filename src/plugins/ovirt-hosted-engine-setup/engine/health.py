@@ -72,7 +72,7 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
         after=[
-            ohostedcons.Stages.VM_RUNNING,
+            ohostedcons.Stages.INSTALLED_VM_RUNNING,
         ],
         name=ohostedcons.Stages.ENGINE_ALIVE,
     )

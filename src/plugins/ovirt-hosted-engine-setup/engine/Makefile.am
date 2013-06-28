@@ -28,6 +28,7 @@ dist_my_PYTHON = \
 	__init__.py \
 	health.py \
 	add_host.py \
+	os_install.py \
 	$(NULL)
 
 clean-local: \
