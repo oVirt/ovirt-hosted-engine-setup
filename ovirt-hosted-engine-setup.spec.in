@@ -47,6 +47,7 @@ Requires:       openssh-server
 Requires:       python-paramiko
 Requires:       virt-viewer
 Requires:       openssl
+Requires:       sudo
 BuildRequires:  gettext
 BuildRequires:  otopi-devel >= 1.1.0
 BuildRequires:  python2-devel

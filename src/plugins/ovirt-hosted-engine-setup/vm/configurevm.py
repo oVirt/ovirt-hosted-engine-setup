@@ -25,8 +25,6 @@ VM configuration plugin.
 
 import uuid
 import gettext
-import os
-import stat
 
 
 from otopi import util
@@ -59,26 +57,23 @@ class Plugin(plugin.PluginBase):
         super(Plugin, self).__init__(context=context)
 
     def _check_iso_readable(self, filepath):
-        readable = False
-        if filepath and os.path.isfile(
-            os.path.realpath(filepath)
-        ):
-            st = os.stat(filepath)
-            readable = (
-                bool(st.st_mode & stat.S_IROTH) or
+        try:
+            self.execute(
                 (
-                    bool(st.st_mode & stat.S_IRGRP) and
-                    st.st_gid == self.environment[
-                        ohostedcons.VDSMEnv.KVM_GID
-                    ]
-                ) or
-                (
-                    bool(st.st_mode & stat.S_IRUSR) and
-                    st.st_uid == self.environment[
-                        ohostedcons.VDSMEnv.VDSM_UID
-                    ]
-                )
+                    self.command.get('sudo'),
+                    '-u',
+                    'vdsm',
+                    '-g',
+                    'kvm',
+                    'test',
+                    '-r',
+                    filepath,
+                ),
+                raiseOnError=True
             )
+            readable = True
+        except RuntimeError:
+            readable = False
         return readable
 
     @plugin.event(
@@ -110,6 +105,12 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Defaults.DEFAULT_NAME
         )
         self.environment[ohostedcons.VMEnv.SUBST] = {}
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_SETUP,
+    )
+    def _setup(self):
+        self.command.detect('sudo')
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
