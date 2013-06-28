@@ -26,12 +26,14 @@ from otopi import util
 
 from . import misc
 from . import conf
+from . import answerfile
 
 
 @util.export
 def createPlugins(context):
     misc.Plugin(context=context)
     conf.Plugin(context=context)
+    answerfile.Plugin(context=context)
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

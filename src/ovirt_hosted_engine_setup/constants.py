@@ -22,9 +22,34 @@
 
 
 import os
+import sys
 
 
 from otopi import util
+
+
+def ohostedattrsclass(o):
+    sys.modules[o.__module__].__dict__.setdefault(
+        '__hosted_attrs__', []
+    ).append(o)
+    return o
+
+
+class classproperty(property):
+    def __get__(self, cls, owner):
+        return classmethod(self.fget).__get__(None, owner)()
+
+
+def ohostedattrs(
+    answerfile=False,
+):
+    class decorator(classproperty):
+        def __init__(self, o):
+            super(decorator, self).__init__(o)
+            self.__hosted_attrs__ = dict(
+                answerfile=answerfile,
+            )
+    return decorator
 
 
 @util.export
@@ -102,42 +127,144 @@ class Const(object):
 
 @util.export
 @util.codegen
+class CoreEnv(object):
+    ANSWER_FILE = 'OVEHOSTED_CORE/answerFile'
+
+
+@util.export
+@util.codegen
+@ohostedattrsclass
 class NetworkEnv(object):
-    BRIDGE_IF = 'OVEHOSTED_NETWORK/bridgeIf'
-    BRIDGE_NAME = 'OVEHOSTED_NETWORK/bridgeName'
-    OVIRT_HOSTED_ENGINE_FQDN = 'OVEHOSTED_NETWORK/fqdn'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def BRIDGE_IF(self):
+        return 'OVEHOSTED_NETWORK/bridgeIf'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def OVIRT_HOSTED_ENGINE_FQDN(self):
+        return 'OVEHOSTED_NETWORK/fqdn'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def BRIDGE_NAME(self):
+        return 'OVEHOSTED_NETWORK/bridgeName'
 
 
 @util.export
 @util.codegen
+@ohostedattrsclass
 class HostEnv(object):
-    ROOT_PASSWORD = 'OVEHOSTED_HOST/rootPassword'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def ROOT_PASSWORD(self):
+        return 'OVEHOSTED_HOST/rootPassword'
 
 
 @util.export
 @util.codegen
+@ohostedattrsclass
 class StorageEnv(object):
-    STORAGE_DOMAIN_CONNECTION = 'OVEHOSTED_STORAGE/storageDomainConnection'
-    STORAGE_DOMAIN_NAME = 'OVEHOSTED_STORAGE/storageDomainName'
-    STORAGE_DATACENTER_NAME = 'OVEHOSTED_STORAGE/storageDatacenterName'
-    CONNECTION_UUID = 'OVEHOSTED_STORAGE/connectionUUID'
-    SD_UUID = 'OVEHOSTED_STORAGE/sdUUID'
-    SP_UUID = 'OVEHOSTED_STORAGE/spUUID'
-    IMG_UUID = 'OVEHOSTED_STORAGE/imgUUID'
-    VOL_UUID = 'OVEHOSTED_STORAGE/volUUID'
-    IMAGE_SIZE_GB = 'OVEHOSTED_STORAGE/imgSizeGB'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def STORAGE_DOMAIN_CONNECTION(self):
+        return 'OVEHOSTED_STORAGE/storageDomainConnection'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def STORAGE_DOMAIN_NAME(self):
+        return 'OVEHOSTED_STORAGE/storageDomainName'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def STORAGE_DATACENTER_NAME(self):
+        return 'OVEHOSTED_STORAGE/storageDatacenterName'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def CONNECTION_UUID(self):
+        return 'OVEHOSTED_STORAGE/connectionUUID'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def SD_UUID(self):
+        return 'OVEHOSTED_STORAGE/sdUUID'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def SP_UUID(self):
+        return 'OVEHOSTED_STORAGE/spUUID'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def IMG_UUID(self):
+        return 'OVEHOSTED_STORAGE/imgUUID'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def VOL_UUID(self):
+        return 'OVEHOSTED_STORAGE/volUUID'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def IMAGE_SIZE_GB(self):
+        return 'OVEHOSTED_STORAGE/imgSizeGB'
+
     IMAGE_DESC = 'OVEHOSTED_STORAGE/imgDesc'
-    DOMAIN_TYPE = 'OVEHOSTED_STORAGE/domainType'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def DOMAIN_TYPE(self):
+        return 'OVEHOSTED_STORAGE/domainType'
 
 
 @util.export
 @util.codegen
+@ohostedattrsclass
 class VMEnv(object):
-    VM_UUID = 'OVEHOSTED_VM/vmUUID'
-    MEM_SIZE_MB = 'OVEHOSTED_VM/vmMemSizeMB'
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def VM_UUID(self):
+        return 'OVEHOSTED_VM/vmUUID'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def MEM_SIZE_MB(self):
+        return 'OVEHOSTED_VM/vmMemSizeMB'
+
     MAC_ADDR = 'OVEHOSTED_VM/vmMACAddr'
-    BOOT = 'OVEHOSTED_VM/vmBoot'
-    CDROM = 'OVEHOSTED_VM/vmCDRom'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def BOOT(self):
+        return 'OVEHOSTED_VM/vmBoot'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def CDROM(self):
+        return 'OVEHOSTED_VM/vmCDRom'
+
     NAME = 'OVEHOSTED_VM/vmName'
     VM_PASSWD = 'OVEHOSTED_VDSM/passwd'
     VM_PASSWD_VALIDITY_SECS = 'OVEHOSTED_VDSM/passwdValiditySecs'
@@ -145,12 +272,19 @@ class VMEnv(object):
 
 @util.export
 @util.codegen
+@ohostedattrsclass
 class VDSMEnv(object):
     VDSMD_SERVICE = 'OVEHOSTED_VDSM/serviceName'
     VDSM_UID = 'OVEHOSTED_VDSM/vdsmUid'
     KVM_GID = 'OVEHOSTED_VDSM/kvmGid'
     VDS_CLI = 'OVEHOSTED_VDSM/vdsClient'
-    PKI_SUBJECT = 'OVEHOSTED_VDSM/pkiSubject'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def PKI_SUBJECT(self):
+        return 'OVEHOSTED_VDSM/pkiSubject'
+
     VDSM_CPU = 'OVEHOSTED_VDSM/cpu'
 
 

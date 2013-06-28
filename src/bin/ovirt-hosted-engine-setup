@@ -27,8 +27,10 @@ die() {
 usage() {
 	cat << __EOF__
 Usage: $0
-    --config-append=file
-        Load extra configuration files.
+	--config-append=file
+		Load extra configuration files.
+	--generate-answer=file
+		Generate answer file.
 
 __EOF__
 	exit 1
@@ -46,6 +48,9 @@ while [ -n "$1" ]; do
 		;;
 		--config-append=*)
 			environment="${environment} APPEND:CORE/configFileAppend=str:${v}"
+		;;
+		--generate-answer=*)
+			environment="${environment} OVEHOSTED_CORE/answerFile=str:${v}"
 		;;
 		--help)
 			usage

@@ -27,7 +27,8 @@ mydir=$(ovirthostedengineplugindir)/ovirt-hosted-engine-setup/core
 dist_my_PYTHON = \
 	__init__.py \
 	misc.py \
-	conf.py
+	conf.py \
+	answerfile.py \
 	$(NULL)
 
 clean-local: \
