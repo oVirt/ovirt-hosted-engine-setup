@@ -175,8 +175,8 @@ class Stages(object):
 @util.export
 @util.codegen
 class Defaults(object):
-    DEFAULT_STORAGE_DOMAIN_NAME = 'local_storage'
-    DEFAULT_STORAGE_DATACENTER_NAME = 'local_datacenter'
+    DEFAULT_STORAGE_DOMAIN_NAME = 'hosted_storage'
+    DEFAULT_STORAGE_DATACENTER_NAME = 'hosted_datacenter'
     DEFAULT_VDSMD_SERVICE = 'vdsmd'
     DEFAULT_IMAGE_DESC = 'Hosted Engine Image'
     DEFAULT_IMAGE_SIZE_GB = 20  # based on minimum requirements.
