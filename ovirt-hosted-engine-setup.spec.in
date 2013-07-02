@@ -36,6 +36,7 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 
 Requires:       python
+Requires:       python-ethtool
 Requires:       otopi >= 1.1.0
 Requires:       vdsm >= 4.11.0
 Requires:       vdsm-cli >= 4.11.0

@@ -27,6 +27,9 @@ import gettext
 import sys
 
 
+import ethtool
+
+
 from otopi import util
 from otopi import plugin
 
@@ -50,6 +53,7 @@ class Plugin(plugin.PluginBase):
             path=ohostedcons.FileLocations.VDS_CLIENT_DIR,
             name='configNetwork'
         )
+        self._enabled = True
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
@@ -92,8 +96,26 @@ class Plugin(plugin.PluginBase):
             )
 
     @plugin.event(
+        stage=plugin.Stages.STAGE_VALIDATION,
+    )
+    def _validation(self):
+        if (
+            self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME] in
+            ethtool.get_devices()
+        ):
+            self.logger.info(
+                _(
+                    'Bridge {bridge} already created'
+                ).format(
+                    bridge=self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME]
+                )
+            )
+            self._enabled = False
+
+    @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
         name=ohostedcons.Stages.BRIDGE_AVAILABLE,
+        condition=lambda self: self._enabled,
     )
     def _misc(self):
         self.logger.info(_('Configuring the management bridge'))
