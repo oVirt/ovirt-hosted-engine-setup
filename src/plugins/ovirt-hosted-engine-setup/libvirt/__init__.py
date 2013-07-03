@@ -25,11 +25,13 @@ from otopi import util
 
 
 from . import configureqemu
+from . import workarounds
 
 
 @util.export
 def createPlugins(context):
     configureqemu.Plugin(context=context)
+    workarounds.Plugin(context=context)
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

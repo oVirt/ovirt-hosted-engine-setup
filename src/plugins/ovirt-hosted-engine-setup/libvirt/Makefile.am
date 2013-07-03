@@ -27,6 +27,7 @@ mydir=$(ovirthostedengineplugindir)/ovirt-hosted-engine-setup/libvirt
 dist_my_PYTHON = \
 	__init__.py \
 	configureqemu.py \
+	workarounds.py \
 	$(NULL)
 
 clean-local: \
