@@ -23,3 +23,7 @@ MAINTAINERCLEANFILES = \
 
 dist_noinst_SCRIPTS = \
 	$(NULL)
+
+EXTRA_DIST = \
+	answers \
+	$(NULL)
