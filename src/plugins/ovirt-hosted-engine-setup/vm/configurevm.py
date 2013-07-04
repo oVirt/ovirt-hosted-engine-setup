@@ -142,26 +142,33 @@ class Plugin(plugin.PluginBase):
                     default=ohostedcons.Defaults.DEFAULT_BOOT,
                 )
 
-                if self.environment[
-                    ohostedcons.VMEnv.BOOT
-                ] in self.BOOT_DEVICE.keys():
-                    valid = True
-                else:
-                    self.logger.error(
-                        _(
-                            'The provided boot type is not supported. '
-                            'Please try again'
-                        )
-                    )
-
-        interactive = self.environment[
-            ohostedcons.VMEnv.CDROM
-        ] is None
-        valid = False
-        while not valid:
             if self.environment[
                 ohostedcons.VMEnv.BOOT
-            ] == 'cdrom':
+            ] in self.BOOT_DEVICE.keys():
+                valid = True
+            elif interactive:
+                self.logger.error(
+                    _(
+                        'The provided boot type is not supported. '
+                        'Please try again'
+                    )
+                )
+            else:
+                raise RuntimeError(
+                    _(
+                        'The provided boot type is not supported. '
+                        'Please try again'
+                    )
+                )
+
+        if self.environment[
+            ohostedcons.VMEnv.BOOT
+        ] == 'cdrom':
+            interactive = self.environment[
+                ohostedcons.VMEnv.CDROM
+            ] is None
+            valid = False
+            while not valid:
                 self.environment[
                     ohostedcons.VMEnv.CDROM
                 ] = self.dialog.queryString(
