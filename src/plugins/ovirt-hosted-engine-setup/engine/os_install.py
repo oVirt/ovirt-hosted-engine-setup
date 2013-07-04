@@ -19,7 +19,7 @@
 
 
 """
-vm os install status handler plugin.
+reconfigure vm after os install plugin.
 """
 
 
@@ -42,13 +42,20 @@ _ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 @util.export
 class Plugin(plugin.PluginBase):
     """
-    vm os install status handler plugin.
+    reconfigure vm after os install plugin.
     """
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
 
-    def _reconfigure(self):
+    @plugin.event(
+        stage=plugin.Stages.STAGE_MISC,
+        after=[
+            ohostedcons.Stages.VM_RUNNING,
+        ],
+        name=ohostedcons.Stages.OS_INSTALLED,
+    )
+    def _misc(self):
         self.environment[ohostedcons.VMEnv.SUBST]['@BOOT@'] = 'c'
         content = ohostedutil.processTemplate(
             template=ohostedcons.FileLocations.ENGINE_VM_TEMPLATE,
@@ -64,57 +71,6 @@ class Plugin(plugin.PluginBase):
                     ],
                 ),
             )
-
-    def _shutdown(self):
-        self.execute(
-            (
-                self.command.get('vdsClient'),
-                '-s',
-                'localhost',
-                'shutdown',
-                self.environment[ohostedcons.VMEnv.VM_UUID],
-                '0',
-                _('Reboot'),
-            ),
-            raiseOnError=True
-        )
-        self.execute(
-            (
-                self.command.get('vdsClient'),
-                '-s',
-                'localhost',
-                'destroy',
-                self.environment[ohostedcons.VMEnv.VM_UUID],
-            ),
-            raiseOnError=True
-        )
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_SETUP,
-    )
-    def _setup(self):
-        # Can't use python api here, it will call sys.exit
-        self.command.detect('vdsClient')
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_MISC,
-        after=[
-            ohostedcons.Stages.VM_RUNNING,
-        ],
-        name=ohostedcons.Stages.OS_INSTALLED,
-    )
-    def _misc(self):
-        self.dialog.queryString(
-            name='ovehosted_engine_up',
-            note=_(
-                'Please install the OS in the vm,'
-                'hit enter when finished for restarting the VM from HD.'
-            ),
-            prompt=True,
-            default='y'  # Allow enter without any value
-        )
-        self._shutdown()
-        self._reconfigure()
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

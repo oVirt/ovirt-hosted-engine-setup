@@ -166,6 +166,10 @@ class Plugin(plugin.PluginBase):
             )
         )
 
+    def _wait_vm_destroyed(self):
+        waiter = tasks.VMDownWaiter(self.environment)
+        return waiter.wait()
+
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
     )
@@ -246,7 +250,56 @@ class Plugin(plugin.PluginBase):
         name=ohostedcons.Stages.VM_RUNNING,
     )
     def _boot_from_install_media(self):
-        self._create()
+        os_installed = False
+        while not os_installed:
+            self._create()
+            self.dialog.note(
+                _(
+                    'Please install the OS on the VM.\n'
+                    'The system will wait until the installation is completed'
+                )
+            )
+            if not self._wait_vm_destroyed():
+                #The VM is down but not destroyed
+                self.execute(
+                    (
+                        self.command.get('vdsClient'),
+                        '-s',
+                        'localhost',
+                        'destroy',
+                        self.environment[ohostedcons.VMEnv.VM_UUID],
+                    ),
+                    raiseOnError=True
+                )
+            os_installed = self.dialog.queryString(
+                name='ovehosted_os_installed',
+                note=_(
+                    'Has the OS installation been completed '
+                    'successfully? (@VALUES@) :'
+                ),
+                prompt=True,
+                validValues=[_('Yes'), _('No')],
+                caseSensitive=False,
+                default=_('Yes')
+            ) == _('Yes').lower()
+            if (
+                not os_installed and
+                self.dialog.queryString(
+                    name='ovehosted_os_install_again',
+                    note=_(
+                        'Do you want to try again the OS '
+                        'installation? (@VALUES@) :'
+                    ),
+                    prompt=True,
+                    validValues=[_('Yes'), _('No')],
+                    caseSensitive=False,
+                    default=_('Yes')
+                ) == _('No').lower()
+            ):
+                #TODO: decide if we have to let the user do something
+                #without abort, just exiting without any more automated
+                #steps
+                raise RuntimeError('OS installation aborted by user')
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,

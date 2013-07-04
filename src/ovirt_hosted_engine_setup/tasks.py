@@ -70,5 +70,41 @@ class TaskWaiter(base.Base):
                 time.sleep(1)
 
 
+@util.export
+class VMDownWaiter(base.Base):
+    """
+    VM down waiting utility.
+    """
+
+    POLLING_INTERVAL = 5
+
+    def __init__(self, environment):
+        super(VMDownWaiter, self).__init__()
+        self.environment = environment
+
+    def wait(self):
+        serv = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        down = False
+        destroyed = False
+        while not down:
+            time.sleep(self.POLLING_INTERVAL)
+            self.logger.debug('Waiting for VM down')
+            response = serv.s.getVmStats(
+                self.environment[ohostedcons.VMEnv.VM_UUID]
+            )
+            code = response['status']['code']
+            message = response['status']['message']
+            self.logger.debug(message)
+            if code == 0:
+                stats = response['statsList'][0]
+                down = (stats['status'] == 'Down')
+            elif code == 1:
+                #assuming VM destroyed
+                down = True
+                destroyed = True
+            else:
+                raise RuntimeError(_('Error acquiring VM status'))
+        return destroyed
+
 
 # vim: expandtab tabstop=4 shiftwidth=4
