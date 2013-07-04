@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt with a manager in a VM
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2012-2013 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,13 +17,36 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
+include $(top_srcdir)/build/python.inc
+
 MAINTAINERCLEANFILES = \
 	$(srcdir)/Makefile.in \
 	$(NULL)
 
-SUBDIRS = \
-	bin \
-	ovirt_hosted_engine_setup \
-	plugins \
-	vdsm_hooks \
+CLEANFILES = \
+	50_hostedengine \
+	$(NULL)
+
+EXTRA_DIST = \
+	hostedengine.py \
+	$(NULL)
+
+vdsmhookslibexecdir = $(vdsmhooksdir)/before_vm_start
+
+dist_vdsmhookslibexec_SCRIPTS = \
+	50_hostedengine \
+	$(NULL)
+
+50_hostedengine:	\
+	hostedengine.py \
+	$(NULL)
+	cp hostedengine.py 50_hostedengine
+
+clean-local: \
+	python-clean \
+	$(NULL)
+
+all-local: \
+	$(DISTFILES) \
+	python-syntax-check \
 	$(NULL)

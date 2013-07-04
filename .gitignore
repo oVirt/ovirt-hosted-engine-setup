@@ -27,3 +27,4 @@ check
 src/bin/hosted-engine
 src/ovirt_hosted_engine_setup/config.py
 ovirt-hosted-engine-setup-*.tar.gz
+src/vdsm_hooks/50_hostedengine

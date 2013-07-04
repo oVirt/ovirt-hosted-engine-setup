@@ -73,11 +73,13 @@ ovirthostedengineplugindir="\$(pkgdatadir)/plugins"
 ovirthostedenginetemplatedir="\$(pkgdatadir)/templates"
 ovirthostedenginescriptsdir="\$(pkgdatadir)/scripts"
 ovirthostedenginelibdir="\$(pythondir)/ovirt_hosted_engine_setup"
+vdsmhooksdir="\$(libexecdir)/vdsm/hooks"
 AC_SUBST([otopiplugindir])
 AC_SUBST([ovirthostedengineplugindir])
 AC_SUBST([ovirthostedenginetemplatedir])
 AC_SUBST([ovirthostedenginescriptsdir])
 AC_SUBST([ovirthostedenginelibdir])
+AC_SUBST([vdsmhooksdir])
 AM_CONDITIONAL([PYTHON_SYNTAX_CHECK], [test "${enable_python_syntax_check}" = "yes"])
 
 AC_CONFIG_FILES([
@@ -100,6 +102,7 @@ AC_CONFIG_FILES([
 	src/plugins/ovirt-hosted-engine-setup/libvirt/Makefile
 	src/plugins/ovirt-hosted-engine-setup/vdsmd/Makefile
 	src/plugins/ovirt-hosted-engine-setup/engine/Makefile
+	src/vdsm_hooks/Makefile
 	tests/Makefile
 ])
 AC_OUTPUT
