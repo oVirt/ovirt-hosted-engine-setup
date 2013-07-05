@@ -86,7 +86,7 @@ class Plugin(plugin.PluginBase):
         )
         self.environment.setdefault(
             ohostedcons.VMEnv.MEM_SIZE_MB,
-            ohostedcons.Defaults.DEFAULT_MEM_SIZE_MB
+            None
         )
         self.environment.setdefault(
             ohostedcons.VMEnv.MAC_ADDR,
@@ -115,10 +115,50 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
     )
-    def _customization(self):
-        #TODO: customize boot type # <c/d/n> drive C or cdrom or network
-        #TODO: customize CDROM path if d
-        #TODO: all the other parameters?
+    def _memory_customization(self):
+        interactive = self.environment[
+            ohostedcons.VMEnv.MEM_SIZE_MB
+        ] is None
+        valid = False
+        while not valid:
+            if interactive:
+                self.environment[
+                    ohostedcons.VMEnv.MEM_SIZE_MB
+                ] = self.dialog.queryString(
+                    name='ovehosted_vmenv_mem',
+                    note=_(
+                        'Please specify the memory size of the VM in MB '
+                        '[@DEFAULT@]: '
+                    ),
+                    prompt=True,
+                    default=ohostedcons.Defaults.DEFAULT_MEM_SIZE_MB,
+                )
+            try:
+                int(self.environment[ohostedcons.VMEnv.MEM_SIZE_MB])
+                valid = True
+            except ValueError:
+                if not interactive:
+                    raise RuntimeError(
+                        _('Invalid memory size specified: {size}').format(
+                            size=self.environment[
+                                ohostedcons.VMEnv.MEM_SIZE_MB
+                            ],
+                        )
+                    )
+                else:
+                    self.logger.error(
+                        _('Invalid memory size specified: {size}').format(
+                            size=self.environment[
+                                ohostedcons.VMEnv.MEM_SIZE_MB
+                            ],
+                        )
+                    )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CUSTOMIZATION,
+    )
+    def _boot_customization(self):
+        #TODO: support boot from OVF
         interactive = self.environment[
             ohostedcons.VMEnv.BOOT
         ] is None
