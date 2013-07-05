@@ -69,36 +69,9 @@ class Plugin(plugin.PluginBase):
         )
 
     @plugin.event(
-        stage=plugin.Stages.STAGE_CUSTOMIZATION,
+        stage=plugin.Stages.STAGE_SETUP,
     )
-    def _customization(self):
-        #TODO: customize device and name for bridge creation
-        #TODO: provide a list of possible physical interfaces
-        interactive = self.environment[
-            ohostedcons.NetworkEnv.BRIDGE_IF
-        ] is None
-        if interactive:
-            self.environment[
-                ohostedcons.NetworkEnv.BRIDGE_IF
-            ] = self.dialog.queryString(
-                name='ovehosted_bridge_if',
-                note=_(
-                    'Please indicate a nic to set '
-                    '{bridge} bridge on [@DEFAULT@]: '
-                ).format(
-                    bridge=self.environment[
-                        ohostedcons.NetworkEnv.BRIDGE_NAME
-                    ]
-                ),
-                prompt=True,
-                caseSensitive=True,
-                default=ohostedcons.Defaults.DEFAULT_BRIDGE_IF,
-            )
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_VALIDATION,
-    )
-    def _validation(self):
+    def _setup(self):
         if (
             self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME] in
             ethtool.get_devices()
@@ -111,6 +84,46 @@ class Plugin(plugin.PluginBase):
                 )
             )
             self._enabled = False
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CUSTOMIZATION,
+        condition=lambda self: self._enabled,
+    )
+    def _customization(self):
+        nics = ethtool.get_devices()
+        validValues = []
+        for nic in nics:
+            flags = ethtool.get_flags(nic)
+            if flags & ethtool.IFF_LOOPBACK:
+                self.logger.debug('Detected loopback device %s' % nic)
+            else:
+                validValues.append(nic)
+        if not validValues:
+            raise RuntimeError('A Network interface is required')
+        interactive = self.environment[
+            ohostedcons.NetworkEnv.BRIDGE_IF
+        ] is None
+        if interactive:
+            default = ohostedcons.Defaults.DEFAULT_BRIDGE_IF
+            if not default in validValues:
+                default = validValues[0]
+            self.environment[
+                ohostedcons.NetworkEnv.BRIDGE_IF
+            ] = self.dialog.queryString(
+                name='ovehosted_bridge_if',
+                note=_(
+                    'Please indicate a nic to set '
+                    '{bridge} bridge on: (@VALUES@) [@DEFAULT@]: '
+                ).format(
+                    bridge=self.environment[
+                        ohostedcons.NetworkEnv.BRIDGE_NAME
+                    ]
+                ),
+                prompt=True,
+                caseSensitive=True,
+                default=default,
+                validValues=validValues,
+            )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
