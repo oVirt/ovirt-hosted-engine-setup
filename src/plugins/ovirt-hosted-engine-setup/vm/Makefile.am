@@ -26,6 +26,7 @@ MAINTAINERCLEANFILES = \
 mydir=$(ovirthostedengineplugindir)/ovirt-hosted-engine-setup/vm
 dist_my_PYTHON = \
 	__init__.py \
+	cpu.py \
 	configurevm.py \
 	image.py \
 	runvm.py \

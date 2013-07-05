@@ -292,6 +292,9 @@ class Plugin(plugin.PluginBase):
             '@CONSOLE_TYPE@': self.environment[
                 ohostedcons.VMEnv.CONSOLE_TYPE
             ],
+            '@VCPUS@': self.environment[
+                ohostedcons.VMEnv.VCPUS
+            ],
         }
 
         if self.environment[

@@ -8,4 +8,5 @@ vmName=@NAME@
 spiceSecureChannels=smain,sdisplay,sinputs,scursor,splayback,srecord,ssmartcard,susbredir
 bridge=ovirtmgmt
 nicModel=virtio
+smp=@VCPUS@
 @CDROM@

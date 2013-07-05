@@ -258,6 +258,12 @@ class VMEnv(object):
     def MEM_SIZE_MB(self):
         return 'OVEHOSTED_VM/vmMemSizeMB'
 
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def VCPUS(self):
+        return 'OVEHOSTED_VM/vmVCpus'
+
     MAC_ADDR = 'OVEHOSTED_VM/vmMACAddr'
 
     @ohostedattrs(
@@ -333,6 +339,7 @@ class Defaults(object):
     DEFAULT_BRIDGE_NAME = 'ovirtmgmt'
     DEFAULT_PKI_SUBJECT = '/C=EN/L=Test/O=Test/CN=Test'
     DEFAULT_VM_PASSWD_VALIDITY_SECS = "10800"  # 3 hours to for engine install
+    DEFAULT_VM_VCPUS = 1
 
 
 @util.export
