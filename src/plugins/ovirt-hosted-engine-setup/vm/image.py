@@ -51,7 +51,7 @@ class Plugin(plugin.PluginBase):
     def _init(self):
         self.environment.setdefault(
             ohostedcons.StorageEnv.IMAGE_SIZE_GB,
-            ohostedcons.Defaults.DEFAULT_IMAGE_SIZE_GB
+            None
         )
         self.environment.setdefault(
             ohostedcons.StorageEnv.IMG_UUID,
@@ -65,6 +65,48 @@ class Plugin(plugin.PluginBase):
             ohostedcons.StorageEnv.IMAGE_DESC,
             ohostedcons.Defaults.DEFAULT_IMAGE_DESC
         )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CUSTOMIZATION,
+    )
+    def _disk_customization(self):
+        interactive = self.environment[
+            ohostedcons.StorageEnv.IMAGE_SIZE_GB
+        ] is None
+        valid = False
+        while not valid:
+            if interactive:
+                self.environment[
+                    ohostedcons.StorageEnv.IMAGE_SIZE_GB
+                ] = self.dialog.queryString(
+                    name='ovehosted_vmenv_mem',
+                    note=_(
+                        'Please specify the disk size of the VM in GB '
+                        '[@DEFAULT@]: '
+                    ),
+                    prompt=True,
+                    default=ohostedcons.Defaults.DEFAULT_IMAGE_SIZE_GB,
+                )
+            try:
+                int(self.environment[ohostedcons.StorageEnv.IMAGE_SIZE_GB])
+                valid = True
+            except ValueError:
+                if not interactive:
+                    raise RuntimeError(
+                        _('Invalid disk size specified: {size}').format(
+                            size=self.environment[
+                                ohostedcons.StorageEnv.IMAGE_SIZE_GB
+                            ],
+                        )
+                    )
+                else:
+                    self.logger.error(
+                        _('Invalid disk size specified: {size}').format(
+                            size=self.environment[
+                                ohostedcons.StorageEnv.IMAGE_SIZE_GB
+                            ],
+                        )
+                    )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
