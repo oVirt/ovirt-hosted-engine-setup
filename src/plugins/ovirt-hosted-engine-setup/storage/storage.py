@@ -25,9 +25,7 @@ Local storage domain plugin.
 import os
 import uuid
 import gettext
-import socket
 import tempfile
-import time
 
 
 from otopi import util
@@ -52,7 +50,6 @@ class Plugin(plugin.PluginBase):
     GLUSTERFS_DOMAIN = 7
 
     DATA_DOMAIN = 1
-    MAX_RETRY = 10
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
@@ -64,6 +61,8 @@ class Plugin(plugin.PluginBase):
         self.serv = None
         self.waiter = None
         self.storageType = None
+        self.domain_exists = False
+        self.pool_exists = False
 
     def _mount(self, path, connection):
         self.execute(
@@ -98,8 +97,81 @@ class Plugin(plugin.PluginBase):
             self._umount(path)
             os.rmdir(path)
 
-    def _connectStorageServer(self):
-        self.logger.debug('connectStorageServer')
+    def _getExistingDomain(self):
+        self._storageServerConnection()
+        domains = self._getStorageDomainsList()
+        for sdUUID in domains:
+            domain_info = self._getStorageDomainInfo(sdUUID)
+            if (
+                domain_info and
+                domain_info['remotePath'] == self.environment[
+                    ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
+                ]
+            ):
+                self.domain_exists = True
+                self.environment[
+                    ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
+                ] = domain_info['name']
+
+                self.environment[
+                    ohostedcons.StorageEnv.SD_UUID
+                ] = sdUUID
+                pool_list = domain_info['pool']
+                if pool_list:
+                    self.pool_exists = True
+                    spUUID = pool_list[0]
+                    self.environment[
+                        ohostedcons.StorageEnv.SP_UUID
+                    ] = spUUID
+                    self._connectStoragePool()
+                    pool_info = self._getStoragePoolInfo(spUUID)
+                    if pool_info:
+                        self.environment[
+                            ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME
+                        ] = pool_info['name']
+                break
+        if not self.domain_exists:
+            self._storageServerConnection(disconnect=True)
+
+    def _getStorageDomainsList(self, spUUID=None):
+        if not spUUID:
+            spUUID = self.vdsClient.BLANK_UUID
+        self.logger.debug('getStorageDomainsList')
+        domains = []
+        response = self.serv.s.getStorageDomainsList(spUUID)
+        self.logger.debug(response)
+        if response['status']['code'] == 0:
+            for entry in response['domlist']:
+                domains.append(entry)
+        return domains
+
+    def _getStorageDomainInfo(self, sdUUID):
+        self.logger.debug('getStorageDomainInfo')
+        info = {}
+        response = self.serv.s.getStorageDomainInfo(sdUUID)
+        self.logger.debug(response)
+        if response['status']['code'] == 0:
+            for key, respinfo in response['info'].iteritems():
+                info[key] = respinfo
+        return info
+
+    def _getStoragePoolInfo(self, spUUID):
+        self.logger.debug('getStoragePoolInfo')
+        info = {}
+        response = self.serv.s.getStoragePoolInfo(spUUID)
+        self.logger.debug(response)
+        if response['status']['code'] == 0:
+            for key in response['info'].keys():
+                info[key] = response['info'][key]
+        return info
+
+    def _storageServerConnection(self, disconnect=False):
+        method = self.serv.connectStorageServer
+        debug_msg = 'connectStorageServer'
+        if disconnect:
+            method = self.serv.disconnectStorageServer
+            debug_msg = 'disconnectStorageServer'
+        self.logger.debug(debug_msg)
         spUUID = self.vdsClient.BLANK_UUID
         conList = (
             "connection={connection},"
@@ -117,7 +189,7 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.StorageEnv.CONNECTION_UUID
             ],
         )
-        self.serv.connectStorageServer(args=[
+        method(args=[
             self.storageType,
             spUUID,
             conList
@@ -273,7 +345,7 @@ class Plugin(plugin.PluginBase):
         priority=plugin.Stages.PRIORITY_FIRST,
     )
     def _customization(self):
-        #TODO: ask for domain type: nfs or glusterfs (use lower case in env)
+        self.serv = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         interactive = (
             self.environment[
                 ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
@@ -340,7 +412,15 @@ class Plugin(plugin.PluginBase):
                     )
                 else:
                     raise
-
+        if self.environment[
+            ohostedcons.StorageEnv.DOMAIN_TYPE
+        ] == 'nfs':
+            self.storageType = self.NFS_DOMAIN
+        elif self.environment[
+            ohostedcons.StorageEnv.DOMAIN_TYPE
+        ] == 'glusterfs':
+            self.storageType = self.GLUSTERFS_DOMAIN
+        self._getExistingDomain()
         if self.environment[
             ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
         ] is None:
@@ -379,27 +459,19 @@ class Plugin(plugin.PluginBase):
     def _misc(self):
         self.waiter = tasks.TaskWaiter(self.environment)
         self.serv = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        if self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE] == 'nfs':
-            self.storageType = self.NFS_DOMAIN
-        elif self.environment[
-            ohostedcons.StorageEnv.DOMAIN_TYPE
-        ] == 'glusterfs':
-            self.storageType = self.GLUSTERFS_DOMAIN
-        self.logger.debug(str(self.serv.s.getVdsHardwareInfo()))
-        vdsmReady = False
-        retry = 0
-        while not vdsmReady and retry < self.MAX_RETRY:
-            retry += 1
-            try:
-                self.logger.debug(str(self.serv.s.getVdsHardwareInfo()))
-                vdsmReady = True
-            except socket.error:
-                self.logger.info(_('Waiting for VDSM hardware info'))
-                time.sleep(1)
-        self.logger.info(_('Creating Storage Domain'))
-        self._connectStorageServer()
-        self._createStorageDomain()
-        self._createStoragePool()
+
+        # vdsmd has been restarted, we need to reconnect in any case.
+        self._storageServerConnection()
+        if self.domain_exists:
+            self.logger.info(_('Connecting Storage Domain'))
+        else:
+            self.logger.info(_('Creating Storage Domain'))
+            self._createStorageDomain()
+        if self.pool_exists:
+            self.logger.info(_('Connecting Storage Pool'))
+        else:
+            self.logger.info(_('Creating Storage Pool'))
+            self._createStoragePool()
         self._connectStoragePool()
         self._spmStart()
         self._activateStorageDomain()

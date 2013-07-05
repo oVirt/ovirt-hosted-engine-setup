@@ -23,6 +23,8 @@
 import pwd
 import grp
 import gettext
+import socket
+import time
 
 
 from otopi import util
@@ -42,8 +44,37 @@ _ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 class Plugin(plugin.PluginBase):
     """VDSM misc plugin."""
 
+    MAX_RETRY = 10
+
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
+
+    def _connect(self):
+        vdsClient = util.loadModule(
+            path=ohostedcons.FileLocations.VDS_CLIENT_DIR,
+            name='vdsClient'
+        )
+        serv = None
+        if vdsClient._glusterEnabled:
+            serv = vdsClient.ge.GlusterService()
+        else:
+            serv = vdsClient.service()
+        serv.useSSL = True
+        server, serverPort = vdscli.cannonizeAddrPort(
+            'localhost'
+        ).split(':', 1)
+        serv.do_connect(server, serverPort)
+        self.environment[ohostedcons.VDSMEnv.VDS_CLI] = serv
+        vdsmReady = False
+        retry = 0
+        while not vdsmReady and retry < self.MAX_RETRY:
+            retry += 1
+            try:
+                self.logger.debug(str(serv.s.getVdsHardwareInfo()))
+                vdsmReady = True
+            except socket.error:
+                self.logger.info(_('Waiting for VDSM hardware info'))
+                time.sleep(1)
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT
@@ -65,6 +96,19 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VDSMEnv.VDS_CLI,
             None
         )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_LATE_SETUP
+    )
+    def _late_setup(self):
+        #We need vdsmd up for customization checks
+        self.services.state(
+            name=self.environment[
+                ohostedcons.VDSMEnv.VDSMD_SERVICE
+            ],
+            state=True
+        )
+        self._connect()
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
@@ -89,27 +133,15 @@ class Plugin(plugin.PluginBase):
             ],
             state=True,
         )
-        self.services.state(
-            name=self.environment[
-                ohostedcons.VDSMEnv.VDSMD_SERVICE
-            ],
-            state=True,
-        )
-        vdsClient = util.loadModule(
-            path=ohostedcons.FileLocations.VDS_CLIENT_DIR,
-            name='vdsClient'
-        )
-        serv = None
-        if vdsClient._glusterEnabled:
-            serv = vdsClient.ge.GlusterService()
-        else:
-            serv = vdsClient.service()
-        serv.useSSL = True
-        server, serverPort = vdscli.cannonizeAddrPort(
-            'localhost'
-        ).split(':', 1)
-        serv.do_connect(server, serverPort)
-        self.environment[ohostedcons.VDSMEnv.VDS_CLI] = serv
+        #We need to restart the daemon for reloading the configuration
+        for state in (False, True):
+            self.services.state(
+                name=self.environment[
+                    ohostedcons.VDSMEnv.VDSMD_SERVICE
+                ],
+                state=state,
+            )
+        self._connect()
 
 
 # vim: expandtab tabstop=4 shiftwidth=4
