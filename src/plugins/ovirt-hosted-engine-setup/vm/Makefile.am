@@ -29,6 +29,7 @@ dist_my_PYTHON = \
 	cpu.py \
 	configurevm.py \
 	image.py \
+	memory.py \
 	runvm.py \
 	$(NULL)
 

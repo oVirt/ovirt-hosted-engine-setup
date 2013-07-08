@@ -24,17 +24,19 @@
 from otopi import util
 
 
+from . import configurevm
 from . import cpu
 from . import image
-from . import configurevm
+from . import memory
 from . import runvm
 
 
 @util.export
 def createPlugins(context):
+    configurevm.Plugin(context=context)
     cpu.Plugin(context=context)
     image.Plugin(context=context)
-    configurevm.Plugin(context=context)
+    memory.Plugin(context=context)
     runvm.Plugin(context=context)
 
 
