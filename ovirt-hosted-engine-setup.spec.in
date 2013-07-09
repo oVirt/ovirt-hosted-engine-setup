@@ -36,13 +36,12 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 
 Requires:       python
-Requires:       python-ethtool >= 0.7
+Requires:       python-ethtool >= 0.6-3
 Requires:       otopi >= 1.1.0
 Requires:       vdsm >= 4.11.0
 Requires:       vdsm-cli >= 4.11.0
 Requires:       vdsm-gluster >= 4.11.0
 Requires:       ovirt-host-deploy >= 1.1.0
-Requires:       ovirt-engine-sdk >= 3.3.0
 Requires:       openssh-server
 Requires:       python-paramiko
 Requires:       virt-viewer
@@ -51,6 +50,13 @@ Requires:       sudo
 BuildRequires:  gettext
 BuildRequires:  otopi-devel >= 1.1.0
 BuildRequires:  python2-devel
+
+%if 0%{?rhel}
+Requires:       rhevm-sdk-python >= 3.3.0
+%else
+Requires:       ovirt-engine-sdk >= 3.3.0
+%endif
+
 
 %description
 Hosted engine tool for oVirt project.
