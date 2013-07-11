@@ -24,6 +24,7 @@
 from otopi import util
 
 
+from . import boot_cdrom
 from . import configurevm
 from . import cpu
 from . import image
@@ -33,6 +34,7 @@ from . import runvm
 
 @util.export
 def createPlugins(context):
+    boot_cdrom.Plugin(context=context)
     configurevm.Plugin(context=context)
     cpu.Plugin(context=context)
     image.Plugin(context=context)

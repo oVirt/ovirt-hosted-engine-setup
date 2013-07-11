@@ -307,6 +307,7 @@ class VDSMEnv(object):
 @util.export
 @util.codegen
 class Stages(object):
+    CONFIG_BOOT_DEVICE = 'ohosted.boot.configuration.available'
     CONFIG_STORAGE = 'ohosted.storage.configuration.available'
     VDSMD_START = 'ohosted.vdsm.started'
     VDSMD_PKI = 'ohosted.vdsm.pki.available'

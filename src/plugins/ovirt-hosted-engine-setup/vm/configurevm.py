@@ -56,26 +56,6 @@ class Plugin(plugin.PluginBase):
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
 
-    def _check_iso_readable(self, filepath):
-        try:
-            self.execute(
-                (
-                    self.command.get('sudo'),
-                    '-u',
-                    'vdsm',
-                    '-g',
-                    'kvm',
-                    'test',
-                    '-r',
-                    filepath,
-                ),
-                raiseOnError=True
-            )
-            readable = True
-        except RuntimeError:
-            readable = False
-        return readable
-
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
     )
@@ -93,23 +73,14 @@ class Plugin(plugin.PluginBase):
             None,
         )
         self.environment.setdefault(
-            ohostedcons.VMEnv.CDROM,
-            None
-        )
-        self.environment.setdefault(
             ohostedcons.VMEnv.NAME,
             ohostedcons.Defaults.DEFAULT_NAME
         )
         self.environment[ohostedcons.VMEnv.SUBST] = {}
 
     @plugin.event(
-        stage=plugin.Stages.STAGE_SETUP,
-    )
-    def _setup(self):
-        self.command.detect('sudo')
-
-    @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
+        name=ohostedcons.Stages.CONFIG_BOOT_DEVICE,
     )
     def _customization(self):
         #TODO: support boot from OVF
@@ -122,7 +93,7 @@ class Plugin(plugin.PluginBase):
                 self.environment[
                     ohostedcons.VMEnv.BOOT
                 ] = self.dialog.queryString(
-                    name='ovehosted_vmenv_boot',
+                    name='OVEHOSTED_VMENV_BOOT',
                     note=_(
                         'Please specify the device to boot the VM '
                         'from (@VALUES@) [@DEFAULT@]: '
@@ -154,59 +125,6 @@ class Plugin(plugin.PluginBase):
                         'Please try again'
                     )
                 )
-
-        if self.environment[
-            ohostedcons.VMEnv.BOOT
-        ] == 'cdrom':
-            interactive = self.environment[
-                ohostedcons.VMEnv.CDROM
-            ] is None
-            valid = False
-            while not valid:
-                self.environment[
-                    ohostedcons.VMEnv.CDROM
-                ] = self.dialog.queryString(
-                    name='ovehosted_vmenv_cdrom',
-                    note=_(
-                        'Please specify path to installation media '
-                        'you would like to use [@DEFAULT@]: '
-                    ),
-                    prompt=True,
-                    caseSensitive=True,
-                    default=str(self.environment[
-                        ohostedcons.VMEnv.CDROM
-                    ]),
-                )
-
-                valid = self._check_iso_readable(
-                    self.environment[ohostedcons.VMEnv.CDROM]
-                )
-                if not valid:
-                    if interactive:
-                        self.logger.error(
-                            _(
-                                'The specified installation media is not '
-                                'readable. Please ensure that {filepath} '
-                                'could be read by vdsm user or kvm group '
-                                'or specify another installation media.'
-                            ).format(
-                                filepath=self.environment[
-                                    ohostedcons.VMEnv.CDROM
-                                ]
-                            )
-                        )
-                    else:
-                        raise RuntimeError(
-                            _(
-                                'The specified installation media is not '
-                                'readable. Please ensure that {filepath} '
-                                'could be read by vdsm user or kvm group'
-                            ).format(
-                                filepath=self.environment[
-                                    ohostedcons.VMEnv.CDROM
-                                ]
-                            )
-                        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
