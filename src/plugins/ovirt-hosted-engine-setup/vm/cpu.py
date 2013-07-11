@@ -69,7 +69,7 @@ class Plugin(plugin.PluginBase):
                 ] = self.dialog.queryString(
                     name='ovehosted_vmenv_cpu',
                     note=_(
-                        'Please specify the number of virtual cpu of the VM '
+                        'Please specify the number of virtual CPUs for the VM '
                         '[@DEFAULT@]: '
                     ),
                     prompt=True,
