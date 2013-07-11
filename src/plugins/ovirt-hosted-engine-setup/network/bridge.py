@@ -24,7 +24,6 @@ bridge configuration plugin.
 
 
 import gettext
-import sys
 
 
 import ethtool
@@ -48,11 +47,6 @@ class Plugin(plugin.PluginBase):
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
-        sys.path.append(ohostedcons.FileLocations.VDS_CLIENT_DIR)
-        self.configNetwork = util.loadModule(
-            path=ohostedcons.FileLocations.VDS_CLIENT_DIR,
-            name='configNetwork'
-        )
         self._enabled = True
 
     @plugin.event(
@@ -84,6 +78,8 @@ class Plugin(plugin.PluginBase):
                 )
             )
             self._enabled = False
+        else:
+            self.command.detect('vdsClient')
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
@@ -135,14 +131,23 @@ class Plugin(plugin.PluginBase):
         nic = self.environment[ohostedcons.NetworkEnv.BRIDGE_IF]
         bridge = self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME]
 
-        self.configNetwork.addNetwork(
-            network=bridge,
-            nics=[nic],
-            force=False,
-            bridged=True,
-            BOOTPROTO='dhcp',
-            ONBOOT='yes',
-            blockingdhcp='true',
+        self.execute(
+            (
+                self.command.get('vdsClient'),
+                '-s',
+                'localhost',
+                'addNetwork',
+                'bridge=%s' % bridge,
+                'vlan=',
+                'bond=',
+                'nics=%s' % nic,
+                'force=False',
+                'bridged=True',
+                'BOOTPROTO=dhcp',
+                'ONBOOT=yes',
+                'blockingdhcp=true',
+            ),
+            raiseOnError=True
         )
 
         for state in (False, True):
