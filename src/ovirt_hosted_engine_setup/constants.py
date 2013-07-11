@@ -178,6 +178,18 @@ class HostEnv(object):
 @util.export
 @util.codegen
 @ohostedattrsclass
+class EngineEnv(object):
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def ADMIN_PASSWORD(self):
+        return 'OVEHOSTED_ENGINE/adminPassword'
+
+
+@util.export
+@util.codegen
+@ohostedattrsclass
 class StorageEnv(object):
 
     @ohostedattrs(

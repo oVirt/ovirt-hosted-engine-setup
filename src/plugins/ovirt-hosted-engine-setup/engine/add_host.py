@@ -32,10 +32,12 @@ import urllib2
 
 import ovirtsdk.api
 import ovirtsdk.xml
+import ovirtsdk.infrastructure.errors
 
 
 from otopi import util
 from otopi import plugin
+from otopi import constants as otopicons
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
@@ -114,10 +116,51 @@ class Plugin(plugin.PluginBase):
         return address
 
     @plugin.event(
+        stage=plugin.Stages.STAGE_INIT,
+    )
+    def _init(self):
+        self.environment.setdefault(
+            ohostedcons.EngineEnv.ADMIN_PASSWORD,
+            None
+        )
+
+    @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
     )
     def _setup(self):
         self.command.detect('ip')
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CUSTOMIZATION,
+    )
+    def _customization(self):
+        interactive = (
+            self.environment[ohostedcons.EngineEnv.ADMIN_PASSWORD] is None
+        )
+        while self.environment[ohostedcons.EngineEnv.ADMIN_PASSWORD] is None:
+            password = self.dialog.queryString(
+                name='ENGINE_ADMIN_PASSWORD',
+                note=_(
+                    "Enter 'admin@internal' user password that "
+                    'will be used for accessing the Administrator Portal: '
+                ),
+                prompt=True,
+                hidden=True,
+            )
+            if password:
+                self.environment[
+                    ohostedcons.EngineEnv.ADMIN_PASSWORD
+                ] = password
+            else:
+                if interactive:
+                    self.logger.error(_('Please specify a password'))
+                else:
+                    raise RuntimeError(
+                        _('Empty password not allowed for user admin')
+                    )
+        self.environment[otopicons.CoreEnv.LOG_FILTER].append(
+            self.environment[ohostedcons.EngineEnv.ADMIN_PASSWORD]
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
@@ -127,34 +170,46 @@ class Plugin(plugin.PluginBase):
     )
     def _misc(self):
         self._getPKICert()
-        self.logger.debug('Connecting to the Engine')
-        engine_api = self._ovirtsdk_api.API(
-            url='https://{fqdn}/api'.format(
-                fqdn=self.environment[
-                    ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+        try:
+            self.logger.debug('Connecting to the Engine')
+            engine_api = self._ovirtsdk_api.API(
+                url='https://{fqdn}/api'.format(
+                    fqdn=self.environment[
+                        ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+                    ],
+                ),
+                username='admin@internal',
+                password=self.environment[
+                    ohostedcons.EngineEnv.ADMIN_PASSWORD
                 ],
-            ),
-            #TODO: ask for engine user, domain and password
-            username='{user}@{domain}'.format(
-                user='admin',
-                domain='internal',
-            ),
-            password='engine',
-            ca_file=self.cert,
-        )
-
-        self.logger.debug('Adding the local host to the local cluster')
-        engine_api.hosts.add(
-            self._ovirtsdk_xml.params.Host(
-                name='local_host',  # TODO ask host name to be used in engine
-                address=self._getIPAddress(),
-                reboot_after_installation=False,
-                cluster=engine_api.clusters.get('Default'),
-                root_password=self.environment[
-                    ohostedcons.HostEnv.ROOT_PASSWORD
-                ]
+                ca_file=self.cert,
             )
-        )
+            self.logger.debug('Adding the local host to the local cluster')
+            # TODO ask host name to be used in engine?
+            engine_api.hosts.add(
+                self._ovirtsdk_xml.params.Host(
+                    name='local_host',
+                    address=self._getIPAddress(),
+                    reboot_after_installation=False,
+                    cluster=engine_api.clusters.get('Default'),
+                    root_password=self.environment[
+                        ohostedcons.HostEnv.ROOT_PASSWORD
+                    ]
+                )
+            )
+        except ovirtsdk.infrastructure.errors.RequestError as e:
+            self.logger.debug(
+                'Cannot add the local host to the Default cluster',
+                exc_info=True,
+            )
+            self.logger.error(
+                _(
+                    'Cannot automatically add the local host '
+                    'to the Default cluster:\n{details}\n'
+                ).format(
+                    details=e.details
+                )
+            )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLEANUP,
