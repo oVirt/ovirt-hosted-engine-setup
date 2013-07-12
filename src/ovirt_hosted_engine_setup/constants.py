@@ -136,6 +136,7 @@ class Const(object):
 @util.codegen
 class CoreEnv(object):
     ANSWER_FILE = 'OVEHOSTED_CORE/answerFile'
+    REQUIREMENTS_CHECK_ENABLED = 'OVEHOSTED_CORE/checkRequirements'
 
 
 @util.export
@@ -330,7 +331,7 @@ class Defaults(object):
     DEFAULT_STORAGE_DATACENTER_NAME = 'hosted_datacenter'
     DEFAULT_VDSMD_SERVICE = 'vdsmd'
     DEFAULT_IMAGE_DESC = 'Hosted Engine Image'
-    DEFAULT_IMAGE_SIZE_GB = 20  # based on minimum requirements.
+    DEFAULT_IMAGE_SIZE_GB = 25  # based on minimum requirements.
     DEFAULT_MEM_SIZE_MB = 4096  # based on minimum requirements.
     DEFAULT_BOOT = 'cdrom'  # boot device - drive C or cdrom or pxe
     DEFAULT_CDROM = '/dev/null'
@@ -339,13 +340,16 @@ class Defaults(object):
     DEFAULT_BRIDGE_NAME = 'ovirtmgmt'
     DEFAULT_PKI_SUBJECT = '/C=EN/L=Test/O=Test/CN=Test'
     DEFAULT_VM_PASSWD_VALIDITY_SECS = "10800"  # 3 hours to for engine install
-    DEFAULT_VM_VCPUS = 1
+    DEFAULT_VM_VCPUS = 2  # based on minimum requirements.
 
 
 @util.export
 @util.codegen
 class Confirms(object):
     DEPLOY_PROCEED = 'DEPLOY_PROCEED'
+    CPU_PROCEED = 'CPU_PROCEED'
+    DISK_PROCEED = 'DISK_PROCEED'
+    MEMORY_PROCEED = 'MEMORY_PROCEED'
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

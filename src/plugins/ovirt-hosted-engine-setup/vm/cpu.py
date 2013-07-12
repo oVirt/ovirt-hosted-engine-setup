@@ -70,15 +70,36 @@ class Plugin(plugin.PluginBase):
                     name='ovehosted_vmenv_cpu',
                     note=_(
                         'Please specify the number of virtual CPUs for the VM '
-                        '[@DEFAULT@]: '
+                        '[Minimum requirement: @DEFAULT@]: '
                     ),
                     prompt=True,
                     default=ohostedcons.Defaults.DEFAULT_VM_VCPUS,
                 )
             try:
-                int(self.environment[ohostedcons.VMEnv.VCPUS])
                 valid = True
+                if int(
+                    self.environment[ohostedcons.VMEnv.VCPUS]
+                ) < ohostedcons.Defaults.DEFAULT_VM_VCPUS:
+                    self.logger.warning(
+                        _('Minimum requirements for CPUs not met')
+                    )
+                    if (
+                        interactive and
+                        self.environment[
+                            ohostedcons.CoreEnv.REQUIREMENTS_CHECK_ENABLED
+                        ] and
+                        not self.dialog.confirm(
+                            name=ohostedcons.Confirms.CPU_PROCEED,
+                            description='Confirm CPUs',
+                            note=_(
+                                'Continue with specified CPUs? (yes/no) '
+                            ),
+                            prompt=True,
+                        )
+                    ):
+                        valid = False
             except ValueError:
+                valid = False
                 if not interactive:
                     raise RuntimeError(
                         _('Invalid number of cpu specified: {vcpu}').format(

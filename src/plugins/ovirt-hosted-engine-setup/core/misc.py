@@ -74,6 +74,11 @@ class Plugin(plugin.PluginBase):
         ):
             raise context.Abort('Aborted by user')
 
+        self.environment.setdefault(
+            ohostedcons.CoreEnv.REQUIREMENTS_CHECK_ENABLED,
+            True
+        )
+
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
     )

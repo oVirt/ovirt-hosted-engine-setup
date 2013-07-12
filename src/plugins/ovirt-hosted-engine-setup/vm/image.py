@@ -82,15 +82,36 @@ class Plugin(plugin.PluginBase):
                     name='ovehosted_vmenv_mem',
                     note=_(
                         'Please specify the disk size of the VM in GB '
-                        '[@DEFAULT@]: '
+                        '[Minimum requirement: @DEFAULT@]: '
                     ),
                     prompt=True,
                     default=ohostedcons.Defaults.DEFAULT_IMAGE_SIZE_GB,
                 )
             try:
-                int(self.environment[ohostedcons.StorageEnv.IMAGE_SIZE_GB])
                 valid = True
+                if int(
+                    self.environment[ohostedcons.StorageEnv.IMAGE_SIZE_GB]
+                ) < ohostedcons.Defaults.DEFAULT_IMAGE_SIZE_GB:
+                    self.logger.warning(
+                        _('Minimum requirements for disk size not met')
+                    )
+                    if (
+                        interactive and
+                        self.environment[
+                            ohostedcons.CoreEnv.REQUIREMENTS_CHECK_ENABLED
+                        ] and
+                        not self.dialog.confirm(
+                            name=ohostedcons.Confirms.DISK_PROCEED,
+                            description='Confirm disk size',
+                            note=_(
+                                'Continue with specified disk size? (yes/no) '
+                            ),
+                            prompt=True,
+                        )
+                    ):
+                        valid = False
             except ValueError:
+                valid = False
                 if not interactive:
                     raise RuntimeError(
                         _('Invalid disk size specified: {size}').format(
