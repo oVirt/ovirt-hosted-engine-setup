@@ -25,6 +25,7 @@ engine health status handler plugin.
 
 import contextlib
 import gettext
+import re
 import urllib2
 
 
@@ -44,6 +45,8 @@ class Plugin(plugin.PluginBase):
     engine health status handler plugin.
     """
 
+    DB_UP_RE = re.compile('.*DB Up.*')
+
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
 
@@ -59,12 +62,13 @@ class Plugin(plugin.PluginBase):
             with contextlib.closing(urllib2.urlopen(health_url)) as urlObj:
                 content = urlObj.read()
                 if content:
+                    if self.DB_UP_RE.match(content) is not None:
+                        isUp = True
                     self.logger.info(
-                        _('Engine is up with status: {status}').format(
+                        _('Engine replied: {status}').format(
                             status=content,
                         )
                     )
-                    isUp = True
         except urllib2.URLError:
             self.logger.error(_('Engine is still unreachable'))
         return isUp
