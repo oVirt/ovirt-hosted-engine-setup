@@ -103,6 +103,7 @@ AC_CONFIG_FILES([
 	src/plugins/ovirt-hosted-engine-setup/vdsmd/Makefile
 	src/plugins/ovirt-hosted-engine-setup/engine/Makefile
 	src/vdsm_hooks/Makefile
+	templates/Makefile
 	tests/Makefile
 ])
 AC_OUTPUT

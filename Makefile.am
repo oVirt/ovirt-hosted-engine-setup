@@ -45,6 +45,7 @@ SUBDIRS = \
 	build \
 	po \
 	src \
+	templates \
 	tests \
 	$(NULL)
 
@@ -54,12 +55,6 @@ dist_noinst_DATA = \
 
 dist_noinst_SCRIPTS = \
 	autogen.sh \
-	$(NULL)
-
-templatesdir=$(ovirthostedenginetemplatedir)
-dist_templates_DATA = \
-	vm.conf.in \
-	hosted-engine.conf.in
 	$(NULL)
 
 TMPREPOS = tmp.repos
