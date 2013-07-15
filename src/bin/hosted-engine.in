@@ -70,7 +70,8 @@ while [ -n "$1" ]; do
             usage
         ;;
         *)
-            die "Invalid option '${x}'"
+            echo "Invalid option '${x}'" >&2
+            usage
         ;;
     esac
 done
