@@ -49,7 +49,7 @@ class Plugin(plugin.PluginBase):
         super(Plugin, self).__init__(context=context)
 
     @plugin.event(
-        stage=plugin.Stages.STAGE_MISC,
+        stage=plugin.Stages.STAGE_CLOSEUP,
         after=[
             ohostedcons.Stages.VM_RUNNING,
         ],

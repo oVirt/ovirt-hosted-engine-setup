@@ -74,13 +74,13 @@ class Plugin(plugin.PluginBase):
         return isUp
 
     @plugin.event(
-        stage=plugin.Stages.STAGE_MISC,
+        stage=plugin.Stages.STAGE_CLOSEUP,
         after=[
             ohostedcons.Stages.INSTALLED_VM_RUNNING,
         ],
         name=ohostedcons.Stages.ENGINE_ALIVE,
     )
-    def _misc(self):
+    def _closeup(self):
         poll = True
         while poll:
             self.dialog.queryString(

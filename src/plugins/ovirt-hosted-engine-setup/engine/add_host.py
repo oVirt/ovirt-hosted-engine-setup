@@ -163,12 +163,12 @@ class Plugin(plugin.PluginBase):
         )
 
     @plugin.event(
-        stage=plugin.Stages.STAGE_MISC,
+        stage=plugin.Stages.STAGE_CLOSEUP,
         after=[
             ohostedcons.Stages.ENGINE_ALIVE,
         ],
     )
-    def _misc(self):
+    def _closeup(self):
         self._getPKICert()
         try:
             self.logger.debug('Connecting to the Engine')

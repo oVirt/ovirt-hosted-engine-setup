@@ -240,16 +240,13 @@ class Plugin(plugin.PluginBase):
                     )
 
     @plugin.event(
-        stage=plugin.Stages.STAGE_MISC,
-        after=[
-            ohostedcons.Stages.VM_CONFIGURED,
-            ohostedcons.Stages.VM_IMAGE_AVAILABLE,
-            ohostedcons.Stages.LIBVIRT_CONFIGURED,
-            ohostedcons.Stages.SSHD_START,
-        ],
+        stage=plugin.Stages.STAGE_CLOSEUP,
         name=ohostedcons.Stages.VM_RUNNING,
+        priority=plugin.Stages.PRIORITY_LOW,
     )
     def _boot_from_install_media(self):
+        #Need to be done after firewall closeup for allowing the user to
+        #connect from remote.
         os_installed = False
         while not os_installed:
             self._create()
@@ -302,7 +299,7 @@ class Plugin(plugin.PluginBase):
                 raise RuntimeError('OS installation aborted by user')
 
     @plugin.event(
-        stage=plugin.Stages.STAGE_MISC,
+        stage=plugin.Stages.STAGE_CLOSEUP,
         after=[
             ohostedcons.Stages.OS_INSTALLED,
         ],
