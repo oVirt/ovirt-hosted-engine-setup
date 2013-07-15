@@ -24,5 +24,11 @@ MAINTAINERCLEANFILES = \
 templatesdir=$(ovirthostedenginetemplatedir)
 dist_templates_DATA = \
 	vm.conf.in \
-	hosted-engine.conf.in
+	hosted-engine.conf.in \
+	iptables.default.in \
+	$(NULL)
+
+basefirewalldtemplatesdir=$(ovirthostedenginetemplatedir)/firewalld/base
+dist_basefirewalldtemplates_DATA = \
+	hosted-console.xml.in \
 	$(NULL)

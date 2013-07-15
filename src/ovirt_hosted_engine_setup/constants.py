@@ -88,6 +88,29 @@ class FileLocations(object):
         OVIRT_HOSTED_ENGINE,
         'hosted-engine.conf'
     )
+    HOSTED_ENGINE_IPTABLES_TEMPLATE = os.path.join(
+        DATADIR,
+        OVIRT_HOSTED_ENGINE_SETUP,
+        'templates',
+        'iptables.default.in'
+    )
+    HOSTED_ENGINE_IPTABLES_EXAMPLE = os.path.join(
+        SYSCONFDIR,
+        OVIRT_HOSTED_ENGINE,
+        'iptables.example'
+    )
+    HOSTED_ENGINE_FIREWALLD_EXAMPLE_DIR = os.path.join(
+        SYSCONFDIR,
+        OVIRT_HOSTED_ENGINE,
+        'firewalld'
+    )
+    HOSTED_ENGINE_FIREWALLD_TEMPLATES_DIR = os.path.join(
+        DATADIR,
+        OVIRT_HOSTED_ENGINE_SETUP,
+        'templates',
+        'firewalld',
+    )
+
     VDSM_GEN_CERTS = os.path.join(
         LIBEXECDIR,
         'vdsm',
@@ -161,6 +184,15 @@ class NetworkEnv(object):
     )
     def BRIDGE_NAME(self):
         return 'OVEHOSTED_NETWORK/bridgeName'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def FIREWALL_MANAGER(self):
+        return 'OVEHOSTED_NETWORK/firewallManager'
+
+    FIREWALLD_SERVICES = 'OVEHOSTED_NETWORK/firewalldServices'
+    FIREWALLD_SUBST = 'OVEHOSTED_NETWORK/firewalldSubst'
 
 
 @util.export
@@ -335,6 +367,10 @@ class Stages(object):
     OS_INSTALLED = 'ohosted.vm.state.os.installed'
     INSTALLED_VM_RUNNING = 'ohosted.vm.state.os.installed.running'
     ENGINE_ALIVE = 'ohosted.engine.alive'
+    NET_FIREWALL_MANAGER_AVAILABLE = \
+        'ohosted.network.firewallmanager.available'
+    NET_FIREWALL_MANAGER_PROCESS_TEMPLATES = \
+        'ohosted.network.firewallmanager.templates.available'
 
 
 @util.export

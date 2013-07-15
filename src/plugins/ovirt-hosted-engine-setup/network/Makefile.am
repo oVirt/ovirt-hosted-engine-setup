@@ -27,6 +27,8 @@ mydir=$(ovirthostedengineplugindir)/ovirt-hosted-engine-setup/network
 dist_my_PYTHON = \
 	__init__.py \
 	bridge.py \
+	firewall_manager.py \
+	firewall.py \
 	$(NULL)
 
 clean-local: \

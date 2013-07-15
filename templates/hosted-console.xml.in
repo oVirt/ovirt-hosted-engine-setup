@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+    <short>hosted-console</short>
+    <description>oVirt Hosted Engine console service</description>
+    <port protocol="tcp" port="5900"/>
+    <port protocol="udp" port="5900"/>
+</service>

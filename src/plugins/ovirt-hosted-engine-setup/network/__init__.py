@@ -25,11 +25,15 @@ from otopi import util
 
 
 from . import bridge
+from . import firewall
+from . import firewall_manager
 
 
 @util.export
 def createPlugins(context):
     bridge.Plugin(context=context)
+    firewall.Plugin(context=context)
+    firewall_manager.Plugin(context=context)
 
 
 # vim: expandtab tabstop=4 shiftwidth=4
