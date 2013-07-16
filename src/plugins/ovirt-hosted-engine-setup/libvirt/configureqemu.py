@@ -98,11 +98,6 @@ class Plugin(plugin.PluginBase):
                     ],
                 ),
             )
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_CLOSEUP,
-    )
-    def _closeup(self):
         self._restartLibvirt()
 
 
