@@ -17,6 +17,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
+%global         engine ovirt-engine
 %global         package_version @PACKAGE_VERSION@
 %global         package_maven_version @PACKAGE_MAVEN_VERSION@
 %global         ovirt_hosted_engine_setup_templates %{_datadir}/%{name}/templates
@@ -52,12 +53,7 @@ BuildRequires:  gettext
 BuildRequires:  otopi-devel >= 1.1.0
 BuildRequires:  python2-devel
 
-%if 0%{?rhel}
-Requires:       rhevm-sdk-python >= 3.3.0
-%else
-Requires:       ovirt-engine-sdk >= 3.3.0
-%endif
-
+Requires:       %{engine}-sdk-python >= 3.3.0
 
 %description
 Hosted engine tool for oVirt project.
