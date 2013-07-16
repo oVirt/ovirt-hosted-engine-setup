@@ -23,10 +23,7 @@ engine health status handler plugin.
 """
 
 
-import contextlib
 import gettext
-import re
-import urllib2
 
 
 from otopi import util
@@ -34,6 +31,7 @@ from otopi import plugin
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
+from ovirt_hosted_engine_setup import check_liveliness
 
 
 _ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
@@ -45,33 +43,8 @@ class Plugin(plugin.PluginBase):
     engine health status handler plugin.
     """
 
-    DB_UP_RE = re.compile('.*DB Up.*')
-
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
-
-    def _isEngineUp(self):
-        self.logger.debug('Checking for Engine health status')
-        health_url = 'http://{fqdn}/OvirtEngineWeb/HealthStatus'.format(
-            fqdn=self.environment[
-                ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
-            ],
-        )
-        isUp = False
-        try:
-            with contextlib.closing(urllib2.urlopen(health_url)) as urlObj:
-                content = urlObj.read()
-                if content:
-                    if self.DB_UP_RE.match(content) is not None:
-                        isUp = True
-                    self.logger.info(
-                        _('Engine replied: {status}').format(
-                            status=content,
-                        )
-                    )
-        except urllib2.URLError:
-            self.logger.error(_('Engine is still unreachable'))
-        return isUp
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
@@ -82,6 +55,10 @@ class Plugin(plugin.PluginBase):
     )
     def _closeup(self):
         poll = True
+        fqdn = self.environment[
+            ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+        ]
+        live_checker = check_liveliness.LivelinessChecker()
         while poll:
             self.dialog.queryString(
                 name='ovehosted_engine_up',
@@ -92,7 +69,7 @@ class Plugin(plugin.PluginBase):
                 prompt=True,
                 default='y'  # Allow enter without any value
             )
-            if self._isEngineUp():
+            if live_checker.isEngineUp(fqdn):
                 poll = False
             elif self.dialog.queryString(
                 name='ovehosted_engine_check_again',

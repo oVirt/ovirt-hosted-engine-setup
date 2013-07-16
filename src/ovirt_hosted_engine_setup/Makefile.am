@@ -28,6 +28,7 @@ CLEANFILES = \
 
 dist_ovirthostedenginelib_PYTHON = \
 	__init__.py \
+	check_liveliness.py \
 	constants.py \
 	domains.py \
 	util.py \

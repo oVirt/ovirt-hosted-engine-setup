@@ -23,6 +23,9 @@ Usage: $0
         VM status according to sanlock
     --add-console-password=<password>
         Create a temporary password for vnc/spice connection
+    --check-liveliness
+        Checks liveliness page of engine
+
 
 __EOF__
     exit $rc
@@ -64,6 +67,9 @@ while [ -n "$1" ]; do
             else
                 echo "You must run --deploy first"
             fi
+        ;;
+        --check-liveliness)
+            python -m ovirt_hosted_engine_setup.check_liveliness
         ;;
         --help)
             rc=0
