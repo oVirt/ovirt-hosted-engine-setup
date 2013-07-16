@@ -78,6 +78,7 @@ make %{?_smp_mflags} install DESTDIR="%{buildroot}"
 %dir %{_sysconfdir}/ovirt-hosted-engine-setup.env.d
 %dir %{_sysconfdir}/ovirt-hosted-engine
 %{_sbindir}/hosted-engine
+%{_sbindir}/%{name}
 %dir %{python_sitelib}/ovirt_hosted_engine_setup
 %{python_sitelib}/ovirt_hosted_engine_setup/*.py*
 %dir %{_datadir}/%{name}

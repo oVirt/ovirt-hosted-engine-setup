@@ -49,3 +49,10 @@ hosted-engine: hosted-engine.in
 install-data-local:
 	$(MKDIR_P) $(DESTDIR)/$(sysconfdir)/ovirt-hosted-engine-setup.env.d
 	$(MKDIR_P) $(DESTDIR)/$(sysconfdir)/ovirt-hosted-engine
+
+install-exec-local: ovirt-hosted-engine-setup
+	$(MKDIR_P) $(DESTDIR)/$(sbindir)
+	$(LN_S) $(ovirthostedenginescriptsdir)/ovirt-hosted-engine-setup $(DESTDIR)/$(sbindir)/ovirt-hosted-engine-setup
+
+uninstall-local:
+	rm -f $(DESTDIR)/$(sbindir)/ovirt-hosted-engine-setup
