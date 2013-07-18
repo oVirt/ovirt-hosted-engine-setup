@@ -83,7 +83,10 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
-        condition=lambda self: self._enabled,
+        condition=lambda self: (
+            self._enabled and
+            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
+        ),
     )
     def _customization(self):
         nics = ethtool.get_devices()
@@ -124,7 +127,10 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
         name=ohostedcons.Stages.BRIDGE_AVAILABLE,
-        condition=lambda self: self._enabled,
+        condition=lambda self: (
+            self._enabled and
+            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
+        ),
     )
     def _misc(self):
         self.logger.info(_('Configuring the management bridge'))
@@ -158,6 +164,9 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
+        condition=lambda self: not self.environment[
+            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+        ],
     )
     def _closeup(self):
         self.services.startup('network', True)

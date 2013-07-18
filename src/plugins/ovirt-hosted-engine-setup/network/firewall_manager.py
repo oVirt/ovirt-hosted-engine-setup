@@ -122,6 +122,9 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         name=ohostedcons.Stages.NET_FIREWALL_MANAGER_AVAILABLE,
+        condition=lambda self: not self.environment[
+            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+        ],
     )
     def _customization(self):
         if self.environment[ohostedcons.NetworkEnv.FIREWALL_MANAGER] is None:
@@ -172,7 +175,10 @@ class Plugin(plugin.PluginBase):
         after=[
             ohostedcons.Stages.NET_FIREWALL_MANAGER_AVAILABLE,
         ],
-        # must be always enabled to create examples
+        condition=lambda self: not self.environment[
+            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+        ],
+        # must be always enabled to create examples on first host
     )
     def _process_templates(self):
         for service in self.environment[
@@ -224,9 +230,12 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
-        condition=lambda self: self.environment[
-            ohostedcons.NetworkEnv.FIREWALL_MANAGER
-        ] is None
+        condition=lambda self: (
+            self.environment[ohostedcons.NetworkEnv.FIREWALL_MANAGER] is None
+            and
+            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
+        ),
+
     )
     def _closeup(self):
         self.dialog.note(

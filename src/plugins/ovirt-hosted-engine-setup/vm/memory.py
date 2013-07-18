@@ -56,6 +56,9 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
+        condition=lambda self: not self.environment[
+            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+        ],
     )
     def _customization(self):
         interactive = self.environment[

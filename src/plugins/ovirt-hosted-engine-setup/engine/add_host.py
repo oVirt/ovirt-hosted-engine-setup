@@ -123,6 +123,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.EngineEnv.ADMIN_PASSWORD,
             None
         )
+        self.environment.setdefault(
+            ohostedcons.EngineEnv.APP_HOST_NAME,
+            None
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -134,6 +138,31 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
     )
     def _customization(self):
+        interactive = (
+            self.environment[ohostedcons.EngineEnv.APP_HOST_NAME] is None
+        )
+        while self.environment[ohostedcons.EngineEnv.APP_HOST_NAME] is None:
+            hostname = self.dialog.queryString(
+                name='APP_HOST_NAME',
+                note=_(
+                    'Enter the name which will be used for identify this host'
+                    ' inside the Administrator Portal [@DEFAULT@]: '
+                ),
+                prompt=True,
+                default='local_host',
+            )
+            if hostname:
+                self.environment[
+                    ohostedcons.EngineEnv.APP_HOST_NAME
+                ] = hostname
+            else:
+                if interactive:
+                    self.logger.error(_('Please specify a host name'))
+                else:
+                    raise RuntimeError(
+                        _('Empty host name not allowed')
+                    )
+
         interactive = (
             self.environment[ohostedcons.EngineEnv.ADMIN_PASSWORD] is None
         )
@@ -184,11 +213,12 @@ class Plugin(plugin.PluginBase):
                 ],
                 ca_file=self.cert,
             )
-            self.logger.debug('Adding the local host to the local cluster')
-            # TODO ask host name to be used in engine?
+            self.logger.debug('Adding the host to the cluster')
             engine_api.hosts.add(
                 self._ovirtsdk_xml.params.Host(
-                    name='local_host',
+                    name=self.environment[
+                        ohostedcons.EngineEnv.APP_HOST_NAME
+                    ],
                     address=self._getIPAddress(),
                     reboot_after_installation=False,
                     cluster=engine_api.clusters.get('Default'),
@@ -199,12 +229,12 @@ class Plugin(plugin.PluginBase):
             )
         except ovirtsdk.infrastructure.errors.RequestError as e:
             self.logger.debug(
-                'Cannot add the local host to the Default cluster',
+                'Cannot add the host to the Default cluster',
                 exc_info=True,
             )
             self.logger.error(
                 _(
-                    'Cannot automatically add the local host '
+                    'Cannot automatically add the host '
                     'to the Default cluster:\n{details}\n'
                 ).format(
                     details=e.details

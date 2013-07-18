@@ -83,6 +83,80 @@ class Plugin(plugin.PluginBase):
             raiseOnError=False
         )
 
+    def _handleHostId(self):
+        if not self.environment[
+            ohostedcons.CoreEnv.ADDITIONAL_HOST_ENABLED
+        ]:
+            self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] = False
+            self.logger.info(_('Installing on first host'))
+        else:
+            interactive = self.environment[
+                ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+            ] is None
+            if interactive:
+                self.environment[
+                    ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+                ] = self.dialog.queryString(
+                    name='ovehosted_additional_host',
+                    note=_(
+                        'The specified storage location already contains a '
+                        'data domain. Is this an additional host setup '
+                        '(@VALUES@) [@DEFAULT@] ?'
+                    ),
+                    prompt=True,
+                    validValues=[_('Yes'), _('No')],
+                    caseSensitive=False,
+                    default=_('Yes')
+                ) == _('Yes').lower()
+        if not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]:
+            self.logger.info(_('Installing on first host'))
+            self.environment[
+                ohostedcons.StorageEnv.HOST_ID
+            ] = ohostedcons.Const.FIRST_HOST_ID
+        else:
+            self.logger.info(_('Installing on additional host'))
+            interactive = self.environment[
+                ohostedcons.StorageEnv.HOST_ID
+            ] is None
+            valid = False
+            while not valid:
+                if interactive:
+                    self.environment[
+                        ohostedcons.StorageEnv.HOST_ID
+                    ] = self.dialog.queryString(
+                        name='ovehosted_host_id',
+                        note=_(
+                            'Please specify the Host ID '
+                            '[Must be integer: @DEFAULT@]: '
+                        ),
+                        prompt=True,
+                        default=ohostedcons.Const.FIRST_HOST_ID + 1,
+                    )
+                try:
+                    valid = True
+                    if int(
+                        self.environment[ohostedcons.StorageEnv.HOST_ID]
+                    ) == ohostedcons.Const.FIRST_HOST_ID:
+                        valid = False
+                        if interactive:
+                            self.logger.error(
+                                _('Cannot use the same ID used by first host')
+                            )
+                        else:
+                            raise RuntimeError(
+                                _('Cannot use the same ID used by first host')
+                            )
+                except ValueError:
+                    valid = False
+                    if interactive:
+                        self.logger.error(
+                            _('Invalid value for Host ID: must be integer')
+                        )
+                    else:
+                        raise RuntimeError(
+                            _('Invalid value for Host ID: must be integer')
+                        )
+
     def _validateDomain(self, connection):
         path = tempfile.mkdtemp()
         try:
@@ -110,6 +184,10 @@ class Plugin(plugin.PluginBase):
             ):
                 self.domain_exists = True
                 self.environment[
+                    ohostedcons.CoreEnv.ADDITIONAL_HOST_ENABLED
+                ] = True
+                self._handleHostId()
+                self.environment[
                     ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
                 ] = domain_info['name']
 
@@ -130,8 +208,14 @@ class Plugin(plugin.PluginBase):
                             ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME
                         ] = pool_info['name']
                 break
+
         if not self.domain_exists:
+            self._handleHostId()
             self._storageServerConnection(disconnect=True)
+        else:
+            self.environment[
+                ohostedcons.CoreEnv.ADDITIONAL_HOST_ENABLED
+            ] = True
 
     def _getStorageDomainsList(self, spUUID=None):
         if not spUUID:
@@ -247,7 +331,7 @@ class Plugin(plugin.PluginBase):
         self.logger.debug('connectStoragePool')
         spUUID = self.environment[ohostedcons.StorageEnv.SP_UUID]
         sdUUID = self.environment[ohostedcons.StorageEnv.SD_UUID]
-        ID = 1
+        ID = self.environment[ohostedcons.StorageEnv.HOST_ID]
         scsi_key = spUUID
         master = sdUUID
         master_ver = 1
@@ -329,6 +413,18 @@ class Plugin(plugin.PluginBase):
         )
         self.environment.setdefault(
             ohostedcons.StorageEnv.DOMAIN_TYPE,
+            None
+        )
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.HOST_ID,
+            None
+        )
+        self.environment.setdefault(
+            ohostedcons.CoreEnv.ADDITIONAL_HOST_ENABLED,
+            False
+        )
+        self.environment.setdefault(
+            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST,
             None
         )
 
@@ -473,7 +569,8 @@ class Plugin(plugin.PluginBase):
             self.logger.info(_('Creating Storage Pool'))
             self._createStoragePool()
         self._connectStoragePool()
-        self._spmStart()
-        self._activateStorageDomain()
+        if not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]:
+            self._spmStart()
+            self._activateStorageDomain()
 
 # vim: expandtab tabstop=4 shiftwidth=4

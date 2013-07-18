@@ -86,7 +86,8 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.CONFIG_BOOT_DEVICE,
         ],
         condition=lambda self: (
-            self.environment[ohostedcons.VMEnv.BOOT] == 'cdrom'
+            self.environment[ohostedcons.VMEnv.BOOT] == 'cdrom' and
+            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
         )
     )
     def _customization(self):

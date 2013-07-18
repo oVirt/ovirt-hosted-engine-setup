@@ -4,3 +4,5 @@ vmid=@VM_UUID@
 storage=@SHARED_STORAGE@
 conf=@CONF_FILE@
 service_start_time=0
+host_id=@HOST_ID@
+console=@CONSOLE_TYPE@

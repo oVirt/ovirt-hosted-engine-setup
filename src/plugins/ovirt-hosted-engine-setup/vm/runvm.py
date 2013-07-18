@@ -198,6 +198,9 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
+        condition=lambda self: not self.environment[
+            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+        ],
     )
     def _customization(self):
         validConsole = False
@@ -243,6 +246,9 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_CLOSEUP,
         name=ohostedcons.Stages.VM_RUNNING,
         priority=plugin.Stages.PRIORITY_LOW,
+        condition=lambda self: not self.environment[
+            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+        ],
     )
     def _boot_from_install_media(self):
         #Need to be done after firewall closeup for allowing the user to
@@ -304,6 +310,9 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.OS_INSTALLED,
         ],
         name=ohostedcons.Stages.INSTALLED_VM_RUNNING,
+        condition=lambda self: not self.environment[
+            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+        ],
     )
     def _boot_from_hd(self):
         self._create()

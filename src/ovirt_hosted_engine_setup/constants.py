@@ -158,6 +158,7 @@ class FileLocations(object):
 @util.codegen
 class Const(object):
     MINIMUM_SPACE_STORAGEDOMAIN_MB = 20480
+    FIRST_HOST_ID = 1
 
 
 @util.export
@@ -165,6 +166,8 @@ class Const(object):
 class CoreEnv(object):
     ANSWER_FILE = 'OVEHOSTED_CORE/answerFile'
     REQUIREMENTS_CHECK_ENABLED = 'OVEHOSTED_CORE/checkRequirements'
+    ADDITIONAL_HOST_ENABLED = 'OVEHOSTED_CORE/additionalHostEnabled'
+    IS_ADDITIONAL_HOST = 'OVEHOSTED_CORE/isAdditionalHost'
 
 
 @util.export
@@ -209,15 +212,27 @@ class HostEnv(object):
 
 @util.export
 @util.codegen
+@ohostedattrsclass
 class EngineEnv(object):
 
     ADMIN_PASSWORD = 'OVEHOSTED_ENGINE/adminPassword'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def APP_HOST_NAME(self):
+        return 'OVEHOSTED_ENGINE/appHostName'
 
 
 @util.export
 @util.codegen
 @ohostedattrsclass
 class StorageEnv(object):
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def HOST_ID(self):
+        return 'OVEHOSTED_STORAGE/hostID'
 
     @ohostedattrs(
         answerfile=True,
@@ -322,7 +337,12 @@ class VMEnv(object):
     VM_PASSWD = 'OVEHOSTED_VDSM/passwd'
     VM_PASSWD_VALIDITY_SECS = 'OVEHOSTED_VDSM/passwdValiditySecs'
     SUBST = 'OVEHOSTED_VM/subst'
-    CONSOLE_TYPE = 'OVEHOSTED_VDSM/consoleType'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def CONSOLE_TYPE(self):
+        return 'OVEHOSTED_VDSM/consoleType'
 
 
 @util.export
@@ -348,6 +368,7 @@ class VDSMEnv(object):
 class Stages(object):
     CONFIG_BOOT_DEVICE = 'ohosted.boot.configuration.available'
     CONFIG_STORAGE = 'ohosted.storage.configuration.available'
+    CONFIG_ADDITIONAL_HOST = 'ohosted.core.additional.host'
     VDSMD_START = 'ohosted.vdsm.started'
     VDSMD_PKI = 'ohosted.vdsm.pki.available'
     VDSMD_CONFIGURED = 'ohosted.vdsm.configured'

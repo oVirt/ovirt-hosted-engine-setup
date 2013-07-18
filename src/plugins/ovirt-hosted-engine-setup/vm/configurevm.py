@@ -81,6 +81,9 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         name=ohostedcons.Stages.CONFIG_BOOT_DEVICE,
+        condition=lambda self: not self.environment[
+            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+        ],
     )
     def _customization(self):
         #TODO: support boot from OVF
@@ -133,6 +136,9 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.BRIDGE_AVAILABLE,
         ],
         name=ohostedcons.Stages.VM_CONFIGURED,
+        condition=lambda self: not self.environment[
+            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+        ],
     )
     def _misc(self):
         self.logger.info(_('Configuring VM'))

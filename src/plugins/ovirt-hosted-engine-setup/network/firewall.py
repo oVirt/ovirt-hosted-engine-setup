@@ -52,6 +52,9 @@ class Plugin(plugin.PluginBase):
         after=[
             ohostedcons.Stages.NET_FIREWALL_MANAGER_AVAILABLE,
         ],
+        condition=lambda self: not self.environment[
+            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+        ],
     )
     def _configuration(self):
         self.environment[ohostedcons.NetworkEnv.FIREWALLD_SERVICES].extend([

@@ -68,6 +68,9 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
+        condition=lambda self: not self.environment[
+            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+        ],
     )
     def _disk_customization(self):
         interactive = self.environment[
@@ -135,6 +138,9 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.STORAGE_AVAILABLE,
         ],
         name=ohostedcons.Stages.VM_IMAGE_AVAILABLE,
+        condition=lambda self: not self.environment[
+            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+        ],
     )
     def _misc(self):
         sdUUID = self.environment[ohostedcons.StorageEnv.SD_UUID]

@@ -84,6 +84,7 @@ class Plugin(plugin.PluginBase):
                     ohostedcons.VMEnv.VM_UUID
                 ],
                 '@CONF_FILE@': ohostedcons.FileLocations.ENGINE_VM_CONF,
+                '@HOST_ID@': self.environment[ohostedcons.StorageEnv.HOST_ID],
             }
         )
         with transaction.Transaction() as localtransaction:
