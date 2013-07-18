@@ -279,6 +279,12 @@ class StorageEnv(object):
     @ohostedattrs(
         answerfile=True,
     )
+    def STORAGE_TYPE(self):
+        return 'OVEHOSTED_STORAGE/storageType'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
     def VOL_UUID(self):
         return 'OVEHOSTED_STORAGE/volUUID'
 

@@ -17,14 +17,20 @@ Usage: $0
         run ovirt-hosted-engine deployment
     --vm-start
         start VM on this host
-    --vm-stop
-        stop VM on this host
+    --vm-shutdown
+        gracefully shutdown the VM on this host
+    --vm-poweroff
+        forcefully poweroff the VM on this host
     --vm-status
         VM status according to sanlock
     --add-console-password=<password>
         Create a temporary password for vnc/spice connection
     --check-liveliness
         Checks liveliness page of engine
+    --connect-storage
+        Connect the storage domain
+    --start-pool
+        Start the storage pool manually
 
 
 __EOF__
@@ -51,9 +57,16 @@ while [ -n "$1" ]; do
                 echo "You must run --deploy first"
             fi
         ;;
-        --vm-stop)
+        --vm-shutdown)
             if [ -n "${vmid}" ] ; then
                 vdsClient -s localhost shutdown "${vmid}" 120 "VM is shutting down!"
+            else
+                echo "You must run --deploy first"
+            fi
+        ;;
+        --vm-poweroff)
+            if [ -n "${vmid}" ] ; then
+                vdsClient -s localhost destroy "${vmid}"
             else
                 echo "You must run --deploy first"
             fi
@@ -70,6 +83,43 @@ while [ -n "$1" ]; do
         ;;
         --check-liveliness)
             python -m ovirt_hosted_engine_setup.check_liveliness
+        ;;
+        --connect-storage)
+            if [ "${domainType}" == "nfs" ] ; then
+                storageType=1
+            elif [ "${domainType}" == "glusterfs" ] ; then
+                storageType=7
+            else
+                echo "Storage type not supported: ${domainType}"
+                exit 1
+            fi
+            echo "Connecting Storage Server"
+            vdsClient -s localhost connectStorageServer \
+                ${storageType} \
+                ${spUUID} \
+                connection=${storage},iqn=,portal=,user=kvm,password=,id=${connectionUUID},port=
+        ;;
+        --start-pool)
+            echo "Connecting Storage Pool"
+            vdsClient -s localhost connectStoragePool \
+                ${spUUID} \
+                ${host_id} \
+                ${spUUID} \
+                ${sdUUID} \
+                1
+            echo "Starting SPM"
+            vdsClient -s localhost spmStart \
+                ${spUUID} \
+                -1 \
+                -1 \
+                -1 \
+                false \
+                250 \
+                3
+            echo "Activating Storage Domain"
+            vdsClient -s localhost activateStorageDomain \
+                ${sdUUID} \
+                ${spUUID}
         ;;
         --help)
             rc=0

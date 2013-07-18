@@ -420,6 +420,10 @@ class Plugin(plugin.PluginBase):
             None
         )
         self.environment.setdefault(
+            ohostedcons.StorageEnv.STORAGE_TYPE,
+            None
+        )
+        self.environment.setdefault(
             ohostedcons.CoreEnv.ADDITIONAL_HOST_ENABLED,
             False
         )

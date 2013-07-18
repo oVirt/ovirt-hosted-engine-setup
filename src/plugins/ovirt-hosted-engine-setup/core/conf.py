@@ -72,7 +72,7 @@ class Plugin(plugin.PluginBase):
                     ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
                 ],
                 '@VM_DISK_ID@': self.environment[
-                    ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+                    ohostedcons.StorageEnv.IMG_UUID
                 ],
                 '@SHARED_STORAGE@': self.environment[
                     ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
@@ -85,6 +85,14 @@ class Plugin(plugin.PluginBase):
                 ],
                 '@CONF_FILE@': ohostedcons.FileLocations.ENGINE_VM_CONF,
                 '@HOST_ID@': self.environment[ohostedcons.StorageEnv.HOST_ID],
+                '@DOMAIN_TYPE@': self.environment[
+                    ohostedcons.StorageEnv.DOMAIN_TYPE
+                ],
+                '@SP_UUID@': self.environment[ohostedcons.StorageEnv.SP_UUID],
+                '@SD_UUID@': self.environment[ohostedcons.StorageEnv.SD_UUID],
+                '@CONNECTION_UUID@': self.environment[
+                    ohostedcons.StorageEnv.CONNECTION_UUID
+                ],
             }
         )
         with transaction.Transaction() as localtransaction:
