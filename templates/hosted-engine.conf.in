@@ -10,3 +10,5 @@ domainType=@DOMAIN_TYPE@
 spUUID=@SP_UUID@
 sdUUID=@SD_UUID@
 connectionUUID=@CONNECTION_UUID@
+ca_cert=@CA_CERT@
+ca_subject="@CA_SUBJECT@"

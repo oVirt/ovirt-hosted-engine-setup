@@ -26,6 +26,7 @@ import glob
 import os
 import shutil
 import tempfile
+import re
 
 
 from otopi import util
@@ -42,6 +43,17 @@ _ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 class Plugin(plugin.PluginBase):
     """VDSM PKI plugin."""
 
+    _RE_SUBJECT = re.compile(
+        flags=re.VERBOSE,
+        pattern=r"""
+            ^
+            \s+
+            Subject:\s*
+            (?P<subject>(\w+=\w+,\s+)+.*)
+            $
+        """
+    )
+
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
         self._tmpdir = None
@@ -55,6 +67,27 @@ class Plugin(plugin.PluginBase):
             raiseOnError=True
         )
 
+    def _getSPICEcerts(self):
+        subject = None
+        rc, stdout, stderr = self.execute(
+            (
+                self.command.get('openssl'),
+                'x509',
+                '-noout',
+                '-text',
+                '-in', ohostedcons.FileLocations.LIBVIRT_SERVER_CERT
+            ),
+            raiseOnError=True
+        )
+        for line in stdout:
+            matcher = self._RE_SUBJECT.match(line)
+            if matcher is not None:
+                subject = matcher.group('subject')
+                break
+        if subject is None:
+            raise RuntimeError(_('Error parsing libvirt certificate'))
+        self.environment[ohostedcons.VDSMEnv.SPICE_SUBJECT] = subject
+
     def _generateSPICEcerts(self):
         #'https://fedoraproject.org/wiki/
         #QA:Testcase_Virtualization_Manually_
@@ -62,7 +95,7 @@ class Plugin(plugin.PluginBase):
         self.logger.info(_('Generating libvirt-spice certificates'))
         self._tmpdir = tempfile.mkdtemp()
         expire = '1095'  # FIXME: configurable?
-        subj = self.environment[ohostedcons.VDSMEnv.PKI_SUBJECT]
+        subj = self.environment[ohostedcons.VDSMEnv.SPICE_SUBJECT]
         # FIXME: configurable?
         for key in ('ca-key.pem', 'server-key.pem'):
             self.execute(
@@ -140,6 +173,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VDSMEnv.PKI_SUBJECT,
             ohostedcons.Defaults.DEFAULT_PKI_SUBJECT
         )
+        self.environment.setdefault(
+            ohostedcons.VDSMEnv.SPICE_SUBJECT,
+            ohostedcons.Defaults.DEFAULT_PKI_SUBJECT
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -159,6 +196,8 @@ class Plugin(plugin.PluginBase):
             self._generateVDSMcerts()
         if not os.path.exists(ohostedcons.FileLocations.LIBVIRT_SERVER_CERT):
             self._generateSPICEcerts()
+        else:
+            self._getSPICEcerts()
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLEANUP,

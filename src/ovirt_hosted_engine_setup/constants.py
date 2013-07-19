@@ -366,6 +366,12 @@ class VDSMEnv(object):
     def PKI_SUBJECT(self):
         return 'OVEHOSTED_VDSM/pkiSubject'
 
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def SPICE_SUBJECT(self):
+        return 'OVEHOSTED_VDSM/spicePkiSubject'
+
     VDSM_CPU = 'OVEHOSTED_VDSM/cpu'
 
 

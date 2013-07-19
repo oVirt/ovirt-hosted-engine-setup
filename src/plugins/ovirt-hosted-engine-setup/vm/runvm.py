@@ -26,7 +26,6 @@ VM configuration plugin.
 import string
 import random
 import gettext
-import re
 
 
 from otopi import util
@@ -45,17 +44,6 @@ class Plugin(plugin.PluginBase):
     """
     VM configuration plugin.
     """
-
-    _RE_SUBJECT = re.compile(
-        flags=re.VERBOSE,
-        pattern=r"""
-            ^
-            \s+
-            Subject:\s*
-            (?P<subject>O=\w+, CN=.*)
-            $
-        """
-    )
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
@@ -81,24 +69,7 @@ class Plugin(plugin.PluginBase):
                     ohostedcons.VMEnv.VM_PASSWD
                 ],
             )
-        elif console_type == 'spice':
-            subject = ''
-            out, rc = self.execute(
-                (
-                    self.command.get('openssl'),
-                    'x509',
-                    '-noout',
-                    '-text',
-                    '-in', ohostedcons.FileLocations.LIBVIRT_SERVER_CERT
-                ),
-                raiseOnError=True
-            )
-            for line in out.splitlines():
-                matcher = self._RE_SUBJECT.match(line)
-                if matcher is not None:
-                    subject = matcher.group('param')
-                    break
-
+        elif console_type == 'qxl':
             return _(
                 'You can now connect to the VM with the following command:\n'
                 '\t{remote} --spice-ca-file={ca_cert} '
@@ -106,9 +77,9 @@ class Plugin(plugin.PluginBase):
                 '"--spice-host-subject=${subject}"\nUse temporary password '
                 '"{password}" to connect to spice console.'
             ).format(
-                remote=self.command.get('remove-viewer'),
+                remote=self.command.get('remote-viewer'),
                 ca_cert=ohostedcons.FileLocations.LIBVIRT_CA_CERT,
-                subject=subject,
+                subject=self.environment[ohostedcons.VDSMEnv.SPICE_SUBJECT],
                 password=self.environment[
                     ohostedcons.VMEnv.VM_PASSWD
                 ],
@@ -194,7 +165,6 @@ class Plugin(plugin.PluginBase):
         # Can't use python api here, it will call sys.exit
         self.command.detect('vdsClient')
         self.command.detect('remote-viewer')
-        self.command.detect('openssl')
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
@@ -207,13 +177,15 @@ class Plugin(plugin.PluginBase):
         interactive = self.environment[
             ohostedcons.VMEnv.CONSOLE_TYPE
         ] is None
+        answermap = {
+            'vnc': 'vnc',
+            'spice': 'qxl'
+        }
         while not validConsole:
             if self.environment[
                 ohostedcons.VMEnv.CONSOLE_TYPE
             ] is None:
-                self.environment[
-                    ohostedcons.VMEnv.CONSOLE_TYPE
-                ] = self.dialog.queryString(
+                answer = self.dialog.queryString(
                     name='OVEHOSTED_VM_CONSOLE_TYPE',
                     note=_(
                         'Please specify the console type '
@@ -222,17 +194,15 @@ class Plugin(plugin.PluginBase):
                     ),
                     prompt=True,
                     caseSensitive=False,
-                    validValues=[
-                        'vnc',
-                        'spice',
-                    ],
+                    validValues=answermap.keys(),
                     default='vnc',
                 )
 
-                if self.environment[
-                    ohostedcons.VMEnv.CONSOLE_TYPE
-                ] in ('vnc', 'spice'):
+                if answer in answermap:
                     validConsole = True
+                    self.environment[
+                        ohostedcons.VMEnv.CONSOLE_TYPE
+                    ] = answermap[answer]
                 elif interactive:
                     self.logger.error(
                         'Unsuppored console type provided.'

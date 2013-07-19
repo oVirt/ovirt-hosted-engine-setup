@@ -1,6 +1,7 @@
 #!/bin/sh
 
 HOSTED_ENGINE_CONF='/etc/ovirt-hosted-engine/hosted-engine.conf'
+PKI_GUIDE_URL='https://fedoraproject.org/wiki/QA:Testcase_Virtualization_Manually_set_spice_listening_port_with_TLS_port_set'
 
 if [ -r "${HOSTED_ENGINE_CONF}" ] ; then
     source "${HOSTED_ENGINE_CONF}"
@@ -120,6 +121,23 @@ while [ -n "$1" ]; do
             vdsClient -s localhost activateStorageDomain \
                 ${sdUUID} \
                 ${spUUID}
+        ;;
+        --console)
+            if [ "${console}" == "vnc" ] ; then
+                echo "Use the password you've set using --add-console-password for logging in"
+                exec /usr/bin/remote-viewer vnc://localhost:5900
+            elif [ "${console}" == "qxl" ] ; then
+                if [ ! -r "${ca_cert}" ] ; then
+                    echo "Missing spice PKI certificate"
+                    echo "You can find a guide on how to generate PKI certificate at the following URL:"
+                    echo "${PKI_GUIDE_URL}"
+                    exit 1
+                fi
+                exec /usr/bin/remote-viewer \
+                    --spice-ca-file=${ca_cert} \
+                    spice://localhost?tls-port=5900 \
+                    --spice-host-subject="${ca_subject}"
+            fi
         ;;
         --help)
             rc=0

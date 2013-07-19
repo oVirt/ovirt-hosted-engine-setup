@@ -73,7 +73,7 @@ if __name__ == "__main__":
     import sys
 
     from ovirt_hosted_engine_setup import constants as ohostedcons
-
+    config_re = re.compile('^(?P<key>[^=]+)=(?P<value>.*)$')
     config = {}
     try:
         with open(
@@ -81,8 +81,10 @@ if __name__ == "__main__":
         ) as f:
             content = f.read().splitlines()
             for line in content:
-                if '=' in line:
-                    key, value = line.split('=')
+                match = config_re.match(line)
+                if match:
+                    key = match.group('key')
+                    value = match.group('value')
                     config[key] = value
     except IOError:
         sys.stderr.write(_('Error reading the configuration file\n'))
