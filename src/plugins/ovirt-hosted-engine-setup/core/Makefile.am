@@ -29,6 +29,7 @@ dist_my_PYTHON = \
 	misc.py \
 	conf.py \
 	answerfile.py \
+	shell.py \
 	$(NULL)
 
 clean-local: \
