@@ -45,3 +45,7 @@ CLEANFILES = \
 
 hosted-engine: hosted-engine.in
 	sed -e 's,[@]datadir[@],$(datadir),g' < $< > $@
+
+install-data-local:
+	$(MKDIR_P) $(DESTDIR)/$(sysconfdir)/ovirt-hosted-engine-setup.env.d
+	$(MKDIR_P) $(DESTDIR)/$(sysconfdir)/ovirt-hosted-engine
