@@ -92,6 +92,7 @@ class Plugin(plugin.PluginBase):
                 '@VDSM_USE_SSL@': str(
                     self.environment[ohostedcons.VDSMEnv.USE_SSL]
                 ).lower(),
+                '@GATEWAY@': self.environment[ohostedcons.NetworkEnv.GATEWAY],
             }
         )
         with transaction.Transaction() as localtransaction:

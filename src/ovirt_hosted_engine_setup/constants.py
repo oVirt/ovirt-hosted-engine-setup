@@ -199,6 +199,12 @@ class NetworkEnv(object):
     def FIREWALL_MANAGER(self):
         return 'OVEHOSTED_NETWORK/firewallManager'
 
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def GATEWAY(self):
+        return 'OVEHOSTED_NETWORK/gateway'
+
     FIREWALLD_SERVICES = 'OVEHOSTED_NETWORK/firewalldServices'
     FIREWALLD_SUBST = 'OVEHOSTED_NETWORK/firewalldSubst'
 

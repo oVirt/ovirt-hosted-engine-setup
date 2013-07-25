@@ -29,6 +29,7 @@ dist_my_PYTHON = \
 	bridge.py \
 	firewall_manager.py \
 	firewall.py \
+	gateway.py \
 	$(NULL)
 
 clean-local: \

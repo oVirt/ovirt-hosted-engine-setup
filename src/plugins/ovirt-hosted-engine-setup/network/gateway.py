@@ -1,0 +1,114 @@
+#
+# ovirt-hosted-engine-setup -- ovirt hosted engine setup
+# Copyright (C) 2013 Red Hat, Inc.
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#
+
+
+"""
+gateway configuration plugin.
+"""
+
+
+import gettext
+
+
+from otopi import util
+from otopi import plugin
+
+
+from ovirt_hosted_engine_setup import constants as ohostedcons
+
+
+_ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
+
+
+@util.export
+class Plugin(plugin.PluginBase):
+    """
+    gateway configuration plugin.
+    """
+
+    def __init__(self, context):
+        super(Plugin, self).__init__(context=context)
+        self._enabled = True
+
+    def _check_gw_pingable(self, address):
+        try:
+            self.execute(
+                (
+                    self.command.get('ping'),
+                    '-c',
+                    '1',
+                    address,
+                ),
+                raiseOnError=True
+            )
+            pingable = True
+        except RuntimeError:
+            pingable = False
+        return pingable
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_INIT,
+    )
+    def _init(self):
+        self.environment.setdefault(
+            ohostedcons.NetworkEnv.GATEWAY,
+            None
+        )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_SETUP,
+    )
+    def _setup(self):
+        self.command.detect('ping')
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CUSTOMIZATION,
+    )
+    def _customization(self):
+
+        interactive = self.environment[
+            ohostedcons.NetworkEnv.GATEWAY
+        ] is None
+        valid = False
+        while not valid:
+            if interactive:
+                self.environment[
+                    ohostedcons.NetworkEnv.GATEWAY
+                ] = self.dialog.queryString(
+                    name='OVEHOSTED_GATEWAY',
+                    note=_(
+                        'Please indicate a pingable gateway IP address: '
+                    ),
+                    prompt=True,
+                    caseSensitive=True,
+                )
+            valid = self._check_gw_pingable(
+                self.environment[
+                    ohostedcons.NetworkEnv.GATEWAY
+                ]
+            )
+            if not valid:
+                if not interactive:
+                    raise RuntimeError(_('Specified gateway is not pingable'))
+                else:
+                    self.logger.error(_('Specified gateway is not pingable'))
+
+
+
+# vim: expandtab tabstop=4 shiftwidth=4
