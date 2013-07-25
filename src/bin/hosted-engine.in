@@ -42,6 +42,12 @@ if [ -z "$1" ] ; then
     usage
 fi
 
+if [ "${vdsm_use_ssl}" == "true" ] ; then
+    VDSCOMMAND="vdsClient -s localhost"
+else
+    VDSCOMMAND="vdsClient localhost"
+fi
+
 while [ -n "$1" ]; do
     x="$1"
     v="${x#*=}"
@@ -53,21 +59,21 @@ while [ -n "$1" ]; do
         --vm-start)
             # TODO: Check first the sanlock status, and if allows:
             if [ -r "${conf}" ] ; then
-                vdsClient -s localhost create "${conf}"
+                ${VDSCOMMAND} create "${conf}"
             else
                 echo "You must run --deploy first"
             fi
         ;;
         --vm-shutdown)
             if [ -n "${vmid}" ] ; then
-                vdsClient -s localhost shutdown "${vmid}" 120 "VM is shutting down!"
+                ${VDSCOMMAND} shutdown "${vmid}" 120 "VM is shutting down!"
             else
                 echo "You must run --deploy first"
             fi
         ;;
         --vm-poweroff)
             if [ -n "${vmid}" ] ; then
-                vdsClient -s localhost destroy "${vmid}"
+                ${VDSCOMMAND} destroy "${vmid}"
             else
                 echo "You must run --deploy first"
             fi
@@ -77,7 +83,7 @@ while [ -n "$1" ]; do
         ;;
         --add-console-password=*)
             if [ -n "${vmid}" ] ; then
-                vdsClient -s localhost setVmTicket "${vmid}" "${v}" 120
+                ${VDSCOMMAND} setVmTicket "${vmid}" "${v}" 120
             else
                 echo "You must run --deploy first"
             fi
@@ -95,21 +101,21 @@ while [ -n "$1" ]; do
                 exit 1
             fi
             echo "Connecting Storage Server"
-            vdsClient -s localhost connectStorageServer \
+            ${VDSCOMMAND} connectStorageServer \
                 ${storageType} \
                 ${spUUID} \
                 connection=${storage},iqn=,portal=,user=kvm,password=,id=${connectionUUID},port=
         ;;
         --start-pool)
             echo "Connecting Storage Pool"
-            vdsClient -s localhost connectStoragePool \
+            ${VDSCOMMAND} connectStoragePool \
                 ${spUUID} \
                 ${host_id} \
                 ${spUUID} \
                 ${sdUUID} \
                 1
             echo "Starting SPM"
-            vdsClient -s localhost spmStart \
+            ${VDSCOMMAND} spmStart \
                 ${spUUID} \
                 -1 \
                 -1 \
@@ -118,7 +124,7 @@ while [ -n "$1" ]; do
                 250 \
                 3
             echo "Activating Storage Domain"
-            vdsClient -s localhost activateStorageDomain \
+            ${VDSCOMMAND} activateStorageDomain \
                 ${sdUUID} \
                 ${spUUID}
         ;;

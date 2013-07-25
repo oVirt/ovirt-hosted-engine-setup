@@ -373,6 +373,7 @@ class VDSMEnv(object):
         return 'OVEHOSTED_VDSM/spicePkiSubject'
 
     VDSM_CPU = 'OVEHOSTED_VDSM/cpu'
+    USE_SSL = 'OVEHOSTED_VDSM/useSSL'
 
 
 @util.export
@@ -399,6 +400,7 @@ class Stages(object):
         'ohosted.network.firewallmanager.available'
     NET_FIREWALL_MANAGER_PROCESS_TEMPLATES = \
         'ohosted.network.firewallmanager.templates.available'
+    VDSMD_CONF_LOADED = 'ohosted.vdsm.conf.loaded'
 
 
 @util.export

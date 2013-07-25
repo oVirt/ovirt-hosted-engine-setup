@@ -89,6 +89,9 @@ class Plugin(plugin.PluginBase):
                 '@CA_SUBJECT@': self.environment[
                     ohostedcons.VDSMEnv.SPICE_SUBJECT
                 ],
+                '@VDSM_USE_SSL@': str(
+                    self.environment[ohostedcons.VDSMEnv.USE_SSL]
+                ).lower(),
             }
         )
         with transaction.Transaction() as localtransaction:

@@ -59,7 +59,7 @@ class Plugin(plugin.PluginBase):
             serv = vdsClient.ge.GlusterService()
         else:
             serv = vdsClient.service()
-        serv.useSSL = True
+        serv.useSSL = self.environment[ohostedcons.VDSMEnv.USE_SSL]
         server, serverPort = vdscli.cannonizeAddrPort(
             'localhost'
         ).split(':', 1)
@@ -98,7 +98,10 @@ class Plugin(plugin.PluginBase):
         )
 
     @plugin.event(
-        stage=plugin.Stages.STAGE_LATE_SETUP
+        stage=plugin.Stages.STAGE_LATE_SETUP,
+        after=[
+            ohostedcons.Stages.VDSMD_CONF_LOADED,
+        ],
     )
     def _late_setup(self):
         #We need vdsmd up for customization checks

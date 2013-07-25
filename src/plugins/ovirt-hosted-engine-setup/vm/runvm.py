@@ -47,6 +47,7 @@ class Plugin(plugin.PluginBase):
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
+        self._vdscommand = []
 
     def _generateTempVncPassword(self):
         self.logger.info(
@@ -98,32 +99,28 @@ class Plugin(plugin.PluginBase):
         waiter = tasks.TaskWaiter(self.environment)
         waiter.wait()
         self.logger.info(_('Creating VM'))
+        cmd = self._vdscommand + [
+            'create',
+            ohostedcons.FileLocations.ENGINE_VM_CONF,
+        ]
         self.execute(
-            (
-                self.command.get('vdsClient'),
-                '-s',
-                'localhost',
-                'create',
-                ohostedcons.FileLocations.ENGINE_VM_CONF
-            ),
+            cmd,
             raiseOnError=True
         )
         password_set = False
         while not password_set:
             waiter.wait()
             try:
+                cmd = self._vdscommand + [
+                    'setVmTicket',
+                    self.environment[ohostedcons.VMEnv.VM_UUID],
+                    self.environment[ohostedcons.VMEnv.VM_PASSWD],
+                    self.environment[
+                        ohostedcons.VMEnv.VM_PASSWD_VALIDITY_SECS
+                    ],
+                ]
                 self.execute(
-                    (
-                        self.command.get('vdsClient'),
-                        '-s',
-                        'localhost',
-                        'setVmTicket',
-                        self.environment[ohostedcons.VMEnv.VM_UUID],
-                        self.environment[ohostedcons.VMEnv.VM_PASSWD],
-                        self.environment[
-                            ohostedcons.VMEnv.VM_PASSWD_VALIDITY_SECS
-                        ],
-                    ),
+                    cmd,
                     raiseOnError=True
                 )
                 password_set = True
@@ -173,6 +170,11 @@ class Plugin(plugin.PluginBase):
         ],
     )
     def _customization(self):
+        self._vdscommand = [self.command.get('vdsClient')]
+        if self.environment[ohostedcons.VDSMEnv.USE_SSL]:
+            self._vdscommand.append('-s')
+        self._vdscommand.append('localhost')
+
         validConsole = False
         interactive = self.environment[
             ohostedcons.VMEnv.CONSOLE_TYPE
@@ -234,14 +236,12 @@ class Plugin(plugin.PluginBase):
             )
             if not self._wait_vm_destroyed():
                 #The VM is down but not destroyed
+                cmd = self._vdscommand + [
+                    'destroy',
+                    self.environment[ohostedcons.VMEnv.VM_UUID],
+                ]
                 self.execute(
-                    (
-                        self.command.get('vdsClient'),
-                        '-s',
-                        'localhost',
-                        'destroy',
-                        self.environment[ohostedcons.VMEnv.VM_UUID],
-                    ),
+                    cmd,
                     raiseOnError=True
                 )
             os_installed = self.dialog.queryString(

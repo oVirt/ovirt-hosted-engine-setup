@@ -25,6 +25,7 @@ VDSM configuration plugin.
 
 import configparser
 import gettext
+import os
 import StringIO  # FIXME: May need some otopi magic for python3 compatibility
 
 
@@ -49,6 +50,31 @@ class Plugin(plugin.PluginBase):
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
+        self.config = configparser.ConfigParser()
+        self.config.optionxform = str
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_INIT
+    )
+    def _init(self):
+        self.environment.setdefault(
+            ohostedcons.VDSMEnv.USE_SSL,
+            True
+        )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_LATE_SETUP,
+        name=ohostedcons.Stages.VDSMD_CONF_LOADED,
+    )
+    def _late_setup(self):
+        if self.config.read(ohostedcons.FileLocations.VDSM_CONF):
+            if (
+                self.config.has_section('vars') and
+                self.config.has_option('vars', 'ssl')
+            ):
+                self.environment[
+                    ohostedcons.VDSMEnv.USE_SSL
+                ] = self.config.getboolean('vars', 'ssl')
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
@@ -56,9 +82,7 @@ class Plugin(plugin.PluginBase):
     )
     def _misc(self):
         self.logger.info(_('Configuring VDSM'))
-        config = configparser.ConfigParser()
-        config.optionxform = str
-        if not config.read(ohostedcons.FileLocations.VDSM_CONF):
+        if not os.path.exists(ohostedcons.FileLocations.VDSM_CONF):
             self.logger.warning(
                 _(
                     'VDSM configuration file not found: '
@@ -66,17 +90,17 @@ class Plugin(plugin.PluginBase):
                 )
             )
         for section in ('irs', 'vars'):
-            if not config.has_section(section):
-                config.add_section(section)
-        config.set('irs', 'use_volume_leases', 'true')
-        config.set(
+            if not self.config.has_section(section):
+                self.config.add_section(section)
+        self.config.set('irs', 'use_volume_leases', 'true')
+        self.config.set(
             'vars',
             'default_bridge',
             self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME]
         )
         f = StringIO.StringIO()
         try:
-            config.write(f)
+            self.config.write(f)
             with transaction.Transaction() as localtransaction:
                 localtransaction.append(
                     filetransaction.FileTransaction(

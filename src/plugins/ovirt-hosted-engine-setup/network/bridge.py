@@ -136,23 +136,24 @@ class Plugin(plugin.PluginBase):
         self.logger.info(_('Configuring the management bridge'))
         nic = self.environment[ohostedcons.NetworkEnv.BRIDGE_IF]
         bridge = self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME]
-
+        cmd = [self.command.get('vdsClient')]
+        if self.environment[ohostedcons.VDSMEnv.USE_SSL]:
+            cmd.append('-s')
+        cmd += [
+            'localhost',
+            'addNetwork',
+            'bridge=%s' % bridge,
+            'vlan=',
+            'bond=',
+            'nics=%s' % nic,
+            'force=False',
+            'bridged=True',
+            'BOOTPROTO=dhcp',
+            'ONBOOT=yes',
+            'blockingdhcp=true',
+        ]
         self.execute(
-            (
-                self.command.get('vdsClient'),
-                '-s',
-                'localhost',
-                'addNetwork',
-                'bridge=%s' % bridge,
-                'vlan=',
-                'bond=',
-                'nics=%s' % nic,
-                'force=False',
-                'bridged=True',
-                'BOOTPROTO=dhcp',
-                'ONBOOT=yes',
-                'blockingdhcp=true',
-            ),
+            cmd,
             raiseOnError=True
         )
 

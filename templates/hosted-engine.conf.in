@@ -12,3 +12,4 @@ sdUUID=@SD_UUID@
 connectionUUID=@CONNECTION_UUID@
 ca_cert=@CA_CERT@
 ca_subject="@CA_SUBJECT@"
+vdsm_use_ssl=@VDSM_USE_SSL@
