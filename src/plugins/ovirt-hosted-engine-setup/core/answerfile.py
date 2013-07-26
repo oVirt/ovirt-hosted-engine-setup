@@ -48,17 +48,17 @@ class Plugin(plugin.PluginBase):
     def _init(self):
         self.environment.setdefault(
             ohostedcons.CoreEnv.ANSWER_FILE,
-            None
+            ohostedcons.FileLocations.OVIRT_HOSTED_ENGINE_ANSWERS
         )
 
     @plugin.event(
-        stage=plugin.Stages.STAGE_CLOSEUP,
+        stage=plugin.Stages.STAGE_VALIDATION,
         priority=plugin.Stages.PRIORITY_LAST,
         condition=lambda self: self.environment[
             ohostedcons.CoreEnv.ANSWER_FILE
         ] is not None
     )
-    def _closeup(self):
+    def _save_answers(self):
         self.logger.info(
             _("Generating answer file '{name}'").format(
                 name=self.environment[ohostedcons.CoreEnv.ANSWER_FILE],

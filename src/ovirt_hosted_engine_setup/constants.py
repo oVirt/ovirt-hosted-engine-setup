@@ -88,6 +88,11 @@ class FileLocations(object):
         OVIRT_HOSTED_ENGINE,
         'hosted-engine.conf'
     )
+    OVIRT_HOSTED_ENGINE_ANSWERS = os.path.join(
+        SYSCONFDIR,
+        OVIRT_HOSTED_ENGINE,
+        'answers.conf'
+    )
     HOSTED_ENGINE_IPTABLES_TEMPLATE = os.path.join(
         DATADIR,
         OVIRT_HOSTED_ENGINE_SETUP,
