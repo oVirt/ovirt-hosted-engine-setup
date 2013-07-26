@@ -202,26 +202,16 @@ class NetworkEnv(object):
 
 @util.export
 @util.codegen
-@ohostedattrsclass
 class HostEnv(object):
 
-    @ohostedattrs(
-        answerfile=True,
-    )
-    def ROOT_PASSWORD(self):
-        return 'OVEHOSTED_HOST/rootPassword'
+    ROOT_PASSWORD = 'OVEHOSTED_HOST/rootPassword'
 
 
 @util.export
 @util.codegen
-@ohostedattrsclass
 class EngineEnv(object):
 
-    @ohostedattrs(
-        answerfile=True,
-    )
-    def ADMIN_PASSWORD(self):
-        return 'OVEHOSTED_ENGINE/adminPassword'
+    ADMIN_PASSWORD = 'OVEHOSTED_ENGINE/adminPassword'
 
 
 @util.export
