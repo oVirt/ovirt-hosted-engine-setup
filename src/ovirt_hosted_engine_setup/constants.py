@@ -159,6 +159,8 @@ class FileLocations(object):
 class Const(object):
     MINIMUM_SPACE_STORAGEDOMAIN_MB = 20480
     FIRST_HOST_ID = 1
+    HA_AGENT_SERVICE = 'ovirt-ha-agent'
+    HA_BROCKER_SERVICE = 'ovirt-ha-broker'
 
 
 @util.export
@@ -407,6 +409,8 @@ class Stages(object):
     NET_FIREWALL_MANAGER_PROCESS_TEMPLATES = \
         'ohosted.network.firewallmanager.templates.available'
     VDSMD_CONF_LOADED = 'ohosted.vdsm.conf.loaded'
+    HOST_ADDED = 'ohosted.engine.host.added'
+    HA_START = 'ohosted.engine.ha.start'
 
 
 @util.export

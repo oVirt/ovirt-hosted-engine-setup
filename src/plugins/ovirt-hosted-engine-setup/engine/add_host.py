@@ -27,6 +27,7 @@ import gettext
 import os
 import re
 import tempfile
+import time
 import urllib2
 
 
@@ -52,6 +53,8 @@ class Plugin(plugin.PluginBase):
     Host adder plugin.
     """
 
+    VDSM_RETRIES = 600
+    VDSM_DELAY = 1
     _ADDRESS_RE = re.compile(
         flags=re.VERBOSE,
         pattern=r"""
@@ -114,6 +117,52 @@ class Plugin(plugin.PluginBase):
             raise RuntimeError(_('Cannot acquire bridge address'))
         self.logger.debug(address)
         return address
+
+    def _wait_host_ready(self, engine_api, host):
+        self.logger.info(_(
+            'Waiting for the host to become operational in the engine. '
+            'This may take several minutes...'
+        ))
+        tries = self.VDSM_RETRIES
+        isUp = False
+        while not isUp and tries > 0:
+            tries -= 1
+            try:
+                state = engine_api.hosts.get(host).status.state
+            except Exception as exc:
+                #sadly all ovirtsdk errors inherit only from Exception
+                self.logger.debug(
+                    'Error fetching host state: {error}'.format(
+                        error=str(exc),
+                    )
+                )
+                state = ''
+            if 'failed' in state:
+                self.logger.error(_(
+                    'The VDSM host was found in a failed state. '
+                    'Please check engine and bootstrap installation logs.'
+                ))
+                tries = -1  # Error state
+            elif state == 'up':
+                isUp = True
+                self.logger.info(_('The VDSM Host is now operational'))
+            else:
+                self.logger.debug(
+                    'VDSM host in {state} state'.format(
+                        state=state,
+                    )
+                )
+                if tries % 30 == 0:
+                    self.logger.info(_(
+                        'Still waiting for VDSM host to become operational...'
+                    ))
+                time.sleep(self.VDSM_DELAY)
+        if not isUp and tries == 0:
+            self.logger.error(_(
+                'Timed out while waiting for host to start. '
+                'Please check the logs.'
+            ))
+        return isUp
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
@@ -196,6 +245,7 @@ class Plugin(plugin.PluginBase):
         after=[
             ohostedcons.Stages.ENGINE_ALIVE,
         ],
+        name=ohostedcons.Stages.HOST_ADDED,
     )
     def _closeup(self):
         self._getPKICert()
@@ -238,6 +288,20 @@ class Plugin(plugin.PluginBase):
                     'to the Default cluster:\n{details}\n'
                 ).format(
                     details=e.details
+                )
+            )
+        up = self._wait_host_ready(
+            engine_api,
+            self.environment[ohostedcons.EngineEnv.APP_HOST_NAME]
+        )
+        if not up:
+            self.logger.error(
+                _(
+                    'Unable to add {host} to the manager'
+                ).format(
+                    host=self.environment[
+                        ohostedcons.EngineEnv.APP_HOST_NAME
+                    ],
                 )
             )
 

@@ -17,19 +17,22 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
+include $(top_srcdir)/build/python.inc
+
 MAINTAINERCLEANFILES = \
 	$(srcdir)/Makefile.in \
 	$(NULL)
 
-SUBDIRS = \
-	core \
-	ha \
-	network \
-	pki \
-	storage \
-	system \
-	vm \
-	libvirt \
-	vdsmd \
-	engine \
+mydir=$(ovirthostedengineplugindir)/ovirt-hosted-engine-setup/ha
+dist_my_PYTHON = \
+	__init__.py \
+	ha_services.py \
+	$(NULL)
+
+clean-local: \
+	python-clean \
+	$(NULL)
+
+all-local: \
+	python-syntax-check \
 	$(NULL)
