@@ -1,6 +1,6 @@
 #
-# ovirt-hosted-engine-setup -- ovirt with a manager in a VM
-# Copyright (C) 2012-2013 Red Hat, Inc.
+# ovirt-hosted-engine-setup -- ovirt hosted engine setup
+# Copyright (C) 2013 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,42 +17,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
-include $(top_srcdir)/build/python.inc
 
-SUBDIRS = \
-	ovf \
-	$(NULL)
+"""ovirt-hosted-engine-setup ovf module."""
 
-MAINTAINERCLEANFILES = \
-	$(srcdir)/Makefile.in \
-	$(NULL)
 
-CLEANFILES = \
-	config.py \
-	$(NULL)
+__all__ = []
 
-dist_ovirthostedenginelib_PYTHON = \
-	__init__.py \
-	check_liveliness.py \
-	constants.py \
-	domains.py \
-	util.py \
-	tasks.py \
-	$(NULL)
 
-ovirthostedenginelib_PYTHON = \
-	config.py \
-	$(NULL)
-
-config.py:	\
-	$(top_srcdir)/configure.ac \
-	$(NULL)
-
-clean-local: \
-	python-clean \
-	$(NULL)
-
-all-local: \
-	$(DISTFILES) \
-	python-syntax-check \
-	$(NULL)
+# vim: expandtab tabstop=4 shiftwidth=4
