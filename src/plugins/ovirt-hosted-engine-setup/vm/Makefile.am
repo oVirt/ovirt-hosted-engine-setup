@@ -27,6 +27,7 @@ mydir=$(ovirthostedengineplugindir)/ovirt-hosted-engine-setup/vm
 dist_my_PYTHON = \
 	__init__.py \
 	boot_cdrom.py \
+	boot_disk.py \
 	cpu.py \
 	configurevm.py \
 	image.py \

@@ -218,9 +218,10 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_CLOSEUP,
         name=ohostedcons.Stages.VM_RUNNING,
         priority=plugin.Stages.PRIORITY_LOW,
-        condition=lambda self: not self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
+        condition=lambda self: (
+            self.environment[ohostedcons.VMEnv.BOOT] != 'disk' and
+            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
+        ),
     )
     def _boot_from_install_media(self):
         #Need to be done after firewall closeup for allowing the user to

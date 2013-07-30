@@ -58,7 +58,7 @@ class Plugin(plugin.PluginBase):
             ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
         ],
     )
-    def _misc(self):
+    def _closeup(self):
         self.environment[ohostedcons.VMEnv.SUBST]['@BOOT@'] = 'c'
         content = ohostedutil.processTemplate(
             template=ohostedcons.FileLocations.ENGINE_VM_TEMPLATE,

@@ -31,6 +31,7 @@ from otopi import plugin
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
+from ovirt_hosted_engine_setup import tasks
 
 
 _ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
@@ -70,6 +71,9 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         condition=lambda self: not self.environment[
             ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+        ],
+        after=[
+            ohostedcons.Stages.CONFIG_OVF_IMPORT,
         ],
     )
     def _disk_customization(self):
@@ -175,6 +179,8 @@ class Plugin(plugin.PluginBase):
             )
         else:
             raise RuntimeError(message)
+        waiter = tasks.TaskWaiter(self.environment)
+        waiter.wait()
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

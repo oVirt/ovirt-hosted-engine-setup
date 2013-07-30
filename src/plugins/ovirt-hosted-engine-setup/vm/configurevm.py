@@ -86,7 +86,6 @@ class Plugin(plugin.PluginBase):
         ],
     )
     def _customization(self):
-        #TODO: support boot from OVF
         interactive = self.environment[
             ohostedcons.VMEnv.BOOT
         ] is None
@@ -103,10 +102,7 @@ class Plugin(plugin.PluginBase):
                     ),
                     prompt=True,
                     caseSensitive=True,
-                    validValues=[
-                        'cdrom',
-                        'pxe',
-                    ],
+                    validValues=self.BOOT_DEVICE.keys(),
                     default=ohostedcons.Defaults.DEFAULT_BOOT,
                 )
 

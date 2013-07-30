@@ -170,6 +170,7 @@ class CoreEnv(object):
     REQUIREMENTS_CHECK_ENABLED = 'OVEHOSTED_CORE/checkRequirements'
     ADDITIONAL_HOST_ENABLED = 'OVEHOSTED_CORE/additionalHostEnabled'
     IS_ADDITIONAL_HOST = 'OVEHOSTED_CORE/isAdditionalHost'
+    TEMPDIR = 'OVEHOSTED_CORE/tempDir'
 
 
 @util.export
@@ -347,6 +348,12 @@ class VMEnv(object):
     def CDROM(self):
         return 'OVEHOSTED_VM/vmCDRom'
 
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def OVF(self):
+        return 'OVEHOSTED_VM/ovfArchive'
+
     NAME = 'OVEHOSTED_VM/vmName'
     VM_PASSWD = 'OVEHOSTED_VDSM/passwd'
     VM_PASSWD_VALIDITY_SECS = 'OVEHOSTED_VDSM/passwdValiditySecs'
@@ -390,6 +397,7 @@ class Stages(object):
     CONFIG_BOOT_DEVICE = 'ohosted.boot.configuration.available'
     CONFIG_STORAGE = 'ohosted.storage.configuration.available'
     CONFIG_ADDITIONAL_HOST = 'ohosted.core.additional.host'
+    CONFIG_OVF_IMPORT = 'ohosted.configuration.ovf'
     VDSMD_START = 'ohosted.vdsm.started'
     VDSMD_PKI = 'ohosted.vdsm.pki.available'
     VDSMD_CONFIGURED = 'ohosted.vdsm.configured'

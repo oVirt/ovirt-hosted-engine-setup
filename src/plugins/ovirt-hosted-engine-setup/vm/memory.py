@@ -59,6 +59,9 @@ class Plugin(plugin.PluginBase):
         condition=lambda self: not self.environment[
             ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
         ],
+        after=[
+            ohostedcons.Stages.CONFIG_OVF_IMPORT,
+        ],
     )
     def _customization(self):
         interactive = self.environment[
