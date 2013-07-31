@@ -226,9 +226,25 @@ class Plugin(plugin.PluginBase):
                 hidden=True,
             )
             if password:
-                self.environment[
-                    ohostedcons.EngineEnv.ADMIN_PASSWORD
-                ] = password
+                if not interactive:
+                    self.environment[
+                        ohostedcons.EngineEnv.ADMIN_PASSWORD
+                    ] = password
+                else:
+                    password_check = self.dialog.queryString(
+                        name='ENGINE_ADMIN_PASSWORD',
+                        note=_(
+                            "Confirm 'admin@internal' user password: "
+                        ),
+                        prompt=True,
+                        hidden=True,
+                    )
+                    if password == password_check:
+                        self.environment[
+                            ohostedcons.EngineEnv.ADMIN_PASSWORD
+                        ] = password
+                    else:
+                        self.logger.error(_('Passwords do not match'))
             else:
                 if interactive:
                     self.logger.error(_('Please specify a password'))
