@@ -60,10 +60,15 @@ class Plugin(plugin.PluginBase):
         else:
             serv = vdsClient.service()
         serv.useSSL = self.environment[ohostedcons.VDSMEnv.USE_SSL]
-        server, serverPort = vdscli.cannonizeAddrPort(
-            'localhost'
-        ).split(':', 1)
-        serv.do_connect(server, serverPort)
+        if hasattr(vdscli, 'cannonizeAddrPort'):
+            server, serverPort = vdscli.cannonizeAddrPort(
+                'localhost'
+            ).split(':', 1)
+            serv.do_connect(server, serverPort)
+        else:
+            hostPort = vdscli.cannonizeHostPort('localhost')
+            serv.do_connect(hostPort)
+
         self.environment[ohostedcons.VDSMEnv.VDS_CLI] = serv
         vdsmReady = False
         retry = 0
