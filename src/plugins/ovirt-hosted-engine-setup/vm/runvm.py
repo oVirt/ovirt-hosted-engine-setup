@@ -26,6 +26,7 @@ VM configuration plugin.
 import string
 import random
 import gettext
+import time
 
 
 from otopi import util
@@ -45,6 +46,9 @@ class Plugin(plugin.PluginBase):
     VM configuration plugin.
     """
 
+    TICKET_MAX_TRIES = 10
+    TICKET_DELAY = 1
+
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
         self._vdscommand = []
@@ -54,8 +58,8 @@ class Plugin(plugin.PluginBase):
             _('Generating a temporary VNC password.')
         )
         return '%s%s' % (
-            ''.join([random.choice(string.digits) for i in range(4)]),
-            ''.join([random.choice(string.letters) for i in range(4)]),
+            ''.join([random.choice(string.digits) for _i in range(4)]),
+            ''.join([random.choice(string.letters) for _i in range(4)]),
         )
 
     def _generateUserMessage(self, console_type):
@@ -75,7 +79,7 @@ class Plugin(plugin.PluginBase):
                 'You can now connect to the VM with the following command:\n'
                 '\t{remote} --spice-ca-file={ca_cert} '
                 'spice://localhost?tls-port=5900 '
-                '"--spice-host-subject=${subject}"\nUse temporary password '
+                '--spice-host-subject="{subject}"\nUse temporary password '
                 '"{password}" to connect to spice console.'
             ).format(
                 remote=self.command.get('remote-viewer'),
@@ -108,7 +112,9 @@ class Plugin(plugin.PluginBase):
             raiseOnError=True
         )
         password_set = False
-        while not password_set:
+        tries = self.TICKET_MAX_TRIES
+        while not password_set and tries > 0:
+            tries -= 1
             waiter.wait()
             try:
                 cmd = self._vdscommand + [
@@ -126,13 +132,22 @@ class Plugin(plugin.PluginBase):
                 password_set = True
             except RuntimeError as e:
                 self.logger.debug(str(e))
-        self.dialog.note(
-            self._generateUserMessage(
-                self.environment[
-                    ohostedcons.VMEnv.CONSOLE_TYPE
-                ]
+                time.sleep(self.TICKET_DELAY)
+        if not password_set:
+            raise RuntimeError(
+                _(
+                    'Cannot set temporary password for console connection.\n'
+                    'The VM may not have been created: please check VDSM logs'
+                )
             )
-        )
+        else:
+            self.dialog.note(
+                self._generateUserMessage(
+                    self.environment[
+                        ohostedcons.VMEnv.CONSOLE_TYPE
+                    ]
+                )
+            )
 
     def _wait_vm_destroyed(self):
         waiter = tasks.VMDownWaiter(self.environment)
