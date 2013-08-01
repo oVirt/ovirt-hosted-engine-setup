@@ -25,6 +25,7 @@ from otopi import util
 
 
 from . import os_install
+from . import fqdn
 from . import health
 from . import add_host
 
@@ -32,6 +33,7 @@ from . import add_host
 @util.export
 def createPlugins(context):
     os_install.Plugin(context=context)
+    fqdn.Plugin(context=context)
     health.Plugin(context=context)
     add_host.Plugin(context=context)
 

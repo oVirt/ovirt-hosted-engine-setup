@@ -26,7 +26,7 @@ import gettext
 
 from otopi import constants as otopicons
 from otopi import util
-from otopi import context
+from otopi import context as otopicontext
 from otopi import plugin
 
 
@@ -64,7 +64,7 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_INIT,
         priority=plugin.Stages.PRIORITY_FIRST,
     )
-    def _confirm(self):
+    def _init(self):
         interactive = self.environment[
             ohostedcons.CoreEnv.DEPLOY_PROCEED
         ] is None
@@ -86,31 +86,12 @@ class Plugin(plugin.PluginBase):
                 default=_('Yes')
             ) == _('Yes').lower()
         if not self.environment[ohostedcons.CoreEnv.DEPLOY_PROCEED]:
-            raise context.Abort('Aborted by user')
+            raise otopicontext.Abort('Aborted by user')
 
         self.environment.setdefault(
             ohostedcons.CoreEnv.REQUIREMENTS_CHECK_ENABLED,
             True
         )
 
-    @plugin.event(
-        stage=plugin.Stages.STAGE_CUSTOMIZATION,
-    )
-    def _customization(self):
-        self.environment[
-            ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
-        ] = self.dialog.queryString(
-            name='ovehosted_network_fqdn',
-            note=_(
-                'Please provide the FQDN for the engine '
-                'you would like to use. This needs to match '
-                'the FQDN that you will use for the engine '
-                'installation within the VM: '
-            ),
-            prompt=True,
-            caseSensitive=True,
-        )
-
-        # Validate the FQDN ?
 
 # vim: expandtab tabstop=4 shiftwidth=4

@@ -191,6 +191,7 @@ class NetworkEnv(object):
     )
     def OVIRT_HOSTED_ENGINE_FQDN(self):
         return 'OVEHOSTED_NETWORK/fqdn'
+    FQDN_REVERSE_VALIDATION = 'OVEHOSTED_NETWORK/fqdnReverseValidation'
 
     @ohostedattrs(
         answerfile=True,

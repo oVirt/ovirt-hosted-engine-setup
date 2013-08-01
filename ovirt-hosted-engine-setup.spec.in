@@ -49,6 +49,7 @@ Requires:       python-paramiko
 Requires:       virt-viewer
 Requires:       openssl
 Requires:       sudo
+Requires:       bind-utils
 BuildRequires:  gettext
 BuildRequires:  otopi-devel >= 1.1.0
 BuildRequires:  python2-devel
