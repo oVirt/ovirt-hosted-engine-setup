@@ -37,6 +37,7 @@ _ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 class LivelinessChecker(base.Base):
 
     DB_UP_RE = re.compile('.*DB Up.*')
+    TIMEOUT = 20
 
     def __init__(self):
         super(LivelinessChecker, self).__init__()
@@ -48,7 +49,12 @@ class LivelinessChecker(base.Base):
         )
         isUp = False
         try:
-            with contextlib.closing(urllib2.urlopen(health_url)) as urlObj:
+            with contextlib.closing(
+                urllib2.urlopen(
+                    url=health_url,
+                    timeout=self.TIMEOUT,
+                )
+            ) as urlObj:
                 content = urlObj.read()
                 if content:
                     if self.DB_UP_RE.match(content) is not None:
@@ -95,5 +101,6 @@ if __name__ == "__main__":
         print _('Hosted Engine is not up!')
         sys.exit(1)
     print _('Hosted Engine is up!')
+
 
 # vim: expandtab tabstop=4 shiftwidth=4
