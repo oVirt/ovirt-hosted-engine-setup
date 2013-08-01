@@ -55,23 +55,37 @@ class Plugin(plugin.PluginBase):
             otopicons.CoreEnv.LOG_FILE_NAME_PREFIX,
             ohostedcons.FileLocations.OVIRT_HOSTED_ENGINE_SETUP
         )
+        self.environment.setdefault(
+            ohostedcons.CoreEnv.DEPLOY_PROCEED,
+            None
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
         priority=plugin.Stages.PRIORITY_FIRST,
     )
     def _confirm(self):
-        if not self.dialog.confirm(
-            name=ohostedcons.Confirms.DEPLOY_PROCEED,
-            description='Proceed with ovirt-hosted-engine-setup',
-            note=_(
-                'Continuing will configure this host for serving '
-                'as hypervisor and create a VM where oVirt Engine '
-                'will be installed afterwards.\n'
-                'Are you sure you want to continue? (yes/no) '
-            ),
-            prompt=True,
-        ):
+        interactive = self.environment[
+            ohostedcons.CoreEnv.DEPLOY_PROCEED
+        ] is None
+        if interactive:
+            self.environment[
+                ohostedcons.CoreEnv.DEPLOY_PROCEED
+            ] = self.dialog.queryString(
+                name=ohostedcons.Confirms.DEPLOY_PROCEED,
+                note=_(
+                    'Continuing will configure this host for serving '
+                    'as hypervisor and create a VM where oVirt Engine '
+                    'will be installed afterwards.\n'
+                    'Are you sure you want to continue? '
+                    '(@VALUES@)[@DEFAULT@]: '
+                ),
+                prompt=True,
+                validValues=(_('Yes'), _('No')),
+                caseSensitive=False,
+                default=_('Yes')
+            ) == _('Yes').lower()
+        if not self.environment[ohostedcons.CoreEnv.DEPLOY_PROCEED]:
             raise context.Abort('Aborted by user')
 
         self.environment.setdefault(

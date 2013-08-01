@@ -27,6 +27,7 @@ import os
 from otopi import util
 from otopi import context
 from otopi import plugin
+from otopi import constants as otopicons
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
@@ -45,26 +46,41 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
         priority=plugin.Stages.PRIORITY_HIGH,
+        condition=lambda self: not self.environment[otopicons.BaseEnv.ABORTED],
     )
     def _init(self):
+        self.environment.setdefault(
+            ohostedcons.CoreEnv.SCREEN_PROCEED,
+            None
+        )
         ssh_connected = not os.getenv('SSH_CLIENT') is None
         screen_used = os.getenv('TERM') == 'screen'
         if ssh_connected and not screen_used:
-            if not self.dialog.confirm(
-                name=ohostedcons.Confirms.DEPLOY_PROCEED,
-                description='Proceed with ovirt-hosted-engine-setup',
-                note=_(
-                    'It has been detected that this program is executed '
-                    'through an SSH connection without using screen.\n'
-                    'Continuing with the installation may lead to broken '
-                    'installation if the network connection fails.\n'
-                    'It is highly recommended to abort the installation and '
-                    'run it inside a screen session.\n'
-                    'Do you want to continue anyway? (yes/no) '
-                ),
-                prompt=True,
-            ):
-                raise context.Abort('Aborted by user')
+            interactive = self.environment[
+                ohostedcons.CoreEnv.SCREEN_PROCEED
+            ] is None
+            if interactive:
+                self.environment[
+                    ohostedcons.CoreEnv.SCREEN_PROCEED
+                ] = self.dialog.queryString(
+                    name=ohostedcons.Confirms.SCREEN_PROCEED,
+                    note=_(
+                        'It has been detected that this program is executed '
+                        'through an SSH connection without using screen.\n'
+                        'Continuing with the installation may lead to broken '
+                        'installation if the network connection fails.\n'
+                        'It is highly recommended to abort the installation '
+                        'and run it inside a screen session.\n'
+                        'Do you want to continue anyway? '
+                        '(@VALUES@)[@DEFAULT@]: '
+                    ),
+                    prompt=True,
+                    validValues=(_('Yes'), _('No')),
+                    caseSensitive=False,
+                    default=_('No')
+                ) == _('Yes').lower()
+                if not self.environment[ohostedcons.CoreEnv.SCREEN_PROCEED]:
+                    raise context.Abort('Aborted by user')
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

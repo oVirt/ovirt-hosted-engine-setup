@@ -171,6 +171,8 @@ class CoreEnv(object):
     ADDITIONAL_HOST_ENABLED = 'OVEHOSTED_CORE/additionalHostEnabled'
     IS_ADDITIONAL_HOST = 'OVEHOSTED_CORE/isAdditionalHost'
     TEMPDIR = 'OVEHOSTED_CORE/tempDir'
+    DEPLOY_PROCEED = 'OVEHOSTED_CORE/deployProceed'
+    SCREEN_PROCEED = 'OVEHOSTED_CORE/screenProceed'
 
 
 @util.export
@@ -447,6 +449,7 @@ class Confirms(object):
     CPU_PROCEED = 'CPU_PROCEED'
     DISK_PROCEED = 'DISK_PROCEED'
     MEMORY_PROCEED = 'MEMORY_PROCEED'
+    SCREEN_PROCEED = 'SCREEN_PROCEED'
 
 
 # vim: expandtab tabstop=4 shiftwidth=4
