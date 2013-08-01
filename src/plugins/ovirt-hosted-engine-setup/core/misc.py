@@ -93,5 +93,16 @@ class Plugin(plugin.PluginBase):
             True
         )
 
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CLOSEUP,
+        priority=plugin.Stages.PRIORITY_LAST,
+    )
+    def _closeup(self):
+        self.dialog.note(
+            text=_(
+                'Hosted Engine successfully set up'
+            ),
+        )
+
 
 # vim: expandtab tabstop=4 shiftwidth=4
