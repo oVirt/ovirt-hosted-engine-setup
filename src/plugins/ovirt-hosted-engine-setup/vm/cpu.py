@@ -56,9 +56,9 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
-        after=[
+        after=(
             ohostedcons.Stages.CONFIG_OVF_IMPORT,
-        ],
+        ),
         condition=lambda self: not self.environment[
             ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
         ],
@@ -101,7 +101,7 @@ class Plugin(plugin.PluginBase):
                                 '(@VALUES@)[@DEFAULT]: '
                             ),
                             prompt=True,
-                            validValues=[_('Yes'), _('No')],
+                            validValues=(_('Yes'), _('No')),
                             caseSensitive=False,
                             default=_('No')
                         ) == _('Yes').lower()

@@ -277,7 +277,7 @@ class Plugin(plugin.PluginBase):
                     '(@VALUES@)[@DEFAULT@]: '
                 ),
                 prompt=True,
-                validValues=[_('Yes'), _('No')],
+                validValues=(_('Yes'), _('No')),
                 caseSensitive=False,
                 default=_('Yes')
             ) == _('Yes').lower()
@@ -290,7 +290,7 @@ class Plugin(plugin.PluginBase):
                         'installation? (@VALUES@)[@DEFAULT@]: '
                     ),
                     prompt=True,
-                    validValues=[_('Yes'), _('No')],
+                    validValues=(_('Yes'), _('No')),
                     caseSensitive=False,
                     default=_('Yes')
                 ) == _('No').lower()
@@ -302,9 +302,9 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
-        after=[
+        after=(
             ohostedcons.Stages.OS_INSTALLED,
-        ],
+        ),
         name=ohostedcons.Stages.INSTALLED_VM_RUNNING,
         condition=lambda self: not self.environment[
             ohostedcons.CoreEnv.IS_ADDITIONAL_HOST

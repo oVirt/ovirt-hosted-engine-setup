@@ -45,10 +45,10 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_BOOT,
-        before=[
+        before=(
             otopicons.Stages.CORE_LOG_INIT,
             otopicons.Stages.CORE_CONFIG_INIT,
-        ],
+        ),
     )
     def _preinit(self):
         self.environment.setdefault(

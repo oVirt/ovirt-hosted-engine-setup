@@ -127,10 +127,10 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
-        after=[
+        after=(
             ohostedcons.Stages.VM_IMAGE_AVAILABLE,
             ohostedcons.Stages.BRIDGE_AVAILABLE,
-        ],
+        ),
         name=ohostedcons.Stages.VM_CONFIGURED,
         condition=lambda self: not self.environment[
             ohostedcons.CoreEnv.IS_ADDITIONAL_HOST

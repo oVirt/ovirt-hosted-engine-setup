@@ -104,7 +104,7 @@ class Plugin(plugin.PluginBase):
                         '(@VALUES@)[@DEFAULT@]? '
                     ),
                     prompt=True,
-                    validValues=[_('Yes'), _('No')],
+                    validValues=(_('Yes'), _('No')),
                     caseSensitive=False,
                     default=_('Yes')
                 ) == _('Yes').lower()
@@ -557,9 +557,9 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
-        after=[
+        after=(
             ohostedcons.Stages.VDSMD_START,
-        ],
+        ),
         name=ohostedcons.Stages.STORAGE_AVAILABLE,
     )
     def _misc(self):

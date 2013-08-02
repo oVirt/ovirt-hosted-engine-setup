@@ -46,12 +46,12 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
-        before=[
+        before=(
             ohostedcons.Stages.NET_FIREWALL_MANAGER_PROCESS_TEMPLATES,
-        ],
-        after=[
+        ),
+        after=(
             ohostedcons.Stages.NET_FIREWALL_MANAGER_AVAILABLE,
-        ],
+        ),
         condition=lambda self: not self.environment[
             ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
         ],

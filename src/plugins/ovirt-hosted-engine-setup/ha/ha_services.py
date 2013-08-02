@@ -50,9 +50,9 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
-        after=[
+        after=(
             ohostedcons.Stages.HOST_ADDED,
-        ],
+        ),
         name=ohostedcons.Stages.HA_START,
     )
     def _closeup(self):

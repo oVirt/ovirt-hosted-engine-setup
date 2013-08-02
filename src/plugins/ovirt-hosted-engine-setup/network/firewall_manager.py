@@ -172,9 +172,9 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         name=ohostedcons.Stages.NET_FIREWALL_MANAGER_PROCESS_TEMPLATES,
         priority=plugin.Stages.PRIORITY_LOW,
-        after=[
+        after=(
             ohostedcons.Stages.NET_FIREWALL_MANAGER_AVAILABLE,
-        ],
+        ),
         condition=lambda self: not self.environment[
             ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
         ],

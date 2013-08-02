@@ -48,9 +48,9 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
-        after=[
+        after=(
             ohostedcons.Stages.INSTALLED_VM_RUNNING,
-        ],
+        ),
         name=ohostedcons.Stages.ENGINE_ALIVE,
     )
     def _closeup(self):
@@ -81,7 +81,10 @@ class Plugin(plugin.PluginBase):
                     '(@VALUES@)[@DEFAULT@]: '
                 ),
                 prompt=True,
-                validValues=[_('Check'), _('Abort')],
+                validValues=(
+                    _('Check'),
+                    _('Abort'),
+                ),
                 caseSensitive=False,
                 default=_('Check')
             ) != _('Check').lower():

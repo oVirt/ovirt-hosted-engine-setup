@@ -59,9 +59,9 @@ class Plugin(plugin.PluginBase):
         condition=lambda self: not self.environment[
             ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
         ],
-        after=[
+        after=(
             ohostedcons.Stages.CONFIG_OVF_IMPORT,
-        ],
+        ),
     )
     def _customization(self):
         interactive = self.environment[
@@ -101,7 +101,7 @@ class Plugin(plugin.PluginBase):
                                 '(@VALUES@)[@DEFAULT]: '
                             ),
                             prompt=True,
-                            validValues=[_('Yes'), _('No')],
+                            validValues=(_('Yes'), _('No')),
                             caseSensitive=False,
                             default=_('No')
                         ) == _('Yes').lower()

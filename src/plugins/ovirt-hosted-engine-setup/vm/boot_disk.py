@@ -281,9 +281,9 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
-        after=[
+        after=(
             ohostedcons.Stages.CONFIG_BOOT_DEVICE,
-        ],
+        ),
         condition=lambda self: (
             self.environment[ohostedcons.VMEnv.BOOT] == 'disk' and
             not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
@@ -375,9 +375,9 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
-        after=[
+        after=(
             ohostedcons.Stages.VM_IMAGE_AVAILABLE,
-        ],
+        ),
         condition=lambda self: (
             self.environment[ohostedcons.VMEnv.BOOT] == 'disk' and
             not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]

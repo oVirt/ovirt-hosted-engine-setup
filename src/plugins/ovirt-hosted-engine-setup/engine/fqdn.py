@@ -180,10 +180,10 @@ class Plugin(plugin.PluginBase):
                 )
 
     def _resolvedByDNS(self, fqdn):
-        args = [
+        args = (
             self.command.get('dig'),
-            fqdn
-        ]
+            fqdn,
+        )
         rc, stdout, stderr = self.execute(
             args=args,
             raiseOnError=False
@@ -197,11 +197,11 @@ class Plugin(plugin.PluginBase):
 
     def _dig_reverse_lookup(self, addr):
         names = set()
-        args = [
+        args = (
             self.command.get('dig'),
             '-x',
             addr,
-        ]
+        )
         rc, stdout, stderr = self.execute(
             args=args,
             raiseOnError=False

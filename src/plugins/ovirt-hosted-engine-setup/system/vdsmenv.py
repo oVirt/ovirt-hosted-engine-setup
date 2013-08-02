@@ -104,9 +104,9 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_LATE_SETUP,
-        after=[
+        after=(
             ohostedcons.Stages.VDSMD_CONF_LOADED,
-        ],
+        ),
     )
     def _late_setup(self):
         #We need vdsmd up for customization checks
@@ -121,11 +121,11 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
         name=ohostedcons.Stages.VDSMD_START,
-        after=[
+        after=(
             ohostedcons.Stages.LIBVIRT_CONFIGURED,
             ohostedcons.Stages.VDSMD_PKI,
             ohostedcons.Stages.VDSMD_CONFIGURED,
-        ],
+        ),
     )
     def _misc(self):
         self.logger.info(

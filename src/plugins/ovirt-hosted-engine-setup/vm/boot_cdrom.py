@@ -82,9 +82,9 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
-        after=[
+        after=(
             ohostedcons.Stages.CONFIG_BOOT_DEVICE,
-        ],
+        ),
         condition=lambda self: (
             self.environment[ohostedcons.VMEnv.BOOT] == 'cdrom' and
             not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]

@@ -61,9 +61,9 @@ class Plugin(plugin.PluginBase):
     def _generateVDSMcerts(self):
         self.logger.info(_('Generating VDSM certificates'))
         rc, stdout, stderr = self.execute(
-            [
-                ohostedcons.FileLocations.VDSM_GEN_CERTS
-            ],
+            (
+                ohostedcons.FileLocations.VDSM_GEN_CERTS,
+            ),
             raiseOnError=True
         )
 

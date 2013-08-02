@@ -50,9 +50,9 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
-        after=[
+        after=(
             ohostedcons.Stages.VM_RUNNING,
-        ],
+        ),
         name=ohostedcons.Stages.OS_INSTALLED,
         condition=lambda self: not self.environment[
             ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
