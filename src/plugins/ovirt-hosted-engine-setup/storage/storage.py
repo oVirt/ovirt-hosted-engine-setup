@@ -97,11 +97,11 @@ class Plugin(plugin.PluginBase):
                 self.environment[
                     ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
                 ] = self.dialog.queryString(
-                    name='ovehosted_additional_host',
+                    name='OVEHOSTED_ADDITIONAL_HOST',
                     note=_(
                         'The specified storage location already contains a '
                         'data domain. Is this an additional host setup '
-                        '(@VALUES@) [@DEFAULT@] ?'
+                        '(@VALUES@)[@DEFAULT@]? '
                     ),
                     prompt=True,
                     validValues=[_('Yes'), _('No')],
@@ -124,10 +124,10 @@ class Plugin(plugin.PluginBase):
                     self.environment[
                         ohostedcons.StorageEnv.HOST_ID
                     ] = self.dialog.queryString(
-                        name='ovehosted_host_id',
+                        name='OVEHOSTED_HOST_ID',
                         note=_(
                             'Please specify the Host ID '
-                            '[Must be integer: @DEFAULT@]: '
+                            '[Must be integer, default: @DEFAULT@]: '
                         ),
                         prompt=True,
                         default=ohostedcons.Const.FIRST_HOST_ID + 1,
@@ -445,6 +445,11 @@ class Plugin(plugin.PluginBase):
         priority=plugin.Stages.PRIORITY_FIRST,
     )
     def _customization(self):
+        self.dialog.note(
+            _(
+                'During customization use CTRL-D to abort.'
+            )
+        )
         self.serv = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         interactive = (
             self.environment[
@@ -465,14 +470,15 @@ class Plugin(plugin.PluginBase):
                         name='OVEHOSTED_STORAGE_DOMAIN_TYPE',
                         note=_(
                             'Please specify the storage '
-                            'you would like to use (@VALUES@): '
+                            'you would like to use (@VALUES@)[@DEFAULT@]: '
                         ),
                         prompt=True,
-                        caseSensitive=False,
-                        validValues=[
-                            ('glusterfs'),
-                            ('nfs'),
-                        ]
+                        caseSensitive=True,
+                        validValues=(
+                            'glusterfs',
+                            'nfs',
+                        ),
+                        default='nfs',
                     )
 
                     self.environment[
@@ -481,7 +487,7 @@ class Plugin(plugin.PluginBase):
                         name='OVEHOSTED_STORAGE_DOMAIN_CONNECTION',
                         note=_(
                             'Please specify the full shared storage '
-                            'connection path to use: '
+                            'connection path to use (example: host:/path): '
                         ),
                         prompt=True,
                         caseSensitive=True,

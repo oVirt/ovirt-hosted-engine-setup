@@ -76,7 +76,7 @@ class Plugin(plugin.PluginBase):
                     name='ovehosted_vmenv_cpu',
                     note=_(
                         'Please specify the number of virtual CPUs for the VM '
-                        '[Minimum requirement: @DEFAULT@]: '
+                        '[Defaults to minimum requirement: @DEFAULT@]: '
                     ),
                     prompt=True,
                     default=ohostedcons.Defaults.DEFAULT_VM_VCPUS,
@@ -94,14 +94,17 @@ class Plugin(plugin.PluginBase):
                         self.environment[
                             ohostedcons.CoreEnv.REQUIREMENTS_CHECK_ENABLED
                         ] and
-                        not self.dialog.confirm(
+                        not self.dialog.queryString(
                             name=ohostedcons.Confirms.CPU_PROCEED,
-                            description='Confirm CPUs',
                             note=_(
-                                'Continue with specified CPUs? (yes/no) '
+                                'Continue with specified CPUs? '
+                                '(@VALUES@)[@DEFAULT]: '
                             ),
                             prompt=True,
-                        )
+                            validValues=[_('Yes'), _('No')],
+                            caseSensitive=False,
+                            default=_('No')
+                        ) == _('Yes').lower()
                     ):
                         valid = False
             except ValueError:

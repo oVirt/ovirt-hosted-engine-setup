@@ -89,7 +89,7 @@ class Plugin(plugin.PluginBase):
                     name='ovehosted_vmenv_mem',
                     note=_(
                         'Please specify the disk size of the VM in GB '
-                        '[Minimum requirement: @DEFAULT@]: '
+                        '[Defaults to minimum requirement: @DEFAULT@]: '
                     ),
                     prompt=True,
                     default=ohostedcons.Defaults.DEFAULT_IMAGE_SIZE_GB,
@@ -107,14 +107,17 @@ class Plugin(plugin.PluginBase):
                         self.environment[
                             ohostedcons.CoreEnv.REQUIREMENTS_CHECK_ENABLED
                         ] and
-                        not self.dialog.confirm(
+                        not self.dialog.queryString(
                             name=ohostedcons.Confirms.DISK_PROCEED,
-                            description='Confirm disk size',
                             note=_(
-                                'Continue with specified disk size? (yes/no) '
+                                'Continue with specified disk size? '
+                                '(@VALUES@)[@DEFAULT]: '
                             ),
                             prompt=True,
-                        )
+                            validValues=[_('Yes'), _('No')],
+                            caseSensitive=False,
+                            default=_('No')
+                        ) == _('Yes').lower()
                     ):
                         valid = False
             except ValueError:

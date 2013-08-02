@@ -59,25 +59,26 @@ class Plugin(plugin.PluginBase):
             ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
         ]
         live_checker = check_liveliness.LivelinessChecker()
+        self.dialog.queryString(
+            name='OVEHOSTED_ENGINE_UP',
+            note=_(
+                'Please install the engine in the VM, '
+                'hit enter when finished.'
+            ),
+            prompt=True,
+            default='y'  # Allow enter without any value
+        )
         while poll:
-            self.dialog.queryString(
-                name='ovehosted_engine_up',
-                note=_(
-                    'Please install the engine in the vm,'
-                    'hit enter when finished.'
-                ),
-                prompt=True,
-                default='y'  # Allow enter without any value
-            )
             if live_checker.isEngineUp(fqdn):
                 poll = False
             elif self.dialog.queryString(
-                name='ovehosted_engine_check_again',
+                name='OVEHOSTED_ENGINE_CHECK_AGAIN',
                 note=_(
                     'Engine health status page is not yet reachable.\n'
                     'Please ensure that the engine is correctly configured, '
                     'up and running.\n '
-                    'Do you want to check again or abort? (@VALUES@) :'
+                    'Do you want to check again or abort? '
+                    '(@VALUES@)[@DEFAULT@]: '
                 ),
                 prompt=True,
                 validValues=[_('Check'), _('Abort')],

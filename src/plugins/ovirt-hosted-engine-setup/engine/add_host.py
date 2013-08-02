@@ -194,7 +194,7 @@ class Plugin(plugin.PluginBase):
             hostname = self.dialog.queryString(
                 name='APP_HOST_NAME',
                 note=_(
-                    'Enter the name which will be used for identify this host'
+                    'Enter the name which will be used to identify this host'
                     ' inside the Administrator Portal [@DEFAULT@]: '
                 ),
                 prompt=True,

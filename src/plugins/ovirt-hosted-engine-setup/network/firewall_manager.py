@@ -140,16 +140,16 @@ class Plugin(plugin.PluginBase):
                     note=_(
                         '{manager} was detected on your computer, '
                         'do you wish setup to configure it? '
-                        '(@VALUES@) [@DEFAULT@]: '
+                        '(@VALUES@)[@DEFAULT@]: '
                     ).format(
                         manager=manager,
                     ),
                     prompt=True,
-                    validValues=(_('yes'), _('no')),
+                    validValues=(_('Yes'), _('No')),
                     caseSensitive=False,
-                    default=_('yes'),
+                    default=_('Yes'),
                 )
-                if response == _('yes'):
+                if response == _('Yes').lower():
                     self.environment[
                         ohostedcons.NetworkEnv.FIREWALL_MANAGER
                     ] = manager

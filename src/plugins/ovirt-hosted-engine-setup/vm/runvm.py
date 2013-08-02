@@ -148,6 +148,13 @@ class Plugin(plugin.PluginBase):
                     ]
                 )
             )
+            self.dialog.note(
+                _(
+                    'If you need to reboot the VM you can set a temporary '
+                    'password using the command:\n'
+                    'host-deploy --add-console-password=<password>'
+                )
+            )
 
     def _wait_vm_destroyed(self):
         waiter = tasks.VMDownWaiter(self.environment)
@@ -247,7 +254,8 @@ class Plugin(plugin.PluginBase):
             self.dialog.note(
                 _(
                     'Please install the OS on the VM.\n'
-                    'The system will wait until the installation is completed'
+                    'When the installation is completed reboot or shutdown '
+                    'the VM: the system will wait until then'
                 )
             )
             if not self._wait_vm_destroyed():
@@ -261,10 +269,12 @@ class Plugin(plugin.PluginBase):
                     raiseOnError=True
                 )
             os_installed = self.dialog.queryString(
-                name='ovehosted_os_installed',
+                name='OVEHOSTED_OS_INSTALLED',
                 note=_(
                     'Has the OS installation been completed '
-                    'successfully? (@VALUES@) :'
+                    'successfully?\nAnswering no will allow you to reboot '
+                    'from the previously selected boot media. '
+                    '(@VALUES@)[@DEFAULT@]: '
                 ),
                 prompt=True,
                 validValues=[_('Yes'), _('No')],
@@ -274,10 +284,10 @@ class Plugin(plugin.PluginBase):
             if (
                 not os_installed and
                 self.dialog.queryString(
-                    name='ovehosted_os_install_again',
+                    name='OVEHOSTED_OS_INSTALL_AGAIN',
                     note=_(
                         'Do you want to try again the OS '
-                        'installation? (@VALUES@) :'
+                        'installation? (@VALUES@)[@DEFAULT@]: '
                     ),
                     prompt=True,
                     validValues=[_('Yes'), _('No')],

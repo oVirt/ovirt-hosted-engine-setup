@@ -76,7 +76,7 @@ class Plugin(plugin.PluginBase):
                     name='ovehosted_vmenv_mem',
                     note=_(
                         'Please specify the memory size of the VM in MB '
-                        '[Minimum requirement: @DEFAULT@]: '
+                        '[Defaults to minimum requirement: @DEFAULT@]: '
                     ),
                     prompt=True,
                     default=ohostedcons.Defaults.DEFAULT_MEM_SIZE_MB,
@@ -94,15 +94,17 @@ class Plugin(plugin.PluginBase):
                         self.environment[
                             ohostedcons.CoreEnv.REQUIREMENTS_CHECK_ENABLED
                         ] and
-                        not self.dialog.confirm(
+                        not self.dialog.queryString(
                             name=ohostedcons.Confirms.MEMORY_PROCEED,
-                            description='Confirm memory size',
                             note=_(
                                 'Continue with specified memory size? '
-                                '(yes/no) '
+                                '(@VALUES@)[@DEFAULT]: '
                             ),
                             prompt=True,
-                        )
+                            validValues=[_('Yes'), _('No')],
+                            caseSensitive=False,
+                            default=_('No')
+                        ) == _('Yes').lower()
                     ):
                         valid = False
 
