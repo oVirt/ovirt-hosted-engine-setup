@@ -375,6 +375,7 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
+        name=ohostedcons.Stages.OVF_IMPORTED,
         after=(
             ohostedcons.Stages.VM_IMAGE_AVAILABLE,
         ),

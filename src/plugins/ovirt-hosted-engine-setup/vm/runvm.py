@@ -100,8 +100,6 @@ class Plugin(plugin.PluginBase):
             )
 
     def _create(self):
-        waiter = tasks.TaskWaiter(self.environment)
-        waiter.wait()
         self.logger.info(_('Creating VM'))
         cmd = self._vdscommand + [
             'create',
@@ -115,7 +113,6 @@ class Plugin(plugin.PluginBase):
         tries = self.TICKET_MAX_TRIES
         while not password_set and tries > 0:
             tries -= 1
-            waiter.wait()
             try:
                 cmd = self._vdscommand + [
                     'setVmTicket',

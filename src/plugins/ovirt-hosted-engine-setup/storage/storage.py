@@ -259,7 +259,7 @@ class Plugin(plugin.PluginBase):
                     self.environment[
                         ohostedcons.StorageEnv.SP_UUID
                     ] = spUUID
-                    self._connectStoragePool()
+                    self._storagePoolConnection()
                     pool_info = self._getStoragePoolInfo(spUUID)
                     if pool_info:
                         self.environment[
@@ -385,21 +385,30 @@ class Plugin(plugin.PluginBase):
         if status != 0:
             raise RuntimeError(message)
 
-    def _connectStoragePool(self):
-        self.logger.debug('connectStoragePool')
+    def _storagePoolConnection(self, disconnect=False):
         spUUID = self.environment[ohostedcons.StorageEnv.SP_UUID]
         sdUUID = self.environment[ohostedcons.StorageEnv.SD_UUID]
         ID = self.environment[ohostedcons.StorageEnv.HOST_ID]
         scsi_key = spUUID
         master = sdUUID
         master_ver = 1
-        status, message = self.serv.connectStoragePool(args=[
+        method = self.serv.connectStoragePool
+        method_args = [
             spUUID,
             ID,
             scsi_key,
-            master,
-            master_ver
-        ])
+        ]
+        debug_msg = 'connectStoragePool'
+        if disconnect:
+            method = self.serv.disconnectStoragePool
+            debug_msg = 'disconnectStoragePool'
+        else:
+            method_args += [
+                master,
+                master_ver,
+            ]
+        self.logger.debug(debug_msg)
+        status, message = method(args=method_args)
         if status != 0:
             raise RuntimeError(message)
 
@@ -421,6 +430,18 @@ class Plugin(plugin.PluginBase):
             maxHostID,
             version
         ])
+        if status != 0:
+            raise RuntimeError(status_uuid)
+        self.logger.debug(status_uuid)
+
+    def _spmStop(self):
+        self.logger.debug('spmStop')
+        spUUID = self.environment[ohostedcons.StorageEnv.SP_UUID]
+        status, status_uuid = self.serv.spmStop(
+            args=[
+                spUUID,
+            ],
+        )
         if status != 0:
             raise RuntimeError(status_uuid)
         self.logger.debug(status_uuid)
@@ -642,14 +663,31 @@ class Plugin(plugin.PluginBase):
         else:
             self.logger.info(_('Creating Storage Domain'))
             self._createStorageDomain()
-        if self.pool_exists:
-            self.logger.info(_('Connecting Storage Pool'))
-        else:
+        if not self.pool_exists:
             self.logger.info(_('Creating Storage Pool'))
             self._createStoragePool()
-        self._connectStoragePool()
         if not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]:
+            self.logger.info(_('Connecting Storage Pool'))
+            self._storagePoolConnection()
             self._spmStart()
             self._activateStorageDomain()
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_MISC,
+        name=ohostedcons.Stages.STORAGE_POOL_DISCONNECTED,
+        after=(
+            ohostedcons.Stages.VM_IMAGE_AVAILABLE,
+            ohostedcons.Stages.OVF_IMPORTED,
+        ),
+        condition=lambda self: not self.environment[
+            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+        ],
+    )
+    def _disconnect_pool(self):
+        self.logger.info(_('Disonnecting Storage Pool'))
+        self.waiter.wait()
+        self._spmStop()
+        self._storagePoolConnection(disconnect=True)
+
 
 # vim: expandtab tabstop=4 shiftwidth=4

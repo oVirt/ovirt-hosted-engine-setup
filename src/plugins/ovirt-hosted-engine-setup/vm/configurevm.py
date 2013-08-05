@@ -55,6 +55,10 @@ class Plugin(plugin.PluginBase):
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
+        self.vdsClient = util.loadModule(
+            path=ohostedcons.FileLocations.VDS_CLIENT_DIR,
+            name='vdsClient'
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
@@ -136,14 +140,13 @@ class Plugin(plugin.PluginBase):
         after=(
             ohostedcons.Stages.VM_IMAGE_AVAILABLE,
             ohostedcons.Stages.BRIDGE_AVAILABLE,
+            ohostedcons.Stages.STORAGE_POOL_DISCONNECTED,
         ),
     )
     def _misc(self):
         self.logger.info(_('Configuring VM'))
         subst = {
-            '@SP_UUID@': self.environment[
-                ohostedcons.StorageEnv.SP_UUID
-            ],
+            '@SP_UUID@': self.vdsClient.BLANK_UUID,
             '@SD_UUID@': self.environment[
                 ohostedcons.StorageEnv.SD_UUID
             ],

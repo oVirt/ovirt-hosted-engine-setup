@@ -465,6 +465,8 @@ class Stages(object):
     SANLOCK_INITIALIZED = 'ohosted.sanlock.initialized'
     STORAGE_AVAILABLE = 'ohosted.storage.available'
     VM_IMAGE_AVAILABLE = 'ohosted.vm.image.available'
+    OVF_IMPORTED = 'ohosted.vm.ovf.imported'
+    STORAGE_POOL_DISCONNECTED = 'ohosted.storage.pool.disconnected'
     VM_CONFIGURED = 'ohosted.vm.state.configured'
     VM_RUNNING = 'ohosted.vm.state.running'
     BRIDGE_AVAILABLE = 'ohosted.network.bridge.available'
