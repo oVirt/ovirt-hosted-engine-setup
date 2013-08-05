@@ -102,7 +102,7 @@ class Plugin(plugin.PluginBase):
                     ),
                     prompt=True,
                     caseSensitive=True,
-                    validValues=self.BOOT_DEVICE.keys(),
+                    validValues=list(self.BOOT_DEVICE.keys()),
                     default=ohostedcons.Defaults.DEFAULT_BOOT,
                 )
 

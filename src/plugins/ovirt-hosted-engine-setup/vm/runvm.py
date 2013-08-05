@@ -218,7 +218,7 @@ class Plugin(plugin.PluginBase):
                     ),
                     prompt=True,
                     caseSensitive=False,
-                    validValues=answermap.keys(),
+                    validValues=list(answermap.keys()),
                     default='vnc',
                 )
 
