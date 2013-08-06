@@ -18,26 +18,46 @@
 #
 
 
-"""hosted engine core plugin."""
+"""Fake packager for offline mode"""
 
 
+import gettext
+
+
+from otopi import constants as otopicons
+from otopi import packager
 from otopi import util
+from otopi import plugin
 
 
-from . import misc
-from . import conf
-from . import answerfile
-from . import offlinepackager
-from . import shell
+_ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
 
 @util.export
-def createPlugins(context):
-    misc.Plugin(context=context)
-    conf.Plugin(context=context)
-    answerfile.Plugin(context=context)
-    offlinepackager.Plugin(context=context)
-    shell.Plugin(context=context)
+class Plugin(plugin.PluginBase, packager.PackagerBase):
+    """Offline packager."""
+
+    def install(self, packages, ignoreErrors=False):
+        pass
+
+    def update(self, packages, ignoreErrors=False):
+        pass
+
+    def queryPackages(self, patterns=None):
+        return []
+
+    def __init__(self, context):
+        super(Plugin, self).__init__(context=context)
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_INIT,
+        after=(
+            otopicons.Stages.PACKAGERS_DETECTION,
+        ),
+    )
+    def _init(self):
+        self.logger.debug('Registering offline packager')
+        self.context.registerPackager(packager=self)
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

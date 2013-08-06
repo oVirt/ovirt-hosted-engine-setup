@@ -36,7 +36,8 @@ __EOF__
 	exit 1
 }
 
-environment=""
+environment="OVESETUP_CORE/offlinePackager=bool:True"
+environment="${environment} PACKAGER/yumpackagerEnabled=bool:False"
 
 while [ -n "$1" ]; do
 	x="$1"

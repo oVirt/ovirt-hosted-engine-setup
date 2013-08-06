@@ -29,6 +29,7 @@ dist_my_PYTHON = \
 	misc.py \
 	conf.py \
 	answerfile.py \
+	offlinepackager.py \
 	shell.py \
 	$(NULL)
 
