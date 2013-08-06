@@ -80,19 +80,11 @@ make %{?_smp_mflags} install DESTDIR="%{buildroot}"
 %dir %{_sysconfdir}/ovirt-hosted-engine
 %{_sbindir}/hosted-engine
 %{_sbindir}/%{name}
-%dir %{python_sitelib}/ovirt_hosted_engine_setup
-%dir %{python_sitelib}/ovirt_hosted_engine_setup/ovf
-%{python_sitelib}/ovirt_hosted_engine_setup/*.py*
-%{python_sitelib}/ovirt_hosted_engine_setup/ovf/*.py*
-%dir %{_datadir}/%{name}
-%{_datadir}/%{name}/plugins/%{name}/*/*.py*
-%{ovirt_hosted_engine_setup_templates}/*.in
-%{ovirt_hosted_engine_setup_templates}/firewalld/base/*.xml.in
-%{ovirt_hosted_engine_setup_scripts}/%{name}
-%{ovirt_hosted_engine_setup_scripts}/%{name}.env
+%{python_sitelib}/ovirt_hosted_engine_setup/
+%{_datadir}/%{name}/
 
 #move to a separate package?
-%{vdsmhooksdir}/before_vm_start/*
+%{vdsmhooksdir}/before_vm_start/
 
 %changelog
 * Fri May 31 2013 Yedidyah Bar David <didi@redhat.com> - 0.0.0-0.0.master
