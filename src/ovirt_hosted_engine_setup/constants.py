@@ -67,6 +67,8 @@ class FileLocations(object):
     SYSCONFDIR = '/etc'
     DATADIR = '/usr/share'
     LIBEXECDIR = '/usr/libexec'
+    SD_MOUNT_PARENT_DIR = '/rhev/data-center/mnt'
+    SD_METADATA_DIR_NAME = 'ha_agent'
     OVIRT_HOSTED_ENGINE = 'ovirt-hosted-engine'
     OVIRT_HOSTED_ENGINE_SETUP = 'ovirt-hosted-engine-setup'
     VDS_CLIENT_DIR = os.path.join(
@@ -436,6 +438,13 @@ class VDSMEnv(object):
 
 @util.export
 @util.codegen
+class SanlockEnv(object):
+    SANLOCK_SERVICE = 'OVEHOSTED_SANLOCK/serviceName'
+    LOCKSPACE_NAME = 'OVEHOSTED_SANLOCK/lockspaceName'
+
+
+@util.export
+@util.codegen
 class Stages(object):
     CONFIG_BOOT_DEVICE = 'ohosted.boot.configuration.available'
     CONFIG_STORAGE = 'ohosted.storage.configuration.available'
@@ -444,6 +453,7 @@ class Stages(object):
     VDSMD_START = 'ohosted.vdsm.started'
     VDSMD_PKI = 'ohosted.vdsm.pki.available'
     VDSMD_CONFIGURED = 'ohosted.vdsm.configured'
+    SANLOCK_INITIALIZED = 'ohosted.sanlock.initialized'
     STORAGE_AVAILABLE = 'ohosted.storage.available'
     VM_IMAGE_AVAILABLE = 'ohosted.vm.image.available'
     VM_CONFIGURED = 'ohosted.vm.state.configured'
@@ -470,6 +480,8 @@ class Defaults(object):
     DEFAULT_STORAGE_DOMAIN_NAME = 'hosted_storage'
     DEFAULT_STORAGE_DATACENTER_NAME = 'hosted_datacenter'
     DEFAULT_VDSMD_SERVICE = 'vdsmd'
+    DEFAULT_SANLOCK_SERVICE = 'sanlock'
+    DEFAULT_LOCKSPACE_NAME = 'hosted-engine'
     DEFAULT_IMAGE_DESC = 'Hosted Engine Image'
     DEFAULT_IMAGE_SIZE_GB = 25  # based on minimum requirements.
     DEFAULT_MEM_SIZE_MB = 4096  # based on minimum requirements.

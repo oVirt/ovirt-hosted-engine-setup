@@ -142,7 +142,7 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
         after=(
-            ohostedcons.Stages.STORAGE_AVAILABLE,
+            ohostedcons.Stages.SANLOCK_INITIALIZED,
         ),
         name=ohostedcons.Stages.VM_IMAGE_AVAILABLE,
         condition=lambda self: not self.environment[

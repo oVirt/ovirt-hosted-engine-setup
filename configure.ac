@@ -97,6 +97,7 @@ AC_CONFIG_FILES([
 	src/plugins/ovirt-hosted-engine-setup/ha/Makefile
         src/plugins/ovirt-hosted-engine-setup/network/Makefile
 	src/plugins/ovirt-hosted-engine-setup/pki/Makefile
+	src/plugins/ovirt-hosted-engine-setup/sanlock/Makefile
 	src/plugins/ovirt-hosted-engine-setup/storage/Makefile
 	src/plugins/ovirt-hosted-engine-setup/system/Makefile
 	src/plugins/ovirt-hosted-engine-setup/vm/Makefile
