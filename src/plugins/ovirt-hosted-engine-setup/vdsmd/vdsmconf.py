@@ -92,7 +92,6 @@ class Plugin(plugin.PluginBase):
         for section in ('irs', 'vars'):
             if not self.config.has_section(section):
                 self.config.add_section(section)
-        self.config.set('irs', 'use_volume_leases', 'true')
         self.config.set(
             'vars',
             'default_bridge',
