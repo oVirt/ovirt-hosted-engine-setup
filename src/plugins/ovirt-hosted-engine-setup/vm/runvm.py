@@ -222,19 +222,22 @@ class Plugin(plugin.PluginBase):
                     default='vnc',
                 )
 
-                if answer in answermap:
-                    validConsole = True
+                if answer in answermap.keys():
                     self.environment[
                         ohostedcons.VMEnv.CONSOLE_TYPE
                     ] = answermap[answer]
-                elif interactive:
-                    self.logger.error(
-                        'Unsuppored console type provided.'
-                    )
-                else:
-                    raise RuntimeError(
-                        _('Unsuppored console type provided.')
-                    )
+            if self.environment[
+                ohostedcons.VMEnv.CONSOLE_TYPE
+            ] in answermap.values():
+                validConsole = True
+            elif interactive:
+                self.logger.error(
+                    'Unsuppored console type provided.'
+                )
+            else:
+                raise RuntimeError(
+                    _('Unsuppored console type provided.')
+                )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
