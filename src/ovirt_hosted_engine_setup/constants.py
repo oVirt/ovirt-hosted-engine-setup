@@ -26,6 +26,7 @@ import sys
 
 
 from otopi import util
+from ovirt_hosted_engine_setup import config
 
 
 def ohostedattrsclass(o):
@@ -55,9 +56,7 @@ def ohostedattrs(
 @util.export
 @util.codegen
 class FileLocations(object):
-    #TODO: fix paths while packaging
     SYSCONFDIR = '/etc'
-    LOCALSTATEDIR = '/var'
     DATADIR = '/usr/share'
     LIBEXECDIR = '/usr/libexec'
     OVIRT_HOSTED_ENGINE = 'ovirt-hosted-engine'
@@ -67,50 +66,50 @@ class FileLocations(object):
         'vdsm',
     )
     ENGINE_VM_TEMPLATE = os.path.join(
-        DATADIR,
+        config.DATADIR,
         OVIRT_HOSTED_ENGINE_SETUP,
         'templates',
         'vm.conf.in'
     )
     ENGINE_VM_CONF = os.path.join(
-        SYSCONFDIR,
+        config.SYSCONFDIR,
         OVIRT_HOSTED_ENGINE,
         'vm.conf'
     )
     OVIRT_HOSTED_ENGINE_TEMPLATE = os.path.join(
-        DATADIR,
+        config.DATADIR,
         OVIRT_HOSTED_ENGINE_SETUP,
         'templates',
         'hosted-engine.conf.in'
     )
     OVIRT_HOSTED_ENGINE_SETUP_CONF = os.path.join(
-        SYSCONFDIR,
+        config.SYSCONFDIR,
         OVIRT_HOSTED_ENGINE,
         'hosted-engine.conf'
     )
     OVIRT_HOSTED_ENGINE_ANSWERS = os.path.join(
-        SYSCONFDIR,
+        config.SYSCONFDIR,
         OVIRT_HOSTED_ENGINE,
         'answers.conf'
     )
     HOSTED_ENGINE_IPTABLES_TEMPLATE = os.path.join(
-        DATADIR,
+        config.DATADIR,
         OVIRT_HOSTED_ENGINE_SETUP,
         'templates',
         'iptables.default.in'
     )
     HOSTED_ENGINE_IPTABLES_EXAMPLE = os.path.join(
-        SYSCONFDIR,
+        config.SYSCONFDIR,
         OVIRT_HOSTED_ENGINE,
         'iptables.example'
     )
     HOSTED_ENGINE_FIREWALLD_EXAMPLE_DIR = os.path.join(
-        SYSCONFDIR,
+        config.SYSCONFDIR,
         OVIRT_HOSTED_ENGINE,
         'firewalld'
     )
     HOSTED_ENGINE_FIREWALLD_TEMPLATES_DIR = os.path.join(
-        DATADIR,
+        config.DATADIR,
         OVIRT_HOSTED_ENGINE_SETUP,
         'templates',
         'firewalld',

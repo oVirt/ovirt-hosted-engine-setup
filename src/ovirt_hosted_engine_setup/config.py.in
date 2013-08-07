@@ -23,7 +23,8 @@
 
 PACKAGE_NAME = '@PACKAGE_NAME@'
 PACKAGE_VERSION = '@PACKAGE_VERSION@'
-INTERFACE_VERSION = '@INTERFACE_VERSION@'
+SYSCONFDIR = '@sysconfdir@'
+DATADIR = '@datadir@'
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

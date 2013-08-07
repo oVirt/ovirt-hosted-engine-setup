@@ -90,7 +90,6 @@ AC_CONFIG_FILES([
 	src/Makefile
 	src/bin/Makefile
 	src/ovirt_hosted_engine_setup/Makefile
-	src/ovirt_hosted_engine_setup/config.py
 	src/ovirt_hosted_engine_setup/ovf/Makefile
 	src/plugins/Makefile
 	src/plugins/ovirt-hosted-engine-setup/Makefile

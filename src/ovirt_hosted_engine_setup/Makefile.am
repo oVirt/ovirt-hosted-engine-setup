@@ -31,6 +31,10 @@ CLEANFILES = \
 	config.py \
 	$(NULL)
 
+EXTRA_DIST = \
+	config.py.in \
+	$(NULL)
+
 dist_ovirthostedenginelib_PYTHON = \
 	__init__.py \
 	check_liveliness.py \
@@ -40,13 +44,17 @@ dist_ovirthostedenginelib_PYTHON = \
 	tasks.py \
 	$(NULL)
 
-ovirthostedenginelib_PYTHON = \
+nodist_ovirthostedenginelib_PYTHON = \
 	config.py \
 	$(NULL)
 
-config.py:	\
-	$(top_srcdir)/configure.ac \
-	$(NULL)
+config.py: config.py.in
+	sed \
+	-e 's|@sysconfdir[@]|$(sysconfdir)|g' \
+	-e 's|@datadir[@]|$(datadir)|g' \
+	-e 's|@prefix[@]|$(prefix)|g' \
+	-e 's|@PACKAGE_NAME[@]|$(PACKAGE_NAME)|g' \
+	-e 's|@PACKAGE_VERSION[@]|$(PACKAGE_VERSION)|g' < $< > $@
 
 clean-local: \
 	python-clean \
