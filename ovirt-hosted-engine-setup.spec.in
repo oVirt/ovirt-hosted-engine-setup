@@ -50,6 +50,7 @@ Requires:       virt-viewer
 Requires:       openssl
 Requires:       sudo
 Requires:       bind-utils
+Requires:       ovirt-hosted-engine-ha
 BuildRequires:  gettext
 BuildRequires:  otopi-devel >= 1.1.0
 BuildRequires:  python2-devel
