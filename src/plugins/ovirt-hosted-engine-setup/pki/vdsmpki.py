@@ -49,7 +49,7 @@ class Plugin(plugin.PluginBase):
             ^
             \s+
             Subject:\s*
-            (?P<subject>(\w+=\w+,\s+)+.*)
+            (?P<subject>\w+=\w+.*)
             $
         """
     )
@@ -188,6 +188,13 @@ class Plugin(plugin.PluginBase):
         self.command.detect('openssl')
 
     @plugin.event(
+        stage=plugin.Stages.STAGE_VALIDATION,
+    )
+    def _validation(self):
+        if os.path.exists(ohostedcons.FileLocations.LIBVIRT_SERVER_CERT):
+            self._getSPICEcerts()
+
+    @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
         name=ohostedcons.Stages.VDSMD_PKI,
     )
@@ -196,8 +203,6 @@ class Plugin(plugin.PluginBase):
             self._generateVDSMcerts()
         if not os.path.exists(ohostedcons.FileLocations.LIBVIRT_SERVER_CERT):
             self._generateSPICEcerts()
-        else:
-            self._getSPICEcerts()
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLEANUP,
