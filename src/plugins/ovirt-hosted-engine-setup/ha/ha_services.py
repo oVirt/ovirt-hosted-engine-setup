@@ -80,7 +80,7 @@ class Plugin(plugin.PluginBase):
                     vdscommand,
                     raiseOnError=True
                 )
-        # enable and start HA services
+        self.logger.info(_('Enabling and starting HA services'))
         for service in (
             ohostedcons.Const.HA_AGENT_SERVICE,
             ohostedcons.Const.HA_BROCKER_SERVICE,
