@@ -28,6 +28,7 @@ from . import misc
 from . import conf
 from . import answerfile
 from . import offlinepackager
+from . import preview
 from . import shell
 
 
@@ -37,6 +38,7 @@ def createPlugins(context):
     conf.Plugin(context=context)
     answerfile.Plugin(context=context)
     offlinepackager.Plugin(context=context)
+    preview.Plugin(context=context)
     shell.Plugin(context=context)
 
 

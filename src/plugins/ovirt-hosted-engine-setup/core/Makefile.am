@@ -30,6 +30,7 @@ dist_my_PYTHON = \
 	conf.py \
 	answerfile.py \
 	offlinepackager.py \
+	preview.py \
 	shell.py \
 	$(NULL)
 

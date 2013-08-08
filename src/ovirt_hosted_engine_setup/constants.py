@@ -21,12 +21,16 @@
 """Constants."""
 
 
+import gettext
 import os
 import sys
 
 
 from otopi import util
 from ovirt_hosted_engine_setup import config
+
+
+_ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
 
 def ohostedattrsclass(o):
@@ -43,12 +47,16 @@ class classproperty(property):
 
 def ohostedattrs(
     answerfile=False,
+    summary=False,
+    description=None,
 ):
     class decorator(classproperty):
         def __init__(self, o):
             super(decorator, self).__init__(o)
             self.__hosted_attrs__ = dict(
                 answerfile=answerfile,
+                summary=summary,
+                description=description,
             )
     return decorator
 
@@ -172,6 +180,7 @@ class CoreEnv(object):
     TEMPDIR = 'OVEHOSTED_CORE/tempDir'
     DEPLOY_PROCEED = 'OVEHOSTED_CORE/deployProceed'
     SCREEN_PROCEED = 'OVEHOSTED_CORE/screenProceed'
+    CONFIRM_SETTINGS = 'OVEHOSTED_CORE/confirmSettings'
 
 
 @util.export
@@ -181,12 +190,16 @@ class NetworkEnv(object):
 
     @ohostedattrs(
         answerfile=True,
+        summary=True,
+        description=_('Bridge interface'),
     )
     def BRIDGE_IF(self):
         return 'OVEHOSTED_NETWORK/bridgeIf'
 
     @ohostedattrs(
         answerfile=True,
+        summary=True,
+        description=_('Engine FQDN'),
     )
     def OVIRT_HOSTED_ENGINE_FQDN(self):
         return 'OVEHOSTED_NETWORK/fqdn'
@@ -194,18 +207,24 @@ class NetworkEnv(object):
 
     @ohostedattrs(
         answerfile=True,
+        summary=True,
+        description=_('Bridge name'),
     )
     def BRIDGE_NAME(self):
         return 'OVEHOSTED_NETWORK/bridgeName'
 
     @ohostedattrs(
         answerfile=True,
+        summary=True,
+        description=_('Firewall manager'),
     )
     def FIREWALL_MANAGER(self):
         return 'OVEHOSTED_NETWORK/firewallManager'
 
     @ohostedattrs(
         answerfile=True,
+        summary=True,
+        description=_('Gateway address'),
     )
     def GATEWAY(self):
         return 'OVEHOSTED_NETWORK/gateway'
@@ -229,6 +248,8 @@ class EngineEnv(object):
     ADMIN_PASSWORD = 'OVEHOSTED_ENGINE/adminPassword'
 
     @ohostedattrs(
+        summary=True,
+        description=_('Host name for web application'),
         answerfile=True,
     )
     def APP_HOST_NAME(self):
@@ -241,12 +262,16 @@ class EngineEnv(object):
 class StorageEnv(object):
     @ohostedattrs(
         answerfile=True,
+        summary=True,
+        description=_('Host ID'),
     )
     def HOST_ID(self):
         return 'OVEHOSTED_STORAGE/hostID'
 
     @ohostedattrs(
         answerfile=True,
+        summary=True,
+        description=_('Storage connection'),
     )
     def STORAGE_DOMAIN_CONNECTION(self):
         return 'OVEHOSTED_STORAGE/storageDomainConnection'
@@ -289,6 +314,8 @@ class StorageEnv(object):
 
     @ohostedattrs(
         answerfile=True,
+        summary=True,
+        description=_('Storage type'),
     )
     def STORAGE_TYPE(self):
         return 'OVEHOSTED_STORAGE/storageType'
@@ -301,6 +328,8 @@ class StorageEnv(object):
 
     @ohostedattrs(
         answerfile=True,
+        summary=True,
+        description=_('Image size GB'),
     )
     def IMAGE_SIZE_GB(self):
         return 'OVEHOSTED_STORAGE/imgSizeGB'
@@ -326,12 +355,16 @@ class VMEnv(object):
 
     @ohostedattrs(
         answerfile=True,
+        summary=True,
+        description=_('Memory size MB'),
     )
     def MEM_SIZE_MB(self):
         return 'OVEHOSTED_VM/vmMemSizeMB'
 
     @ohostedattrs(
         answerfile=True,
+        summary=True,
+        description=_('Number of CPUs'),
     )
     def VCPUS(self):
         return 'OVEHOSTED_VM/vmVCpus'
@@ -340,18 +373,24 @@ class VMEnv(object):
 
     @ohostedattrs(
         answerfile=True,
+        summary=True,
+        description=_('Boot type'),
     )
     def BOOT(self):
         return 'OVEHOSTED_VM/vmBoot'
 
     @ohostedattrs(
         answerfile=True,
+        summary=True,
+        description=_('ISO image (for cdrom boot)'),
     )
     def CDROM(self):
         return 'OVEHOSTED_VM/vmCDRom'
 
     @ohostedattrs(
         answerfile=True,
+        summary=True,
+        description=_('OVF archive (for disk boot)'),
     )
     def OVF(self):
         return 'OVEHOSTED_VM/ovfArchive'
@@ -363,6 +402,8 @@ class VMEnv(object):
 
     @ohostedattrs(
         answerfile=True,
+        summary=True,
+        description=_('Console type'),
     )
     def CONSOLE_TYPE(self):
         return 'OVEHOSTED_VDSM/consoleType'
@@ -450,6 +491,7 @@ class Confirms(object):
     DISK_PROCEED = 'DISK_PROCEED'
     MEMORY_PROCEED = 'MEMORY_PROCEED'
     SCREEN_PROCEED = 'SCREEN_PROCEED'
+    SETTINGS = 'SETTINGS_PROCEED'
 
 
 # vim: expandtab tabstop=4 shiftwidth=4
