@@ -49,10 +49,11 @@ nodist_ovirthostedenginelib_PYTHON = \
 	$(NULL)
 
 config.py: config.py.in
-	sed \
+	$(SED) \
 	-e 's|@sysconfdir[@]|$(sysconfdir)|g' \
 	-e 's|@datadir[@]|$(datadir)|g' \
 	-e 's|@prefix[@]|$(prefix)|g' \
+	-e 's|@localstatedir[@]|$(localstatedir)|g' \
 	-e 's|@PACKAGE_NAME[@]|$(PACKAGE_NAME)|g' \
 	-e 's|@PACKAGE_VERSION[@]|$(PACKAGE_VERSION)|g' < $< > $@
 

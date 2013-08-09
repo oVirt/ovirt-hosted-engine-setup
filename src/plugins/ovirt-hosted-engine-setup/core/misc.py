@@ -59,6 +59,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.CoreEnv.DEPLOY_PROCEED,
             None
         )
+        self.environment.setdefault(
+            otopicons.CoreEnv.LOG_DIR,
+            ohostedcons.FileLocations.OVIRT_HOSTED_ENGINE_SETUP_LOGDIR
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,

@@ -71,6 +71,12 @@ class FileLocations(object):
     SD_METADATA_DIR_NAME = 'ha_agent'
     OVIRT_HOSTED_ENGINE = 'ovirt-hosted-engine'
     OVIRT_HOSTED_ENGINE_SETUP = 'ovirt-hosted-engine-setup'
+    OVIRT_HOSTED_ENGINE_SETUP_LOGDIR = os.path.join(
+        config.LOCALSTATEDIR,
+        'log',
+        OVIRT_HOSTED_ENGINE_SETUP,
+    )
+
     VDS_CLIENT_DIR = os.path.join(
         DATADIR,
         'vdsm',
