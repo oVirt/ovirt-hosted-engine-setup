@@ -81,49 +81,52 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         name=ohostedcons.Stages.CONFIG_BOOT_DEVICE,
-        condition=lambda self: not self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
     )
     def _customization(self):
-        interactive = self.environment[
-            ohostedcons.VMEnv.BOOT
-        ] is None
-        valid = False
-        while not valid:
-            if interactive:
-                self.environment[
-                    ohostedcons.VMEnv.BOOT
-                ] = self.dialog.queryString(
-                    name='OVEHOSTED_VMENV_BOOT',
-                    note=_(
-                        'Please specify the device to boot the VM '
-                        'from (@VALUES@) [@DEFAULT@]: '
-                    ),
-                    prompt=True,
-                    caseSensitive=True,
-                    validValues=list(self.BOOT_DEVICE.keys()),
-                    default=ohostedcons.Defaults.DEFAULT_BOOT,
-                )
-
-            if self.environment[
+        if self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]:
+            # VM has been installed, will boot from disk.
+            self.environment[ohostedcons.VMEnv.BOOT] = 'disk'
+            self.environment[ohostedcons.VMEnv.CDROM] = None
+            self.environment[ohostedcons.VMEnv.OVF] = None
+        else:
+            interactive = self.environment[
                 ohostedcons.VMEnv.BOOT
-            ] in self.BOOT_DEVICE.keys():
-                valid = True
-            elif interactive:
-                self.logger.error(
-                    _(
-                        'The provided boot type is not supported. '
-                        'Please try again'
+            ] is None
+            valid = False
+            while not valid:
+                if interactive:
+                    self.environment[
+                        ohostedcons.VMEnv.BOOT
+                    ] = self.dialog.queryString(
+                        name='OVEHOSTED_VMENV_BOOT',
+                        note=_(
+                            'Please specify the device to boot the VM '
+                            'from (@VALUES@) [@DEFAULT@]: '
+                        ),
+                        prompt=True,
+                        caseSensitive=True,
+                        validValues=list(self.BOOT_DEVICE.keys()),
+                        default=ohostedcons.Defaults.DEFAULT_BOOT,
                     )
-                )
-            else:
-                raise RuntimeError(
-                    _(
-                        'The provided boot type is not supported. '
-                        'Please try again'
+
+                if self.environment[
+                    ohostedcons.VMEnv.BOOT
+                ] in self.BOOT_DEVICE.keys():
+                    valid = True
+                elif interactive:
+                    self.logger.error(
+                        _(
+                            'The provided boot type is not supported. '
+                            'Please try again'
+                        )
                     )
-                )
+                else:
+                    raise RuntimeError(
+                        _(
+                            'The provided boot type is not supported. '
+                            'Please try again'
+                        )
+                    )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
