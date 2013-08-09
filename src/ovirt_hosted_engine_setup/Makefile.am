@@ -42,6 +42,7 @@ dist_ovirthostedenginelib_PYTHON = \
 	domains.py \
 	util.py \
 	tasks.py \
+	vm_status.py \
 	$(NULL)
 
 nodist_ovirthostedenginelib_PYTHON = \
