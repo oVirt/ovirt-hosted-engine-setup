@@ -115,6 +115,12 @@ class Plugin(plugin.PluginBase):
             ] = ohostedcons.Const.FIRST_HOST_ID
         else:
             self.logger.info(_('Installing on additional host'))
+            if self.environment[
+                ohostedcons.StorageEnv.HOST_ID
+            ] == ohostedcons.Const.FIRST_HOST_ID:
+                self.environment[
+                    ohostedcons.StorageEnv.HOST_ID
+                ] = None
             interactive = self.environment[
                 ohostedcons.StorageEnv.HOST_ID
             ] is None
