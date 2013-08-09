@@ -130,14 +130,11 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
+        name=ohostedcons.Stages.VM_CONFIGURED,
         after=(
             ohostedcons.Stages.VM_IMAGE_AVAILABLE,
             ohostedcons.Stages.BRIDGE_AVAILABLE,
         ),
-        name=ohostedcons.Stages.VM_CONFIGURED,
-        condition=lambda self: not self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
     )
     def _misc(self):
         self.logger.info(_('Configuring VM'))
