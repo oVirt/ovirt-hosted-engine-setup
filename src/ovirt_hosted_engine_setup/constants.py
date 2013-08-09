@@ -377,7 +377,11 @@ class VMEnv(object):
     def VCPUS(self):
         return 'OVEHOSTED_VM/vmVCpus'
 
-    MAC_ADDR = 'OVEHOSTED_VM/vmMACAddr'
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def MAC_ADDR(self):
+        return 'OVEHOSTED_VM/vmMACAddr'
 
     @ohostedattrs(
         answerfile=True,
