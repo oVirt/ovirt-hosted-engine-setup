@@ -26,6 +26,7 @@ import os
 import uuid
 import gettext
 import tempfile
+import time
 
 
 from otopi import util
@@ -50,6 +51,7 @@ class Plugin(plugin.PluginBase):
     GLUSTERFS_DOMAIN = 7
 
     DATA_DOMAIN = 1
+    UMOUNT_TRIES = 10
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
@@ -75,13 +77,22 @@ class Plugin(plugin.PluginBase):
         )
 
     def _umount(self, path):
-        self.execute(
-            (
-                self.command.get('umount'),
-                path
-            ),
-            raiseOnError=False
-        )
+        rc = -1
+        tries = self.UMOUNT_TRIES
+        while tries > 0:
+            rc, _stdout, _stderr = self.execute(
+                (
+                    self.command.get('umount'),
+                    path
+                ),
+                raiseOnError=False
+            )
+            if rc == 0:
+                tries = -1
+            else:
+                tries -= 1
+                time.sleep(1)
+        return rc
 
     def _handleHostId(self):
         if not self.environment[
@@ -174,8 +185,14 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.Const.MINIMUM_SPACE_STORAGEDOMAIN_MB
             )
         finally:
-            self._umount(path)
-            os.rmdir(path)
+            if self._umount(path) == 0:
+                os.rmdir(path)
+            else:
+                self.logger.warning(
+                    _('Cannot unmount {path}').format(
+                        path=path,
+                    )
+                )
 
     def _getExistingDomain(self):
         self._storageServerConnection()
