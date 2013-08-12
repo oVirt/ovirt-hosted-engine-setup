@@ -66,10 +66,11 @@ class Plugin(plugin.PluginBase):
         self.domain_exists = False
         self.pool_exists = False
 
-    def _mount(self, path, connection):
+    def _mount(self, path, connection, domain_type):
         self.execute(
             (
                 self.command.get('mount'),
+                '-t%s' % domain_type,
                 connection,
                 path
             ),
@@ -174,10 +175,10 @@ class Plugin(plugin.PluginBase):
                             _('Invalid value for Host ID: must be integer')
                         )
 
-    def _validateDomain(self, connection):
+    def _validateDomain(self, connection, domain_type):
         path = tempfile.mkdtemp()
         try:
-            self._mount(path, connection)
+            self._mount(path, connection, domain_type)
             self._checker.check_valid_path(path)
             self._checker.check_base_writable(path)
             self._checker.check_available_space(
@@ -519,7 +520,10 @@ class Plugin(plugin.PluginBase):
                 self._validateDomain(
                     connection=self.environment[
                         ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
-                    ]
+                    ],
+                    domain_type=self.environment[
+                        ohostedcons.StorageEnv.DOMAIN_TYPE
+                    ],
                 )
 
                 validDomain = True
