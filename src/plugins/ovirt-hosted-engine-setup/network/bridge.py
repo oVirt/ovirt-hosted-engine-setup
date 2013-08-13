@@ -87,6 +87,12 @@ class Plugin(plugin.PluginBase):
             self._enabled and
             not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
         ),
+        after=(
+            ohostedcons.Stages.DIALOG_TITLES_S_NETWORK,
+        ),
+        before=(
+            ohostedcons.Stages.DIALOG_TITLES_E_NETWORK,
+        ),
     )
     def _customization(self):
         nics = ethtool.get_devices()

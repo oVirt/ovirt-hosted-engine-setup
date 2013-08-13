@@ -30,6 +30,7 @@ from . import answerfile
 from . import offlinepackager
 from . import preview
 from . import shell
+from . import titles
 
 
 @util.export
@@ -40,6 +41,7 @@ def createPlugins(context):
     offlinepackager.Plugin(context=context)
     preview.Plugin(context=context)
     shell.Plugin(context=context)
+    titles.Plugin(context=context)
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

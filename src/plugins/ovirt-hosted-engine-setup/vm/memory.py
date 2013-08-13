@@ -61,6 +61,10 @@ class Plugin(plugin.PluginBase):
         ],
         after=(
             ohostedcons.Stages.CONFIG_OVF_IMPORT,
+            ohostedcons.Stages.DIALOG_TITLES_S_VM,
+        ),
+        before=(
+            ohostedcons.Stages.DIALOG_TITLES_E_VM,
         ),
     )
     def _customization(self):

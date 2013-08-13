@@ -73,7 +73,11 @@ class Plugin(plugin.PluginBase):
             ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
         ],
         after=(
+            ohostedcons.Stages.DIALOG_TITLES_S_VM,
             ohostedcons.Stages.CONFIG_OVF_IMPORT,
+        ),
+        before=(
+            ohostedcons.Stages.DIALOG_TITLES_E_VM,
         ),
     )
     def _disk_customization(self):

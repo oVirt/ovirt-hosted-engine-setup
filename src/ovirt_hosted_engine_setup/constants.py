@@ -483,6 +483,17 @@ class Stages(object):
     HOST_ADDED = 'ohosted.engine.host.added'
     HA_START = 'ohosted.engine.ha.start'
 
+    DIALOG_TITLES_S_VM = 'ohosted.dialog.titles.vm.start'
+    DIALOG_TITLES_E_VM = 'ohosted.dialog.titles.vm.end'
+    DIALOG_TITLES_S_NETWORK = 'ohosted.dialog.titles.network.start'
+    DIALOG_TITLES_E_NETWORK = 'ohosted.dialog.titles.network.end'
+    DIALOG_TITLES_S_ENGINE = 'ohosted.dialog.titles.engine.start'
+    DIALOG_TITLES_E_ENGINE = 'ohosted.dialog.titles.engine.end'
+    DIALOG_TITLES_S_SYSTEM = 'ohosted.dialog.titles.system.start'
+    DIALOG_TITLES_E_SYSTEM = 'ohosted.dialog.titles.system.end'
+    DIALOG_TITLES_S_STORAGE = 'ohosted.dialog.titles.storage.start'
+    DIALOG_TITLES_E_STORAGE = 'ohosted.dialog.titles.storage.end'
+
 
 @util.export
 @util.codegen

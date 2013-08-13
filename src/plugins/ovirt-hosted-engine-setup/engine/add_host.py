@@ -185,6 +185,12 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
+        after=(
+            ohostedcons.Stages.DIALOG_TITLES_S_ENGINE,
+        ),
+        before=(
+            ohostedcons.Stages.DIALOG_TITLES_E_ENGINE,
+        ),
     )
     def _customization(self):
         interactive = (

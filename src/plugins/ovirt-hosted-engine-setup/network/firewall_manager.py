@@ -125,6 +125,12 @@ class Plugin(plugin.PluginBase):
         condition=lambda self: not self.environment[
             ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
         ],
+        after=(
+            ohostedcons.Stages.DIALOG_TITLES_S_NETWORK,
+        ),
+        before=(
+            ohostedcons.Stages.DIALOG_TITLES_E_NETWORK,
+        ),
     )
     def _customization(self):
         if self.environment[ohostedcons.NetworkEnv.FIREWALL_MANAGER] is None:

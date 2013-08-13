@@ -48,6 +48,12 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         priority=plugin.Stages.PRIORITY_HIGH,
+        after=(
+            ohostedcons.Stages.DIALOG_TITLES_S_SYSTEM,
+        ),
+        before=(
+            ohostedcons.Stages.DIALOG_TITLES_E_SYSTEM,
+        ),
     )
     def _customization(self):
         if not self.services.exists(name='sshd'):

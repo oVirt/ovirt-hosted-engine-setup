@@ -466,6 +466,12 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         name=ohostedcons.Stages.CONFIG_STORAGE,
         priority=plugin.Stages.PRIORITY_FIRST,
+        after=(
+            ohostedcons.Stages.DIALOG_TITLES_S_STORAGE,
+        ),
+        before=(
+            ohostedcons.Stages.DIALOG_TITLES_E_STORAGE,
+        ),
     )
     def _customization(self):
         self.dialog.note(

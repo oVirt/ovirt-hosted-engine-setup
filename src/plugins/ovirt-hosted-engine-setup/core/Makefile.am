@@ -32,6 +32,7 @@ dist_my_PYTHON = \
 	offlinepackager.py \
 	preview.py \
 	shell.py \
+	titles.py \
 	$(NULL)
 
 clean-local: \

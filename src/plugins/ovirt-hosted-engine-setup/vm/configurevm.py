@@ -81,6 +81,12 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         name=ohostedcons.Stages.CONFIG_BOOT_DEVICE,
+        after=(
+            ohostedcons.Stages.DIALOG_TITLES_S_VM,
+        ),
+        before=(
+            ohostedcons.Stages.DIALOG_TITLES_E_VM,
+        ),
     )
     def _customization(self):
         if self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]:

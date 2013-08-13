@@ -190,6 +190,12 @@ class Plugin(plugin.PluginBase):
         condition=lambda self: not self.environment[
             ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
         ],
+        after=(
+            ohostedcons.Stages.DIALOG_TITLES_S_VM,
+        ),
+        before=(
+            ohostedcons.Stages.DIALOG_TITLES_E_VM,
+        ),
     )
     def _customization(self):
         self._vdscommand = [self.command.get('vdsClient')]

@@ -46,11 +46,13 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
-        before=(
-            ohostedcons.Stages.NET_FIREWALL_MANAGER_PROCESS_TEMPLATES,
-        ),
         after=(
+            ohostedcons.Stages.DIALOG_TITLES_S_NETWORK,
             ohostedcons.Stages.NET_FIREWALL_MANAGER_AVAILABLE,
+        ),
+        before=(
+            ohostedcons.Stages.DIALOG_TITLES_E_NETWORK,
+            ohostedcons.Stages.NET_FIREWALL_MANAGER_PROCESS_TEMPLATES,
         ),
         condition=lambda self: not self.environment[
             ohostedcons.CoreEnv.IS_ADDITIONAL_HOST

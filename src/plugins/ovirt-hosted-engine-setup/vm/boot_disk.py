@@ -282,7 +282,11 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         after=(
+            ohostedcons.Stages.DIALOG_TITLES_S_VM,
             ohostedcons.Stages.CONFIG_BOOT_DEVICE,
+        ),
+        before=(
+            ohostedcons.Stages.DIALOG_TITLES_E_VM,
         ),
         condition=lambda self: (
             self.environment[ohostedcons.VMEnv.BOOT] == 'disk' and
