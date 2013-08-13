@@ -100,7 +100,6 @@ class Plugin(plugin.PluginBase):
             ohostedcons.CoreEnv.ADDITIONAL_HOST_ENABLED
         ]:
             self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] = False
-            self.logger.info(_('Installing on first host'))
         else:
             interactive = self.environment[
                 ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
