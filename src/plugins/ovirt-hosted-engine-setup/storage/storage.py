@@ -93,6 +93,15 @@ class Plugin(plugin.PluginBase):
             else:
                 tries -= 1
                 time.sleep(1)
+                #rc, stdout and stderr are automatically logged as debug
+                self.execute(
+                    (
+                        self.command.get('lsof'),
+                        '+D%s' % path,
+                        '-xfl'
+                    ),
+                    raiseOnError=False
+                )
         return rc
 
     def _handleHostId(self):
@@ -461,6 +470,7 @@ class Plugin(plugin.PluginBase):
     def _setup(self):
         self.command.detect('mount')
         self.command.detect('umount')
+        self.command.detect('lsof')
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
