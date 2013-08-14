@@ -31,7 +31,7 @@ Version:        @PACKAGE_RPM_VERSION@
 Release:        @PACKAGE_RPM_RELEASE@%{?release_suffix}%{?dist}
 License:        LGPLv2+
 URL:            http://www.ovirt.org
-Source:         http://resources.ovirt.org/releases/stable/3.3/%{name}-%{package_version}.tar.gz
+Source:         http://resources.ovirt.org/releases/nightly/src/%{name}-%{package_version}.tar.gz
 Group:          Applications/System
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -40,9 +40,9 @@ BuildArch:      noarch
 Requires:       python
 Requires:       python-ethtool >= 0.6-3
 Requires:       otopi >= 1.1.0
-Requires:       vdsm >= 4.11.0
-Requires:       vdsm-cli >= 4.11.0
-Requires:       vdsm-python >= 4.11.0
+Requires:       vdsm >= 4.12.0
+Requires:       vdsm-cli >= 4.12.0
+Requires:       vdsm-python >= 4.12.0
 Requires:       ovirt-host-deploy >= 1.1.0
 Requires:       openssh-server
 Requires:       virt-viewer
@@ -92,5 +92,24 @@ make %{?_smp_mflags} install DESTDIR="%{buildroot}"
 %{vdsmhooksdir}/before_vm_start/
 
 %changelog
+* Fri Sep 13 2013 Sandro Bonazzola <sbonazzo@redhat.com> - 1.0.0-0.4.beta:
+- 1.0.0-0.4.beta
+- Resolves: BZ#1005767
+- Resolves: BZ#1001726
+- Resolves: BZ#1001706
+
+* Tue Sep  3 2013 Sandro Bonazzola <sbonazzo@redhat.com> - 1.0.0-0.3.beta
+- 1.0.0-0.3.beta
+- Resolves: BZ#1001161
+
+* Wed Aug 14 2013 Sandro Bonazzola <sbonazzo@redhat.com> - 1.0.0-0.2.beta
+- 1.0.0-0.2.beta
+- Resolves: BZ#999865
+- Resolves: BZ#999577
+- Resolves: BZ#999542
+
+* Wed Aug 14 2013 Sandro Bonazzola <sbonazzo@redhat.com> - 1.0.0-0.1.beta
+- 1.0.0-0.1.beta
+
 * Fri May 31 2013 Yedidyah Bar David <didi@redhat.com> - 0.0.0-0.0.master
 - Initial add.
