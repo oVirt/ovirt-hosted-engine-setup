@@ -204,7 +204,9 @@ class Plugin(plugin.PluginBase):
                     ' inside the Administrator Portal [@DEFAULT@]: '
                 ),
                 prompt=True,
-                default='local_host',
+                default='hosted_engine_%s' % self.environment[
+                    ohostedcons.StorageEnv.HOST_ID
+                ],
             )
             if hostname:
                 self.environment[

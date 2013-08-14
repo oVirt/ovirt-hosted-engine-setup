@@ -258,7 +258,6 @@ class EngineEnv(object):
     @ohostedattrs(
         summary=True,
         description=_('Host name for web application'),
-        answerfile=True,
     )
     def APP_HOST_NAME(self):
         return 'OVEHOSTED_ENGINE/appHostName'
