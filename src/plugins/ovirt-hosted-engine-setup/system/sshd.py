@@ -46,6 +46,21 @@ class Plugin(plugin.PluginBase):
         super(Plugin, self).__init__(context=context)
 
     @plugin.event(
+        stage=plugin.Stages.STAGE_INIT,
+    )
+    def _init(self):
+        self.environment.setdefault(
+            ohostedcons.NetworkEnv.SSHD_PORT,
+            None
+        )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_SETUP,
+    )
+    def _setup(self):
+        self.command.detect('sshd')
+
+    @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         priority=plugin.Stages.PRIORITY_HIGH,
         after=(
@@ -58,6 +73,25 @@ class Plugin(plugin.PluginBase):
     def _customization(self):
         if not self.services.exists(name='sshd'):
             raise RuntimeError(_('sshd service is required'))
+        if self.environment[ohostedcons.NetworkEnv.SSHD_PORT] is None:
+            self.environment.setdefault(
+                ohostedcons.NetworkEnv.SSHD_PORT,
+                ohostedcons.Defaults.DEFAULT_SSHD_PORT
+            )
+            rc, stdout, _stderr = self.execute(
+                args=(
+                    self.command.get('sshd'),
+                    '-T',
+                ),
+            )
+            if rc == 0:
+                for line in stdout:
+                    words = line.split()
+                    if words[0] == 'port':
+                        self.environment[
+                            ohostedcons.NetworkEnv.SSHD_PORT
+                        ] = int(words[1])
+                        break
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,

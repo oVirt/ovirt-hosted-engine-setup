@@ -340,6 +340,9 @@ class Plugin(plugin.PluginBase):
                     cluster=engine_api.clusters.get('Default'),
                     ssh=self._ovirtsdk_xml.params.SSH(
                         authentication_method='publickey',
+                        port=self.environment[
+                            ohostedcons.NetworkEnv.SSHD_PORT
+                        ],
                     ),
                 )
             )

@@ -240,6 +240,13 @@ class NetworkEnv(object):
     FIREWALLD_SERVICES = 'OVEHOSTED_NETWORK/firewalldServices'
     FIREWALLD_SUBST = 'OVEHOSTED_NETWORK/firewalldSubst'
 
+    @ohostedattrs(
+        summary=True,
+        description=_('SSH daemon port'),
+    )
+    def SSHD_PORT(self):
+        return 'OVEHOSTED_NETWORK/sshdPort'
+
 
 @util.export
 @util.codegen
@@ -506,6 +513,7 @@ class Defaults(object):
     DEFAULT_PKI_SUBJECT = '/C=EN/L=Test/O=Test/CN=Test'
     DEFAULT_VM_PASSWD_VALIDITY_SECS = "10800"  # 3 hours to for engine install
     DEFAULT_VM_VCPUS = 2  # based on minimum requirements.
+    DEFAULT_SSHD_PORT = 22
 
 
 @util.export
