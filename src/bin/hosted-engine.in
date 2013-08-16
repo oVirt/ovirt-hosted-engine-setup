@@ -32,7 +32,8 @@ Usage: $0
         Connect the storage domain
     --start-pool
         Start the storage pool manually
-
+    --console
+        Open the configured console using remote-viewer on localhost
 
 __EOF__
     exit $rc
