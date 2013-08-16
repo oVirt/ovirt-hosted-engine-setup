@@ -28,7 +28,6 @@ dist_my_PYTHON = \
 	__init__.py \
 	vdsmenv.py \
 	sshd.py \
-	super_user.py \
 	$(NULL)
 
 clean-local: \

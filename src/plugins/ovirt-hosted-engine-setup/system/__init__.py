@@ -26,14 +26,11 @@ from otopi import util
 
 from . import vdsmenv
 from . import sshd
-from . import super_user
 
 
 @util.export
 def createPlugins(context):
     vdsmenv.Plugin(context=context)
     sshd.Plugin(context=context)
-    super_user.Plugin(context=context)
-
 
 # vim: expandtab tabstop=4 shiftwidth=4

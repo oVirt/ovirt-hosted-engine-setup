@@ -39,6 +39,8 @@ import ovirtsdk.infrastructure.errors
 from otopi import util
 from otopi import plugin
 from otopi import constants as otopicons
+from otopi import transaction
+from otopi import filetransaction
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
@@ -96,6 +98,45 @@ class Plugin(plugin.PluginBase):
                 os.fchmod(fd, 0o600)
                 with os.fdopen(fd, 'w') as fileobj:
                     fileobj.write(content)
+
+    def _getSSHkey(self):
+        self.logger.debug('Acquiring SSH key from the engine')
+        with contextlib.closing(
+            urllib2.urlopen(
+                'http://{fqdn}/engine.ssh.key.txt'.format(
+                    fqdn=self.environment[
+                        ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+                    ]
+                )
+            )
+        ) as urlObj:
+            authorized_keys_line = urlObj.read()
+            if authorized_keys_line:
+                self.logger.debug(authorized_keys_line)
+                authorized_keys_file = os.path.join(
+                    os.path.expanduser('~root'),
+                    '.ssh',
+                    'authorized_keys'
+                )
+                content = []
+                if os.path.exists(authorized_keys_file):
+                    with open(authorized_keys_file, 'r') as f:
+                        content = f.read().splitlines()
+                if not authorized_keys_line in content:
+                    content.append(authorized_keys_line)
+                    with transaction.Transaction() as localtransaction:
+                        localtransaction.append(
+                            filetransaction.FileTransaction(
+                                name=authorized_keys_file,
+                                content=content,
+                                mode=0o600,
+                                owner='root',
+                                enforcePermissions=True,
+                                modifiedList=self.environment[
+                                    otopicons.CoreEnv.MODIFIED_FILES
+                                ],
+                            )
+                        )
 
     def _getIPAddress(self):
         self.logger.debug('Acquiring bridge address')
@@ -273,6 +314,7 @@ class Plugin(plugin.PluginBase):
     )
     def _closeup(self):
         self._getPKICert()
+        self._getSSHkey()
         try:
             self.logger.debug('Connecting to the Engine')
             engine_api = self._ovirtsdk_api.API(
@@ -296,9 +338,9 @@ class Plugin(plugin.PluginBase):
                     address=self._getIPAddress(),
                     reboot_after_installation=False,
                     cluster=engine_api.clusters.get('Default'),
-                    root_password=self.environment[
-                        ohostedcons.HostEnv.ROOT_PASSWORD
-                    ]
+                    ssh=self._ovirtsdk_xml.params.SSH(
+                        authentication_method='publickey',
+                    ),
                 )
             )
         except ovirtsdk.infrastructure.errors.RequestError as e:
@@ -311,7 +353,7 @@ class Plugin(plugin.PluginBase):
                     'Cannot automatically add the host '
                     'to the Default cluster:\n{details}\n'
                 ).format(
-                    details=e.details
+                    details=e.detail
                 )
             )
         up = self._wait_host_ready(
@@ -328,6 +370,7 @@ class Plugin(plugin.PluginBase):
                     ],
                 )
             )
+        engine_api.disconnect()
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLEANUP,

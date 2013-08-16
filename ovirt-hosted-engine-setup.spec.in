@@ -45,7 +45,6 @@ Requires:       vdsm-cli >= 4.11.0
 Requires:       vdsm-gluster >= 4.11.0
 Requires:       ovirt-host-deploy >= 1.1.0
 Requires:       openssh-server
-Requires:       python-paramiko
 Requires:       virt-viewer
 Requires:       openssl
 Requires:       sudo
@@ -58,7 +57,7 @@ BuildRequires:  gettext
 BuildRequires:  otopi-devel >= 1.1.0
 BuildRequires:  python2-devel
 
-Requires:       %{engine}-sdk-python >= 3.3.0
+Requires:       %{engine}-sdk-python >= 3.3.0.4
 
 %description
 Hosted engine tool for oVirt project.

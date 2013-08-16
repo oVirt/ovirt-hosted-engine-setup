@@ -243,13 +243,6 @@ class NetworkEnv(object):
 
 @util.export
 @util.codegen
-class HostEnv(object):
-
-    ROOT_PASSWORD = 'OVEHOSTED_HOST/rootPassword'
-
-
-@util.export
-@util.codegen
 @ohostedattrsclass
 class EngineEnv(object):
 
