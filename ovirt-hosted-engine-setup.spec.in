@@ -87,6 +87,7 @@ make %{?_smp_mflags} install DESTDIR="%{buildroot}"
 %{_sbindir}/%{name}
 %{python_sitelib}/ovirt_hosted_engine_setup/
 %{_datadir}/%{name}/
+%{_mandir}/man8/*
 
 #move to a separate package?
 %{vdsmhooksdir}/before_vm_start/

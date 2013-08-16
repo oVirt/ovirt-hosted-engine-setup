@@ -43,6 +43,7 @@ EXTRA_DIST = \
 
 SUBDIRS = \
 	build \
+	man \
 	po \
 	src \
 	templates \

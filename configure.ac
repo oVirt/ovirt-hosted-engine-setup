@@ -86,6 +86,7 @@ AC_CONFIG_FILES([
 	Makefile
 	ovirt-hosted-engine-setup.spec
 	build/Makefile
+	man/Makefile
 	po/Makefile.in
 	src/Makefile
 	src/bin/Makefile

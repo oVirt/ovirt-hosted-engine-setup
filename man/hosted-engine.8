@@ -1,0 +1,48 @@
+.\" hosted-engine - Tool for handling hosted engine
+.TH "hosted-engine" "8" "" "Sandro Bonazzola" ""
+.SH "NAME"
+hosted\-engine \- Tools for handling hosted engine
+.SH "SYNOPSIS"
+\fBhosted\-engine\fP [options]
+.PP
+.SH "DESCRIPTION"
+.PP
+The \fBhosted\-engine\fP command can be used for deploying a VM that will host
+an Enterprise Virtualization Manager that will be able to manage the same host
+running the VM. The command can also be used for starting, stopping and
+accessing the VM.
+\&
+
+.SH "GENERAL OPTIONS"
+The following are general options you can use with this command:\&
+.IP "\fB\-\-help\fP"
+Show the help message and exit.\&
+.IP "\fB\-\-deploy\fP"
+Run ovirt-hosted-engine-setup for deploying the VM.\&
+.IP "\fB\-\-vm-start\fP"
+Start VM on this host.\&
+.IP "\fB\-\-vm-shutdown\fP"
+Gracefully shutdown the VM on this host.\&
+.IP "\fB\-\-vm-poweroff\fP"
+Forcefully poweroff the VM on this host.\&
+.IP "\fB\-\-vm-status\fP"
+Show the VM status.\&
+.IP "\fB\-\-add-console-password=<password>\fP"
+Create a temporary password for vnc/spice connection.\&
+.IP "\fB\-\-console\fP"
+Open the configured console using remote-viewer on localhost.\&
+.IP "\fB\-\-check-liveliness\fP"
+Checks liveliness page of engine.\&
+.IP "\fB\-\-connect-storage\fP"
+Connect the storage domain manually.\&
+.IP "\fB\-\-start-pool\fP"
+Start the storage pool manually.\&
+
+.SH "SEE ALSO"
+.BR ovirt\-hosted\-engine\-setup (8)
+
+.SH "AUTHORS"
+.nf
+Alex Lourie\&
+Sandro Bonazzola\&
+Yedidyah Bar David\&

@@ -1,16 +1,2 @@
 ovirt-hosted-engine-setup -- oVirt Hosted Engine Setup
 ======================================================
-
-USAGE
------
-hosted-engine [OPTIONS]
-
-OPTIONS:
---config-append=file
-        Load extra configuration files.
---generate-answer=file
-        Generate answer file.
-
-An answer file example is available in tests subdirectory.
-You can use it with the following command:
-    hosted-engine --config-append=tests/answers
