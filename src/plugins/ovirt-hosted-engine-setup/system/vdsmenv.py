@@ -110,12 +110,17 @@ class Plugin(plugin.PluginBase):
     )
     def _late_setup(self):
         #We need vdsmd up for customization checks
-        self.services.state(
+        if not self.services.status(
             name=self.environment[
                 ohostedcons.VDSMEnv.VDSMD_SERVICE
-            ],
-            state=True
-        )
+            ]
+        ):
+            self.services.state(
+                name=self.environment[
+                    ohostedcons.VDSMEnv.VDSMD_SERVICE
+                ],
+                state=True
+            )
         self._connect()
 
     @plugin.event(
