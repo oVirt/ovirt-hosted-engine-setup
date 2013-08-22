@@ -43,6 +43,7 @@ Requires:       otopi >= 1.1.0
 Requires:       vdsm >= 4.11.0
 Requires:       vdsm-cli >= 4.11.0
 Requires:       vdsm-gluster >= 4.11.0
+Requires:       vdsm-python >= 4.11.0
 Requires:       ovirt-host-deploy >= 1.1.0
 Requires:       openssh-server
 Requires:       virt-viewer

@@ -24,6 +24,7 @@ bridge configuration plugin.
 
 
 import gettext
+import os
 
 
 import ethtool
@@ -31,6 +32,7 @@ import ethtool
 
 from otopi import util
 from otopi import plugin
+from vdsm import netinfo
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
@@ -97,14 +99,59 @@ class Plugin(plugin.PluginBase):
     def _customization(self):
         nics = ethtool.get_devices()
         validValues = []
+        enslaved = set()
+        interfaces = set()
         for nic in nics:
             flags = ethtool.get_flags(nic)
             if flags & ethtool.IFF_LOOPBACK:
                 self.logger.debug('Detected loopback device %s' % nic)
+            elif ethtool.get_module(nic) == 'bridge':
+                self.logger.debug('Detected bridge device %s' % nic)
+                if os.path.exists('/sys/class/net/%s/brif' % nic):
+                    slaves = os.listdir('/sys/class/net/%s/brif' % nic)
+                    self.logger.debug(
+                        'Detected slaves for device %s: %s' % (
+                            nic,
+                            ','.join(slaves)
+                        )
+                    )
+                    for iface in slaves:
+                        if iface in nics:
+                            enslaved.update([iface])
+            elif netinfo.isbonding(nic):
+                slaves = netinfo.slaves(nic)
+                if not slaves:
+                    self.logger.debug(
+                        'Detected bond device %s without slaves' % nic
+                    )
+                else:
+                    self.logger.debug(
+                        'Detected slaves for device %s: %s' % (
+                            nic,
+                            ','.join(slaves)
+                        )
+                    )
+                    enslaved.update(slaves)
+                    interfaces.update([nic])
             else:
-                validValues.append(nic)
+                interfaces.update([nic])
+        validValues = list(interfaces - enslaved)
+        self.logger.debug('Nics detected: %s' % ','.join(nics))
+        self.logger.debug('Nics enslaved: %s' % ','.join(enslaved))
+        self.logger.debug('Nics valid: %s' % ','.join(validValues))
         if not validValues:
-            raise RuntimeError('A Network interface is required')
+            if enslaved:
+                raise RuntimeError(
+                    _(
+                        'The following existing interfaces are not suitable '
+                        'for vdsm: {enslaved}. You might want to pull out an '
+                        'interface out of a bridge to be able to use it'
+                    ).format(
+                        enslaved=','.join(enslaved)
+                    )
+                )
+            else:
+                raise RuntimeError(_('A Network interface is required'))
         interactive = self.environment[
             ohostedcons.NetworkEnv.BRIDGE_IF
         ] is None
@@ -140,7 +187,11 @@ class Plugin(plugin.PluginBase):
     )
     def _misc(self):
         self.logger.info(_('Configuring the management bridge'))
-        nic = self.environment[ohostedcons.NetworkEnv.BRIDGE_IF]
+        nics = self.environment[ohostedcons.NetworkEnv.BRIDGE_IF]
+        bond = ''
+        if netinfo.isbonding(nics):
+            bond = nics
+            nics = ','.join(netinfo.slaves(bond))
         bridge = self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME]
         cmd = [self.command.get('vdsClient')]
         if self.environment[ohostedcons.VDSMEnv.USE_SSL]:
@@ -150,8 +201,8 @@ class Plugin(plugin.PluginBase):
             'addNetwork',
             'bridge=%s' % bridge,
             'vlan=',
-            'bond=',
-            'nics=%s' % nic,
+            'bond=%s' % bond,
+            'nics=%s' % nics,
             'force=False',
             'bridged=True',
             'BOOTPROTO=dhcp',
