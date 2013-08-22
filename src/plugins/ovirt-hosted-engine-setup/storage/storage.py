@@ -183,11 +183,37 @@ class Plugin(plugin.PluginBase):
                             _('Invalid value for Host ID: must be integer')
                         )
 
+    def _check_domain_rights(self, path):
+        rc, _stdout, _stderr = self.execute(
+            (
+                self.command.get('sudo'),
+                '-u', 'vdsm',
+                '-g', 'kvm',
+                'test',
+                '-r', path,
+                '-a',
+                '-w', path,
+                '-a',
+                '-x', path,
+            ),
+            raiseOnError=False
+        )
+        if rc != 0:
+            raise RuntimeError(
+                _(
+                    'permission settings on the specified storage do not '
+                    'allow access to the storage to vdsm user and kvm group. '
+                    'Verify permission settings on the specified storage '
+                    'or specify another location'
+                )
+            )
+
     def _validateDomain(self, connection, domain_type):
         path = tempfile.mkdtemp()
         try:
             self._mount(path, connection, domain_type)
             self._checker.check_valid_path(path)
+            self._check_domain_rights(path)
             self._checker.check_base_writable(path)
             self._checker.check_available_space(
                 path,
@@ -471,6 +497,7 @@ class Plugin(plugin.PluginBase):
         self.command.detect('mount')
         self.command.detect('umount')
         self.command.detect('lsof')
+        self.command.detect('sudo')
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
