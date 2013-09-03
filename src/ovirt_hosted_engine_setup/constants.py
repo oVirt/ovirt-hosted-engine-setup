@@ -176,6 +176,7 @@ class Const(object):
     FIRST_HOST_ID = 1
     HA_AGENT_SERVICE = 'ovirt-ha-agent'
     HA_BROCKER_SERVICE = 'ovirt-ha-broker'
+    HOSTED_ENGINE_VM_NAME = 'HostedEngine'
 
 
 @util.export
@@ -406,7 +407,6 @@ class VMEnv(object):
     def OVF(self):
         return 'OVEHOSTED_VM/ovfArchive'
 
-    NAME = 'OVEHOSTED_VM/vmName'
     VM_PASSWD = 'OVEHOSTED_VDSM/passwd'
     VM_PASSWD_VALIDITY_SECS = 'OVEHOSTED_VDSM/passwdValiditySecs'
     SUBST = 'OVEHOSTED_VM/subst'
@@ -507,7 +507,6 @@ class Defaults(object):
     DEFAULT_MEM_SIZE_MB = 4096  # based on minimum requirements.
     DEFAULT_BOOT = 'cdrom'  # boot device - drive C or cdrom or pxe
     DEFAULT_CDROM = '/dev/null'
-    DEFAULT_NAME = 'oVirt Hosted Engine'
     DEFAULT_BRIDGE_IF = 'em1'
     DEFAULT_BRIDGE_NAME = 'ovirtmgmt'
     DEFAULT_PKI_SUBJECT = '/C=EN/L=Test/O=Test/CN=Test'

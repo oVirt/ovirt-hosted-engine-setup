@@ -160,10 +160,6 @@ class Plugin(plugin.PluginBase):
                     ovf_xml,
                 )
             )
-            self.logger.debug('Configuring VM')
-            self.environment[
-                ohostedcons.VMEnv.NAME
-            ] = tree.find('Content/Name').text
             self.logger.debug('Configuring Disk')
             disk = tree.find('Section/Disk')
             self.environment[

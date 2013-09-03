@@ -72,10 +72,6 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VMEnv.BOOT,
             None,
         )
-        self.environment.setdefault(
-            ohostedcons.VMEnv.NAME,
-            ohostedcons.Defaults.DEFAULT_NAME
-        )
         self.environment[ohostedcons.VMEnv.SUBST] = {}
 
     @plugin.event(
@@ -166,9 +162,7 @@ class Plugin(plugin.PluginBase):
             '@MAC_ADDR@': self.environment[
                 ohostedcons.VMEnv.MAC_ADDR
             ],
-            '@NAME@': self.environment[
-                ohostedcons.VMEnv.NAME
-            ],
+            '@NAME@': ohostedcons.Const.HOSTED_ENGINE_VM_NAME,
             '@CONSOLE_TYPE@': self.environment[
                 ohostedcons.VMEnv.CONSOLE_TYPE
             ],
