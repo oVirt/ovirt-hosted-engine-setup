@@ -153,9 +153,12 @@ class Plugin(plugin.PluginBase):
             )
             self.dialog.note(
                 _(
-                    'If you need to reboot the VM you can set a temporary '
-                    'password using the command:\n'
-                    'host-deploy --add-console-password=<password>'
+                    'If you need to reboot the VM you will need to start it '
+                    'manually using the command:\n'
+                    'hosted-engine --vm-start\n'
+                    'You can then set a temporary password using '
+                    'the command:\n'
+                    'hosted-engine --add-console-password=<password>'
                 )
             )
 
