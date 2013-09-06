@@ -150,6 +150,12 @@ class Plugin(plugin.PluginBase):
             )
             self.dialog.note(
                 _(
+                    'Please note that in order to use remote-viewer you need '
+                    'to be able to run graphical applications.'
+                )
+            )
+            self.dialog.note(
+                _(
                     'If you need to reboot the VM you can set a temporary '
                     'password using the command:\n'
                     'host-deploy --add-console-password=<password>'
