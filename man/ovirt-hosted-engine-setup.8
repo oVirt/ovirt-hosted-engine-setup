@@ -1,5 +1,5 @@
 .\" ovirt-hosted-engine-setup - Tool for deploying hosted engine VM
-.TH "ovirt-hosted-engine-setup" "8" "" "Sandro Bonazzola" ""
+.TH "OVIRT-HOSTED-ENGINE-SETUP" "8" "2013-09-06" "oVirt" "oVirt Hosted Engine Setup Manual"
 .SH "NAME"
 ovirt\-hosted\-engine\-setup \- Tool for deploying hosted engine VM
 .SH "SYNOPSIS"
@@ -7,25 +7,66 @@ ovirt\-hosted\-engine\-setup \- Tool for deploying hosted engine VM
 .PP
 .SH "DESCRIPTION"
 .PP
-The \fBovirt\-hosted\-engine\-setup\fP command can be used for deploying a VM
-that will host an Enterprise Virtualization Manager that will be able to
-manage the same host running the VM.
+The \fBovirt\-hosted\-engine\-setup\fP command deploys a virtual machine that
+you can install oVirt Open Virtualization Manager on to.
+The Manager installation on your hosted-engine virtual machine can manage
+the host it is running on.
 \&
 
-.SH "GENERAL OPTIONS"
+.SH "OPTIONS"
 The following are general options you can use with this command:\&
 .IP "\fB\-\-help\fP"
 Show the help message and exit.\&
 .IP "\fB\-\-config-append=file\fP"
-Load extra configuration files.\&
+Load extra configuration files. The format of the files is the same used in
+generated answer files.
+\&
 .IP "\fB\-\-generate-answer=file\fP"
-Generate answer file.\&
+Generate answer file to the specified path instead of using the default
+location: /etc/ovirt-hosted-engine/answers.conf
+\&
+
+.SH "FILES"
+.TP
+.I /etc/ovirt-hosted-engine/answers.conf
+Default location for generated answer file. The file must be used on
+additional hosts using the option --config-append
+
+.SH "EXAMPLE"
+This is an answers.conf example file:
+.PP
+.nf
+.in +4n
+[environment:default]
+OVEHOSTED_NETWORK/bridgeIf=none:None
+OVEHOSTED_NETWORK/fqdn=str:ovirt.home
+OVEHOSTED_NETWORK/bridgeName=str:ovirtmgmt
+OVEHOSTED_NETWORK/firewallManager=str:firewalld
+OVEHOSTED_NETWORK/gateway=str:192.168.1.1
+OVEHOSTED_STORAGE/storageDatacenterName=str:hosted_datacenter
+OVEHOSTED_STORAGE/storageDomainName=str:hosted_storage
+OVEHOSTED_STORAGE/hostID=int:1
+OVEHOSTED_STORAGE/storageType=none:None
+OVEHOSTED_STORAGE/volUUID=str:272b4067-1ae4-4755-b2e3-96bb600006e7
+OVEHOSTED_STORAGE/domainType=str:nfs
+OVEHOSTED_STORAGE/imgSizeGB=str:25
+OVEHOSTED_STORAGE/storageDomainConnection=str:server.home:/home/images
+OVEHOSTED_STORAGE/connectionUUID=str:ca50f16a-23ab-465c-914b-b132f07a7151
+OVEHOSTED_STORAGE/spUUID=str:8018650a-4c64-48fb-a98e-5602bba3086e
+OVEHOSTED_STORAGE/imgUUID=str:c7d69e7a-d934-423c-93d6-ca45c5882806
+OVEHOSTED_STORAGE/sdUUID=str:1d6f6bca-467e-4890-b220-dd2d9b204ab5
+OVEHOSTED_VM/vmVCpus=str:2
+OVEHOSTED_VDSM/consoleType=str:vnc
+OVEHOSTED_VM/vmBoot=str:pxe
+OVEHOSTED_VM/vmMemSizeMB=str:4096
+OVEHOSTED_VM/vmUUID=str:ab35151c-7661-475e-aeaf-adc6fb45e399
+OVEHOSTED_VM/vmMACAddr=str:00:16:3e:1b:d7:61
+OVEHOSTED_VM/vmCDRom=none:None
+OVEHOSTED_VM/ovfArchive=none:None
+OVEHOSTED_VDSM/spicePkiSubject=str:O=home, CN=server.home
+OVEHOSTED_VDSM/pkiSubject=str:/C=EN/L=Test/O=Test/CN=Test
+.in
+.fi
 
 .SH "SEE ALSO"
 .BR hosted\-engine (8)
-
-.SH "AUTHORS"
-.nf
-Alex Lourie\&
-Sandro Bonazzola\&
-Yedidyah Bar David\&
