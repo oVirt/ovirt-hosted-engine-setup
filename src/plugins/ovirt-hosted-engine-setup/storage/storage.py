@@ -236,6 +236,7 @@ class Plugin(plugin.PluginBase):
             domain_info = self._getStorageDomainInfo(sdUUID)
             if (
                 domain_info and
+                'remotePath' in domain_info and
                 domain_info['remotePath'] == self.environment[
                     ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
                 ]
