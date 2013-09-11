@@ -21,10 +21,14 @@
 """Utils."""
 
 
+import os
 import random
 
 
 from otopi import util
+
+
+from . import constants as ohostedcons
 
 
 @util.export
@@ -47,6 +51,32 @@ def randomMAC():
         '%02x' % random.randint(0x00, 0xff),
     ]
     return ':'.join(mac)
+
+
+class VirtUserContext(object):
+    """
+    Switch to vdsm:kvm user with provided umask
+    """
+
+    def __init__(self, environment, umask):
+        super(VirtUserContext, self).__init__()
+        self.environment = environment
+        self._euid = None
+        self._egid = None
+        self._umask = umask
+        self._old_umask = None
+
+    def __enter__(self):
+        self._euid = os.geteuid()
+        self._egid = os.getegid()
+        self._old_umask = os.umask(self._umask)
+        os.setegid(self.environment[ohostedcons.VDSMEnv.KVM_GID])
+        os.seteuid(self.environment[ohostedcons.VDSMEnv.VDSM_UID])
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        os.seteuid(self._euid)
+        os.setegid(self._egid)
+        os.umask(self._umask)
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

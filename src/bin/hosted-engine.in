@@ -80,7 +80,11 @@ while [ -n "$1" ]; do
             fi
         ;;
         --vm-status)
-            python -m ovirt_hosted_engine_setup.vm_status
+            if [ -r "${conf}" ] ; then
+                python -m ovirt_hosted_engine_setup.vm_status
+            else
+                echo "You must run --deploy first"
+            fi
         ;;
         --add-console-password=*)
             if [ -n "${vmid}" ] ; then
