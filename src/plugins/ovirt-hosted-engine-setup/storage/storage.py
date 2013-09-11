@@ -22,9 +22,11 @@
 Local storage domain plugin.
 """
 
+import glob
 import os
 import uuid
 import gettext
+import stat
 import tempfile
 import time
 
@@ -36,6 +38,10 @@ from otopi import plugin
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import domains as ohosteddomains
 from ovirt_hosted_engine_setup import tasks
+from ovirt_hosted_engine_setup import util as ohostedutil
+
+
+from ovirt_hosted_engine_ha.client import client
 
 
 _ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
@@ -104,6 +110,48 @@ class Plugin(plugin.PluginBase):
                 )
         return rc
 
+    def _get_dom_md_path(self):
+        """
+        Return path of storage domain holding engine vm
+        """
+        domains = glob.glob(
+            os.path.join(
+                ohostedcons.FileLocations.SD_MOUNT_PARENT_DIR,
+                '*',
+                self.environment[ohostedcons.StorageEnv.SD_UUID],
+            )
+        )
+        if not domains:
+            raise RuntimeError(
+                _(
+                    'Path to storage domain {sd_uuid} not found in {root}'
+                ).format(
+                    sd_uuid=self.environment[ohostedcons.StorageEnv.SD_UUID],
+                    root=ohostedcons.FileLocations.SD_MOUNT_PARENT_DIR,
+                )
+            )
+        return domains[0]
+
+    def _re_deploying_host(self):
+        interactive = self.environment[ohostedcons.CoreEnv.RE_DEPLOY] is None
+        if interactive:
+            self.environment[
+                ohostedcons.CoreEnv.RE_DEPLOY
+            ] = self.dialog.queryString(
+                name='OVEHOSTED_RE_DEPLOY_HOST',
+                note=_(
+                    'The Host ID is already known. '
+                    'Is this a re-deployment on an additional host that was '
+                    'previously set up '
+                    '(@VALUES@)[@DEFAULT@]? '
+                ),
+                prompt=True,
+                validValues=(_('Yes'), _('No')),
+                caseSensitive=False,
+                default=_('Yes')
+            ) == _('Yes').lower()
+        return self.environment[ohostedcons.CoreEnv.RE_DEPLOY]
+
     def _handleHostId(self):
         if not self.environment[
             ohostedcons.CoreEnv.ADDITIONAL_HOST_ENABLED
@@ -159,7 +207,7 @@ class Plugin(plugin.PluginBase):
                         default=ohostedcons.Const.FIRST_HOST_ID + 1,
                     )
                 try:
-                    valid = True
+                    # ensure it's an int and not the FIRST_HOST_ID.
                     if int(
                         self.environment[ohostedcons.StorageEnv.HOST_ID]
                     ) == ohostedcons.Const.FIRST_HOST_ID:
@@ -172,6 +220,36 @@ class Plugin(plugin.PluginBase):
                             raise RuntimeError(
                                 _('Cannot use the same ID used by first host')
                             )
+                    # ensure nobody else is using it
+                    all_host_stats = {}
+                    with ohostedutil.VirtUserContext(
+                        environment=self.environment,
+                        umask=stat.S_IWGRP | stat.S_IWOTH,
+                    ):
+                        ha_cli = client.HAClient()
+                        all_host_stats = ha_cli.get_all_host_stats_direct(
+                            dom_path=self._get_dom_md_path(),
+                            service_type=self.environment[
+                                ohostedcons.SanlockEnv.LOCKSPACE_NAME
+                            ],
+                        )
+                    if (
+                        int(
+                            self.environment[ohostedcons.StorageEnv.HOST_ID]
+                        ) in all_host_stats.keys() and
+                        not self._re_deploying_host()
+                    ):
+                        valid = False
+                        if interactive:
+                            self.logger.error(
+                                _('Invalid value for Host ID: already used')
+                            )
+                        else:
+                            raise RuntimeError(
+                                _('Invalid value for Host ID: already used')
+                            )
+                    else:
+                        valid = True
                 except ValueError:
                     valid = False
                     if interactive:
@@ -245,14 +323,13 @@ class Plugin(plugin.PluginBase):
                 self.environment[
                     ohostedcons.CoreEnv.ADDITIONAL_HOST_ENABLED
                 ] = True
-                self._handleHostId()
                 self.environment[
                     ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
                 ] = domain_info['name']
-
                 self.environment[
                     ohostedcons.StorageEnv.SD_UUID
                 ] = sdUUID
+                self._handleHostId()
                 pool_list = domain_info['pool']
                 if pool_list:
                     self.pool_exists = True
@@ -529,6 +606,10 @@ class Plugin(plugin.PluginBase):
         )
         self.environment.setdefault(
             ohostedcons.CoreEnv.IS_ADDITIONAL_HOST,
+            None
+        )
+        self.environment.setdefault(
+            ohostedcons.CoreEnv.RE_DEPLOY,
             None
         )
 

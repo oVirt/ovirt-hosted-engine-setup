@@ -34,35 +34,10 @@ from otopi import plugin
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
+from ovirt_hosted_engine_setup import util as ohostedutil
 
 
 _ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
-
-
-class VirtUserContext(object):
-    """
-    Switch to vdsm:kvm user with provided umask
-    """
-
-    def __init__(self, environment, umask):
-        super(VirtUserContext, self).__init__()
-        self.environment = environment
-        self._euid = None
-        self._egid = None
-        self._umask = umask
-        self._old_umask = None
-
-    def __enter__(self):
-        self._euid = os.geteuid()
-        self._egid = os.getegid()
-        self._old_umask = os.umask(self._umask)
-        os.setegid(self.environment[ohostedcons.VDSMEnv.KVM_GID])
-        os.seteuid(self.environment[ohostedcons.VDSMEnv.VDSM_UID])
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        os.seteuid(self._euid)
-        os.setegid(self._egid)
-        os.umask(self._umask)
 
 
 @util.export
@@ -154,7 +129,7 @@ class Plugin(plugin.PluginBase):
         )
         if not os.path.isdir(metadatadir):
             self.logger.debug('Creating metadata directory')
-            with VirtUserContext(
+            with ohostedutil.VirtUserContext(
                 environment=self.environment,
                 umask=stat.S_IWGRP | stat.S_IWOTH,
             ):
@@ -163,7 +138,7 @@ class Plugin(plugin.PluginBase):
             self.logger.info(_('sanlock lockspace already initialized'))
         else:
             self.logger.info(_('Initializing sanlock lockspace'))
-            with VirtUserContext(
+            with ohostedutil.VirtUserContext(
                 environment=self.environment,
                 umask=stat.S_IXUSR | stat.S_IXGRP | stat.S_IRWXO,
             ):
@@ -176,7 +151,7 @@ class Plugin(plugin.PluginBase):
             self.logger.info(_('sanlock metadata already initialized'))
         else:
             self.logger.info(_('Initializing sanlock metadata'))
-            with VirtUserContext(
+            with ohostedutil.VirtUserContext(
                 environment=self.environment,
                 umask=stat.S_IXUSR | stat.S_IXGRP | stat.S_IRWXO,
             ):

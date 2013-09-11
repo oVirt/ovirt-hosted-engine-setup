@@ -192,6 +192,7 @@ class CoreEnv(object):
     DEPLOY_PROCEED = 'OVEHOSTED_CORE/deployProceed'
     SCREEN_PROCEED = 'OVEHOSTED_CORE/screenProceed'
     CONFIRM_SETTINGS = 'OVEHOSTED_CORE/confirmSettings'
+    RE_DEPLOY = 'OVEHOSTED_CORE/additionalHostReDeployment'
 
 
 @util.export
