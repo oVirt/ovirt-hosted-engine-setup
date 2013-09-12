@@ -9,4 +9,5 @@ spiceSecureChannels=smain,sdisplay,sinputs,scursor,splayback,srecord,ssmartcard,
 bridge=ovirtmgmt
 nicModel=virtio
 smp=@VCPUS@
+cpuType=@CPU_TYPE@
 @CDROM@

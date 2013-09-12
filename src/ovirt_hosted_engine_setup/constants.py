@@ -441,7 +441,14 @@ class VDSMEnv(object):
     def SPICE_SUBJECT(self):
         return 'OVEHOSTED_VDSM/spicePkiSubject'
 
-    VDSM_CPU = 'OVEHOSTED_VDSM/cpu'
+    @ohostedattrs(
+        answerfile=True,
+        summary=True,
+        description=_('CPU Type'),
+    )
+    def VDSM_CPU(self):
+        return 'OVEHOSTED_VDSM/cpu'
+
     USE_SSL = 'OVEHOSTED_VDSM/useSSL'
 
 

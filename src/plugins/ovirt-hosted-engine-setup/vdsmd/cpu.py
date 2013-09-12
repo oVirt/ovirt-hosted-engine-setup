@@ -101,9 +101,16 @@ cpu check plugin.
             )
 
     @plugin.event(
-        stage=plugin.Stages.STAGE_VALIDATION,
+        stage=plugin.Stages.STAGE_CUSTOMIZATION,
+        after=(
+            ohostedcons.Stages.DIALOG_TITLES_S_VM,
+            ohostedcons.Stages.CONFIG_OVF_IMPORT,
+        ),
+        before=(
+            ohostedcons.Stages.DIALOG_TITLES_E_VM,
+        ),
     )
-    def _validation(self):
+    def _customization(self):
         cpu, compatible = self._getCompatibleCpuModels()
         self.logger.debug(
             'Compatible CPU models are: %s',
@@ -119,12 +126,63 @@ cpu check plugin.
         # CPU_FAMILIES
         # We need to save the corresponding CPU name for cluster
         # creation.
+        best = ''
+        cpu_desc = ''
         for entry in self.CPU_FAMILIES:
             if entry['model'] in supported:
+                if best == '':
+                    best = entry['model']
+                cpu_desc += '\t - {model}: {name}\n'.format(
+                    model=entry['model'],
+                    name=entry['name'],
+                )
+
+        self.dialog.note(
+            _(
+                'The following CPU types are supported by this host:\n'
+                '{types_list}'
+            ).format(
+                types_list=cpu_desc,
+            )
+        )
+        interactive = False
+        if not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]:
+            interactive = self.environment[
+                ohostedcons.VDSMEnv.VDSM_CPU
+            ] is None
+        valid = False
+        while not valid:
+            if interactive:
                 self.environment[
                     ohostedcons.VDSMEnv.VDSM_CPU
-                ] = entry['name']
-                break
+                ] = self.dialog.queryString(
+                    name='ovehosted_vmenv_cpu_type',
+                    note=_(
+                        'Please specify the CPU type to be used by the VM '
+                        '[@DEFAULT@]: '
+                    ),
+                    prompt=True,
+                    default=best,
+                    validValues=supported
+                )
+            if self.environment[ohostedcons.VDSMEnv.VDSM_CPU] in supported:
+                valid = True
+            elif not interactive:
+                raise RuntimeError(
+                    _('Invalid CPU type specified: {cpu_type}').format(
+                        cpu_type=self.environment[
+                            ohostedcons.VDSMEnv.VDSM_CPU
+                        ],
+                    )
+                )
+            else:
+                self.logger.error(
+                    _('Invalid CPU type specified: {cpu_type}').format(
+                        cpu_type=self.environment[
+                            ohostedcons.VDSMEnv.VDSM_CPU
+                        ],
+                    )
+                )
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

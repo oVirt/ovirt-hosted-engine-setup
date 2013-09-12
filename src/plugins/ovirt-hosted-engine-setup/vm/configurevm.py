@@ -172,6 +172,9 @@ class Plugin(plugin.PluginBase):
             '@VCPUS@': self.environment[
                 ohostedcons.VMEnv.VCPUS
             ],
+            '@CPU_TYPE@': self.environment[
+                ohostedcons.VDSMEnv.VDSM_CPU
+            ].replace('model_', ''),
         }
 
         if self.environment[
