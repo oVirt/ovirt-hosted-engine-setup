@@ -175,6 +175,9 @@ class Plugin(plugin.PluginBase):
             '@CPU_TYPE@': self.environment[
                 ohostedcons.VDSMEnv.VDSM_CPU
             ].replace('model_', ''),
+            '@EMULATED_MACHINE@': self.environment[
+                ohostedcons.VMEnv.EMULATED_MACHINE
+            ]
         }
 
         if self.environment[

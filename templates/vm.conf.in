@@ -10,4 +10,5 @@ bridge=ovirtmgmt
 nicModel=virtio
 smp=@VCPUS@
 cpuType=@CPU_TYPE@
+emulatedMachine=@EMULATED_MACHINE@
 @CDROM@

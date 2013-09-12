@@ -29,6 +29,7 @@ from . import boot_disk
 from . import configurevm
 from . import cpu
 from . import image
+from . import machine
 from . import memory
 from . import runvm
 
@@ -40,6 +41,7 @@ def createPlugins(context):
     configurevm.Plugin(context=context)
     cpu.Plugin(context=context)
     image.Plugin(context=context)
+    machine.Plugin(context=context)
     memory.Plugin(context=context)
     runvm.Plugin(context=context)
 

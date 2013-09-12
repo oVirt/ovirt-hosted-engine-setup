@@ -401,6 +401,12 @@ class VMEnv(object):
 
     @ohostedattrs(
         answerfile=True,
+    )
+    def EMULATED_MACHINE(self):
+        return 'OVEHOSTED_VM/emulatedMachine'
+
+    @ohostedattrs(
+        answerfile=True,
         summary=True,
         description=_('OVF archive (for disk boot)'),
     )
@@ -522,6 +528,8 @@ class Defaults(object):
     DEFAULT_VM_PASSWD_VALIDITY_SECS = "10800"  # 3 hours to for engine install
     DEFAULT_VM_VCPUS = 2  # based on minimum requirements.
     DEFAULT_SSHD_PORT = 22
+    DEFAULT_EMULATED_MACHINE = 'pc'
+    DEAFULT_RHEL_EMULATED_MACHINE = 'rhel6.5.0'
 
 
 @util.export
