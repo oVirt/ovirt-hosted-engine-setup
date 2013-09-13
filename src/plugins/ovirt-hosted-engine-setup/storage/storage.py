@@ -463,6 +463,26 @@ class Plugin(plugin.PluginBase):
         self.logger.debug(info)
         self.logger.debug(self.serv.s.repoStats())
 
+    def _check_existing_pools(self):
+        self.logger.debug('_check_existing_pools')
+        self.logger.debug('getConnectedStoragePoolsList')
+        pools = self.serv.s.getConnectedStoragePoolsList()
+        self.logger.debug(pools)
+        if pools['status']['code'] != 0:
+            raise RuntimeError(pools['status']['message'])
+        if pools['poollist']:
+            self.logger.error(
+                _(
+                    'The following storage pool has been found connected: '
+                    '{pools}'
+                ).format(
+                    pools=', '.join(pools['poollist'])
+                )
+            )
+            raise RuntimeError(
+                _('Cannot setup Hosted Engine with connected storage pools')
+            )
+
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
     )
@@ -539,6 +559,7 @@ class Plugin(plugin.PluginBase):
             )
         )
         self.serv = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        self._check_existing_pools()
         interactive = (
             self.environment[
                 ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
@@ -656,7 +677,7 @@ class Plugin(plugin.PluginBase):
     def _misc(self):
         self.waiter = tasks.TaskWaiter(self.environment)
         self.serv = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-
+        self._check_existing_pools()
         # vdsmd has been restarted, we need to reconnect in any case.
         self._storageServerConnection()
         if self.domain_exists:
