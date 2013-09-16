@@ -420,7 +420,7 @@ class Plugin(plugin.PluginBase):
         prevLVER = -1
         recoveryMode = -1
         scsiFencing = 'false'
-        maxHostID = 250
+        maxHostID = ohostedcons.Const.MAX_HOST_ID
         version = 3
         status, status_uuid = self.serv.spmStart(args=[
             spUUID,

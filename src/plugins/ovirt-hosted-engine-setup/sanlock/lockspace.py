@@ -136,6 +136,10 @@ class Plugin(plugin.PluginBase):
             metadatadir,
             lockspace + '.lockspace'
         )
+        metadata_file = os.path.join(
+            metadatadir,
+            lockspace + '.metadata'
+        )
         host_id = self.environment[ohostedcons.StorageEnv.HOST_ID]
         self.logger.debug(
             (
@@ -168,6 +172,18 @@ class Plugin(plugin.PluginBase):
                 lockspace=lockspace,
                 path=lease_file,
             )
+        if os.path.exists(metadata_file):
+            self.logger.info(_('sanlock metadata already initialized'))
+        else:
+            self.logger.info(_('Initializing sanlock metadata'))
+            with VirtUserContext(
+                environment=self.environment,
+                umask=stat.S_IXUSR | stat.S_IXGRP | stat.S_IRWXO,
+            ):
+                with open(metadata_file, 'wb') as f:
+                    chunk = b'\x00' * ohostedcons.Const.METADATA_CHUNK_SIZE
+                    for _i in range(ohostedcons.Const.MAX_HOST_ID + 1):
+                        f.write(chunk)
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

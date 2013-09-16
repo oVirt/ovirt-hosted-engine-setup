@@ -177,6 +177,8 @@ class Const(object):
     HA_AGENT_SERVICE = 'ovirt-ha-agent'
     HA_BROCKER_SERVICE = 'ovirt-ha-broker'
     HOSTED_ENGINE_VM_NAME = 'HostedEngine'
+    METADATA_CHUNK_SIZE = 4096
+    MAX_HOST_ID = 250
 
 
 @util.export
