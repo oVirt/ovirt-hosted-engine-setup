@@ -1,14 +1,13 @@
 vmId=@VM_UUID@
 memSize=@MEM_SIZE@
-macAddr=@MAC_ADDR@
 display=@CONSOLE_TYPE@
-drive=pool:@SP_UUID@,domain:@SD_UUID@,image:@IMG_UUID@,volume:@VOL_UUID@,shared:exclusive
+devices={index:2,iface:ide,address:{ controller:0, target:0,unit:0, bus:1, type:drive},specParams:{},readonly:true,deviceId:@CDROM_UUID@,path:@CDROM@,device:cdrom,shared:false,type:disk}
+devices={index:0,iface:virtio,format:raw,poolID:@SP_UUID@,volumeID:@VOL_UUID@,imageID:@IMG_UUID@,specParams:{},readonly:false,domainID:@SD_UUID@,optional:false,deviceId:@IMG_UUID@,address:{bus:0x00, slot:0x06, domain:0x0000, type:pci, function:0x0},device:disk,shared:exclusive,propagateErrors:off,type:disk}
+devices={device:scsi,model:virtio-scsi,type:controller}
+devices={nicModel:pv,macAddr:@MAC_ADDR@,linkActive:true,network:ovirtmgmt,filter:vdsm-no-mac-spoofing,specParams:{},deviceId:@NIC_UUID@,address:{bus:0x00, slot:0x03, domain:0x0000, type:pci, function:0x0},device:bridge,type:interface}
 boot=@BOOT@
 vmName=@NAME@
 spiceSecureChannels=smain,sdisplay,sinputs,scursor,splayback,srecord,ssmartcard,susbredir
-bridge=ovirtmgmt
-nicModel=virtio
 smp=@VCPUS@
 cpuType=@CPU_TYPE@
 emulatedMachine=@EMULATED_MACHINE@
-@CDROM@
