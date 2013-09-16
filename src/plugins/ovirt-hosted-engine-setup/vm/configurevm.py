@@ -77,6 +77,14 @@ class Plugin(plugin.PluginBase):
             None,
         )
         self.environment[ohostedcons.VMEnv.SUBST] = {}
+        self.environment.setdefault(
+            ohostedcons.VMEnv.CDROM_UUID,
+            str(uuid.uuid4())
+        )
+        self.environment.setdefault(
+            ohostedcons.VMEnv.NIC_UUID,
+            str(uuid.uuid4())
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
@@ -177,7 +185,13 @@ class Plugin(plugin.PluginBase):
             ].replace('model_', ''),
             '@EMULATED_MACHINE@': self.environment[
                 ohostedcons.VMEnv.EMULATED_MACHINE
-            ]
+            ],
+            '@CDROM_UUID@': self.environment[
+                ohostedcons.VMEnv.CDROM_UUID
+            ],
+            '@NIC_UUID@': self.environment[
+                ohostedcons.VMEnv.NIC_UUID
+            ],
         }
 
         if self.environment[
@@ -190,11 +204,9 @@ class Plugin(plugin.PluginBase):
         if self.environment[
             ohostedcons.VMEnv.CDROM
         ] is not None:
-            subst['@CDROM@'] = 'cdrom={cdrom}'.format(
-                cdrom=self.environment[
-                    ohostedcons.VMEnv.CDROM
-                ]
-            )
+            subst['@CDROM@'] = self.environment[
+                ohostedcons.VMEnv.CDROM
+            ]
         else:
             subst['@CDROM@'] = ''
 

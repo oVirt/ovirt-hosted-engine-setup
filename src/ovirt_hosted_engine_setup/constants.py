@@ -387,6 +387,12 @@ class VMEnv(object):
 
     @ohostedattrs(
         answerfile=True,
+    )
+    def NIC_UUID(self):
+        return 'OVEHOSTED_VM/nicUUID'
+
+    @ohostedattrs(
+        answerfile=True,
         summary=True,
         description=_('Boot type'),
     )
@@ -400,6 +406,12 @@ class VMEnv(object):
     )
     def CDROM(self):
         return 'OVEHOSTED_VM/vmCDRom'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def CDROM_UUID(self):
+        return 'OVEHOSTED_VM/cdromUUID'
 
     @ohostedattrs(
         answerfile=True,
