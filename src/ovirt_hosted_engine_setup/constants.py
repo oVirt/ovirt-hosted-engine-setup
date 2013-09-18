@@ -416,6 +416,12 @@ class VMEnv(object):
     @ohostedattrs(
         answerfile=True,
     )
+    def CONSOLE_UUID(self):
+        return 'OVEHOSTED_VM/consoleUUID'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
     def EMULATED_MACHINE(self):
         return 'OVEHOSTED_VM/emulatedMachine'
 
