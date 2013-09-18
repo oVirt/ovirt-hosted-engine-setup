@@ -85,6 +85,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VMEnv.NIC_UUID,
             str(uuid.uuid4())
         )
+        self.environment.setdefault(
+            ohostedcons.VMEnv.CONSOLE_UUID,
+            str(uuid.uuid4())
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
@@ -192,8 +196,10 @@ class Plugin(plugin.PluginBase):
             '@NIC_UUID@': self.environment[
                 ohostedcons.VMEnv.NIC_UUID
             ],
+            '@CONSOLE_UUID@': self.environment[
+                ohostedcons.VMEnv.CONSOLE_UUID
+            ],
         }
-
         if self.environment[
             ohostedcons.VMEnv.BOOT
         ] in self.BOOT_DEVICE.keys():

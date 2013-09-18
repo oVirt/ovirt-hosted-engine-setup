@@ -67,7 +67,7 @@ class Plugin(plugin.PluginBase):
             return _(
                 'You can now connect to the VM with the following command:\n'
                 '\t{remote} vnc://localhost:5900\nUse temporary password '
-                '"{password}" to connect to vnc console.'
+                '"{password}" to connect to vnc console.\n'
             ).format(
                 remote=self.command.get('remote-viewer'),
                 password=self.environment[
@@ -145,10 +145,30 @@ class Plugin(plugin.PluginBase):
                     ]
                 )
             )
+            host = 'localhost'
+            spice_values = [
+                x.strip()
+                for x in self.environment[
+                    ohostedcons.VDSMEnv.SPICE_SUBJECT
+                ].split(',')
+                if x
+            ]
+            for items in spice_values:
+                key, val = items.split('=', 1)
+                if key == 'CN':
+                    host = val
+                    break
+
             self.dialog.note(
                 _(
                     'Please note that in order to use remote-viewer you need '
-                    'to be able to run graphical applications.'
+                    'to be able to run graphical applications.\n'
+                    'If you cannot run graphical applications you can '
+                    'connect to the graphic console from another host or '
+                    'connect to the console using the following command:\n'
+                    'virsh -c qemu+tls://{host}/system console HostedEngine'
+                ).format(
+                    host=host
                 )
             )
             self.dialog.note(
