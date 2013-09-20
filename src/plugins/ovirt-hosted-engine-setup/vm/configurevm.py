@@ -199,6 +199,9 @@ class Plugin(plugin.PluginBase):
             '@CONSOLE_UUID@': self.environment[
                 ohostedcons.VMEnv.CONSOLE_UUID
             ],
+            '@BRIDGE@': self.environment[
+                ohostedcons.NetworkEnv.BRIDGE_NAME
+            ],
         }
         if self.environment[
             ohostedcons.VMEnv.BOOT
