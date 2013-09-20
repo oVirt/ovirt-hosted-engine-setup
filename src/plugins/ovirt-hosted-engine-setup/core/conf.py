@@ -93,6 +93,9 @@ class Plugin(plugin.PluginBase):
                     self.environment[ohostedcons.VDSMEnv.USE_SSL]
                 ).lower(),
                 '@GATEWAY@': self.environment[ohostedcons.NetworkEnv.GATEWAY],
+                '@BRIDGE@': self.environment[
+                    ohostedcons.NetworkEnv.BRIDGE_NAME
+                ],
             }
         )
         with transaction.Transaction() as localtransaction:
