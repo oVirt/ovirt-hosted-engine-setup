@@ -102,7 +102,7 @@ class Plugin(plugin.PluginBase):
                             name=ohostedcons.Confirms.MEMORY_PROCEED,
                             note=_(
                                 'Continue with specified memory size? '
-                                '(@VALUES@)[@DEFAULT]: '
+                                '(@VALUES@)[@DEFAULT@]: '
                             ),
                             prompt=True,
                             validValues=(_('Yes'), _('No')),

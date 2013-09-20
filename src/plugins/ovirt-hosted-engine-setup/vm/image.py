@@ -115,7 +115,7 @@ class Plugin(plugin.PluginBase):
                             name=ohostedcons.Confirms.DISK_PROCEED,
                             note=_(
                                 'Continue with specified disk size? '
-                                '(@VALUES@)[@DEFAULT]: '
+                                '(@VALUES@)[@DEFAULT@]: '
                             ),
                             prompt=True,
                             validValues=(_('Yes'), _('No')),
