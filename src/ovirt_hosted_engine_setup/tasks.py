@@ -107,4 +107,38 @@ class VMDownWaiter(base.Base):
         return destroyed
 
 
+@util.export
+class DomainMonitorWaiter(base.Base):
+    """
+    VM down waiting utility.
+    """
+
+    POLLING_INTERVAL = 5
+
+    def __init__(self, environment):
+        super(DomainMonitorWaiter, self).__init__()
+        self.environment = environment
+
+    def wait(self, sdUUID):
+        serv = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        acquired = False
+        while not acquired:
+            time.sleep(self.POLLING_INTERVAL)
+            self.logger.debug('Waiting for domain monitor')
+            response = serv.s.getVdsStats()
+            self.logger.debug(response)
+            if response['status']['code'] != 0:
+                self.logger.debug(response['status']['message'])
+                raise RuntimeError(_('Error acquiring VDS status'))
+            try:
+                domains = response['info']['storageDomains']
+                acquired = domains[sdUUID]['acquired']
+            except KeyError:
+                self.logger.debug(
+                    'Error getting VDS status',
+                    exc_info=True,
+                )
+                raise RuntimeError(_('Error acquiring VDS status'))
+
+
 # vim: expandtab tabstop=4 shiftwidth=4
