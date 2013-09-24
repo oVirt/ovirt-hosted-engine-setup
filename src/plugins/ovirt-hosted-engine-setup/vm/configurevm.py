@@ -48,9 +48,9 @@ class Plugin(plugin.PluginBase):
     """
 
     BOOT_DEVICE = {
-        'cdrom': 'd',
-        'pxe': 'n',
-        'disk': 'c',
+        'cdrom': '@BOOT_CDROM@',
+        'pxe': '@BOOT_PXE@',
+        'disk': '@BOOT_DISK@',
     }
 
     def __init__(self, context):
@@ -206,9 +206,11 @@ class Plugin(plugin.PluginBase):
         if self.environment[
             ohostedcons.VMEnv.BOOT
         ] in self.BOOT_DEVICE.keys():
-            subst['@BOOT@'] = self.BOOT_DEVICE[
-                self.environment[ohostedcons.VMEnv.BOOT]
-            ]
+            for key in self.BOOT_DEVICE.keys():
+                if key != self.environment[ohostedcons.VMEnv.BOOT]:
+                    subst[self.BOOT_DEVICE[key]] = ''
+                else:
+                    subst[self.BOOT_DEVICE[key]] = ',bootOrder:1'
 
         if self.environment[
             ohostedcons.VMEnv.CDROM

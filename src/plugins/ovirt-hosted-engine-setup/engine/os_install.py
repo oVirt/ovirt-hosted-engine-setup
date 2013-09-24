@@ -59,7 +59,11 @@ class Plugin(plugin.PluginBase):
         ],
     )
     def _closeup(self):
-        self.environment[ohostedcons.VMEnv.SUBST]['@BOOT@'] = 'c'
+        self.environment[ohostedcons.VMEnv.SUBST][
+            '@BOOT_DISK@'
+        ] = ',bootOrder:1'
+        self.environment[ohostedcons.VMEnv.SUBST]['@BOOT_PXE@'] = ''
+        self.environment[ohostedcons.VMEnv.SUBST]['@BOOT_CDROM@'] = ''
         content = ohostedutil.processTemplate(
             template=ohostedcons.FileLocations.ENGINE_VM_TEMPLATE,
             subst=self.environment[ohostedcons.VMEnv.SUBST],
