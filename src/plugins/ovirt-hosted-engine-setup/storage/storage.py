@@ -463,6 +463,19 @@ class Plugin(plugin.PluginBase):
         if status != 0:
             raise RuntimeError(message)
 
+    def _startMonitoringDomain(self):
+        self.logger.debug('_startMonitoringDomain')
+        status = self.serv.s.startMonitoringDomain(
+            self.environment[ohostedcons.StorageEnv.SD_UUID],
+            self.environment[ohostedcons.StorageEnv.HOST_ID]
+        )
+        self.logger.debug(status)
+        if status['status']['code'] != 0:
+            raise RuntimeError(status['status']['message'])
+
+        waiter = tasks.DomainMonitorWaiter(self.environment)
+        waiter.wait(self.environment[ohostedcons.StorageEnv.SD_UUID])
+
     def _storagePoolConnection(self, disconnect=False):
         spUUID = self.environment[ohostedcons.StorageEnv.SP_UUID]
         sdUUID = self.environment[ohostedcons.StorageEnv.SD_UUID]
@@ -804,10 +817,12 @@ class Plugin(plugin.PluginBase):
         ],
     )
     def _disconnect_pool(self):
-        self.logger.info(_('Disonnecting Storage Pool'))
+        self.logger.info(_('Disconnecting Storage Pool'))
         self.waiter.wait()
         self._spmStop()
         self._storagePoolConnection(disconnect=True)
+        self.logger.info(_('Start monitoring domain'))
+        self._startMonitoringDomain()
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

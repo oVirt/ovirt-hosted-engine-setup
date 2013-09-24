@@ -40,9 +40,9 @@ BuildArch:      noarch
 Requires:       python
 Requires:       python-ethtool >= 0.6-3
 Requires:       otopi >= 1.1.0
-Requires:       vdsm >= 4.12.0
-Requires:       vdsm-cli >= 4.12.0
-Requires:       vdsm-python >= 4.12.0
+Requires:       vdsm >= 4.12.2
+Requires:       vdsm-cli >= 4.12.2
+Requires:       vdsm-python >= 4.12.2
 Requires:       ovirt-host-deploy >= 1.1.0
 Requires:       openssh-server
 Requires:       python-paramiko
