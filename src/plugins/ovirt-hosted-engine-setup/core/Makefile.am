@@ -31,6 +31,7 @@ dist_my_PYTHON = \
 	answerfile.py \
 	offlinepackager.py \
 	preview.py \
+	remote_answerfile.py \
 	shell.py \
 	titles.py \
 	$(NULL)

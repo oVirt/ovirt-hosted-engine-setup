@@ -492,6 +492,7 @@ class Stages(object):
     CONFIG_BOOT_DEVICE = 'ohosted.boot.configuration.available'
     CONFIG_STORAGE = 'ohosted.storage.configuration.available'
     CONFIG_ADDITIONAL_HOST = 'ohosted.core.additional.host'
+    REQUIRE_ANSWER_FILE = 'ohosted.core.require.answerfile'
     CONFIG_OVF_IMPORT = 'ohosted.configuration.ovf'
     VDSMD_START = 'ohosted.vdsm.started'
     VDSMD_PKI = 'ohosted.vdsm.pki.available'
@@ -562,6 +563,15 @@ class Confirms(object):
     MEMORY_PROCEED = 'MEMORY_PROCEED'
     SCREEN_PROCEED = 'SCREEN_PROCEED'
     SETTINGS = 'SETTINGS_PROCEED'
+
+
+@util.export
+@util.codegen
+class FirstHostEnv(object):
+    FQDN = 'OVEHOSTED_FIRST_HOST/fqdn'
+    ROOT_PASSWORD = 'OVEHOSTED_FIRST_HOST/rootPassword'
+    FETCH_ANSWER = 'OVEHOSTED_FIRST_HOST/fetchAnswer'
+    SSHD_PORT = 'OVEHOSTED_FIRST_HOST/sshdPort'
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

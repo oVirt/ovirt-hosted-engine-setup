@@ -45,6 +45,7 @@ Requires:       vdsm-cli >= 4.12.0
 Requires:       vdsm-python >= 4.12.0
 Requires:       ovirt-host-deploy >= 1.1.0
 Requires:       openssh-server
+Requires:       python-paramiko
 Requires:       virt-viewer
 Requires:       openssl
 Requires:       sudo
