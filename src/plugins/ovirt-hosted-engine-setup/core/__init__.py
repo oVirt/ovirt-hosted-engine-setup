@@ -29,6 +29,7 @@ from . import conf
 from . import answerfile
 from . import offlinepackager
 from . import preview
+from . import remote_answerfile
 from . import shell
 from . import titles
 
@@ -40,6 +41,7 @@ def createPlugins(context):
     answerfile.Plugin(context=context)
     offlinepackager.Plugin(context=context)
     preview.Plugin(context=context)
+    remote_answerfile.Plugin(context=context)
     shell.Plugin(context=context)
     titles.Plugin(context=context)
 
