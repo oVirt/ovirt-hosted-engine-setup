@@ -93,6 +93,16 @@ make %{?_smp_mflags} install DESTDIR="%{buildroot}"
 %{vdsmhooksdir}/before_vm_start/
 
 %changelog
+* Fri Sep 27 2013 Sandro Bonazzola <sbonazzo@redhat.com> - 1.0.0-0.5.beta1:
+- 1.0.0-0.5.beta1
+- Resolves: BZ#1007422
+- Resolves: BZ#1012417
+- Resolves: BZ#1010889
+- Resolves: BZ#1011031
+- Resolves: BZ#1010866
+- Resolves: BZ#1008391
+- Resolves: BZ#1008501
+
 * Fri Sep 13 2013 Sandro Bonazzola <sbonazzo@redhat.com> - 1.0.0-0.4.beta:
 - 1.0.0-0.4.beta
 - Resolves: BZ#1005767
