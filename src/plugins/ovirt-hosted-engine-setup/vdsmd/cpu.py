@@ -80,7 +80,10 @@ cpu check plugin.
         stage=plugin.Stages.STAGE_INIT,
     )
     def _init(self):
-        self.environment[ohostedcons.VDSMEnv.VDSM_CPU] = None
+        self.environment.setdefault(
+            ohostedcons.VDSMEnv.VDSM_CPU,
+            None
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,

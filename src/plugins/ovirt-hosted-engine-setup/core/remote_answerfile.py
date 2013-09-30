@@ -185,6 +185,7 @@ class Plugin(plugin.PluginBase):
         ):
             try:
                 value = common.parseTypedValue(value)
+                self.logger.debug('%s=%s' % (name, value))
             except Exception as e:
                 raise RuntimeError(
                     _(
@@ -196,7 +197,7 @@ class Plugin(plugin.PluginBase):
                         exception=e,
                     )
                 )
-            self.environment.setdefault(name, value)
+            self.environment[name] = value
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
