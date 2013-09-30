@@ -100,6 +100,7 @@ class Plugin(plugin.PluginBase):
                 transport.close()
 
     def _fetch_answer_file(self):
+        self.logger.debug('_fetch_answer_file')
         fqdn = self.environment[ohostedcons.FirstHostEnv.FQDN]
         interactive = (
             self.environment[ohostedcons.FirstHostEnv.ROOT_PASSWORD] is None
@@ -149,6 +150,14 @@ class Plugin(plugin.PluginBase):
                         fqdn=fqdn,
                     )
                 )
+                if not interactive:
+                    raise RuntimeError(
+                        _(
+                            'Cannot deploy Hosted Engine on additional host: '
+                            'unable to fetch the configuration used '
+                            'on first host'
+                        )
+                    )
             except paramiko.SSHException as e:
                 self.logger.debug('exception', exc_info=True)
                 self.logger.error(
@@ -157,15 +166,17 @@ class Plugin(plugin.PluginBase):
                         error=e,
                     )
                 )
+                if not interactive:
+                    raise RuntimeError(
+                        _(
+                            'Cannot deploy Hosted Engine on additional host: '
+                            'unable to fetch the configuration used '
+                            'on first host'
+                        )
+                    )
             finally:
                 transport.close()
-            if not interactive:
-                raise RuntimeError(
-                    _(
-                        'Cannot deploy Hosted Engine on additional host: '
-                        'unable to fetch the configuration used on first host'
-                    )
-                )
+        self.logger.info(_('Answer file successfully downloaded'))
 
     def _parse_answer_file(self):
         self._config.read(self._tmp_ans)
