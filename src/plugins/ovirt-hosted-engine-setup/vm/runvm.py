@@ -163,6 +163,10 @@ class Plugin(plugin.PluginBase):
                 _(
                     'Please note that in order to use remote-viewer you need '
                     'to be able to run graphical applications.\n'
+                    'This means that if you are using ssh you have to supply '
+                    'the -Y flag (enables trusted X11 forwarding).\n'
+                    'Otherwise you can run the command from a terminal in '
+                    'your preferred desktop environment.\n'
                     'If you cannot run graphical applications you can '
                     'connect to the graphic console from another host or '
                     'connect to the console using the following command:\n'
