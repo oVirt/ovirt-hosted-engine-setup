@@ -272,7 +272,6 @@ class EngineEnv(object):
 @ohostedattrsclass
 class StorageEnv(object):
     @ohostedattrs(
-        answerfile=True,
         summary=True,
         description=_('Host ID'),
     )
