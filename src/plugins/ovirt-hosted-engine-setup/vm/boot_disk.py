@@ -344,16 +344,21 @@ class Plugin(plugin.PluginBase):
                     ) * 1024
                 )
                 valid = True
-            except RuntimeError as e:
+            except ohosteddomains.InsufficientSpaceError as e:
                 self.logger.debug(
                     'Error checking TMPDIR space',
                     exc_info=True,
                 )
-                self.logger.error(e)
+                self.logger.debug(e)
                 valid = False
                 if not interactive:
-                    raise e
+                    raise RuntimeError(
+                        _('Not enough space in the temporary directory')
+                    )
                 else:
+                    self.logger.error(
+                        _('Not enough space in the temporary directory')
+                    )
                     self.environment[
                         ohostedcons.CoreEnv.TEMPDIR
                     ] = self.dialog.queryString(

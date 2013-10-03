@@ -30,6 +30,10 @@ from otopi import util
 _ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
 
+class InsufficientSpaceError(Exception):
+    """Raised when check_available_space fails"""
+
+
 @util.export
 class DomainChecker(base.Base):
     """
@@ -112,7 +116,7 @@ class DomainChecker(base.Base):
             )
         )
         if available_space_mb < minimum:
-            raise RuntimeError(
+            raise InsufficientSpaceError(
                 _(
                     'Error: mount point {path} contains only {available}Mb of '
                     'available space while a minimum of {minimum}Mb is '
