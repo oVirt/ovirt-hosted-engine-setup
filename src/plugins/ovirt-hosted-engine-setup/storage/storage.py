@@ -710,7 +710,24 @@ class Plugin(plugin.PluginBase):
                         )
                     )
                 else:
-                    raise
+                    raise e
+            except ohosteddomains.InsufficientSpaceError as e:
+                self.logger.debug('exception', exc_info=True)
+                self.logger.debug(e)
+                if interactive:
+                    self.logger.error(
+                        _(
+                            'Storage domain for self hosted engine '
+                            'is too small'
+                        )
+                    )
+                else:
+                    raise RuntimeError(
+                        _(
+                            'Storage domain for self hosted engine '
+                            'is too small'
+                        )
+                    )
         if self.environment[
             ohostedcons.StorageEnv.DOMAIN_TYPE
         ] == 'nfs':
