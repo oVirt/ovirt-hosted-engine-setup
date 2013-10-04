@@ -4,4 +4,6 @@
     <description>oVirt Hosted Engine console service</description>
     <port protocol="tcp" port="5900"/>
     <port protocol="udp" port="5900"/>
+    <port protocol="tcp" port="5901"/>
+    <port protocol="udp" port="5901"/>
 </service>
