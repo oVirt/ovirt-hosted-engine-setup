@@ -63,22 +63,45 @@ class Plugin(plugin.PluginBase):
         )
 
     def _generateUserMessage(self, console_type):
+        displayPort = 5900
+        displaySecurePort = 5901
+        serv = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        try:
+            stats = serv.s.getVmStats(
+                self.environment[ohostedcons.VMEnv.VM_UUID]
+            )
+            self.logger.debug(stats)
+            if not stats['status']['code'] == 0:
+                self.logger.error(stats['status']['message'])
+            else:
+                statsList = stats['statsList'][0]
+                displaySecurePort = statsList['displaySecurePort']
+                displayPort = statsList['displayPort']
+        except Exception:
+            self.logger.debug(
+                'Error getting VM stats',
+                exc_info=True,
+            )
         if console_type == 'vnc':
             return _(
                 'You can now connect to the VM with the following command:\n'
-                '\t{remote} vnc://localhost:5900\nUse temporary password '
-                '"{password}" to connect to vnc console.\n'
+                '\t{remote} vnc://localhost:{displayPort}\n'
+                'Use temporary password "{password}" '
+                'to connect to vnc console.\n'
             ).format(
                 remote=self.command.get('remote-viewer'),
                 password=self.environment[
                     ohostedcons.VMEnv.VM_PASSWD
                 ],
+                displayPort=displayPort
             )
         elif console_type == 'qxl':
+            if displaySecurePort < 0:
+                displaySecurePort = displayPort
             return _(
                 'You can now connect to the VM with the following command:\n'
                 '\t{remote} --spice-ca-file={ca_cert} '
-                'spice://localhost?tls-port=5900 '
+                'spice://localhost?tls-port={displaySecurePort} '
                 '--spice-host-subject="{subject}"\nUse temporary password '
                 '"{password}" to connect to spice console.'
             ).format(
@@ -88,6 +111,7 @@ class Plugin(plugin.PluginBase):
                 password=self.environment[
                     ohostedcons.VMEnv.VM_PASSWD
                 ],
+                displaySecurePort=displaySecurePort
             )
 
         else:
