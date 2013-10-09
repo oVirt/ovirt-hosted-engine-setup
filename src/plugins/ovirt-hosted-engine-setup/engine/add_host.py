@@ -344,6 +344,7 @@ class Plugin(plugin.PluginBase):
                             ohostedcons.NetworkEnv.SSHD_PORT
                         ],
                     ),
+                    override_iptables=True,
                 )
             )
         except ovirtsdk.infrastructure.errors.RequestError as e:

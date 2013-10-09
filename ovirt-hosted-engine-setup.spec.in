@@ -54,6 +54,7 @@ Requires:       ovirt-hosted-engine-ha
 Requires:       sanlock >= 2.8
 Requires:       sanlock-python >= 2.8
 Requires:       lsof
+Requires:       iptables
 BuildRequires:  gettext
 BuildRequires:  otopi-devel >= 1.1.0
 BuildRequires:  python2-devel
