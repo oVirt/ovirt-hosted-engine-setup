@@ -133,6 +133,13 @@ class Plugin(plugin.PluginBase):
         ),
     )
     def _customization(self):
+        # TODO: remove the following line when FirewallD will be supported
+        # by ovirt-engine. Actually the engine is not able to configure
+        # FirewallD while it's adding an host
+        # It has to be done here and not at init stage because it's assigned
+        # at customization stage by otopi.
+        self.environment[otopicons.NetEnv.FIREWALLD_AVAILABLE] = False
+
         if self.environment[ohostedcons.NetworkEnv.FIREWALL_MANAGER] is None:
             managers = []
             if self.environment[otopicons.NetEnv.FIREWALLD_AVAILABLE]:
