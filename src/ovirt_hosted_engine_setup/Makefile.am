@@ -41,6 +41,7 @@ dist_ovirthostedenginelib_PYTHON = \
 	constants.py \
 	domains.py \
 	util.py \
+	set_maintenance.py \
 	tasks.py \
 	vm_status.py \
 	$(NULL)
