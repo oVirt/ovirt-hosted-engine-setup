@@ -36,6 +36,8 @@ Usage: $0
         Start the storage pool manually
     --console
         Open the configured console using remote-viewer on localhost
+    --set-maintenance=mode
+        Set maintenance status to the specified mode (global/local/none)
 
 __EOF__
     exit $rc
@@ -162,6 +164,13 @@ while [ -n "$1" ]; do
                     --spice-ca-file=${ca_cert} \
                     spice://localhost?tls-port=5900 \
                     --spice-host-subject="${ca_subject}"
+            fi
+        ;;
+        --set-maintenance=*)
+            if [ -r "${conf}" ] ; then
+                python -m ovirt_hosted_engine_setup.set_maintenance "${v}"
+            else
+                echo "You must run --deploy first"
             fi
         ;;
         --help)
