@@ -18,6 +18,8 @@ Usage: $0
         run ovirt-hosted-engine deployment
     --vm-start
         start VM on this host
+    --vm-start-paused
+        start VM on this host with qemu paused
     --vm-shutdown
         gracefully shutdown the VM on this host
     --vm-poweroff
@@ -61,6 +63,18 @@ while [ -n "$1" ]; do
             # TODO: Check first the sanlock status, and if allows:
             if [ -r "${conf}" ] ; then
                 ${VDSCOMMAND} create "${conf}"
+            else
+                echo "You must run --deploy first"
+            fi
+        ;;
+        --vm-start-paused)
+            # TODO: Check first the sanlock status, and if allows:
+            if [ -r "${conf}" ] ; then
+                temp_conf="$(mktemp)"
+                cp "${conf}" "${temp_conf}"
+                echo "launchPaused=true">>"${temp_conf}"
+                ${VDSCOMMAND} create "${temp_conf}"
+                rm -f "${temp_conf}"
             else
                 echo "You must run --deploy first"
             fi
