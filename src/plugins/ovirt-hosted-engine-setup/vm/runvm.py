@@ -48,6 +48,7 @@ class Plugin(plugin.PluginBase):
 
     TICKET_MAX_TRIES = 10
     TICKET_DELAY = 1
+    POWEROFF_CHECK_INTERVALL = 1
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
@@ -124,6 +125,17 @@ class Plugin(plugin.PluginBase):
             )
 
     def _create(self):
+        if not self._wait_vm_destroyed():
+            self.logger.warning(
+                _(
+                    'The Hosted Engine VM has been found still powered on:\n'
+                    'please turn it off using "hosted-engine --vm-poweroff".\n'
+                    'The system will wait until the VM is powered off.'
+                )
+            )
+            while not self._wait_vm_destroyed():
+                time.sleep(self.POWEROFF_CHECK_INTERVALL)
+
         self.logger.info(_('Creating VM'))
         cmd = self._vdscommand + [
             'create',
