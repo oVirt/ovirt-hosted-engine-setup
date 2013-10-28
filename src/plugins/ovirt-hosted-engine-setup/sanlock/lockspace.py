@@ -53,13 +53,19 @@ class Plugin(plugin.PluginBase):
         """
         Return path of storage domain holding engine vm
         """
-        domains = glob.glob(
-            os.path.join(
+        domain_path = os.path.join(
+            ohostedcons.FileLocations.SD_MOUNT_PARENT_DIR,
+            '*',
+            self.environment[ohostedcons.StorageEnv.SD_UUID],
+        )
+        if self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE] == 'glusterfs':
+            domain_path = os.path.join(
                 ohostedcons.FileLocations.SD_MOUNT_PARENT_DIR,
+                'glusterSD',
                 '*',
                 self.environment[ohostedcons.StorageEnv.SD_UUID],
             )
-        )
+        domains = glob.glob(domain_path)
         if not domains:
             raise RuntimeError(
                 _(
