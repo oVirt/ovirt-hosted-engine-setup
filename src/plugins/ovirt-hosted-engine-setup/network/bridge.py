@@ -85,10 +85,7 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
-        condition=lambda self: (
-            self._enabled and
-            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
-        ),
+        condition=lambda self: self._enabled,
         after=(
             ohostedcons.Stages.DIALOG_TITLES_S_NETWORK,
         ),
