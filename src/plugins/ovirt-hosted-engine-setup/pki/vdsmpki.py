@@ -95,7 +95,7 @@ class Plugin(plugin.PluginBase):
         self.logger.info(_('Generating libvirt-spice certificates'))
         self._tmpdir = tempfile.mkdtemp()
         expire = '1095'  # FIXME: configurable?
-        subj = self.environment[ohostedcons.VDSMEnv.SPICE_SUBJECT]
+        subj = self.environment[ohostedcons.VDSMEnv.PKI_SUBJECT]
         # FIXME: configurable?
         for key in ('ca-key.pem', 'server-key.pem'):
             self.execute(
@@ -175,7 +175,7 @@ class Plugin(plugin.PluginBase):
         )
         self.environment.setdefault(
             ohostedcons.VDSMEnv.SPICE_SUBJECT,
-            ohostedcons.Defaults.DEFAULT_PKI_SUBJECT
+            None
         )
 
     @plugin.event(
@@ -203,6 +203,7 @@ class Plugin(plugin.PluginBase):
             self._generateVDSMcerts()
         if not os.path.exists(ohostedcons.FileLocations.LIBVIRT_SERVER_CERT):
             self._generateSPICEcerts()
+        self._getSPICEcerts()
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLEANUP,
