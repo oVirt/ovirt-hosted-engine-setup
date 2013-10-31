@@ -23,7 +23,6 @@
 import pwd
 import grp
 import gettext
-import os
 import socket
 import time
 
@@ -104,6 +103,12 @@ class Plugin(plugin.PluginBase):
         )
 
     @plugin.event(
+        stage=plugin.Stages.STAGE_SETUP,
+    )
+    def _setup(self):
+        self.command.detect('vdsm-tool')
+
+    @plugin.event(
         stage=plugin.Stages.STAGE_LATE_SETUP,
         after=(
             ohostedcons.Stages.VDSMD_CONF_LOADED,
@@ -116,25 +121,20 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.VDSMEnv.VDSMD_SERVICE
             ]
         ):
-            for service_exec in (
-                ohostedcons.FileLocations.VDSMD_SYSTEMD_SERVICE,
-                ohostedcons.FileLocations.VDSMD_SYSV_SERVICE,
-            ):
-                if os.path.exists(service_exec):
-                    rc, _stdout, _stderr = self.execute(
-                        (
-                            service_exec,
-                            'reconfigure',
-                        ),
-                        raiseOnError=False,
+            rc, _stdout, _stderr = self.execute(
+                (
+                    self.command.get('vdsm-tool'),
+                    'configure',
+                    '--force',
+                ),
+                raiseOnError=False,
+            )
+            if rc != 0:
+                raise RuntimeError(
+                    _(
+                        'Failed to reconfigure libvirt for VDSM'
                     )
-                    if rc != 0:
-                        raise RuntimeError(
-                            _(
-                                'Failed to reconfigure libvirt for vdsm'
-                            )
-                        )
-                    break
+                )
             self.services.state(
                 name=self.environment[
                     ohostedcons.VDSMEnv.VDSMD_SERVICE

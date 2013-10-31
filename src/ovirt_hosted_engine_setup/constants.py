@@ -167,8 +167,6 @@ class FileLocations(object):
         'libvirt',
         'qemu.conf'
     )
-    VDSMD_SYSTEMD_SERVICE = '/lib/systemd/systemd-vdsmd'
-    VDSMD_SYSV_SERVICE = '/etc/init.d/vdsmd'
 
 
 @util.export
