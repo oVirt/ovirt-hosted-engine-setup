@@ -23,6 +23,7 @@
 import pwd
 import grp
 import gettext
+import os
 import socket
 import time
 
@@ -115,6 +116,25 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.VDSMEnv.VDSMD_SERVICE
             ]
         ):
+            for service_exec in (
+                ohostedcons.FileLocations.VDSMD_SYSTEMD_SERVICE,
+                ohostedcons.FileLocations.VDSMD_SYSV_SERVICE,
+            ):
+                if os.path.exists(service_exec):
+                    rc, _stdout, _stderr = self.execute(
+                        (
+                            service_exec,
+                            'reconfigure',
+                        ),
+                        raiseOnError=False,
+                    )
+                    if rc != 0:
+                        raise RuntimeError(
+                            _(
+                                'Failed to reconfigure libvirt for vdsm'
+                            )
+                        )
+                    break
             self.services.state(
                 name=self.environment[
                     ohostedcons.VDSMEnv.VDSMD_SERVICE
