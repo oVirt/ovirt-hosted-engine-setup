@@ -31,6 +31,9 @@ import time
 import urllib2
 
 
+import ethtool
+
+
 import ovirtsdk.api
 import ovirtsdk.xml
 import ovirtsdk.infrastructure.errors
@@ -139,16 +142,31 @@ class Plugin(plugin.PluginBase):
                         )
 
     def _getIPAddress(self):
-        self.logger.debug('Acquiring bridge address')
         address = None
-        rc, stdout, stderr = self.execute(
-            args=(
-                self.command.get('ip'),
-                'addr',
-                'show',
-                self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME],
-            ),
-        )
+        stdout = ''
+        if (
+            self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME] in
+            ethtool.get_devices()
+        ):
+            self.logger.debug('Acquiring bridge address')
+            rc, stdout, stderr = self.execute(
+                args=(
+                    self.command.get('ip'),
+                    'addr',
+                    'show',
+                    self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME],
+                ),
+            )
+        else:
+            self.logger.debug('Acquiring nic address')
+            rc, stdout, stderr = self.execute(
+                args=(
+                    self.command.get('ip'),
+                    'addr',
+                    'show',
+                    self.environment[ohostedcons.NetworkEnv.BRIDGE_IF],
+                ),
+            )
         for line in stdout:
             addressmatch = self._ADDRESS_RE.match(line)
             if addressmatch is not None:
