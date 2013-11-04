@@ -44,7 +44,8 @@ class VmStatus(object):
         'hostname': _('Hostname'),
         'host-id': _('Host ID'),
         'host-ts': _('Host timestamp'),
-        'extra': _('Extra metadata'),
+        'live-data': _('Status up-to-date'),
+        'extra': _('Extra metadata (valid at timestamp)'),
     }
 
     def __init__(self):
@@ -59,22 +60,28 @@ class VmStatus(object):
                 _('Cannot connect to the HA daemon, please check the logs.\n')
             )
             all_host_stats = {}
-        for host_id in all_host_stats.keys():
+        for host_id, host_stats in all_host_stats.items():
             print _('\n\n--== Host {host_id} status ==--\n').format(
                 host_id=host_id
             )
-            for key in all_host_stats[host_id].keys():
-                if key != 'extra':
+            for key in host_stats.keys():
+                if (key == 'engine-status' and
+                        not host_stats.get('live-data', True)):
                     print _('{key:35}: {value}').format(
                         key=self.DESCRIPTIONS.get(key, key),
-                        value=all_host_stats[host_id][key],
+                        value=_('unknown stale-data'),
                     )
-            if 'extra' in all_host_stats[host_id].keys():
+                elif key != 'extra':
+                    print _('{key:35}: {value}').format(
+                        key=self.DESCRIPTIONS.get(key, key),
+                        value=host_stats[key],
+                    )
+            if 'extra' in host_stats.keys():
                 key = 'extra'
                 print _('{key:35}:').format(
                     key=self.DESCRIPTIONS.get(key, key)
                 )
-                for line in all_host_stats[host_id][key].splitlines():
+                for line in host_stats[key].splitlines():
                     print '\t{value}'.format(
                         value=line
                     )
