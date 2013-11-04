@@ -44,7 +44,7 @@ class LivelinessChecker(base.Base):
 
     def isEngineUp(self, fqdn):
         self.logger.debug('Checking for Engine health status')
-        health_url = 'http://{fqdn}/OvirtEngineWeb/HealthStatus'.format(
+        health_url = 'http://{fqdn}/ovirt-engine/services/health'.format(
             fqdn=fqdn,
         )
         isUp = False
