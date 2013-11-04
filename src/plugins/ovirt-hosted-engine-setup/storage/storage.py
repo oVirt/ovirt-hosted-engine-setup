@@ -73,15 +73,33 @@ class Plugin(plugin.PluginBase):
         self.pool_exists = False
 
     def _mount(self, path, connection, domain_type):
-        self.execute(
-            (
-                self.command.get('mount'),
-                '-t%s' % domain_type,
-                connection,
-                path
-            ),
-            raiseOnError=True
+        mount_cmd = (
+            self.command.get('mount'),
+            '-t%s' % domain_type,
         )
+        if domain_type == 'nfs':
+            mount_cmd += (
+                '-oretry=1',
+            )
+        mount_cmd += (
+            connection,
+            path,
+        )
+
+        rc, stdout, stderr = self.execute(
+            mount_cmd,
+            raiseOnError=False
+        )
+        error = '\n'.join(stderr)
+        if rc != 0:
+            self.logger.error(
+                _(
+                    'Error while mounting specified storage path: {error}'
+                ).format(
+                    error=error,
+                )
+            )
+            raise RuntimeError(error)
 
     def _umount(self, path):
         rc = -1
