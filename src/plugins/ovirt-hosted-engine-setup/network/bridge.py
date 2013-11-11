@@ -181,6 +181,9 @@ class Plugin(plugin.PluginBase):
             self._enabled and
             not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
         ),
+        after=(
+            ohostedcons.Stages.VDSMD_START,
+        ),
     )
     def _misc(self):
         self.logger.info(_('Configuring the management bridge'))
