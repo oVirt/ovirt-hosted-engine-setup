@@ -686,27 +686,32 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.StorageEnv.DOMAIN_TYPE
             ] is None
         )
-
+        #{ Enforce DOMAIN_TYPE to nfs until glusterfs issues are solved.
+        self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE] = 'nfs'
+        #}
         validDomain = False
         while not validDomain:
             try:
                 if interactive:
-                    self.environment[
-                        ohostedcons.StorageEnv.DOMAIN_TYPE
-                    ] = self.dialog.queryString(
-                        name='OVEHOSTED_STORAGE_DOMAIN_TYPE',
-                        note=_(
-                            'Please specify the storage '
-                            'you would like to use (@VALUES@)[@DEFAULT@]: '
-                        ),
-                        prompt=True,
-                        caseSensitive=True,
-                        validValues=(
-                            'glusterfs',
-                            'nfs',
-                        ),
-                        default='nfs',
-                    )
+                    #{ Enforce DOMAIN_TYPE to nfs until glusterfs
+                    # issues are solved.
+                    #self.environment[
+                    #    ohostedcons.StorageEnv.DOMAIN_TYPE
+                    #] = self.dialog.queryString(
+                    #    name='OVEHOSTED_STORAGE_DOMAIN_TYPE',
+                    #    note=_(
+                    #        'Please specify the storage '
+                    #        'you would like to use (@VALUES@)[@DEFAULT@]: '
+                    #    ),
+                    #    prompt=True,
+                    #    caseSensitive=True,
+                    #    validValues=(
+                    #        'glusterfs',
+                    #        'nfs',
+                    #    ),
+                    #    default='nfs',
+                    #)
+                    #}
 
                     self.environment[
                         ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
