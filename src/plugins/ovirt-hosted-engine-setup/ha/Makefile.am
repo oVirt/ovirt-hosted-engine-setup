@@ -27,6 +27,7 @@ mydir=$(ovirthostedengineplugindir)/ovirt-hosted-engine-setup/ha
 dist_my_PYTHON = \
 	__init__.py \
 	ha_services.py \
+	ha_notifications.py \
 	$(NULL)
 
 clean-local: \
