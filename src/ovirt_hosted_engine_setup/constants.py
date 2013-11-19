@@ -167,6 +167,14 @@ class FileLocations(object):
         'libvirt',
         'qemu.conf'
     )
+    ENGINE_HA_CONFDIR = os.path.join(
+        SYSCONFDIR,
+        'ovirt-hosted-engine-ha'
+    )
+    NOTIFY_CONF_FILE = os.path.join(
+        ENGINE_HA_CONFDIR,
+        'broker.conf'
+    )
 
 
 @util.export
@@ -179,6 +187,10 @@ class Const(object):
     HOSTED_ENGINE_VM_NAME = 'HostedEngine'
     METADATA_CHUNK_SIZE = 4096
     MAX_HOST_ID = 250
+    HA_NOTIF_SMTP_SERVER = 'smtp-server'
+    HA_NOTIF_SMTP_PORT = 'smtp-port'
+    HA_NOTIF_SMTP_SOURCE_EMAIL = 'source-email'
+    HA_NOTIF_SMTP_DEST_EMAILS = 'destination-emails'
 
 
 @util.export
@@ -483,6 +495,40 @@ class VDSMEnv(object):
 class SanlockEnv(object):
     SANLOCK_SERVICE = 'OVEHOSTED_SANLOCK/serviceName'
     LOCKSPACE_NAME = 'OVEHOSTED_SANLOCK/lockspaceName'
+
+
+@util.export
+@util.codegen
+@ohostedattrsclass
+class NotificationsEnv(object):
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def SMTP_SERVER(self):
+        return 'OVEHOSTED_NOTIF/smtpServer'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def SMTP_PORT(self):
+        return 'OVEHOSTED_NOTIF/smtpPort'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def SOURCE_EMAIL(self):
+        return 'OVEHOSTED_NOTIF/sourceEmail'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def DEST_EMAIL(self):
+        return 'OVEHOSTED_NOTIF/destEmail'
+
+    DEFAULT_SMTP_SERVER = 'localhost'
+    DEFAULT_SMTP_PORT = 25
+    DEFAULT_SOURCE_EMAIL = 'root@localhost'
+    DEFAULT_DEST_EMAIL = 'root@localhost'
 
 
 @util.export
