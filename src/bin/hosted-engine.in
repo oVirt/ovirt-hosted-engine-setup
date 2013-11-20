@@ -28,6 +28,11 @@ Usage: $0
         VM status according to the HA agent
     --add-console-password=<password>
         Create a temporary password for vnc/spice connection
+    --add-console-password
+        Create a temporary password for vnc/spice connection - password
+        will be taken from the environment variable
+        OVIRT_HOSTED_ENGINE_CONSOLE_PASSWORD if it's set, otherwise
+        will be read interactively
     --check-liveliness
         Checks liveliness page of engine
     --connect-storage
@@ -41,6 +46,26 @@ Usage: $0
 
 __EOF__
     exit $rc
+}
+
+readpassword() {
+        (
+                cleanup() {
+                        [ -n "${STTY_ORIG}" ] && stty "${STTY_ORIG}"
+                }
+
+                STTY_ORIG=
+                trap cleanup 0
+                [ -t 0 ] || die "Standard input is not a terminal"
+                STTY_ORIG="$(stty -g)"
+                stty -echo || die "Failed to disable terminal input echo"
+                echo -n "Enter password: " >&2
+                read pass
+                echo >&2
+                cat << __EOF__
+${pass}
+__EOF__
+        )
 }
 
 if [ -z "$1" ] ; then
@@ -98,6 +123,17 @@ while [ -n "$1" ]; do
         --vm-status)
             if [ -r "${conf}" ] ; then
                 python -m ovirt_hosted_engine_setup.vm_status
+            else
+                echo "You must run --deploy first"
+            fi
+        ;;
+        --add-console-password)
+            if [ -n "${vmid}" ] ; then
+                pass="${OVIRT_HOSTED_ENGINE_CONSOLE_PASSWORD}"
+                if [ -z "${pass}" ]; then
+                    pass="$(readpassword)" || exit 1
+                fi
+                ${VDSCOMMAND} setVmTicket "${vmid}" "${pass}" 120
             else
                 echo "You must run --deploy first"
             fi
