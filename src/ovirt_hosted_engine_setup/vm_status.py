@@ -46,6 +46,7 @@ class VmStatus(object):
         'host-ts': _('Host timestamp'),
         'live-data': _('Status up-to-date'),
         'extra': _('Extra metadata (valid at timestamp)'),
+        'maintenance': _('Local maintenance')
     }
 
     def __init__(self):
@@ -60,6 +61,23 @@ class VmStatus(object):
                 _('Cannot connect to the HA daemon, please check the logs.\n')
             )
             all_host_stats = {}
+
+        try:
+            cluster_stats = ha_cli.get_all_stats(client.HAClient.
+                                                 StatModes.GLOBAL)[0]
+        except KeyError:
+            # Stats were retrieved but the global section is missing.
+            # This is not an error.
+            pass
+        except (socket.error, AttributeError, IndexError):
+            sys.stderr.write(
+                _('Cannot connect to the HA daemon, please check the logs.\n')
+            )
+            cluster_stats = {}
+
+        if cluster_stats.get(client.HAClient.GlobalMdFlags.MAINTENANCE, False):
+            print _('\n\n!! Cluster is in GLOBAL MAINTENANCE mode !!\n')
+
         for host_id, host_stats in all_host_stats.items():
             print _('\n\n--== Host {host_id} status ==--\n').format(
                 host_id=host_id
