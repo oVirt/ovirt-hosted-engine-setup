@@ -60,11 +60,20 @@ class Plugin(plugin.PluginBase):
         ]
         live_checker = check_liveliness.LivelinessChecker()
         if not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]:
+            self.dialog.note(
+                _('Please install the engine in the VM.')
+            )
+            self.dialog.note(
+                _(
+                    'You may also be interested in '
+                    'installing ovirt-guest-agent-common package '
+                    'in the VM.'
+                )
+            )
             self.dialog.queryString(
                 name='OVEHOSTED_ENGINE_UP',
                 note=_(
-                    'Please install the engine in the VM, '
-                    'hit enter when finished.'
+                    'Hit enter when finished.'
                 ),
                 prompt=True,
                 default='y'  # Allow enter without any value
