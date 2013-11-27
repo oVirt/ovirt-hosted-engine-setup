@@ -61,7 +61,7 @@ class Plugin(plugin.PluginBase):
         live_checker = check_liveliness.LivelinessChecker()
         if not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]:
             self.dialog.note(
-                _('Please install the engine in the VM.')
+                _('Please install and setup the engine in the VM.')
             )
             self.dialog.note(
                 _(
