@@ -24,6 +24,7 @@ Local storage domain plugin.
 
 import glob
 import os
+import re
 import uuid
 import gettext
 import stat
@@ -59,6 +60,14 @@ class Plugin(plugin.PluginBase):
 
     DATA_DOMAIN = 1
     UMOUNT_TRIES = 10
+
+    _RE_NOT_ALPHANUMERIC = re.compile(r"[^-\w]")
+    _NOT_VALID_NAME_MSG = _(
+        'It can only consist of alphanumeric '
+        'characters (that is, letters, numbers, '
+        'and signs "-" and "_"). All other characters '
+        'are not valid in the name.'
+    )
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
@@ -312,6 +321,14 @@ class Plugin(plugin.PluginBase):
                     'or specify another location'
                 )
             )
+
+    def _validName(self, name):
+        if (
+            name is None or
+            self._RE_NOT_ALPHANUMERIC.search(name)
+        ):
+            return False
+        return True
 
     def _validateDomain(self, connection, domain_type):
         path = tempfile.mkdtemp()
@@ -793,24 +810,59 @@ class Plugin(plugin.PluginBase):
         ] == 'glusterfs':
             self.storageType = self.GLUSTERFS_DOMAIN
         self._getExistingDomain()
-        if self.environment[
+
+        interactive = self.environment[
             ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
-        ] is None:
+        ] is None
+        while not self._validName(
+            self.environment[
+                ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
+            ]
+        ):
             self.environment[
                 ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
             ] = self.dialog.queryString(
                 name='OVEHOSTED_STORAGE_DOMAIN_NAME',
                 note=_(
-                    'Please provide storage domain name [@DEFAULT@]: '
+                    'Please provide storage domain name. '
+                    '[@DEFAULT@]: '
                 ),
                 prompt=True,
                 caseSensitive=True,
                 default=ohostedcons.Defaults.DEFAULT_STORAGE_DOMAIN_NAME,
             )
+            if not self._validName(
+                self.environment[
+                    ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
+                ]
+            ):
+                if interactive:
+                    self.dialog.note(
+                        text=_(
+                            'Storage domain name cannot be empty. '
+                            '{notvalid}'
+                        ).format(
+                            notvalid=self._NOT_VALID_NAME_MSG
+                        )
+                    )
+                else:
+                    raise RuntimeError(
+                        _(
+                            'Storage domain name cannot be empty. '
+                            '{notvalid}'
+                        ).format(
+                            notvalid=self._NOT_VALID_NAME_MSG
+                        )
+                    )
 
-        if self.environment[
+        interactive = self.environment[
             ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME
-        ] is None:
+        ] is None
+        while not self._validName(
+            self.environment[
+                ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME
+            ]
+        ):
             self.environment[
                 ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME
             ] = self.dialog.queryString(
@@ -824,6 +876,29 @@ class Plugin(plugin.PluginBase):
                 caseSensitive=True,
                 default=ohostedcons.Defaults.DEFAULT_STORAGE_DATACENTER_NAME,
             )
+            if not self._validName(
+                self.environment[
+                    ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME
+                ]
+            ):
+                if interactive:
+                    self.dialog.note(
+                        text=_(
+                            'Data center name cannot be empty. '
+                            '{notvalid}'
+                        ).format(
+                            notvalid=self._NOT_VALID_NAME_MSG
+                        )
+                    )
+                else:
+                    raise RuntimeError(
+                        _(
+                            'Data center name cannot be empty. '
+                            '{notvalid}'
+                        ).format(
+                            notvalid=self._NOT_VALID_NAME_MSG
+                        )
+                    )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
