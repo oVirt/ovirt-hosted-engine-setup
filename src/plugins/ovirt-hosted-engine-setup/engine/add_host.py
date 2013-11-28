@@ -140,6 +140,24 @@ class Plugin(plugin.PluginBase):
                                 ],
                             )
                         )
+        if self._selinux_enabled:
+            path = os.path.join(
+                os.path.expanduser('~root'),
+                '.ssh'
+            )
+            rc, stdout, stderr = self.execute(
+                (
+                    self.command.get('restorecon'),
+                    '-r',
+                    path
+                )
+            )
+            if rc != 0:
+                self.logger.error(
+                    _('Failed to refresh SELINUX context for {path}').format(
+                        path=path
+                    )
+                )
 
     def _getIPAddress(self):
         address = None
@@ -235,12 +253,15 @@ class Plugin(plugin.PluginBase):
             ohostedcons.EngineEnv.APP_HOST_NAME,
             None
         )
+        self._selinux_enabled = False
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
     )
     def _setup(self):
         self.command.detect('ip')
+        self.command.detect('selinuxenabled')
+        self.command.detect('restorecon')
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
@@ -322,6 +343,21 @@ class Plugin(plugin.PluginBase):
         self.environment[otopicons.CoreEnv.LOG_FILTER].append(
             self.environment[ohostedcons.EngineEnv.ADMIN_PASSWORD]
         )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_VALIDATION,
+    )
+    def _validation(self):
+        if self.command.get('selinuxenabled', optional=True) is None:
+            self._selinux_enabled = False
+        else:
+            rc, stdout, stderr = self.execute(
+                (
+                    self.command.get('selinuxenabled'),
+                ),
+                raiseOnError=False,
+            )
+            self._selinux_enabled = rc == 0
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
