@@ -31,6 +31,7 @@ import tempfile
 import time
 
 
+from otopi import constants as otopicons
 from otopi import util
 from otopi import plugin
 
@@ -71,6 +72,8 @@ class Plugin(plugin.PluginBase):
         self.storageType = None
         self.domain_exists = False
         self.pool_exists = False
+        self._connected = False
+        self._monitoring = False
 
     def _mount(self, path, connection, domain_type):
         mount_cmd = (
@@ -500,6 +503,16 @@ class Plugin(plugin.PluginBase):
         waiter = tasks.DomainMonitorWaiter(self.environment)
         waiter.wait(self.environment[ohostedcons.StorageEnv.SD_UUID])
 
+    def _stopMonitoringDomain(self):
+        self.logger.debug('_stopMonitoringDomain')
+        status = self.serv.s.stopMonitoringDomain(
+            self.environment[ohostedcons.StorageEnv.SD_UUID],
+            self.environment[ohostedcons.StorageEnv.HOST_ID]
+        )
+        self.logger.debug(status)
+        if status['status']['code'] != 0:
+            raise RuntimeError(status['status']['message'])
+
     def _storagePoolConnection(self, disconnect=False):
         spUUID = self.environment[ohostedcons.StorageEnv.SP_UUID]
         sdUUID = self.environment[ohostedcons.StorageEnv.SD_UUID]
@@ -526,6 +539,7 @@ class Plugin(plugin.PluginBase):
         status, message = method(args=method_args)
         if status != 0:
             raise RuntimeError(message)
+        self._connected = not disconnect
 
     def _spmStart(self):
         self.logger.debug('spmStart')
@@ -852,6 +866,23 @@ class Plugin(plugin.PluginBase):
         self._storagePoolConnection(disconnect=True)
         self.logger.info(_('Start monitoring domain'))
         self._startMonitoringDomain()
+        self._monitoring = True
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CLEANUP,
+        condition=lambda self: self.environment[
+            otopicons.BaseEnv.ERROR
+        ],
+    )
+    def _cleanup(self):
+        if self._connected:
+            try:
+                self._spmStop()
+            except RuntimeError:
+                self.logger.debug('Not SPM?', exc_info=True)
+            self._storagePoolConnection(disconnect=True)
+        if self._monitoring:
+            self._stopMonitoringDomain()
 
 
 # vim: expandtab tabstop=4 shiftwidth=4
