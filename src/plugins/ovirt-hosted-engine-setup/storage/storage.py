@@ -79,20 +79,36 @@ class Plugin(plugin.PluginBase):
         self.serv = None
         self.waiter = None
         self.storageType = None
+        self.protocol_version = None
         self.domain_exists = False
         self.pool_exists = False
         self._connected = False
         self._monitoring = False
 
     def _mount(self, path, connection, domain_type):
+        fstype = ''
+        opts = []
+
+        if domain_type == 'nfs3':
+            fstype = 'nfs'
+            opts.append('vers=3')
+        elif domain_type == 'nfs4':
+            fstype = 'nfs'
+            opts.append('vers=4')
+
+        if fstype == 'nfs':
+            opts.append('retry=1')
+
         mount_cmd = (
             self.command.get('mount'),
-            '-t%s' % domain_type,
+            '-t%s' % fstype,
         )
-        if domain_type == 'nfs':
+
+        if opts:
             mount_cmd += (
-                '-oretry=1',
+                '-o%s' % ','.join(opts),
             )
+
         mount_cmd += (
             connection,
             path,
@@ -444,7 +460,8 @@ class Plugin(plugin.PluginBase):
             "user=kvm,"
             "password=,"
             "id={connectionUUID},"
-            "port="
+            "port=,"
+            "protocol_version={protocol_version}"
         ).format(
             connection=self.environment[
                 ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
@@ -452,6 +469,7 @@ class Plugin(plugin.PluginBase):
             connectionUUID=self.environment[
                 ohostedcons.StorageEnv.CONNECTION_UUID
             ],
+            protocol_version=self.protocol_version,
         )
         method(args=[
             self.storageType,
@@ -717,32 +735,28 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.StorageEnv.DOMAIN_TYPE
             ] is None
         )
-        #{ Enforce DOMAIN_TYPE to nfs until glusterfs issues are solved.
-        self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE] = 'nfs'
-        #}
         validDomain = False
         while not validDomain:
             try:
                 if interactive:
-                    #{ Enforce DOMAIN_TYPE to nfs until glusterfs
-                    # issues are solved.
-                    #self.environment[
-                    #    ohostedcons.StorageEnv.DOMAIN_TYPE
-                    #] = self.dialog.queryString(
-                    #    name='OVEHOSTED_STORAGE_DOMAIN_TYPE',
-                    #    note=_(
-                    #        'Please specify the storage '
-                    #        'you would like to use (@VALUES@)[@DEFAULT@]: '
-                    #    ),
-                    #    prompt=True,
-                    #    caseSensitive=True,
-                    #    validValues=(
-                    #        'glusterfs',
-                    #        'nfs',
-                    #    ),
-                    #    default='nfs',
-                    #)
-                    #}
+                    self.environment[
+                        ohostedcons.StorageEnv.DOMAIN_TYPE
+                    ] = self.dialog.queryString(
+                        name='OVEHOSTED_STORAGE_DOMAIN_TYPE',
+                        note=_(
+                            'Please specify the storage '
+                            'you would like to use (@VALUES@)[@DEFAULT@]: '
+                        ),
+                        prompt=True,
+                        caseSensitive=True,
+                        validValues=(
+                            # Enable when glusterfs issues are solved:
+                            # 'glusterfs',
+                            'nfs3',
+                            'nfs4',
+                        ),
+                        default='nfs3',
+                    )
 
                     self.environment[
                         ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
@@ -803,8 +817,14 @@ class Plugin(plugin.PluginBase):
                     )
         if self.environment[
             ohostedcons.StorageEnv.DOMAIN_TYPE
-        ] == 'nfs':
+        ] == 'nfs3':
             self.storageType = self.NFS_DOMAIN
+            self.protocol_version = 3
+        elif self.environment[
+            ohostedcons.StorageEnv.DOMAIN_TYPE
+        ] == 'nfs4':
+            self.storageType = self.NFS_DOMAIN
+            self.protocol_version = 4
         elif self.environment[
             ohostedcons.StorageEnv.DOMAIN_TYPE
         ] == 'glusterfs':

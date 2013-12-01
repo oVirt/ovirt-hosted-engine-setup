@@ -214,8 +214,13 @@ Usage: $0 connect-storage
 __EOF__
 return ;}
 
-    if [ "${domainType}" == "nfs" ] ; then
+    protocol_version=''
+    if [ "${domainType}" == "nfs3" ] ; then
         storageType=1
+        protocol_version=3
+    elif [ "${domainType}" == "nfs4" ] ; then
+        storageType=1
+        protocol_version=4
     elif [ "${domainType}" == "glusterfs" ] ; then
         storageType=7
     else
@@ -226,7 +231,7 @@ return ;}
     ${VDSCOMMAND} connectStorageServer \
         ${storageType} \
         ${spUUID} \
-        connection=${storage},iqn=,portal=,user=kvm,password=,id=${connectionUUID},port=
+        connection=${storage},iqn=,portal=,user=kvm,password=,id=${connectionUUID},port=,protocol_version=${protocol_version}
 }
 
 cmd_start_pool() {

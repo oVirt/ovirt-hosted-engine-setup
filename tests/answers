@@ -1,7 +1,7 @@
 [environment:default]
 OVEHOSTED_NETWORK/bridgeIf=str:em1
 OVEHOSTED_NETWORK/fqdn=str:ovirt.home
-OVEHOSTED_STORAGE/domainType=str:nfs
+OVEHOSTED_STORAGE/domainType=str:nfs3
 OVEHOSTED_STORAGE/storageDatacenterName=str:hosted_datacenter
 OVEHOSTED_STORAGE/storageDomainConnection=str:192.168.1.104:/home/images
 OVEHOSTED_STORAGE/storageDomainName=str:hosted_storage
