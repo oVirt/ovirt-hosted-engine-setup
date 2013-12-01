@@ -188,6 +188,16 @@ class Plugin(plugin.PluginBase):
     def _misc(self):
         self.logger.info(_('Configuring the management bridge'))
         nics = self.environment[ohostedcons.NetworkEnv.BRIDGE_IF]
+        iface = nics
+        caps = self.environment[
+            ohostedcons.VDSMEnv.VDS_CLI
+        ].s.getVdsCapabilities()['info']['nics'][nics]
+        self.logger.debug(
+            'getVdsCaps for {iface}: {caps}'.format(
+                iface=iface,
+                caps=caps,
+            )
+        )
         bond = ''
         if netinfo.isbonding(nics):
             bond = nics
@@ -205,10 +215,21 @@ class Plugin(plugin.PluginBase):
             'nics=%s' % nics,
             'force=False',
             'bridged=True',
-            'BOOTPROTO=dhcp',
             'ONBOOT=yes',
-            'blockingdhcp=true',
         ]
+        boot_proto = caps['cfg']['BOOTPROTO']
+        cmd += ['bootproto=%s' % boot_proto]
+        if boot_proto in ('dhcp', 'bootp'):
+            cmd += [
+                'blockingdhcp=true',
+            ]
+        else:
+            # Static configuration
+            cmd += [
+                'ipaddr=%s' % caps['addr'],
+                'netmask=%s' % caps['netmask'],
+                'gateway=%s' % caps['cfg']['GATEWAY'],
+            ]
         self.execute(
             cmd,
             raiseOnError=True
