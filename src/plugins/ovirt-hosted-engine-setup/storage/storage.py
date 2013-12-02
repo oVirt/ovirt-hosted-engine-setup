@@ -815,7 +815,11 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME
             ] = self.dialog.queryString(
                 name='OVEHOSTED_STORAGE_DATACENTER_NAME',
-                note=_('Local storage datacenter name [@DEFAULT@]: '),
+                note=_(
+                    'Local storage datacenter name is an internal name '
+                    'and currently will not be shown in engine\'s admin UI.'
+                    'Please enter local datacenter name [@DEFAULT@]: '
+                ),
                 prompt=True,
                 caseSensitive=True,
                 default=ohostedcons.Defaults.DEFAULT_STORAGE_DATACENTER_NAME,
