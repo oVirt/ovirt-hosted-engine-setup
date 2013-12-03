@@ -11,38 +11,42 @@ rc=1
 
 usage() {
     cat << __EOF__
-Usage: $0
+Usage: $0 [--help] <command> [<command-args>]
     --help
-        show this help.
-    --deploy
-        run ovirt-hosted-engine deployment
-    --vm-start
-        start VM on this host
-    --vm-start-paused
-        start VM on this host with qemu paused
-    --vm-shutdown
-        gracefully shutdown the VM on this host
-    --vm-poweroff
-        forcefully poweroff the VM on this host
-    --vm-status
-        VM status according to the HA agent
-    --add-console-password=<password>
-        Create a temporary password for vnc/spice connection
-    --add-console-password
-        Create a temporary password for vnc/spice connection - password
-        will be taken from the environment variable
-        OVIRT_HOSTED_ENGINE_CONSOLE_PASSWORD if it's set, otherwise
-        will be read interactively
-    --check-liveliness
-        Checks liveliness page of engine
-    --connect-storage
-        Connect the storage domain
-    --start-pool
-        Start the storage pool manually
-    --console
-        Open the configured console using remote-viewer on localhost
-    --set-maintenance=mode
-        Set maintenance status to the specified mode (global/local/none)
+        show this help message.
+
+    The available commands are:
+        --deploy [options]
+            run ovirt-hosted-engine deployment
+        --vm-start
+            start VM on this host
+        --vm-start-paused
+            start VM on this host with qemu paused
+        --vm-shutdown
+            gracefully shutdown the VM on this host
+        --vm-poweroff
+            forcefully poweroff the VM on this host
+        --vm-status
+            VM status according to the HA agent
+        --add-console-password [--password=<password>]
+            Create a temporary password for vnc/spice connection.  If
+            --password is given, the password will be set to the value
+            provided.  Otherwise, if it is set,  the environment variable
+            OVIRT_HOSTED_ENGINE_CONSOLE_PASSWORD will be used.  As a last
+            resort, the password will be read interactively.
+        --check-liveliness
+            Checks liveliness page of engine
+        --connect-storage
+            Connect the storage domain
+        --start-pool
+            Start the storage pool manually
+        --console
+            Open the configured console using remote-viewer on localhost
+        --set-maintenance --mode=<mode>
+            Set maintenance status to the specified mode (global/local/none)
+
+    For additional information about a specific command try:
+        $@ <command> --help
 
 __EOF__
     exit $rc
@@ -68,6 +72,248 @@ __EOF__
         )
 }
 
+cmd_deploy() {
+    [ "$1" == "--help" ] && { cat << __EOF__
+Usage: $0 deploy [args]
+    Run ovirt-hosted-engine deployment.
+
+    --config-append=<file>
+        Load extra configuration files.
+    --generate-answer=<file>
+        Generate answer file.
+__EOF__
+return ;}
+
+    exec @datadir@/ovirt-hosted-engine-setup/scripts/ovirt-hosted-engine-setup "$@"
+}
+
+cmd_vm_start() {
+    [ "$1" == "--help" ] && { cat << __EOF__
+Usage: $0 vm-start
+    Start the engine VM on this host.
+    Available only after deployment has completed.
+__EOF__
+return ;}
+
+    # TODO: Check first the sanlock status, and if allows:
+    if [ -r "${conf}" ] ; then
+        ${VDSCOMMAND} create "${conf}"
+    else
+        echo "You must run deploy first"
+    fi
+}
+
+cmd_vm_start_paused() {
+    [ "$1" == "--help" ] && { cat << __EOF__
+Usage: $0 vm-start-paused
+    Start the engine VM in paused state on this host.
+    Available only after deployment has completed.
+__EOF__
+return ;}
+
+    # TODO: Check first the sanlock status, and if allows:
+    if [ -r "${conf}" ] ; then
+        temp_conf="$(mktemp)"
+        cp "${conf}" "${temp_conf}"
+        echo "launchPaused=true">>"${temp_conf}"
+        ${VDSCOMMAND} create "${temp_conf}"
+        rm -f "${temp_conf}"
+    else
+        echo "You must run deploy first"
+    fi
+}
+
+cmd_vm_shutdown() {
+    [ "$1" == "--help" ] && { cat << __EOF__
+Usage: $0 vm-shutdown
+    Gracefully shut down the engine VM on this host.
+    Available only after deployment has completed.
+__EOF__
+return ;}
+
+    if [ -n "${vmid}" ] ; then
+        ${VDSCOMMAND} shutdown "${vmid}" 120 "VM is shutting down!"
+    else
+        echo "You must run deploy first"
+    fi
+}
+
+cmd_vm_poweroff() {
+    [ "$1" == "--help" ] && { cat << __EOF__
+Usage: $0 vm-poweroff
+    Forcefully power off the engine VM on this host.
+    Available only after deployment has completed.
+__EOF__
+return ;}
+
+    if [ -n "${vmid}" ] ; then
+        ${VDSCOMMAND} destroy "${vmid}"
+    else
+        echo "You must run deploy first"
+    fi
+}
+
+cmd_vm_status() {
+    [ "$1" == "--help" ] && { cat << __EOF__
+Usage: $0 vm-status
+    Report the status of the engine VM according to the HA agent.
+    Available only after deployment has completed.
+__EOF__
+return ;}
+
+    if [ -r "${conf}" ] ; then
+        python -m ovirt_hosted_engine_setup.vm_status
+    else
+        echo "You must run deploy first"
+    fi
+}
+
+cmd_add_console_password() {
+    [ "$1" == "--help" ] && { cat << __EOF__
+Usage: $0 add-console-password [--password=<password>]
+    Create a temporary password for vnc/spice connection.
+
+    If --password is given, the password will be set to the value provided.
+    Otherwise, if it is set,  the environment variable
+    OVIRT_HOSTED_ENGINE_CONSOLE_PASSWORD will be used.  As a last resort, the
+    password will be read interactively.
+    Available only after deployment has completed.
+__EOF__
+return ;}
+
+    if [ -z "${vmid}" ] ; then
+        echo "You must run deploy first"
+        return
+    fi
+
+    if [[ "$1" == --password=* ]]; then
+        pass="${1#*=}"
+    else
+        pass="${OVIRT_HOSTED_ENGINE_CONSOLE_PASSWORD}"
+        if [ -z "${pass}" ]; then
+            pass="$(readpassword)" || exit 1
+        fi
+    fi
+    ${VDSCOMMAND} setVmTicket "${vmid}" "${pass}" 120
+}
+
+cmd_check_liveliness() {
+    [ "$1" == "--help" ] && { cat << __EOF__
+Usage: $0 check-liveliness
+    Report status of the engine services by checking the liveliness page.
+__EOF__
+return ;}
+
+    python -m ovirt_hosted_engine_setup.check_liveliness
+}
+
+cmd_connect_storage() {
+    [ "$1" == "--help" ] && { cat << __EOF__
+Usage: $0 connect-storage
+    Connect the storage domain
+__EOF__
+return ;}
+
+    if [ "${domainType}" == "nfs" ] ; then
+        storageType=1
+    elif [ "${domainType}" == "glusterfs" ] ; then
+        storageType=7
+    else
+        echo "Storage type not supported: ${domainType}"
+        exit 1
+    fi
+    echo "Connecting Storage Server"
+    ${VDSCOMMAND} connectStorageServer \
+        ${storageType} \
+        ${spUUID} \
+        connection=${storage},iqn=,portal=,user=kvm,password=,id=${connectionUUID},port=
+}
+
+cmd_start_pool() {
+    [ "$1" == "--help" ] && { cat << __EOF__
+Usage: $0 start-pool
+    Start the storage pool manually
+__EOF__
+return ;}
+
+    echo "Connecting Storage Pool"
+    ${VDSCOMMAND} connectStoragePool \
+        ${spUUID} \
+        ${host_id} \
+        ${spUUID} \
+        ${sdUUID} \
+        1
+    echo "Starting SPM"
+    ${VDSCOMMAND} spmStart \
+        ${spUUID} \
+        -1 \
+        -1 \
+        -1 \
+        false \
+        250 \
+        3
+    echo "Activating Storage Domain"
+    ${VDSCOMMAND} activateStorageDomain \
+        ${sdUUID} \
+        ${spUUID}
+}
+
+cmd_console() {
+    [ "$1" == "--help" ] && { cat << __EOF__
+Usage: $0 console
+    Open the configured console using remote-viewer on localhost
+__EOF__
+return ;}
+
+    if [ "${console}" == "vnc" ] ; then
+        echo -n "Use the password you've set using --add-console-password "
+        echo "for logging in"
+        exec /usr/bin/remote-viewer vnc://localhost:5900
+    elif [ "${console}" == "qxl" ] ; then
+        if [ ! -r "${ca_cert}" ] ; then
+            echo "Missing spice PKI certificate"
+            echo -n "You can find a guide on how to generate PKI certificate "
+            echo "at the following URL:"
+            echo "${PKI_GUIDE_URL}"
+            exit 1
+        fi
+        exec /usr/bin/remote-viewer \
+            --spice-ca-file=${ca_cert} \
+            spice://localhost?tls-port=5900 \
+            --spice-host-subject="${ca_subject}"
+    fi
+}
+
+cmd_set_maintenance() {
+    [ "$1" == "--help" ] && { cat << __EOF__
+Usage: $0 set-maintenance --mode=<mode>
+    Set maintenance status to the specified mode.  Valid values are:
+    'global', 'local', and 'none'.
+    Available only after deployment has completed.
+__EOF__
+return ;}
+
+    if [[ "$1" == --mode=* ]]; then
+        mode="${1#*--mode=}"
+        case "$mode" in
+            global|local|none) ;;
+            *)
+                echo "Invalid value '$mode' for --mode"
+                exit 1
+                ;;
+        esac
+    else
+        echo "You must specify a maintenance mode with --mode"
+        exit 1
+    fi
+
+    if [ -r "${conf}" ] ; then
+        python -m ovirt_hosted_engine_setup.set_maintenance "${mode}"
+    else
+        echo "You must run deploy first"
+    fi
+}
+
 if [ -z "$1" ] ; then
     usage
 fi
@@ -78,144 +324,27 @@ else
     VDSCOMMAND="vdsClient localhost"
 fi
 
-while [ -n "$1" ]; do
-    x="$1"
-    v="${x#*=}"
-    shift
-    case "${x}" in
-        --deploy)
-            exec @datadir@/ovirt-hosted-engine-setup/scripts/ovirt-hosted-engine-setup "$@"
-        ;;
-        --vm-start)
-            # TODO: Check first the sanlock status, and if allows:
-            if [ -r "${conf}" ] ; then
-                ${VDSCOMMAND} create "${conf}"
-            else
-                echo "You must run --deploy first"
-            fi
-        ;;
-        --vm-start-paused)
-            # TODO: Check first the sanlock status, and if allows:
-            if [ -r "${conf}" ] ; then
-                temp_conf="$(mktemp)"
-                cp "${conf}" "${temp_conf}"
-                echo "launchPaused=true">>"${temp_conf}"
-                ${VDSCOMMAND} create "${temp_conf}"
-                rm -f "${temp_conf}"
-            else
-                echo "You must run --deploy first"
-            fi
-        ;;
-        --vm-shutdown)
-            if [ -n "${vmid}" ] ; then
-                ${VDSCOMMAND} shutdown "${vmid}" 120 "VM is shutting down!"
-            else
-                echo "You must run --deploy first"
-            fi
-        ;;
-        --vm-poweroff)
-            if [ -n "${vmid}" ] ; then
-                ${VDSCOMMAND} destroy "${vmid}"
-            else
-                echo "You must run --deploy first"
-            fi
-        ;;
-        --vm-status)
-            if [ -r "${conf}" ] ; then
-                python -m ovirt_hosted_engine_setup.vm_status
-            else
-                echo "You must run --deploy first"
-            fi
-        ;;
-        --add-console-password)
-            if [ -n "${vmid}" ] ; then
-                pass="${OVIRT_HOSTED_ENGINE_CONSOLE_PASSWORD}"
-                if [ -z "${pass}" ]; then
-                    pass="$(readpassword)" || exit 1
-                fi
-                ${VDSCOMMAND} setVmTicket "${vmid}" "${pass}" 120
-            else
-                echo "You must run --deploy first"
-            fi
-        ;;
-        --add-console-password=*)
-            if [ -n "${vmid}" ] ; then
-                ${VDSCOMMAND} setVmTicket "${vmid}" "${v}" 120
-            else
-                echo "You must run --deploy first"
-            fi
-        ;;
-        --check-liveliness)
-            python -m ovirt_hosted_engine_setup.check_liveliness
-        ;;
-        --connect-storage)
-            if [ "${domainType}" == "nfs" ] ; then
-                storageType=1
-            elif [ "${domainType}" == "glusterfs" ] ; then
-                storageType=7
-            else
-                echo "Storage type not supported: ${domainType}"
-                exit 1
-            fi
-            echo "Connecting Storage Server"
-            ${VDSCOMMAND} connectStorageServer \
-                ${storageType} \
-                ${spUUID} \
-                connection=${storage},iqn=,portal=,user=kvm,password=,id=${connectionUUID},port=
-        ;;
-        --start-pool)
-            echo "Connecting Storage Pool"
-            ${VDSCOMMAND} connectStoragePool \
-                ${spUUID} \
-                ${host_id} \
-                ${spUUID} \
-                ${sdUUID} \
-                1
-            echo "Starting SPM"
-            ${VDSCOMMAND} spmStart \
-                ${spUUID} \
-                -1 \
-                -1 \
-                -1 \
-                false \
-                250 \
-                3
-            echo "Activating Storage Domain"
-            ${VDSCOMMAND} activateStorageDomain \
-                ${sdUUID} \
-                ${spUUID}
-        ;;
-        --console)
-            if [ "${console}" == "vnc" ] ; then
-                echo "Use the password you've set using --add-console-password for logging in"
-                exec /usr/bin/remote-viewer vnc://localhost:5900
-            elif [ "${console}" == "qxl" ] ; then
-                if [ ! -r "${ca_cert}" ] ; then
-                    echo "Missing spice PKI certificate"
-                    echo "You can find a guide on how to generate PKI certificate at the following URL:"
-                    echo "${PKI_GUIDE_URL}"
-                    exit 1
-                fi
-                exec /usr/bin/remote-viewer \
-                    --spice-ca-file=${ca_cert} \
-                    spice://localhost?tls-port=5900 \
-                    --spice-host-subject="${ca_subject}"
-            fi
-        ;;
-        --set-maintenance=*)
-            if [ -r "${conf}" ] ; then
-                python -m ovirt_hosted_engine_setup.set_maintenance "${v}"
-            else
-                echo "You must run --deploy first"
-            fi
-        ;;
-        --help)
-            rc=0
-            usage
-        ;;
-        *)
-            echo "Invalid option '${x}'" >&2
-            usage
-        ;;
-    esac
-done
+x="$1"
+shift
+case "${x}" in
+    --deploy) cmd_deploy "$@" ;;
+    --vm-start) cmd_vm_start "$@" ;;
+    --vm-start-paused) cmd_vm_start_paused "$@" ;;
+    --vm-shutdown) cmd_vm_shutdown "$@" ;;
+    --vm-poweroff) cmd_vm_poweroff "$@" ;;
+    --vm-status) cmd_vm_status "$@" ;;
+    --add-console-password) cmd_add_console_password "$@" ;;
+    --check-liveliness) cmd_check_liveliness "$@" ;;
+    --connect-storage) cmd_connect_storage "$@" ;;
+    --start-pool) cmd_start_pool "$@" ;;
+    --console) cmd_console "$@" ;;
+    --set-maintenance) cmd_set_maintenance "$@" ;;
+    --help)
+        rc=0
+        usage
+    ;;
+    *)
+        echo "Invalid option '${x}'" >&2
+        usage
+    ;;
+esac

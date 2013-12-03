@@ -218,7 +218,7 @@ class Plugin(plugin.PluginBase):
                     'hosted-engine --vm-start\n'
                     'You can then set a temporary password using '
                     'the command:\n'
-                    'hosted-engine --add-console-password=<password>'
+                    'hosted-engine --add-console-password'
                 )
             )
 
