@@ -3,7 +3,7 @@
 .SH "NAME"
 hosted\-engine \- Tools for handling hosted engine
 .SH "SYNOPSIS"
-\fBhosted\-engine\fP [options]
+\fBhosted\-engine\fP [\-\-help] <command> [<command\-args>]
 .PP
 .SH "DESCRIPTION"
 .PP
@@ -16,10 +16,11 @@ hosted-engine virtual machine.
 \&
 
 .SH "OPTIONS"
-The following are general options you can use with this command:\&
 .IP "\fB\-\-help\fP"
 Show the help message and exit.\&
-.IP "\fB\-\-deploy\fP"
+
+.IP "The following commands are available:"
+.IP "\fB\-\-deploy [options]\fP"
 Run the ovirt-hosted-engine-setup command to deploy the hosted-engine virtual
 machine.\&
 .IP "\fB\-\-vm-start\fP"
@@ -32,7 +33,7 @@ Gracefully shutdown the VM on this host.\&
 Forcefully poweroff the VM on this host.\&
 .IP "\fB\-\-vm-status\fP"
 Show the VM status.\&
-.IP "\fB\-\-add-console-password=<password>\fP"
+.IP "\fB\-\-add-console-password [\-\-password=<password>]\fP"
 Create a temporary password for VNC/SPICE connections to the hosted-engine
 virtual machine.\&
 .IP "\fB\-\-console\fP"
@@ -43,7 +44,11 @@ Checks liveliness page of engine.\&
 Manually connect the storage domain to the local VDSM instance.\&
 .IP "\fB\-\-start-pool\fP"
 Start the storage pool manually.\&
-.IP "\fB\-\-set-maintenance=mode\fP"
+.IP "\fB\-\-set-maintenance \-\-mode=<mode>\fP"
 Set maintenance status to the specified mode (global/local/none).\&
+
+.IP "For additional information about a specific command try:"
+hosted\-engine <command> --help\&
+
 .SH "SEE ALSO"
 .BR ovirt\-hosted\-engine\-setup (8)
