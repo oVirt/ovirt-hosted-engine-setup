@@ -53,7 +53,7 @@ install-data-local:
 
 install-exec-local: ovirt-hosted-engine-setup
 	$(MKDIR_P) $(DESTDIR)/$(sbindir)
-	$(LN_S) $(ovirthostedenginescriptsdir)/ovirt-hosted-engine-setup $(DESTDIR)/$(sbindir)/ovirt-hosted-engine-setup
+	$(LN_S) -f $(ovirthostedenginescriptsdir)/ovirt-hosted-engine-setup $(DESTDIR)/$(sbindir)/ovirt-hosted-engine-setup
 
 uninstall-local:
 	rm -f $(DESTDIR)/$(sbindir)/ovirt-hosted-engine-setup
