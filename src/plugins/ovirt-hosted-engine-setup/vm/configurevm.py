@@ -69,10 +69,6 @@ class Plugin(plugin.PluginBase):
             str(uuid.uuid4())
         )
         self.environment.setdefault(
-            ohostedcons.VMEnv.MAC_ADDR,
-            ohostedutil.randomMAC()
-        )
-        self.environment.setdefault(
             ohostedcons.VMEnv.BOOT,
             None,
         )

@@ -31,6 +31,7 @@ dist_my_PYTHON = \
 	cpu.py \
 	configurevm.py \
 	image.py \
+	mac.py \
 	machine.py \
 	memory.py \
 	runvm.py \
