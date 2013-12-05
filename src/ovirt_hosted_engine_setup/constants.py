@@ -395,6 +395,8 @@ class VMEnv(object):
 
     @ohostedattrs(
         answerfile=True,
+        summary=True,
+        description=_('MAC address'),
     )
     def MAC_ADDR(self):
         return 'OVEHOSTED_VM/vmMACAddr'

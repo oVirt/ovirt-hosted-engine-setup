@@ -53,6 +53,22 @@ def randomMAC():
     return ':'.join(mac)
 
 
+def validMAC(mac):
+    fields = mac.split(':')
+    if len(fields) != 6:
+        return False
+    for field in fields:
+        if len(field) != 2:
+            return False
+        try:
+            val = int(field, 16)
+        except ValueError:
+            return False
+        if val < 0 or val > 255:
+            return False
+    return True
+
+
 class VirtUserContext(object):
     """
     Switch to vdsm:kvm user with provided umask
