@@ -84,6 +84,10 @@ cpu check plugin.
             ohostedcons.VDSMEnv.VDSM_CPU,
             None
         )
+        self.environment.setdefault(
+            ohostedcons.VDSMEnv.ENGINE_CPU,
+            None
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -186,6 +190,16 @@ cpu check plugin.
                         ],
                     )
                 )
+        for entry in self.CPU_FAMILIES:
+            if (
+                entry['model'] == self.environment[
+                    ohostedcons.VDSMEnv.VDSM_CPU
+                ]
+            ):
+                self.environment[
+                    ohostedcons.VDSMEnv.ENGINE_CPU
+                ] = entry['name']
+                break
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

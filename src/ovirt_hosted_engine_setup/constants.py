@@ -491,6 +491,7 @@ class VDSMEnv(object):
     def VDSM_CPU(self):
         return 'OVEHOSTED_VDSM/cpu'
 
+    ENGINE_CPU = 'OVEHOSTED_VDSM/engineCpu'
     USE_SSL = 'OVEHOSTED_VDSM/useSSL'
 
 
