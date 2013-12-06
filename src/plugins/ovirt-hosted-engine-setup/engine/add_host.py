@@ -428,6 +428,30 @@ class Plugin(plugin.PluginBase):
                     ],
                 )
             )
+        else:
+            #This works only if the host is up.
+            self.logger.debug('Setting CPU for the cluster')
+            try:
+                cluster = engine_api.clusters.get('Default')
+                self.logger.debug(cluster.__dict__)
+                cpu = cluster.get_cpu()
+                self.logger.debug(cpu.__dict__)
+                cpu.set_id(self.environment[ohostedcons.VDSMEnv.ENGINE_CPU])
+                cluster.set_cpu(cpu)
+                cluster.update()
+            except ovirtsdk.infrastructure.errors.RequestError as e:
+                self.logger.debug(
+                    'Cannot set the CPU level to the Default cluster',
+                    exc_info=True,
+                )
+                self.logger.error(
+                    _(
+                        'Cannot automatically set the CPU '
+                        'to the Default cluster:\n{details}\n'
+                    ).format(
+                        details=e.detail
+                    )
+                )
         engine_api.disconnect()
 
     @plugin.event(
