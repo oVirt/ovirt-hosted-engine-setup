@@ -44,6 +44,7 @@ dist_ovirthostedenginelib_PYTHON = \
 	set_maintenance.py \
 	tasks.py \
 	vm_status.py \
+	mixins.py \
 	$(NULL)
 
 nodist_ovirthostedenginelib_PYTHON = \
