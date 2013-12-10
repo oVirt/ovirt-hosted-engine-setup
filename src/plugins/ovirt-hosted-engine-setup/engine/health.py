@@ -32,13 +32,14 @@ from otopi import plugin
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import check_liveliness
+from ovirt_hosted_engine_setup import mixins
 
 
 _ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
 
 @util.export
-class Plugin(plugin.PluginBase):
+class Plugin(mixins.VmOperations, plugin.PluginBase):
     """
     engine health status handler plugin.
     """
@@ -70,38 +71,35 @@ class Plugin(plugin.PluginBase):
                     'in the VM.'
                 )
             )
-            self.dialog.queryString(
+        while poll:
+            response = self.dialog.queryString(
                 name='OVEHOSTED_ENGINE_UP',
                 note=_(
-                    'Hit enter when finished.'
+                    'To continue make a selection from the options below:\n'
+                    '(1) Continue setup - engine installation is complete\n'
+                    '(2) Power off and restart the VM\n'
+                    '(3) Abort setup\n\n(@VALUES@)[@DEFAULT@]: '
                 ),
                 prompt=True,
-                default='y'  # Allow enter without any value
-            )
-        while poll:
-            if live_checker.isEngineUp(fqdn):
-                poll = False
-            elif self.dialog.queryString(
-                name='OVEHOSTED_ENGINE_CHECK_AGAIN',
-                note=_(
-                    'Engine health status page is not yet reachable.\n'
-                    'Please ensure that the engine is correctly configured, '
-                    'up and running.\n '
-                    'Do you want to check again or abort? '
-                    '(@VALUES@)[@DEFAULT@]: '
-                ),
-                prompt=True,
-                validValues=(
-                    _('Check'),
-                    _('Abort'),
-                ),
-                caseSensitive=False,
-                default=_('Check')
-            ) != _('Check').lower():
-                #TODO: decide if we have to let the user do something
-                #without abort, just exiting without any more automated
-                #steps
+                validValues=(_('1'), _('2'), _('3')),
+                default=_('1'),
+                caseSensitive=False)
+            if response == _('1').lower():
+                if live_checker.isEngineUp(fqdn):
+                    poll = False
+                else:
+                    self.dialog.note(
+                        _('Engine health status page is not yet reachable.\n')
+                    )
+            elif response == _('2').lower():
+                self._destroy_vm()
+                self._create_vm()
+            elif response == _('3').lower():
                 raise RuntimeError('Engine polling aborted by user')
+            else:
+                self.logger.error(
+                    'Invalid option \'{0}\''.format(response)
+                )
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

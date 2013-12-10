@@ -43,7 +43,6 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
-        self._vdscommand = []
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
@@ -83,11 +82,6 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
         ),
     )
     def _customization(self):
-        self._vdscommand = [self.command.get('vdsClient')]
-        if self.environment[ohostedcons.VDSMEnv.USE_SSL]:
-            self._vdscommand.append('-s')
-        self._vdscommand.append('localhost')
-
         validConsole = False
         interactive = self.environment[
             ohostedcons.VMEnv.CONSOLE_TYPE
@@ -145,54 +139,38 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
         os_installed = False
         while not os_installed:
             self._create_vm()
-            self.dialog.note(
-                _(
-                    'Please install the OS on the VM.\n'
-                    'When the installation is completed reboot or shutdown '
-                    'the VM: the system will wait until then'
-                )
-            )
-            if not self._wait_vm_destroyed():
-                #The VM is down but not destroyed
-                cmd = self._vdscommand + [
-                    'destroy',
-                    self.environment[ohostedcons.VMEnv.VM_UUID],
-                ]
-                self.execute(
-                    cmd,
-                    raiseOnError=True
-                )
-            os_installed = self.dialog.queryString(
-                name='OVEHOSTED_OS_INSTALLED',
-                note=_(
-                    'Has the OS installation been completed '
-                    'successfully?\nAnswering no will allow you to reboot '
-                    'from the previously selected boot media. '
-                    '(@VALUES@)[@DEFAULT@]: '
-                ),
-                prompt=True,
-                validValues=(_('Yes'), _('No')),
-                caseSensitive=False,
-                default=_('Yes')
-            ) == _('Yes').lower()
-            if (
-                not os_installed and
-                self.dialog.queryString(
-                    name='OVEHOSTED_OS_INSTALL_AGAIN',
+            response = None
+            while response is None:
+                response = self.dialog.queryString(
+                    name='OVEHOSTED_INSTALLING_OS',
                     note=_(
-                        'Do you want to try again the OS '
-                        'installation? (@VALUES@)[@DEFAULT@]: '
+                        'The VM has been started.  Install the OS and shut '
+                        'down or reboot it.  To continue please make a '
+                        'selection:\n\n'
+                        '(1) Continue setup - VM installation is complete\n'
+                        '(2) Reboot the VM and restart installation\n'
+                        '(3) Abort setup\n\n(@VALUES@)[@DEFAULT@]: '
                     ),
                     prompt=True,
-                    validValues=(_('Yes'), _('No')),
-                    caseSensitive=False,
-                    default=_('Yes')
-                ) == _('No').lower()
-            ):
-                #TODO: decide if we have to let the user do something
-                #without abort, just exiting without any more automated
-                #steps
-                raise RuntimeError('OS installation aborted by user')
+                    validValues=(_('1'), _('2'), _('3')),
+                    default=_('1'),
+                    caseSensitive=False)
+                if response == _('1').lower():
+                    self.dialog.note(
+                        _('Waiting for VM to shut down...\n')
+                    )
+                    if not self._wait_vm_destroyed():
+                        self._destroy_vm()
+                    os_installed = True
+                elif response == _('2').lower():
+                    self._destroy_vm()
+                elif response == _('3').lower():
+                    raise RuntimeError('OS installation aborted by user')
+                else:
+                    self.logger.error(
+                        'Invalid option \'{0}\''.format(response)
+                    )
+                    response = None
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,

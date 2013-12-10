@@ -40,6 +40,15 @@ class VmOperations(object):
     TICKET_DELAY = 1
     POWEROFF_CHECK_INTERVALL = 1
 
+    @property
+    def _vdscommand(self):
+        if not hasattr(self, '_vdscommand_val'):
+            self._vdscommand_val = [self.command.get('vdsClient')]
+            if self.environment[ohostedcons.VDSMEnv.USE_SSL]:
+                self._vdscommand_val.append('-s')
+            self._vdscommand_val.append('localhost')
+        return self._vdscommand_val
+
     def _generateTempVncPassword(self):
         self.logger.info(
             _('Generating a temporary VNC password.')
@@ -207,6 +216,13 @@ class VmOperations(object):
                     'hosted-engine --add-console-password'
                 )
             )
+
+    def _destroy_vm(self):
+        cmd = self._vdscommand + [
+            'destroy',
+            self.environment[ohostedcons.VMEnv.VM_UUID]
+        ]
+        self.execute(cmd, raiseOnError=True)
 
     def _wait_vm_destroyed(self):
         waiter = tasks.VMDownWaiter(self.environment)
