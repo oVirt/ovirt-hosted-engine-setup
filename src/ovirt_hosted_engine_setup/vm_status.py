@@ -68,7 +68,7 @@ class VmStatus(object):
         except KeyError:
             # Stats were retrieved but the global section is missing.
             # This is not an error.
-            pass
+            cluster_stats = {}
         except (socket.error, AttributeError, IndexError):
             sys.stderr.write(
                 _('Cannot connect to the HA daemon, please check the logs.\n')
