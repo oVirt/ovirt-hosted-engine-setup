@@ -98,6 +98,16 @@ class Plugin(plugin.PluginBase):
                     ],
                 ),
             )
+        if not self.services.supportsDependency:
+            if self.services.exists('cgconfig'):
+                self.services.state('cgconfig', True)
+                self.services.startup('cgconfig', True)
+            if self.services.exists('messagebus'):
+                self.services.state('messagebus', True)
+                self.services.startup('messagebus', True)
+            if self.services.exists('libvirtd'):
+                self.services.state('libvirtd', True)
+                self.services.startup('libvirtd', True)
         self._restartLibvirt()
 
 
