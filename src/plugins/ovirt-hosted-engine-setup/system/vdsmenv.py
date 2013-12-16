@@ -135,6 +135,13 @@ class Plugin(plugin.PluginBase):
                             )
                         )
                     break
+            if not self.services.supportsDependency:
+                if self.services.exists('cgconfig'):
+                    self.services.state('cgconfig', True)
+                if self.services.exists('messagebus'):
+                    self.services.state('messagebus', True)
+                if self.services.exists('libvirtd'):
+                    self.services.state('libvirtd', True)
             self.services.state(
                 name=self.environment[
                     ohostedcons.VDSMEnv.VDSMD_SERVICE
