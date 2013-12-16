@@ -60,6 +60,7 @@ BuildRequires:  otopi-devel >= 1.1.0
 BuildRequires:  python2-devel
 
 Requires:       %{engine}-sdk-python >= 3.3.0.4
+Requires:       qemu-img
 
 %description
 Hosted engine tool for oVirt project.

@@ -24,6 +24,8 @@ VM disk import plugin.
 
 
 import gettext
+import glob
+import json
 import os
 import shutil
 import tarfile
@@ -57,6 +59,110 @@ class ImageTransaction(transaction.TransactionElement):
     def __str__(self):
         return _("Image Transaction")
 
+    def _get_volume_path(self):
+        """
+        Return path of the volume file inside the domain
+        """
+        volume_path = ohostedcons.FileLocations.SD_MOUNT_PARENT_DIR
+        if self._parent.environment[
+            ohostedcons.StorageEnv.DOMAIN_TYPE
+        ] == 'glusterfs':
+            volume_path = os.path.join(
+                volume_path,
+                'glusterSD',
+            )
+        volume_path = os.path.join(
+            volume_path,
+            '*',
+            self._parent.environment[ohostedcons.StorageEnv.SD_UUID],
+            'images',
+            self._parent.environment[ohostedcons.StorageEnv.IMG_UUID],
+            self._parent.environment[ohostedcons.StorageEnv.VOL_UUID]
+        )
+        volumes = glob.glob(volume_path)
+        if not volumes:
+            raise RuntimeError(
+                _(
+                    'Path to volume {vol_uuid} not found in {root}'
+                ).format(
+                    vol_uuid=self._parent.environment[
+                        ohostedcons.StorageEnv.VOL_UUID
+                    ],
+                    root=ohostedcons.FileLocations.SD_MOUNT_PARENT_DIR,
+                )
+            )
+        return volumes[0]
+
+    def _validate_volume(self):
+        self._parent.logger.info(
+            _('Validating pre-allocated volume size')
+        )
+        _rc, stdout, _stderr = self._parent.execute(
+            (
+                self._parent.command.get('sudo'),
+                '-u',
+                'vdsm',
+                '-g',
+                'kvm',
+                self._parent.command.get('qemu-img'),
+                'info',
+                '--output',
+                'json',
+                self._dst,
+            ),
+            raiseOnError=True
+        )
+        info = json.decoder.JSONDecoder().decode('\n'.join(stdout))
+        source_size = int(info['virtual-size'])
+
+        serv = self._parent.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        size = serv.s.getVolumeSize(
+            self._parent.environment[ohostedcons.StorageEnv.SD_UUID],
+            self._parent.environment[ohostedcons.StorageEnv.SP_UUID],
+            self._parent.environment[ohostedcons.StorageEnv.IMG_UUID],
+            self._parent.environment[ohostedcons.StorageEnv.VOL_UUID]
+        )
+        if size['status']['code']:
+            raise RuntimeError(size['status']['message'])
+        destination_size = int(size['apparentsize'])
+        if destination_size != source_size:
+            raise RuntimeError(
+                _(
+                    'Incoherence detected in OVF file: image size {source} '
+                    'does not match declared size {destination}'
+                ).format(
+                    source=source_size,
+                    destination=destination_size,
+                )
+            )
+
+    def _uploadVolume(self):
+        source = self._dst
+        try:
+            destination = self._get_volume_path()
+        except RuntimeError as e:
+            return (1, str(e))
+        try:
+            self._parent.execute(
+                (
+                    self._parent.command.get('sudo'),
+                    '-u',
+                    'vdsm',
+                    '-g',
+                    'kvm',
+                    self._parent.command.get('qemu-img'),
+                    'convert',
+                    '-O',
+                    'raw',
+                    source,
+                    destination
+                ),
+                raiseOnError=True
+            )
+        except RuntimeError as e:
+            return (1, str(e))
+        return (0, 'OK')
+
     def prepare(self):
         self._parent.logger.info(
             _(
@@ -84,6 +190,7 @@ class ImageTransaction(transaction.TransactionElement):
         finally:
             src_file_obj.close()
             tar.close()
+        self._validate_volume()
 
     def abort(self):
         self._parent.logger.info(
@@ -97,19 +204,7 @@ class ImageTransaction(transaction.TransactionElement):
                 '(could take a few minutes depending on archive size)'
             )
         )
-        serv = self._parent.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        status, message = serv.uploadVolume([
-            self._parent.environment[ohostedcons.StorageEnv.SD_UUID],
-            self._parent.environment[ohostedcons.StorageEnv.SP_UUID],
-            self._parent.environment[ohostedcons.StorageEnv.IMG_UUID],
-            self._parent.environment[ohostedcons.StorageEnv.VOL_UUID],
-            self._dst,
-            str(
-                self._parent.environment[
-                    ohostedcons.StorageEnv.IMAGE_SIZE_GB
-                ]
-            ),
-        ])
+        status, message = self._uploadVolume()
         if status != 0:
             raise RuntimeError(message)
         self._parent.logger.info(_('Image successfully imported from OVF'))
@@ -125,19 +220,6 @@ class Plugin(plugin.PluginBase):
         super(Plugin, self).__init__(context=context)
         self._source_image = None
         self._image_path = None
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_INIT,
-    )
-    def _init(self):
-        self.environment.setdefault(
-            ohostedcons.VMEnv.OVF,
-            None
-        )
-        self.environment.setdefault(
-            ohostedcons.CoreEnv.TEMPDIR,
-            tempfile.gettempdir()
-        )
 
     def _parse_ovf(self, tar, ovf_xml):
         valid = True
@@ -274,6 +356,26 @@ class Plugin(plugin.PluginBase):
             finally:
                 tar.close()
         return success
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_INIT,
+    )
+    def _init(self):
+        self.environment.setdefault(
+            ohostedcons.VMEnv.OVF,
+            None
+        )
+        self.environment.setdefault(
+            ohostedcons.CoreEnv.TEMPDIR,
+            tempfile.gettempdir()
+        )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_SETUP,
+    )
+    def _setup(self):
+        self.command.detect('sudo')
+        self.command.detect('qemu-img')
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
