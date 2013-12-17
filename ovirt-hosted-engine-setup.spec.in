@@ -50,7 +50,7 @@ Requires:       virt-viewer
 Requires:       openssl
 Requires:       sudo
 Requires:       bind-utils
-Requires:       ovirt-hosted-engine-ha >= 0.1.0-0.9
+Requires:       ovirt-hosted-engine-ha >= 0.1.0-0.10
 Requires:       sanlock >= 2.8
 Requires:       sanlock-python >= 2.8
 Requires:       lsof
@@ -95,6 +95,14 @@ make %{?_smp_mflags} install DESTDIR="%{buildroot}"
 %{vdsmhooksdir}/before_vm_start/
 
 %changelog
+
+* Tue Dec 17 2013 Sandro Bonazzola <sbonazzo@redhat.com> - 1.0.0-0.12.beta7:
+- 1.0.0-0.12.beta7
+- Resolves: BZ#1034777
+- Resolves: BZ#1013666
+- Resolves: BZ#1035484
+- Resolves: BZ#1041203
+- Resolves: BZ#1034821
 
 * Tue Dec 10 2013 Sandro Bonazzola <sbonazzo@redhat.com> - 1.0.0-0.11.beta6:
 - 1.0.0-0.11.beta6
