@@ -70,7 +70,8 @@ class Plugin(plugin.PluginBase):
                         'Continuing with the installation may lead to broken '
                         'installation if the network connection fails.\n'
                         'It is highly recommended to abort the installation '
-                        'and run it inside a screen session.\n'
+                        'and run it inside a screen session using command '
+                        '"screen".\n'
                         'Do you want to continue anyway? '
                         '(@VALUES@)[@DEFAULT@]: '
                     ),
