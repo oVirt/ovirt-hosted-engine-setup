@@ -24,6 +24,8 @@ gateway configuration plugin.
 
 
 import gettext
+import socket
+import struct
 
 
 from otopi import util
@@ -41,6 +43,8 @@ class Plugin(plugin.PluginBase):
     """
     gateway configuration plugin.
     """
+    ROUTE_DESTINATION = 1
+    ROUTE_GW = 2
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
@@ -61,6 +65,22 @@ class Plugin(plugin.PluginBase):
         except RuntimeError:
             pingable = False
         return pingable
+
+    def _get_default_gw(self):
+        gateway = None
+        with open('/proc/net/route', 'r') as f:
+            lines = f.read().splitlines()
+            for line in lines:
+                data = line.split()
+                if data[self.ROUTE_DESTINATION] == '00000000':
+                    gateway = socket.inet_ntoa(
+                        struct.pack(
+                            'I',
+                            int(data[self.ROUTE_GW], 16)
+                        )
+                    )
+                    break
+        return gateway
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
@@ -99,10 +119,12 @@ class Plugin(plugin.PluginBase):
                 ] = self.dialog.queryString(
                     name='OVEHOSTED_GATEWAY',
                     note=_(
-                        'Please indicate a pingable gateway IP address: '
+                        'Please indicate a pingable gateway IP address '
+                        '[@DEFAULT@]: '
                     ),
                     prompt=True,
                     caseSensitive=True,
+                    default=self._get_default_gw(),
                 )
             valid = self._check_gw_pingable(
                 self.environment[
