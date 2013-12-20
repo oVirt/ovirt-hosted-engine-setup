@@ -78,9 +78,9 @@ class Plugin(plugin.PluginBase):
             ] = self.dialog.queryString(
                 name=ohostedcons.Confirms.DEPLOY_PROCEED,
                 note=_(
-                    'Continuing will configure this host for serving '
-                    'as hypervisor and create a VM where oVirt Engine '
-                    'will be installed afterwards.\n'
+                    'Continuing will configure this host for serving as '
+                    'hypervisor and create a VM where you have to install '
+                    'oVirt Engine afterwards.\n'
                     'Are you sure you want to continue? '
                     '(@VALUES@)[@DEFAULT@]: '
                 ),
