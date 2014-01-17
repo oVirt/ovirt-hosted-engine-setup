@@ -40,9 +40,9 @@ BuildArch:      noarch
 Requires:       python
 Requires:       python-ethtool >= 0.6-3
 Requires:       otopi >= 1.1.0
-Requires:       vdsm >= 4.12.2
-Requires:       vdsm-cli >= 4.12.2
-Requires:       vdsm-python >= 4.12.2
+Requires:       vdsm >= 4.14.0
+Requires:       vdsm-cli >= 4.14.0
+Requires:       vdsm-python >= 4.14.0
 Requires:       ovirt-host-deploy >= 1.1.0
 Requires:       openssh-server
 Requires:       python-paramiko
@@ -59,7 +59,7 @@ BuildRequires:  gettext
 BuildRequires:  otopi-devel >= 1.1.0
 BuildRequires:  python2-devel
 
-Requires:       %{engine}-sdk-python >= 3.3.0.4
+Requires:       %{engine}-sdk-python >= 3.4.0.2
 Requires:       qemu-img
 
 %description
