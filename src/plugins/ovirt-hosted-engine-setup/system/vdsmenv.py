@@ -75,8 +75,13 @@ class Plugin(plugin.PluginBase):
         while not vdsmReady and retry < self.MAX_RETRY:
             retry += 1
             try:
-                self.logger.debug(str(serv.s.getVdsHardwareInfo()))
-                vdsmReady = True
+                hwinfo = serv.s.getVdsHardwareInfo()
+                self.logger.debug(str(hwinfo))
+                if hwinfo['status']['code'] == 0:
+                    vdsmReady = True
+                else:
+                    self.logger.info(_('Waiting for VDSM hardware info'))
+                    time.sleep(1)
             except socket.error:
                 self.logger.info(_('Waiting for VDSM hardware info'))
                 time.sleep(1)
