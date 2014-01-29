@@ -112,7 +112,7 @@ __EOF__
             if [ -n "${down}" ]; then
                 echo "VM exists and is down, destroying it"
                 ${VDSCOMMAND} destroy "${vmid}"
-            else
+            elif [ -n "${status}" ]; then
                 echo "VM exists and its status is ${status}"
                 exit 1
             fi
