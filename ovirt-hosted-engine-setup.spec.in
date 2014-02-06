@@ -39,7 +39,7 @@ BuildArch:      noarch
 
 Requires:       python
 Requires:       python-ethtool >= 0.6-3
-Requires:       otopi >= 1.1.0
+Requires:       otopi >= 1.2.0
 Requires:       vdsm >= 4.14.0
 Requires:       vdsm-cli >= 4.14.0
 Requires:       vdsm-python >= 4.14.0
@@ -56,7 +56,7 @@ Requires:       sanlock-python >= 2.8
 Requires:       lsof
 Requires:       iptables
 BuildRequires:  gettext
-BuildRequires:  otopi-devel >= 1.1.0
+BuildRequires:  otopi-devtools >= 1.2.0
 BuildRequires:  python2-devel
 
 Requires:       %{engine}-sdk-python >= 3.4.0.2
