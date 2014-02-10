@@ -402,7 +402,7 @@ class Plugin(plugin.PluginBase):
         try:
             self.logger.debug('Connecting to the Engine')
             engine_api = self._ovirtsdk_api.API(
-                url='https://{fqdn}/api'.format(
+                url='https://{fqdn}/ovirt-engine/api'.format(
                     fqdn=self.environment[
                         ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
                     ],
