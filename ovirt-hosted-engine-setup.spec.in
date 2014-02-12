@@ -19,7 +19,6 @@
 
 %global         engine ovirt-engine
 %global         package_version @PACKAGE_VERSION@
-%global         package_maven_version @PACKAGE_MAVEN_VERSION@
 %global         ovirt_hosted_engine_setup_templates %{_datadir}/%{name}/templates
 %global         ovirt_hosted_engine_setup_scripts %{_datadir}/%{name}/scripts
 %global         vdsmhooksdir %{_libexecdir}/vdsm/hooks
