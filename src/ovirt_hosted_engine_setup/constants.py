@@ -547,6 +547,7 @@ class Stages(object):
     VDSMD_START = 'ohosted.vdsm.started'
     VDSMD_PKI = 'ohosted.vdsm.pki.available'
     VDSMD_CONFIGURED = 'ohosted.vdsm.configured'
+    VDSMD_LATE_SETUP_READY = 'ohosted.vdsm.late_setup_ready'
     SANLOCK_INITIALIZED = 'ohosted.sanlock.initialized'
     STORAGE_AVAILABLE = 'ohosted.storage.available'
     VM_IMAGE_AVAILABLE = 'ohosted.vm.image.available'
