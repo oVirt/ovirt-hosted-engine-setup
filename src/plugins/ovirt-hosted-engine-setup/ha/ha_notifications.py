@@ -69,7 +69,7 @@ class Plugin(plugin.PluginBase):
     _RE_EMAIL_ADDRESS = re.compile(
         flags=re.VERBOSE,
         pattern=r"""
-            [a-zA-Z0-9_.+]+
+            [a-zA-Z0-9_.+\-=]+
             @
             [a-z0-9.-]+
         """
