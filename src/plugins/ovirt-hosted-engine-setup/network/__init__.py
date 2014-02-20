@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -28,6 +28,7 @@ from . import bridge
 from . import firewall
 from . import firewall_manager
 from . import gateway
+from . import iptables
 
 
 @util.export
@@ -36,6 +37,7 @@ def createPlugins(context):
     firewall.Plugin(context=context)
     firewall_manager.Plugin(context=context)
     gateway.Plugin(context=context)
+    iptables.Plugin(context=context)
 
 
 # vim: expandtab tabstop=4 shiftwidth=4
