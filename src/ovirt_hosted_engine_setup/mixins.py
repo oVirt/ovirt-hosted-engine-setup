@@ -102,7 +102,7 @@ class VmOperations(object):
                 '"{password}" to connect to spice console.'
             ).format(
                 remote=self.command.get('remote-viewer'),
-                ca_cert=ohostedcons.FileLocations.LIBVIRT_CA_CERT,
+                ca_cert=ohostedcons.FileLocations.LIBVIRT_SPICE_CA_CERT,
                 subject=self.environment[ohostedcons.VDSMEnv.SPICE_SUBJECT],
                 password=self.environment[
                     ohostedcons.VMEnv.VM_PASSWD

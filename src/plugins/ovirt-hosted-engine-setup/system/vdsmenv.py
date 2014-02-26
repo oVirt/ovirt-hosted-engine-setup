@@ -115,6 +115,7 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_LATE_SETUP,
+        name=ohostedcons.Stages.VDSM_LIBVIRT_CONFIGURED,
         after=(
             ohostedcons.Stages.VDSMD_CONF_LOADED,
         ),
