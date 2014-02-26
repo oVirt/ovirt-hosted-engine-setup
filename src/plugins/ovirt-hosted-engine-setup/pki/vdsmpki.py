@@ -27,6 +27,7 @@ import os
 import shutil
 import tempfile
 import re
+import datetime
 
 
 from otopi import util
@@ -67,6 +68,35 @@ class Plugin(plugin.PluginBase):
             raiseOnError=True
         )
 
+    def _safecopy(self, s, d):
+        self.logger.debug("%s %s" % (s, d))
+        suffix = datetime.datetime.now().strftime('%Y%m%d%H%M%S'),
+        if os.path.exists(d):
+            os.rename(d, "%s.%s" % (d, suffix))
+        shutil.copyfile(s, d)
+
+    def _copy_vdsm_pki(self):
+        for s, d in (
+            (ohostedcons.FileLocations.VDSM_CA_CERT,
+                ohostedcons.FileLocations.SYS_CA_CERT),
+            (ohostedcons.FileLocations.VDSMCERT,
+                ohostedcons.FileLocations.LIBVIRT_CLIENT_CERT),
+            (ohostedcons.FileLocations.VDSMKEY,
+                ohostedcons.FileLocations.LIBVIRT_CLIENT_KEY),
+            (ohostedcons.FileLocations.LIBVIRT_CLIENT_CERT,
+                ohostedcons.FileLocations.LIBVIRT_SERVER_CERT),
+            (ohostedcons.FileLocations.LIBVIRT_CLIENT_KEY,
+                ohostedcons.FileLocations.LIBVIRT_SERVER_KEY),
+        ):
+            self._safecopy(s, d)
+            os.chown(d, 0, 0)
+
+        for f in (
+            ohostedcons.FileLocations.LIBVIRT_CLIENT_KEY,
+            ohostedcons.FileLocations.LIBVIRT_SERVER_KEY,
+        ):
+            os.chmod(f, 0o600)
+
     def _getSPICEcerts(self):
         subject = None
         rc, stdout, stderr = self.execute(
@@ -75,7 +105,7 @@ class Plugin(plugin.PluginBase):
                 'x509',
                 '-noout',
                 '-text',
-                '-in', ohostedcons.FileLocations.LIBVIRT_SERVER_CERT
+                '-in', ohostedcons.FileLocations.LIBVIRT_SPICE_SERVER_CERT
             ),
             raiseOnError=True
         )
@@ -95,7 +125,6 @@ class Plugin(plugin.PluginBase):
         self.logger.info(_('Generating libvirt-spice certificates'))
         self._tmpdir = tempfile.mkdtemp()
         expire = '1095'  # FIXME: configurable?
-        subj = self.environment[ohostedcons.VDSMEnv.PKI_SUBJECT]
         # FIXME: configurable?
         for key in ('ca-key.pem', 'server-key.pem'):
             self.execute(
@@ -116,7 +145,7 @@ class Plugin(plugin.PluginBase):
                 '-days', expire,
                 '-key', os.path.join(self._tmpdir, 'ca-key.pem'),
                 '-out', os.path.join(self._tmpdir, 'ca-cert.pem'),
-                '-subj', subj
+                '-subj', self.environment[ohostedcons.VDSMEnv.CA_SUBJECT]
             ),
             raiseOnError=True
         )
@@ -127,7 +156,7 @@ class Plugin(plugin.PluginBase):
                 '-new',
                 '-key', os.path.join(self._tmpdir, 'server-key.pem'),
                 '-out', os.path.join(self._tmpdir, 'server-key.csr'),
-                '-subj', subj
+                '-subj', self.environment[ohostedcons.VDSMEnv.PKI_SUBJECT]
             ),
             raiseOnError=True
         )
@@ -147,7 +176,7 @@ class Plugin(plugin.PluginBase):
         )
         pem_files = glob.glob(os.path.join(self._tmpdir, '*.pem'))
         cert_dir = os.path.dirname(
-            ohostedcons.FileLocations.LIBVIRT_SERVER_CERT
+            ohostedcons.FileLocations.LIBVIRT_SPICE_SERVER_CERT
         )
         if not os.path.exists(cert_dir):
             os.makedirs(cert_dir)
@@ -164,6 +193,20 @@ class Plugin(plugin.PluginBase):
                     ohostedcons.VDSMEnv.KVM_GID
                 ]
             )
+        if self._selinux_enabled:
+            rc, stdout, stderr = self.execute(
+                (
+                    self.command.get('restorecon'),
+                    '-r',
+                    cert_dir
+                )
+            )
+            if rc != 0:
+                self.logger.error(
+                    _('Failed to refresh SELINUX context for {path}').format(
+                        path=cert_dir
+                    )
+                )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
@@ -174,9 +217,14 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Defaults.DEFAULT_PKI_SUBJECT
         )
         self.environment.setdefault(
+            ohostedcons.VDSMEnv.CA_SUBJECT,
+            ohostedcons.Defaults.DEFAULT_CA_SUBJECT
+        )
+        self.environment.setdefault(
             ohostedcons.VDSMEnv.SPICE_SUBJECT,
             None
         )
+        self._selinux_enabled = False
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -186,24 +234,42 @@ class Plugin(plugin.PluginBase):
         # remove when we understand how to replace the openssl command
         # with m2crypto code
         self.command.detect('openssl')
+        self.command.detect('restorecon')
+        self.command.detect('selinuxenabled')
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_LATE_SETUP,
+        name=ohostedcons.Stages.VDSMD_PKI,
+        before=(
+            ohostedcons.Stages.VDSM_LIBVIRT_CONFIGURED,
+        ),
+    )
+    def _late_setup(self):
+        if self.command.get('selinuxenabled', optional=True) is None:
+            self._selinux_enabled = False
+        else:
+            rc, stdout, stderr = self.execute(
+                (
+                    self.command.get('selinuxenabled'),
+                ),
+                raiseOnError=False,
+            )
+            self._selinux_enabled = (rc == 0)
+        if not os.path.exists(ohostedcons.FileLocations.VDSMCERT):
+            self._generateVDSMcerts()
+            self._copy_vdsm_pki()
+        if not os.path.exists(
+            ohostedcons.FileLocations.LIBVIRT_SPICE_SERVER_CERT
+        ):
+            self._generateSPICEcerts()
+        self._getSPICEcerts()
 
     @plugin.event(
         stage=plugin.Stages.STAGE_VALIDATION,
     )
     def _validation(self):
-        if os.path.exists(ohostedcons.FileLocations.LIBVIRT_SERVER_CERT):
+        if os.path.exists(ohostedcons.FileLocations.LIBVIRT_SPICE_SERVER_CERT):
             self._getSPICEcerts()
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_MISC,
-        name=ohostedcons.Stages.VDSMD_PKI,
-    )
-    def _misc(self):
-        if not os.path.exists(ohostedcons.FileLocations.VDSMCERT):
-            self._generateVDSMcerts()
-        if not os.path.exists(ohostedcons.FileLocations.LIBVIRT_SERVER_CERT):
-            self._generateSPICEcerts()
-        self._getSPICEcerts()
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLEANUP,

@@ -85,7 +85,7 @@ class Plugin(plugin.PluginBase):
                 '@CONNECTION_UUID@': self.environment[
                     ohostedcons.StorageEnv.CONNECTION_UUID
                 ],
-                '@CA_CERT@': ohostedcons.FileLocations.LIBVIRT_CA_CERT,
+                '@CA_CERT@': ohostedcons.FileLocations.LIBVIRT_SPICE_CA_CERT,
                 '@CA_SUBJECT@': self.environment[
                     ohostedcons.VDSMEnv.SPICE_SUBJECT
                 ],

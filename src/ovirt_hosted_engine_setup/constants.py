@@ -136,31 +136,77 @@ class FileLocations(object):
         'vdsm',
         'vdsm-gencerts.sh'
     )
+    VDSM_CA_CERT = os.path.join(
+        SYSCONFDIR,
+        'pki',
+        'vdsm',
+        'certs',
+        'cacert.pem'
+    )
+    SYS_CA_CERT = os.path.join(
+        SYSCONFDIR,
+        'pki',
+        'CA',
+        'cacert.pem'
+    )
     VDSMCERT = os.path.join(
         SYSCONFDIR,
         'pki',
         'vdsm',
-        'certs'
+        'certs',
         'vdsmcert.pem'
+    )
+    VDSMKEY = os.path.join(
+        SYSCONFDIR,
+        'pki',
+        'vdsm',
+        'keys',
+        'vdsmkey.pem'
     )
     VDSM_CONF = os.path.join(
         SYSCONFDIR,
         'vdsm',
         'vdsm.conf'
     )
-    LIBVIRT_SERVER_CERT = os.path.join(
+    LIBVIRT_SPICE_SERVER_CERT = os.path.join(
         SYSCONFDIR,
         'pki',
         'vdsm',
         'libvirt-spice',
         'server-cert.pem'
     )
-    LIBVIRT_CA_CERT = os.path.join(
+    LIBVIRT_SPICE_CA_CERT = os.path.join(
         SYSCONFDIR,
         'pki',
         'vdsm',
         'libvirt-spice',
         'ca-cert.pem'
+    )
+    LIBVIRT_CLIENT_CERT = os.path.join(
+        SYSCONFDIR,
+        'pki',
+        'libvirt',
+        'clientcert.pem'
+    )
+    LIBVIRT_CLIENT_KEY = os.path.join(
+        SYSCONFDIR,
+        'pki',
+        'libvirt',
+        'private',
+        'clientkey.pem'
+    )
+    LIBVIRT_SERVER_CERT = os.path.join(
+        SYSCONFDIR,
+        'pki',
+        'libvirt',
+        'servercert.pem'
+    )
+    LIBVIRT_SERVER_KEY = os.path.join(
+        SYSCONFDIR,
+        'pki',
+        'libvirt',
+        'private',
+        'serverkey.pem'
     )
     LIBVIRT_QEMU_CONF = os.path.join(
         SYSCONFDIR,
@@ -485,6 +531,12 @@ class VDSMEnv(object):
 
     @ohostedattrs(
         answerfile=True,
+    )
+    def CA_SUBJECT(self):
+        return 'OVEHOSTED_VDSM/caSubject'
+
+    @ohostedattrs(
+        answerfile=True,
         summary=True,
         description=_('CPU Type'),
     )
@@ -569,6 +621,7 @@ class Stages(object):
     VDSMD_CONF_LOADED = 'ohosted.vdsm.conf.loaded'
     HOST_ADDED = 'ohosted.engine.host.added'
     HA_START = 'ohosted.engine.ha.start'
+    VDSM_LIBVIRT_CONFIGURED = 'ohosted.vdsm.libvirt.configured'
 
     DIALOG_TITLES_S_VM = 'ohosted.dialog.titles.vm.start'
     DIALOG_TITLES_E_VM = 'ohosted.dialog.titles.vm.end'
@@ -598,6 +651,7 @@ class Defaults(object):
     DEFAULT_BRIDGE_IF = 'em1'
     DEFAULT_BRIDGE_NAME = 'ovirtmgmt'
     DEFAULT_PKI_SUBJECT = '/C=EN/L=Test/O=Test/CN=Test'
+    DEFAULT_CA_SUBJECT = '/C=EN/L=Test/O=Test/CN=TestCA'  # must be != above
     DEFAULT_VM_PASSWD_VALIDITY_SECS = "10800"  # 3 hours to for engine install
     DEFAULT_VM_VCPUS = 2  # based on minimum requirements.
     DEFAULT_SSHD_PORT = 22
