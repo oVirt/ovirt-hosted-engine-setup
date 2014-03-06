@@ -98,46 +98,48 @@ class Plugin(plugin.PluginBase):
         interactive = self.environment[
             ohostedcons.VMEnv.CDROM
         ] is None
-        valid = False
-        while not valid:
-            self.environment[
-                ohostedcons.VMEnv.CDROM
-            ] = self.dialog.queryString(
-                name='OVEHOSTED_VMENV_CDROM',
-                note=_(
-                    'Please specify path to installation media '
-                    'you would like to use [@DEFAULT@]: '
-                ),
-                prompt=True,
-                caseSensitive=True,
-                default=str(self.environment[
-                    ohostedcons.VMEnv.CDROM
-                ]),
-            )
-
-            valid = self._check_iso_readable(
+        if not interactive:
+            if not self._check_iso_readable(
                 self.environment[ohostedcons.VMEnv.CDROM]
-            )
-            if not valid:
-                if interactive:
+            ):
+                raise RuntimeError(
+                    _(
+                        'The specified installation media is not '
+                        'readable. Please ensure that {filepath} '
+                        'could be read by vdsm user or kvm group'
+                    ).format(
+                        filepath=self.environment[
+                            ohostedcons.VMEnv.CDROM
+                        ]
+                    )
+                )
+        else:
+            valid = False
+            while not valid:
+                self.environment[
+                    ohostedcons.VMEnv.CDROM
+                ] = self.dialog.queryString(
+                    name='OVEHOSTED_VMENV_CDROM',
+                    note=_(
+                        'Please specify path to installation media '
+                        'you would like to use [@DEFAULT@]: '
+                    ),
+                    prompt=True,
+                    caseSensitive=True,
+                    default=str(self.environment[
+                        ohostedcons.VMEnv.CDROM
+                    ]),
+                )
+                valid = self._check_iso_readable(
+                    self.environment[ohostedcons.VMEnv.CDROM]
+                )
+                if not valid:
                     self.logger.error(
                         _(
                             'The specified installation media is not '
                             'readable. Please ensure that {filepath} '
                             'could be read by vdsm user or kvm group '
                             'or specify another installation media.'
-                        ).format(
-                            filepath=self.environment[
-                                ohostedcons.VMEnv.CDROM
-                            ]
-                        )
-                    )
-                else:
-                    raise RuntimeError(
-                        _(
-                            'The specified installation media is not '
-                            'readable. Please ensure that {filepath} '
-                            'could be read by vdsm user or kvm group'
                         ).format(
                             filepath=self.environment[
                                 ohostedcons.VMEnv.CDROM
