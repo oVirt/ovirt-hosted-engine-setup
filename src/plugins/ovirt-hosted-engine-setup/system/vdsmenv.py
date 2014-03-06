@@ -109,7 +109,6 @@ class Plugin(plugin.PluginBase):
         after=(
             ohostedcons.Stages.VDSMD_CONF_LOADED,
         ),
-        name=ohostedcons.Stages.VDSMD_LATE_SETUP_READY,
     )
     def _late_setup(self):
         #We need vdsmd up for customization checks
