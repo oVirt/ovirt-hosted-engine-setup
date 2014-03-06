@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -399,6 +399,8 @@ class Plugin(plugin.PluginBase):
     def _closeup(self):
         self._getPKICert()
         self._getSSHkey()
+        cluster_name = None
+        default_cluster_name = 'Default'
         try:
             self.logger.debug('Connecting to the Engine')
             engine_api = self._ovirtsdk_api.API(
@@ -414,6 +416,19 @@ class Plugin(plugin.PluginBase):
                 ca_file=self.cert,
             )
             self.logger.debug('Adding the host to the cluster')
+            cluster_l = [c.get_name() for c in engine_api.clusters.list()]
+            cluster_name = default_cluster_name if default_cluster_name in \
+                cluster_l else cluster_l[0]
+            cluster_name = self.dialog.queryString(
+                name='cluster_name',
+                note=_(
+                    'Enter the name of the cluster to which you want to add '
+                    'the host (@VALUES@) [@DEFAULT@]: '
+                ),
+                prompt=True,
+                default=cluster_name,
+                validValues=cluster_l,
+            )
             engine_api.hosts.add(
                 self._ovirtsdk_xml.params.Host(
                     name=self.environment[
@@ -421,7 +436,7 @@ class Plugin(plugin.PluginBase):
                     ],
                     address=self._getIPAddress(),
                     reboot_after_installation=False,
-                    cluster=engine_api.clusters.get('Default'),
+                    cluster=engine_api.clusters.get(cluster_name),
                     ssh=self._ovirtsdk_xml.params.SSH(
                         authentication_method='publickey',
                         port=self.environment[
@@ -433,14 +448,17 @@ class Plugin(plugin.PluginBase):
             )
         except ovirtsdk.infrastructure.errors.RequestError as e:
             self.logger.debug(
-                'Cannot add the host to the Default cluster',
+                'Cannot add the host to cluster {cluster}'.format(
+                    cluster=cluster_name,
+                ),
                 exc_info=True,
             )
             self.logger.error(
                 _(
                     'Cannot automatically add the host '
-                    'to the Default cluster:\n{details}\n'
+                    'to cluster {cluster:}\n{details}\n'
                 ).format(
+                    cluster=cluster_name,
                     details=e.detail
                 )
             )
@@ -462,7 +480,7 @@ class Plugin(plugin.PluginBase):
             #This works only if the host is up.
             self.logger.debug('Setting CPU for the cluster')
             try:
-                cluster = engine_api.clusters.get('Default')
+                cluster = engine_api.clusters.get(cluster_name)
                 self.logger.debug(cluster.__dict__)
                 cpu = self._wait_cluster_cpu_ready(cluster)
                 self.logger.debug(cpu.__dict__)
@@ -471,14 +489,17 @@ class Plugin(plugin.PluginBase):
                 cluster.update()
             except ovirtsdk.infrastructure.errors.RequestError as e:
                 self.logger.debug(
-                    'Cannot set the CPU level to the Default cluster',
+                    'Cannot set CPU level of cluster {cluster}'.format(
+                        cluster=cluster_name,
+                    ),
                     exc_info=True,
                 )
                 self.logger.error(
                     _(
-                        'Cannot automatically set the CPU '
-                        'to the Default cluster:\n{details}\n'
+                        'Cannot automatically set CPU level '
+                        'of cluster {cluster}:\n{details}\n'
                     ).format(
+                        cluster=cluster_name,
                         details=e.detail
                     )
                 )
