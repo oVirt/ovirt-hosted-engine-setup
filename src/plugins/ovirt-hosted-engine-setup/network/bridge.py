@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -23,6 +23,7 @@ bridge configuration plugin.
 """
 
 
+import errno
 import gettext
 import os
 
@@ -99,39 +100,45 @@ class Plugin(plugin.PluginBase):
         enslaved = set()
         interfaces = set()
         for nic in nics:
-            flags = ethtool.get_flags(nic)
-            if flags & ethtool.IFF_LOOPBACK:
-                self.logger.debug('Detected loopback device %s' % nic)
-            elif ethtool.get_module(nic) == 'bridge':
-                self.logger.debug('Detected bridge device %s' % nic)
-                if os.path.exists('/sys/class/net/%s/brif' % nic):
-                    slaves = os.listdir('/sys/class/net/%s/brif' % nic)
-                    self.logger.debug(
-                        'Detected slaves for device %s: %s' % (
-                            nic,
-                            ','.join(slaves)
+            try:
+                flags = ethtool.get_flags(nic)
+                if flags & ethtool.IFF_LOOPBACK:
+                    self.logger.debug('Detected loopback device %s' % nic)
+                elif ethtool.get_module(nic) == 'bridge':
+                    self.logger.debug('Detected bridge device %s' % nic)
+                    if os.path.exists('/sys/class/net/%s/brif' % nic):
+                        slaves = os.listdir('/sys/class/net/%s/brif' % nic)
+                        self.logger.debug(
+                            'Detected slaves for device %s: %s' % (
+                                nic,
+                                ','.join(slaves)
+                            )
                         )
-                    )
-                    for iface in slaves:
-                        if iface in nics:
-                            enslaved.update([iface])
-            elif netinfo.isbonding(nic):
-                slaves = netinfo.slaves(nic)
-                if not slaves:
-                    self.logger.debug(
-                        'Detected bond device %s without slaves' % nic
-                    )
+                        for iface in slaves:
+                            if iface in nics:
+                                enslaved.update([iface])
+                elif netinfo.isbonding(nic):
+                    slaves = netinfo.slaves(nic)
+                    if not slaves:
+                        self.logger.debug(
+                            'Detected bond device %s without slaves' % nic
+                        )
+                    else:
+                        self.logger.debug(
+                            'Detected slaves for device %s: %s' % (
+                                nic,
+                                ','.join(slaves)
+                            )
+                        )
+                        enslaved.update(slaves)
+                        interfaces.update([nic])
                 else:
-                    self.logger.debug(
-                        'Detected slaves for device %s: %s' % (
-                            nic,
-                            ','.join(slaves)
-                        )
-                    )
-                    enslaved.update(slaves)
                     interfaces.update([nic])
-            else:
-                interfaces.update([nic])
+            except IOError as ioe:
+                if ioe.errno in (None, errno.EOPNOTSUPP):
+                    self.logger.debug('Detected unsupported device %s' % nic)
+                else:
+                    raise ioe
         validValues = list(interfaces - enslaved)
         self.logger.debug('Nics detected: %s' % ','.join(nics))
         self.logger.debug('Nics enslaved: %s' % ','.join(enslaved))
