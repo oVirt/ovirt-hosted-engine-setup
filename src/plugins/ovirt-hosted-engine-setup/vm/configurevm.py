@@ -90,6 +90,7 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_LATE_SETUP,
         after=(
             ohostedcons.Stages.VDSMD_CONF_LOADED,
+            ohostedcons.Stages.VDSM_LIBVIRT_CONFIGURED,
         ),
         name=ohostedcons.Stages.VDSMD_LATE_SETUP_READY,
     )
