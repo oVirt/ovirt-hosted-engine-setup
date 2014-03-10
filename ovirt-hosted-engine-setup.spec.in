@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2012-2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -31,7 +31,7 @@ Version:        @PACKAGE_RPM_VERSION@
 Release:        @PACKAGE_RPM_RELEASE@%{?release_suffix}%{?dist}
 License:        LGPLv2+
 URL:            http://www.ovirt.org
-Source:         http://resources.ovirt.org/pub/ovirt-3.4-snapshot/src/%{name}-%{package_version}.tar.gz
+Source:         http://resources.ovirt.org/releases/stable/src/%{name}-%{package_version}.tar.gz
 Group:          Applications/System
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -95,6 +95,9 @@ make %{?_smp_mflags} install DESTDIR="%{buildroot}"
 %{vdsmhooksdir}/before_vm_start/
 
 %changelog
+* Mon Feb 24 2014 Sandro Bonazzola <sbonazzo@redhat.com> - 1.1.1-1
+- 1.1.1-1
+
 * Mon Feb 24 2014 Sandro Bonazzola <sbonazzo@redhat.com> - 1.1.1-0.0.master
 - 1.1.1-0.0.master
 
