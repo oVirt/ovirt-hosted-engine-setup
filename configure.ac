@@ -1,6 +1,6 @@
 dnl
 dnl ovirt-hosted-engine-setup -- ovirt with a manager in a VM
-dnl Copyright (C) 2013 Red Hat, Inc.
+dnl Copyright (C) 2013-2014 Red Hat, Inc.
 dnl
 dnl This library is free software; you can redistribute it and/or
 dnl modify it under the terms of the GNU Lesser General Public
@@ -22,11 +22,11 @@ define([VERSION_MAJOR], [1])
 define([VERSION_MINOR], [0])
 define([VERSION_FIX], [0])
 define([VERSION_NUMBER], VERSION_MAJOR[.]VERSION_MINOR[.]VERSION_FIX)
-define([VERSION_SUFFIX], [_beta7])
+define([VERSION_SUFFIX], [])
 
 AC_INIT([ovirt-hosted-engine-setup], VERSION_NUMBER[]VERSION_SUFFIX)
 PACKAGE_RPM_VERSION="VERSION_NUMBER"
-PACKAGE_RPM_RELEASE="0.12.$(echo VERSION_SUFFIX | sed 's/^_//')"
+PACKAGE_RPM_RELEASE="1"
 PACKAGE_MAVEN_VERSION="VERSION_MAJOR.VERSION_MINOR.0$(echo VERSION_SUFFIX | sed 's/^_/-/')"
 AC_SUBST([PACKAGE_RPM_VERSION])
 AC_SUBST([PACKAGE_RPM_RELEASE])
