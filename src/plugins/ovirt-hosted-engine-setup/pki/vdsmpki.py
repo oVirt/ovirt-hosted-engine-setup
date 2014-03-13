@@ -76,6 +76,21 @@ class Plugin(plugin.PluginBase):
         shutil.copyfile(s, d)
 
     def _copy_vdsm_pki(self):
+        if not os.path.exists(ohostedcons.FileLocations.LIBVIRT_PKI):
+            os.makedirs(ohostedcons.FileLocations.LIBVIRT_PKI)
+        if not os.path.exists(ohostedcons.FileLocations.LIBVIRT_PKI_PRIVATE):
+            os.makedirs(ohostedcons.FileLocations.LIBVIRT_PKI_PRIVATE)
+            os.chmod(ohostedcons.FileLocations.LIBVIRT_PKI_PRIVATE, 0o750)
+            os.chown(
+                ohostedcons.FileLocations.LIBVIRT_PKI_PRIVATE,
+                self.environment[
+                    ohostedcons.VDSMEnv.VDSM_UID
+                ],
+                self.environment[
+                    ohostedcons.VDSMEnv.KVM_GID
+                ]
+            )
+
         for s, d in (
             (ohostedcons.FileLocations.VDSM_CA_CERT,
                 ohostedcons.FileLocations.SYS_CA_CERT),
