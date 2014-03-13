@@ -182,30 +182,29 @@ class FileLocations(object):
         'libvirt-spice',
         'ca-cert.pem'
     )
-    LIBVIRT_CLIENT_CERT = os.path.join(
+    LIBVIRT_PKI = os.path.join(
         SYSCONFDIR,
         'pki',
-        'libvirt',
+        'libvirt'
+    )
+    LIBVIRT_PKI_PRIVATE = os.path.join(
+        LIBVIRT_PKI,
+        'private',
+    )
+    LIBVIRT_CLIENT_CERT = os.path.join(
+        LIBVIRT_PKI,
         'clientcert.pem'
     )
     LIBVIRT_CLIENT_KEY = os.path.join(
-        SYSCONFDIR,
-        'pki',
-        'libvirt',
-        'private',
+        LIBVIRT_PKI_PRIVATE,
         'clientkey.pem'
     )
     LIBVIRT_SERVER_CERT = os.path.join(
-        SYSCONFDIR,
-        'pki',
-        'libvirt',
+        LIBVIRT_PKI,
         'servercert.pem'
     )
     LIBVIRT_SERVER_KEY = os.path.join(
-        SYSCONFDIR,
-        'pki',
-        'libvirt',
-        'private',
+        LIBVIRT_PKI_PRIVATE,
         'serverkey.pem'
     )
     LIBVIRT_QEMU_CONF = os.path.join(
