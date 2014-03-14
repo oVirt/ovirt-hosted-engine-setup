@@ -255,9 +255,13 @@ class Plugin(plugin.PluginBase):
                     name='OVEHOSTED_NETWORK_FQDN',
                     note=_(
                         'Please provide the FQDN for the engine '
-                        'you would like to use. This needs to match '
+                        'you would like to use.\nThis needs to match '
                         'the FQDN that you will use for the engine '
-                        'installation within the VM: '
+                        'installation within the VM.\n'
+                        'Note: This will be the FQDN of the VM '
+                        'you are now going to create,\nit should not '
+                        'point to the base host or to any other '
+                        'existing machine.\nEngine FQDN: '
                     ),
                     prompt=True,
                     caseSensitive=True,
