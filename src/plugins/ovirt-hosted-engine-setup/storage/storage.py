@@ -801,18 +801,27 @@ class Plugin(plugin.PluginBase):
             except ohosteddomains.InsufficientSpaceError as e:
                 self.logger.debug('exception', exc_info=True)
                 self.logger.debug(e)
+                min_requirement = '%0.2f' % (
+                    ohostedcons.Const.MINIMUM_SPACE_STORAGEDOMAIN_MB / 1024.0
+                )
                 if interactive:
                     self.logger.error(
                         _(
                             'Storage domain for self hosted engine '
-                            'is too small'
+                            'is too small: '
+                            'you should have at least {min_r} GB free'.format(
+                                min_r=min_requirement,
+                            )
                         )
                     )
                 else:
                     raise RuntimeError(
                         _(
                             'Storage domain for self hosted engine '
-                            'is too small'
+                            'is too small: '
+                            'you should have at least {min_r} GB free'.format(
+                                min_r=min_requirement,
+                            )
                         )
                     )
         if self.environment[
