@@ -23,11 +23,9 @@ sanlock lockspace initialization plugin.
 """
 
 import gettext
-import glob
-import os
 import sanlock
 import stat
-
+import os
 
 from otopi import util
 from otopi import plugin
@@ -35,7 +33,7 @@ from otopi import plugin
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import util as ohostedutil
-
+from ovirt_hosted_engine_ha.lib.storage_backends import FilesystemBackend
 
 _ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
@@ -48,37 +46,6 @@ class Plugin(plugin.PluginBase):
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
-
-    def _get_metadata_path(self):
-        """
-        Return path of storage domain holding engine vm
-        """
-        domain_path = os.path.join(
-            ohostedcons.FileLocations.SD_MOUNT_PARENT_DIR,
-            '*',
-            self.environment[ohostedcons.StorageEnv.SD_UUID],
-        )
-        if self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE] == 'glusterfs':
-            domain_path = os.path.join(
-                ohostedcons.FileLocations.SD_MOUNT_PARENT_DIR,
-                'glusterSD',
-                '*',
-                self.environment[ohostedcons.StorageEnv.SD_UUID],
-            )
-        domains = glob.glob(domain_path)
-        if not domains:
-            raise RuntimeError(
-                _(
-                    'Path to storage domain {sd_uuid} not found in {root}'
-                ).format(
-                    sd_uuid=self.environment[ohostedcons.StorageEnv.SD_UUID],
-                    root=ohostedcons.FileLocations.SD_MOUNT_PARENT_DIR,
-                )
-            )
-        return os.path.join(
-            domains[0],
-            ohostedcons.FileLocations.SD_METADATA_DIR_NAME,
-        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT
@@ -111,60 +78,62 @@ class Plugin(plugin.PluginBase):
             ],
             state=True,
         )
-        metadatadir = self._get_metadata_path()
+
+        uuid = self.environment[ohostedcons.StorageEnv.SD_UUID]
+        dom_type = self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE]
+
+        # Prepare the Backend interface
+        # - this supports nfs, iSCSI and Gluster automatically
+        backend = FilesystemBackend(sd_uuid=uuid,
+                                    dom_type=dom_type)
+
         lockspace = self.environment[ohostedcons.SanlockEnv.LOCKSPACE_NAME]
-        lease_file = os.path.join(
-            metadatadir,
-            lockspace + '.lockspace'
-        )
-        metadata_file = os.path.join(
-            metadatadir,
-            lockspace + '.metadata'
-        )
         host_id = self.environment[ohostedcons.StorageEnv.HOST_ID]
-        self.logger.debug(
-            (
-                'Ensuring lease for lockspace {lockspace}, '
-                'host id {host_id} '
-                'is acquired (file: {lease_file})'
-            ).format(
-                lockspace=lockspace,
-                host_id=host_id,
-                lease_file=lease_file,
+
+        # Compute the size needed to store metadata for all hosts
+        # and for the global cluster state
+        md_size = (ohostedcons.Const.METADATA_CHUNK_SIZE
+                   * (ohostedcons.Const.MAX_HOST_ID + 1))
+
+        with ohostedutil.VirtUserContext(
+                environment=self.environment,
+                # umask 007
+                umask=stat.S_IRWXO,
+                ):
+
+            # Create storage for he metadata and sanlock lockspace
+            # 1MB is good for 2000 clients when the block size is 512B
+            created = backend.create({
+                lockspace + '.lockspace': 1024*1024*backend.blocksize/512,
+                lockspace + '.metadata': md_size
+            })
+
+            # Get the path to sanlock lockspace area
+            lease_file, offset = backend.filename(lockspace + '.lockspace')
+
+            # Update permissions on the lockspace directory to 0755
+            os.chmod(os.path.dirname(lease_file),
+                     stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP)
+
+            self.logger.debug(
+                (
+                    'Ensuring lease for lockspace {lockspace}, '
+                    'host id {host_id} '
+                    'is acquired (file: {lease_file})'
+                ).format(
+                    lockspace=lockspace,
+                    host_id=host_id,
+                    lease_file=lease_file,
+                    )
             )
-        )
-        if not os.path.isdir(metadatadir):
-            self.logger.debug('Creating metadata directory')
-            with ohostedutil.VirtUserContext(
-                environment=self.environment,
-                umask=stat.S_IWGRP | stat.S_IWOTH,
-            ):
-                os.mkdir(metadatadir)
-        if os.path.exists(lease_file):
-            self.logger.info(_('sanlock lockspace already initialized'))
-        else:
-            self.logger.info(_('Initializing sanlock lockspace'))
-            with ohostedutil.VirtUserContext(
-                environment=self.environment,
-                umask=stat.S_IXUSR | stat.S_IXGRP | stat.S_IRWXO,
-            ):
-                open(lease_file, 'w').close()
+
+        # Reinitialize the sanlock lockspace
+        # if it was newly created or updated
+        if (lockspace + '.lockspace') in created:
             sanlock.write_lockspace(
                 lockspace=lockspace,
                 path=lease_file,
+                offset=offset
             )
-        if os.path.exists(metadata_file):
-            self.logger.info(_('sanlock metadata already initialized'))
-        else:
-            self.logger.info(_('Initializing sanlock metadata'))
-            with ohostedutil.VirtUserContext(
-                environment=self.environment,
-                umask=stat.S_IXUSR | stat.S_IXGRP | stat.S_IRWXO,
-            ):
-                with open(metadata_file, 'wb') as f:
-                    chunk = b'\x00' * ohostedcons.Const.METADATA_CHUNK_SIZE
-                    for _i in range(ohostedcons.Const.MAX_HOST_ID + 1):
-                        f.write(chunk)
-
 
 # vim: expandtab tabstop=4 shiftwidth=4

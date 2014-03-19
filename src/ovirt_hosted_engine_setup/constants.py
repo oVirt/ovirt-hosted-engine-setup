@@ -68,7 +68,6 @@ class FileLocations(object):
     DATADIR = '/usr/share'
     LIBEXECDIR = '/usr/libexec'
     SD_MOUNT_PARENT_DIR = '/rhev/data-center/mnt'
-    SD_METADATA_DIR_NAME = 'ha_agent'
     OVIRT_HOSTED_ENGINE = 'ovirt-hosted-engine'
     OVIRT_HOSTED_ENGINE_SETUP = 'ovirt-hosted-engine-setup'
     OVIRT_HOSTED_ENGINE_SETUP_LOGDIR = os.path.join(
