@@ -194,21 +194,34 @@ class Plugin(plugin.PluginBase):
     )
     def _misc(self):
         self.logger.info(_('Configuring the management bridge'))
-        nics = self.environment[ohostedcons.NetworkEnv.BRIDGE_IF]
-        iface = nics
-        caps = self.environment[
+        selected = self.environment[ohostedcons.NetworkEnv.BRIDGE_IF]
+        vds_caps = self.environment[
             ohostedcons.VDSMEnv.VDS_CLI
-        ].s.getVdsCapabilities()['info']['nics'][nics]
+        ].s.getVdsCapabilities()['info']
         self.logger.debug(
-            'getVdsCaps for {iface}: {caps}'.format(
-                iface=iface,
-                caps=caps,
+            'getVdsCapabilities for {selected}: {caps}'.format(
+                selected=selected,
+                caps=vds_caps,
             )
         )
+        nics_caps = vds_caps['nics']
+        vlan_caps = vds_caps['vlans']
+        bond_caps = vds_caps['bondings']
+        iface = selected
         bond = ''
-        if netinfo.isbonding(nics):
-            bond = nics
-            nics = ','.join(netinfo.slaves(bond))
+        vlan = ''
+        caps = None
+        if selected in vlan_caps:
+            iface = vlan_caps[selected]['iface']
+            vlan = vlan_caps[selected]['vlanid']
+            caps = vlan_caps[selected]
+        elif netinfo.isbonding(iface):
+            bond = iface
+            iface = ','.join(netinfo.slaves(bond))
+            caps = bond_caps[selected]
+        else:
+            caps = nics_caps[selected]
+
         bridge = self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME]
         cmd = [self.command.get('vdsClient')]
         if self.environment[ohostedcons.VDSMEnv.USE_SSL]:
@@ -217,15 +230,18 @@ class Plugin(plugin.PluginBase):
             'localhost',
             'addNetwork',
             'bridge=%s' % bridge,
-            'vlan=',
+            'vlan=%s' % vlan,
             'bond=%s' % bond,
-            'nics=%s' % nics,
+            'nics=%s' % iface,
             'force=False',
             'bridged=True',
             'ONBOOT=yes',
         ]
-        boot_proto = caps['cfg']['BOOTPROTO']
-        cmd += ['bootproto=%s' % boot_proto]
+        boot_proto = None
+        if 'BOOTPROTO' in caps['cfg']:
+            boot_proto = caps['cfg']['BOOTPROTO']
+            cmd += ['bootproto=%s' % boot_proto]
+
         if boot_proto in ('dhcp', 'bootp'):
             cmd += [
                 'blockingdhcp=true',
@@ -235,12 +251,27 @@ class Plugin(plugin.PluginBase):
             cmd += [
                 'ipaddr=%s' % caps['addr'],
                 'netmask=%s' % caps['netmask'],
-                'gateway=%s' % caps['cfg']['GATEWAY'],
             ]
+            if 'GATEWAY' in caps['cfg']:
+                cmd += [
+                    'gateway=%s' % caps['cfg']['GATEWAY'],
+                ]
         self.execute(
             cmd,
             raiseOnError=True
         )
+
+        # TODO: refactor above with vdsmcli API and check if it still works
+        # since previously it got stuck on EL6
+        # from vdsm import vdscli
+        # s = vdscli.connect()
+        # s.setupNetwork(
+        #     {'netname': {'vlan': vlan, 'nic': iface, 'bootproto': boot_proto,
+        #     'blockingdhcp': True},
+        #     {},
+        #     {'connectivityCheck': False}
+        # )
+
         status = self.environment[
             ohostedcons.VDSMEnv.VDS_CLI
         ].s.setSafeNetworkConfig()
