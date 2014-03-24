@@ -241,6 +241,12 @@ class Plugin(plugin.PluginBase):
             cmd,
             raiseOnError=True
         )
+        status = self.environment[
+            ohostedcons.VDSMEnv.VDS_CLI
+        ].s.setSafeNetworkConfig()
+        self.logger.debug(status)
+        if status['status']['code'] != 0:
+            raise RuntimeError(status['status']['message'])
 
         for state in (False, True):
             self.services.state(
