@@ -22,7 +22,6 @@
 Local storage domain plugin.
 """
 
-import glob
 import os
 import re
 import uuid
@@ -156,34 +155,6 @@ class Plugin(plugin.PluginBase):
                 )
         return rc
 
-    def _get_dom_md_path(self):
-        """
-        Return path of storage domain holding engine vm
-        """
-        domain_path = os.path.join(
-            ohostedcons.FileLocations.SD_MOUNT_PARENT_DIR,
-            '*',
-            self.environment[ohostedcons.StorageEnv.SD_UUID],
-        )
-        if self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE] == 'glusterfs':
-            domain_path = os.path.join(
-                ohostedcons.FileLocations.SD_MOUNT_PARENT_DIR,
-                'glusterSD',
-                '*',
-                self.environment[ohostedcons.StorageEnv.SD_UUID],
-            )
-        domains = glob.glob(domain_path)
-        if not domains:
-            raise RuntimeError(
-                _(
-                    'Path to storage domain {sd_uuid} not found in {root}'
-                ).format(
-                    sd_uuid=self.environment[ohostedcons.StorageEnv.SD_UUID],
-                    root=ohostedcons.FileLocations.SD_MOUNT_PARENT_DIR,
-                )
-            )
-        return domains[0]
-
     def _re_deploying_host(self):
         interactive = self.environment[ohostedcons.CoreEnv.RE_DEPLOY] is None
         if interactive:
@@ -280,10 +251,15 @@ class Plugin(plugin.PluginBase):
                     ):
                         ha_cli = client.HAClient()
                         all_host_stats = ha_cli.get_all_host_stats_direct(
-                            dom_path=self._get_dom_md_path(),
+                            dom_type=self.environment[
+                                ohostedcons.StorageEnv.DOMAIN_TYPE
+                            ],
+                            sd_uuid=self.environment[
+                                ohostedcons.StorageEnv.SD_UUID
+                            ],
                             service_type=self.environment[
                                 ohostedcons.SanlockEnv.LOCKSPACE_NAME
-                            ],
+                            ] + ".metadata",
                         )
                     if (
                         int(

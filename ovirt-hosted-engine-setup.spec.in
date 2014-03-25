@@ -49,7 +49,7 @@ Requires:       virt-viewer
 Requires:       openssl
 Requires:       sudo
 Requires:       bind-utils
-Requires:       ovirt-hosted-engine-ha
+Requires:       ovirt-hosted-engine-ha >= 1.2.1
 Requires:       sanlock >= 2.8
 Requires:       sanlock-python >= 2.8
 Requires:       lsof
