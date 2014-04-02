@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -42,22 +42,6 @@ class Plugin(plugin.PluginBase):
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
 
-    @plugin.event(
-        stage=plugin.Stages.STAGE_INIT,
-    )
-    def _init(self):
-        self.environment.setdefault(
-            ohostedcons.CoreEnv.ANSWER_FILE,
-            ohostedcons.FileLocations.OVIRT_HOSTED_ENGINE_ANSWERS
-        )
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_VALIDATION,
-        priority=plugin.Stages.PRIORITY_LAST,
-        condition=lambda self: self.environment[
-            ohostedcons.CoreEnv.ANSWER_FILE
-        ] is not None
-    )
     def _save_answers(self):
         self.logger.info(
             _("Generating answer file '{name}'").format(
@@ -86,6 +70,40 @@ class Plugin(plugin.PluginBase):
                                         else v,
                                     )
                                 )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_INIT,
+    )
+    def _init(self):
+        self.environment.setdefault(
+            ohostedcons.CoreEnv.ANSWER_FILE,
+            ohostedcons.FileLocations.OVIRT_HOSTED_ENGINE_ANSWERS
+        )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_VALIDATION,
+        priority=plugin.Stages.PRIORITY_LAST,
+        condition=lambda self: self.environment[
+            ohostedcons.CoreEnv.ANSWER_FILE
+        ] is not None
+    )
+    def _save_answers_at_validation(self):
+        self._save_answers()
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CLOSEUP,
+        priority=plugin.Stages.PRIORITY_LAST,
+        condition=lambda self: self.environment[
+            ohostedcons.CoreEnv.ANSWER_FILE
+        ] is not None
+    )
+    def _save_answers_at_closeup(self):
+        self._save_answers()
+        self.logger.info(
+            _("Answer file '{name}' has been updated").format(
+                name=self.environment[ohostedcons.CoreEnv.ANSWER_FILE],
+            )
+        )
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

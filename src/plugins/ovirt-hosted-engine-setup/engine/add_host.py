@@ -283,6 +283,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.EngineEnv.APP_HOST_NAME,
             None
         )
+        self.environment.setdefault(
+            ohostedcons.EngineEnv.HOST_CLUSTER_NAME,
+            None
+        )
         self._selinux_enabled = False
 
     @plugin.event(
@@ -416,19 +420,40 @@ class Plugin(plugin.PluginBase):
                 ca_file=self.cert,
             )
             self.logger.debug('Adding the host to the cluster')
-            cluster_l = [c.get_name() for c in engine_api.clusters.list()]
-            cluster_name = default_cluster_name if default_cluster_name in \
-                cluster_l else cluster_l[0]
-            cluster_name = self.dialog.queryString(
-                name='cluster_name',
-                note=_(
-                    'Enter the name of the cluster to which you want to add '
-                    'the host (@VALUES@) [@DEFAULT@]: '
-                ),
-                prompt=True,
-                default=cluster_name,
-                validValues=cluster_l,
-            )
+            cluster_name = self.environment[
+                ohostedcons.EngineEnv.HOST_CLUSTER_NAME
+            ]
+            if cluster_name is not None:
+                if cluster_name not in [
+                    c.get_name()
+                    for c in engine_api.clusters.list()
+                ]:
+                    raise RuntimeError(
+                        _(
+                            'Specified cluster does not exist: {cluster}'
+                        ).format(
+                            cluster=cluster_name,
+                        )
+                    )
+            else:
+                cluster_l = [c.get_name() for c in engine_api.clusters.list()]
+                cluster_name = (
+                    default_cluster_name if default_cluster_name in
+                    cluster_l else cluster_l[0]
+                )
+                cluster_name = self.dialog.queryString(
+                    name='cluster_name',
+                    note=_(
+                        'Enter the name of the cluster to which you want to '
+                        'add the host (@VALUES@) [@DEFAULT@]: '
+                    ),
+                    prompt=True,
+                    default=cluster_name,
+                    validValues=cluster_l,
+                )
+                self.environment[
+                    ohostedcons.EngineEnv.HOST_CLUSTER_NAME
+                ] = cluster_name
             engine_api.hosts.add(
                 self._ovirtsdk_xml.params.Host(
                     name=self.environment[
@@ -456,7 +481,7 @@ class Plugin(plugin.PluginBase):
             self.logger.error(
                 _(
                     'Cannot automatically add the host '
-                    'to cluster {cluster:}\n{details}\n'
+                    'to cluster {cluster}:\n{details}\n'
                 ).format(
                     cluster=cluster_name,
                     details=e.detail

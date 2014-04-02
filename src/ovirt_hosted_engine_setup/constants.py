@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -321,6 +321,12 @@ class EngineEnv(object):
     )
     def APP_HOST_NAME(self):
         return 'OVEHOSTED_ENGINE/appHostName'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def HOST_CLUSTER_NAME(self):
+        return 'OVEHOSTED_ENGINE/clusterName'
 
 
 @util.export
