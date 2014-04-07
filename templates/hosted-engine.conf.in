@@ -15,3 +15,10 @@ ca_subject="@CA_SUBJECT@"
 vdsm_use_ssl=@VDSM_USE_SSL@
 gateway=@GATEWAY@
 bridge=@BRIDGE@
+
+# The following are used only for iSCSI storage
+iqn=@IQN@
+portal=@PORTAL@
+user=@USER@
+password=@PASSWORD@
+port=@PORT@

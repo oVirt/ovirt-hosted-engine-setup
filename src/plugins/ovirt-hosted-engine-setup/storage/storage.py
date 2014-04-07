@@ -50,11 +50,6 @@ class Plugin(plugin.PluginBase):
     Local storage plugin.
     """
 
-    NFS_DOMAIN = 1
-    GLUSTERFS_DOMAIN = 7
-
-    DATA_DOMAIN = 1
-
     _RE_NOT_ALPHANUMERIC = re.compile(r"[^-\w]")
     _NOT_VALID_NAME_MSG = _(
         'It can only consist of alphanumeric '
@@ -221,27 +216,27 @@ class Plugin(plugin.PluginBase):
         return True
 
     def _getExistingDomain(self):
-        self._storageServerConnection()
-        domains = self._getStorageDomainsList()
-        for sdUUID in domains:
-            domain_info = self._getStorageDomainInfo(sdUUID)
-            if (
-                domain_info and
-                'remotePath' in domain_info and
-                domain_info['remotePath'] == self.environment[
-                    ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
-                ]
-            ):
+        if self.storageType in (
+            ohostedcons.VDSMConstants.ISCSI_DOMAIN,
+        ):
+            if self.environment[ohostedcons.StorageEnv.VG_UUID] is not None:
+                vginfo = self.serv.s.getVGInfo(
+                    self.environment[ohostedcons.StorageEnv.VG_UUID]
+                )
+                if vginfo['status']['code'] != 0:
+                    raise RuntimeError(vginfo['status']['message'])
                 self.domain_exists = True
                 self.environment[
                     ohostedcons.CoreEnv.ADDITIONAL_HOST_ENABLED
                 ] = True
                 self.environment[
-                    ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
-                ] = domain_info['name']
-                self.environment[
                     ohostedcons.StorageEnv.SD_UUID
-                ] = sdUUID
+                ] = vginfo['info']['name']
+                domain_info = self._getStorageDomainInfo(
+                    self.environment[
+                        ohostedcons.StorageEnv.SD_UUID
+                    ]
+                )
                 self._handleHostId()
                 pool_list = domain_info['pool']
                 if pool_list:
@@ -256,11 +251,54 @@ class Plugin(plugin.PluginBase):
                         self.environment[
                             ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME
                         ] = pool_info['name']
-                break
+        elif self.storageType in (
+            ohostedcons.VDSMConstants.NFS_DOMAIN,
+            ohostedcons.VDSMConstants.GLUSTERFS_DOMAIN,
+        ):
+            self._storageServerConnection()
+            domains = self._getStorageDomainsList()
+            for sdUUID in domains:
+                domain_info = self._getStorageDomainInfo(sdUUID)
+                if (
+                    domain_info and
+                    'remotePath' in domain_info and
+                    domain_info['remotePath'] == self.environment[
+                        ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
+                    ]
+                ):
+                    self.domain_exists = True
+                    self.environment[
+                        ohostedcons.CoreEnv.ADDITIONAL_HOST_ENABLED
+                    ] = True
+                    self.environment[
+                        ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
+                    ] = domain_info['name']
+                    self.environment[
+                        ohostedcons.StorageEnv.SD_UUID
+                    ] = sdUUID
+                    self._handleHostId()
+                    pool_list = domain_info['pool']
+                    if pool_list:
+                        self.pool_exists = True
+                        spUUID = pool_list[0]
+                        self.environment[
+                            ohostedcons.StorageEnv.SP_UUID
+                        ] = spUUID
+                        self._storagePoolConnection()
+                        pool_info = self._getStoragePoolInfo(spUUID)
+                        if pool_info:
+                            self.environment[
+                                ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME
+                            ] = pool_info['name']
+                    break
 
         if not self.domain_exists:
             self._handleHostId()
-            self._storageServerConnection(disconnect=True)
+            if self.storageType in (
+                ohostedcons.VDSMConstants.NFS_DOMAIN,
+                ohostedcons.VDSMConstants.GLUSTERFS_DOMAIN,
+            ):
+                self._storageServerConnection(disconnect=True)
         else:
             self.environment[
                 ohostedcons.CoreEnv.ADDITIONAL_HOST_ENABLED
@@ -299,36 +337,75 @@ class Plugin(plugin.PluginBase):
         return info
 
     def _storageServerConnection(self, disconnect=False):
-        method = self.serv.connectStorageServer
+        method = self.serv.s.connectStorageServer
         debug_msg = 'connectStorageServer'
         if disconnect:
-            method = self.serv.disconnectStorageServer
+            method = self.serv.s.disconnectStorageServer
             debug_msg = 'disconnectStorageServer'
         self.logger.debug(debug_msg)
         spUUID = self.vdsClient.BLANK_UUID
-        conList = (
-            "connection={connection},"
-            "iqn=,"
-            "portal=,"
-            "user=kvm,"
-            "password=,"
-            "id={connectionUUID},"
-            "port=,"
-            "protocol_version={protocol_version}"
-        ).format(
-            connection=self.environment[
-                ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
-            ],
-            connectionUUID=self.environment[
-                ohostedcons.StorageEnv.CONNECTION_UUID
-            ],
-            protocol_version=self.protocol_version,
-        )
-        method(args=[
+        conList = None
+        if self.storageType in (
+            ohostedcons.VDSMConstants.NFS_DOMAIN,
+            ohostedcons.VDSMConstants.GLUSTERFS_DOMAIN,
+        ):
+            conList = [
+                {
+                    'connection': self.environment[
+                        ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
+                    ],
+                    'user': 'kvm',
+                    'id': self.environment[
+                        ohostedcons.StorageEnv.CONNECTION_UUID
+                    ],
+                    'protocol_version': self.protocol_version,
+                }
+            ]
+        elif self.storageType in (
+            ohostedcons.VDSMConstants.ISCSI_DOMAIN,
+        ):
+            conList = [
+                {
+                    'connection': self.environment[
+                        ohostedcons.StorageEnv.ISCSI_IP_ADDR
+                    ],
+                    'iqn': self.environment[
+                        ohostedcons.StorageEnv.ISCSI_TARGET
+                    ],
+                    'portal': self.environment[
+                        ohostedcons.StorageEnv.ISCSI_PORTAL
+                    ],
+                    'user': self.environment[
+                        ohostedcons.StorageEnv.ISCSI_USER
+                    ],
+                    'password': self.environment[
+                        ohostedcons.StorageEnv.ISCSI_PASSWORD
+                    ],
+                    'id': self.environment[
+                        ohostedcons.StorageEnv.CONNECTION_UUID
+                    ],
+                    'port': self.environment[
+                        ohostedcons.StorageEnv.ISCSI_PORT
+                    ],
+                }
+            ]
+        else:
+            raise RuntimeError(_('Invalid Storage Type'))
+
+        status = method(
             self.storageType,
             spUUID,
             conList
-        ])
+        )
+        self.logger.debug(status)
+        if status['status']['code'] != 0:
+            raise RuntimeError(status['status']['message'])
+        if not disconnect:
+            for con in status['statuslist']:
+                if con['status'] != 0:
+                    raise RuntimeError(
+                        _('Connection to storage server failed')
+                    )
 
     def _createStorageDomain(self):
         self.logger.debug('createStorageDomain')
@@ -336,16 +413,29 @@ class Plugin(plugin.PluginBase):
         domainName = self.environment[
             ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
         ]
-        path = self.environment[
-            ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
-        ]
-        domainType = self.DATA_DOMAIN
+        typeSpecificArgs = None
+        if self.storageType in (
+            ohostedcons.VDSMConstants.NFS_DOMAIN,
+            ohostedcons.VDSMConstants.GLUSTERFS_DOMAIN,
+        ):
+            typeSpecificArgs = self.environment[
+                ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
+            ]
+        elif self.storageType in (
+            ohostedcons.VDSMConstants.ISCSI_DOMAIN,
+        ):
+            typeSpecificArgs = self.environment[
+                ohostedcons.StorageEnv.VG_UUID
+            ]
+        else:
+            raise RuntimeError(_('Invalid Storage Type'))
+        domainType = ohostedcons.VDSMConstants.DATA_DOMAIN
         version = 3
         status, message = self.serv.createStorageDomain(args=[
             self.storageType,
             sdUUID,
             domainName,
-            path,
+            typeSpecificArgs,
             domainType,
             version
         ])
@@ -652,6 +742,7 @@ class Plugin(plugin.PluginBase):
         ),
         before=(
             ohostedcons.Stages.CONFIG_STORAGE_NFS,
+            ohostedcons.Stages.CONFIG_STORAGE_ISCSI,
         ),
     )
     def _early_customization(self):
@@ -662,12 +753,9 @@ class Plugin(plugin.PluginBase):
         )
         self.serv = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         self._check_existing_pools()
-        if self.environment[
-            ohostedcons.StorageEnv.DOMAIN_TYPE
-        ] is None:
-            self.environment[
-                ohostedcons.StorageEnv.DOMAIN_TYPE
-            ] = self.dialog.queryString(
+        domain_type = self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE]
+        if domain_type is None:
+            domain_type = self.dialog.queryString(
                 name='OVEHOSTED_STORAGE_DOMAIN_TYPE',
                 note=_(
                     'Please specify the storage '
@@ -678,36 +766,34 @@ class Plugin(plugin.PluginBase):
                 validValues=(
                     # Enable when glusterfs issues are solved:
                     # ohostedcons.DomainTypes.GLUSTERFS,
+                    ohostedcons.DomainTypes.ISCSI,
                     ohostedcons.DomainTypes.NFS3,
                     ohostedcons.DomainTypes.NFS4,
                 ),
                 default=ohostedcons.DomainTypes.NFS3,
             )
 
-        if self.environment[
-            ohostedcons.StorageEnv.DOMAIN_TYPE
-        ] == ohostedcons.DomainTypes.NFS3:
-            self.storageType = self.NFS_DOMAIN
+        if domain_type == ohostedcons.DomainTypes.NFS3:
+            self.storageType = ohostedcons.VDSMConstants.NFS_DOMAIN
             self.protocol_version = 3
-        elif self.environment[
-            ohostedcons.StorageEnv.DOMAIN_TYPE
-        ] == ohostedcons.DomainTypes.NFS4:
-            self.storageType = self.NFS_DOMAIN
+        elif domain_type == ohostedcons.DomainTypes.NFS4:
+            self.storageType = ohostedcons.VDSMConstants.NFS_DOMAIN
             self.protocol_version = 4
-        elif self.environment[
-            ohostedcons.StorageEnv.DOMAIN_TYPE
-        ] == ohostedcons.DomainTypes.GLUSTERFS:
-            self.storageType = self.GLUSTERFS_DOMAIN
+        elif domain_type == ohostedcons.DomainTypes.GLUSTERFS:
+            self.storageType = ohostedcons.VDSMConstants.GLUSTERFS_DOMAIN
+        elif domain_type == ohostedcons.DomainTypes.ISCSI:
+            self.storageType = ohostedcons.VDSMConstants.ISCSI_DOMAIN
         else:
             raise RuntimeError(
                 _(
-                    'Invalid domain type: {dtype}'
+                    'Invalid domain type: "{dtype}"'
                 ).format(
                     dtype=self.environment[
                         ohostedcons.StorageEnv.DOMAIN_TYPE
                     ],
                 )
             )
+        self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE] = domain_type
         # Here the execution flow go to specific plugin activated by domain
         # type.
 
@@ -717,6 +803,7 @@ class Plugin(plugin.PluginBase):
         priority=plugin.Stages.PRIORITY_FIRST,
         after=(
             ohostedcons.Stages.CONFIG_STORAGE_NFS,
+            ohostedcons.Stages.CONFIG_STORAGE_ISCSI,
         ),
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_STORAGE,
@@ -740,13 +827,42 @@ class Plugin(plugin.PluginBase):
         self.waiter = tasks.TaskWaiter(self.environment)
         self.serv = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         self._check_existing_pools()
-        # vdsmd has been restarted, we need to reconnect in any case.
-        self._storageServerConnection()
-        if self.domain_exists:
-            self.logger.info(_('Connecting Storage Domain'))
-        else:
-            self.logger.info(_('Creating Storage Domain'))
-            self._createStorageDomain()
+        if self.storageType in (
+            ohostedcons.VDSMConstants.NFS_DOMAIN,
+            ohostedcons.VDSMConstants.GLUSTERFS_DOMAIN,
+        ):
+            # vdsmd has been restarted, we need to reconnect in any case.
+            self._storageServerConnection()
+            if self.domain_exists:
+                self.logger.info(_('Connected to Storage Domain'))
+            else:
+                self.logger.info(_('Creating Storage Domain'))
+                self._createStorageDomain()
+        elif self.storageType in (
+            ohostedcons.VDSMConstants.ISCSI_DOMAIN,
+        ):
+            devices = self.serv.s.getDeviceList(
+                ohostedcons.VDSMConstants.ISCSI_DOMAIN
+            )
+            self.logger.debug(devices)
+            if devices['status']['code'] != 0:
+                raise RuntimeError(devices['status']['message'])
+            iscsi_device = None
+            for device in devices['devList']:
+                for path in device['pathlist']:
+                    if path['iqn'] == self.environment[
+                        ohostedcons.StorageEnv.ISCSI_TARGET
+                    ]:
+                        iscsi_device = device
+                        break
+
+            if iscsi_device is None:
+                self.logger.info(_('Connecting Storage Domain'))
+                self._storageServerConnection()
+            if not self.domain_exists:
+                self.logger.info(_('Creating Storage Domain'))
+                self._createStorageDomain()
+
         if not self.pool_exists:
             self.logger.info(_('Creating Storage Pool'))
             self._createStoragePool()

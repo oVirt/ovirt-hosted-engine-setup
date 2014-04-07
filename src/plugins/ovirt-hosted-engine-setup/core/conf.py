@@ -56,47 +56,76 @@ class Plugin(plugin.PluginBase):
     def _misc(self):
         # TODO: what's an VM_DISK_ID and how can it change to another value?
         self.logger.info(_('Updating hosted-engine configuration'))
+        subst = {
+            '@FQDN@': self.environment[
+                ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+            ],
+            '@VM_DISK_ID@': self.environment[
+                ohostedcons.StorageEnv.IMG_UUID
+            ],
+            '@SHARED_STORAGE@': self.environment[
+                ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
+            ],
+            '@CONSOLE_TYPE@': self.environment[
+                ohostedcons.VMEnv.CONSOLE_TYPE
+            ],
+            '@VM_UUID@': self.environment[
+                ohostedcons.VMEnv.VM_UUID
+            ],
+            '@CONF_FILE@': ohostedcons.FileLocations.ENGINE_VM_CONF,
+            '@HOST_ID@': self.environment[ohostedcons.StorageEnv.HOST_ID],
+            '@DOMAIN_TYPE@': self.environment[
+                ohostedcons.StorageEnv.DOMAIN_TYPE
+            ],
+            '@SP_UUID@': self.environment[ohostedcons.StorageEnv.SP_UUID],
+            '@SD_UUID@': self.environment[ohostedcons.StorageEnv.SD_UUID],
+            '@CONNECTION_UUID@': self.environment[
+                ohostedcons.StorageEnv.CONNECTION_UUID
+            ],
+            '@CA_CERT@': ohostedcons.FileLocations.LIBVIRT_SPICE_CA_CERT,
+            '@CA_SUBJECT@': self.environment[
+                ohostedcons.VDSMEnv.SPICE_SUBJECT
+            ],
+            '@VDSM_USE_SSL@': str(
+                self.environment[ohostedcons.VDSMEnv.USE_SSL]
+            ).lower(),
+            '@GATEWAY@': self.environment[ohostedcons.NetworkEnv.GATEWAY],
+            '@BRIDGE@': self.environment[
+                ohostedcons.NetworkEnv.BRIDGE_NAME
+            ],
+            '@IQN@': '',
+            '@PORTAL@': '',
+            '@USER@': '',
+            '@PASSWORD@': '',
+            '@PORT@': '',
+        }
+        if self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE] in (
+            ohostedcons.DomainTypes.ISCSI,
+        ):
+            # Defaults are ok for NFS and GlusterFS, need to change only
+            # for iSCSI
+            subst['@SHARED_STORAGE@'] = self.environment[
+                ohostedcons.StorageEnv.ISCSI_IP_ADDR
+            ]
+            subst['@IQN@'] = self.environment[
+                ohostedcons.StorageEnv.ISCSI_TARGET
+            ]
+            subst['@PORTAL@'] = self.environment[
+                ohostedcons.StorageEnv.ISCSI_PORTAL
+            ]
+            subst['@USER@'] = self.environment[
+                ohostedcons.StorageEnv.ISCSI_USER
+            ]
+            subst['@PASSWORD@'] = self.environment[
+                ohostedcons.StorageEnv.ISCSI_PASSWORD
+            ]
+            subst['@PORT@'] = self.environment[
+                ohostedcons.StorageEnv.ISCSI_PORT
+            ]
 
         content = ohostedutil.processTemplate(
             template=ohostedcons.FileLocations.OVIRT_HOSTED_ENGINE_TEMPLATE,
-            subst={
-                '@FQDN@': self.environment[
-                    ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
-                ],
-                '@VM_DISK_ID@': self.environment[
-                    ohostedcons.StorageEnv.IMG_UUID
-                ],
-                '@SHARED_STORAGE@': self.environment[
-                    ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
-                ],
-                '@CONSOLE_TYPE@': self.environment[
-                    ohostedcons.VMEnv.CONSOLE_TYPE
-                ],
-                '@VM_UUID@': self.environment[
-                    ohostedcons.VMEnv.VM_UUID
-                ],
-                '@CONF_FILE@': ohostedcons.FileLocations.ENGINE_VM_CONF,
-                '@HOST_ID@': self.environment[ohostedcons.StorageEnv.HOST_ID],
-                '@DOMAIN_TYPE@': self.environment[
-                    ohostedcons.StorageEnv.DOMAIN_TYPE
-                ],
-                '@SP_UUID@': self.environment[ohostedcons.StorageEnv.SP_UUID],
-                '@SD_UUID@': self.environment[ohostedcons.StorageEnv.SD_UUID],
-                '@CONNECTION_UUID@': self.environment[
-                    ohostedcons.StorageEnv.CONNECTION_UUID
-                ],
-                '@CA_CERT@': ohostedcons.FileLocations.LIBVIRT_SPICE_CA_CERT,
-                '@CA_SUBJECT@': self.environment[
-                    ohostedcons.VDSMEnv.SPICE_SUBJECT
-                ],
-                '@VDSM_USE_SSL@': str(
-                    self.environment[ohostedcons.VDSMEnv.USE_SSL]
-                ).lower(),
-                '@GATEWAY@': self.environment[ohostedcons.NetworkEnv.GATEWAY],
-                '@BRIDGE@': self.environment[
-                    ohostedcons.NetworkEnv.BRIDGE_NAME
-                ],
-            }
+            subst=subst
         )
         with transaction.Transaction() as localtransaction:
             localtransaction.append(

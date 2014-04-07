@@ -1,4 +1,22 @@
 #!/bin/sh
+#
+# ovirt-hosted-engine-setup -- ovirt hosted engine setup
+# Copyright (C) 2013-2014 Red Hat, Inc.
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#
 
 HOSTED_ENGINE_CONF='/etc/ovirt-hosted-engine/hosted-engine.conf'
 PKI_GUIDE_URL='https://fedoraproject.org/wiki/QA:Testcase_Virtualization_Manually_set_spice_listening_port_with_TLS_port_set'
@@ -244,15 +262,24 @@ return ;}
         protocol_version=4
     elif [ "${domainType}" == "glusterfs" ] ; then
         storageType=7
+    elif [ "${domainType}" == "iscsi" ] ; then
+        storageType=3
     else
         echo "Storage type not supported: ${domainType}"
         exit 1
     fi
     echo "Connecting Storage Server"
-    ${VDSCOMMAND} connectStorageServer \
-        ${storageType} \
-        ${spUUID} \
-        connection=${storage},iqn=,portal=,user=kvm,password=,id=${connectionUUID},port=,protocol_version=${protocol_version}
+    if [ ! "${domainType}" == "iscsi" ] ; then
+            ${VDSCOMMAND} connectStorageServer \
+            "${storageType}" \
+            "${spUUID}" \
+            connection="${storage},iqn=,portal=,user=kvm,password=,id=${connectionUUID},port=,protocol_version=${protocol_version}"
+    else
+        ${VDSCOMMAND} connectStorageServer \
+            "${storageType}" \
+            "${spUUID}" \
+            connection="${storage},iqn=${iqn},portal=${portal},user=${user},password=${password},id=${connectionUUID},port=${port}"
+    fi
 }
 
 cmd_start_pool() {

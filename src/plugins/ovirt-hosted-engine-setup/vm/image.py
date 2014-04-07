@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -161,14 +161,23 @@ class Plugin(plugin.PluginBase):
         serv = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         self.logger.info(_('Creating VM Image'))
         self.logger.debug('createVolume')
+        volFormat = ohostedcons.VolumeFormat.RAW_FORMAT
+        preallocate = ohostedcons.VolumeTypes.SPARSE_VOL
+        if self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE] in (
+            ohostedcons.DomainTypes.ISCSI,
+        ):
+            # Can't use sparse volume on block devices
+            preallocate = ohostedcons.VolumeTypes.PREALLOCATED_VOL
+
+        diskType = 2
         status, message = serv.createVolume([
             sdUUID,
             spUUID,
             imgUUID,
             self.environment[ohostedcons.StorageEnv.IMAGE_SIZE_GB],
-            5,
-            2,
-            2,
+            volFormat,
+            preallocate,
+            diskType,
             volUUID,
             self.environment[ohostedcons.StorageEnv.IMAGE_DESC],
         ])

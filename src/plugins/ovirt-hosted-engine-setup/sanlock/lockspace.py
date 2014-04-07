@@ -96,11 +96,10 @@ class Plugin(plugin.PluginBase):
                    * (ohostedcons.Const.MAX_HOST_ID + 1))
 
         with ohostedutil.VirtUserContext(
-                environment=self.environment,
-                # umask 007
-                umask=stat.S_IRWXO,
-                ):
-
+            self.environment,
+            # umask 007
+            umask=stat.S_IRWXO
+        ):
             # Create storage for he metadata and sanlock lockspace
             # 1MB is good for 2000 clients when the block size is 512B
             created = backend.create({
@@ -108,11 +107,28 @@ class Plugin(plugin.PluginBase):
                 lockspace + '.metadata': md_size
             })
 
+            # for lv_based storage (like iscsi) creates symlinks in /rhev/..
+            # for nfs does nothing (the real files are already in /rhev/..)
+            backend.connect()
+
             # Get the path to sanlock lockspace area
             lease_file, offset = backend.filename(lockspace + '.lockspace')
 
+            agent_data_dir = os.path.dirname(lease_file)
+
+            stat_info = os.stat(agent_data_dir)
+            # only change it when it's not already owned by vdsm,
+            # because on NFS we don't need the chown and it won't work
+            if stat_info.st_uid != self.environment[
+                ohostedcons.VDSMEnv.VDSM_UID
+            ]:
+                os.chown(
+                    agent_data_dir,
+                    self.environment[ohostedcons.VDSMEnv.VDSM_UID],
+                    self.environment[ohostedcons.VDSMEnv.KVM_GID]
+                )
             # Update permissions on the lockspace directory to 0755
-            os.chmod(os.path.dirname(lease_file),
+            os.chmod(agent_data_dir,
                      stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP)
 
             self.logger.debug(
@@ -124,7 +140,7 @@ class Plugin(plugin.PluginBase):
                     lockspace=lockspace,
                     host_id=host_id,
                     lease_file=lease_file,
-                    )
+                )
             )
 
         # Reinitialize the sanlock lockspace
@@ -135,5 +151,6 @@ class Plugin(plugin.PluginBase):
                 path=lease_file,
                 offset=offset
             )
+        backend.disconnect()
 
 # vim: expandtab tabstop=4 shiftwidth=4

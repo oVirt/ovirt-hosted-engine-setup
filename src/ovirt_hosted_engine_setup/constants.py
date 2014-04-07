@@ -73,6 +73,32 @@ class DomainTypes(object):
     NFS3 = 'nfs3'
     NFS4 = 'nfs4'
     GLUSTERFS = 'glusterfs'
+    ISCSI = 'iscsi'
+
+
+@util.export
+@util.codegen
+class VolumeTypes(object):
+    UNKNOWN_VOL = 0
+    PREALLOCATED_VOL = 1
+    SPARSE_VOL = 2
+
+
+@util.export
+@util.codegen
+class VolumeFormat(object):
+    UNKNOWN_FORMAT = 3
+    COW_FORMAT = 4
+    RAW_FORMAT = 5
+
+
+@util.export
+@util.codegen
+class VDSMConstants(object):
+    NFS_DOMAIN = 1
+    ISCSI_DOMAIN = 3
+    GLUSTERFS_DOMAIN = 7
+    DATA_DOMAIN = 1
 
 
 @util.export
@@ -414,6 +440,12 @@ class StorageEnv(object):
 
     @ohostedattrs(
         answerfile=True,
+    )
+    def VG_UUID(self):
+        return 'OVEHOSTED_STORAGE/vgUUID'
+
+    @ohostedattrs(
+        answerfile=True,
         summary=True,
         description=_('Image size GB'),
     )
@@ -427,6 +459,48 @@ class StorageEnv(object):
     )
     def DOMAIN_TYPE(self):
         return 'OVEHOSTED_STORAGE/domainType'
+
+    @ohostedattrs(
+        answerfile=True,
+        summary=True,
+        description=_('iSCSI Portal IP Address'),
+    )
+    def ISCSI_IP_ADDR(self):
+        return 'OVEHOSTED_STORAGE/iSCSIPortalIPAddress'
+
+    @ohostedattrs(
+        answerfile=True,
+        summary=True,
+        description=_('iSCSI Portal port'),
+    )
+    def ISCSI_PORT(self):
+        return 'OVEHOSTED_STORAGE/iSCSIPortalPort'
+
+    @ohostedattrs(
+        answerfile=True,
+        summary=True,
+        description=_('iSCSI Portal'),
+    )
+    def ISCSI_PORTAL(self):
+        return 'OVEHOSTED_STORAGE/iSCSIPortal'
+
+    @ohostedattrs(
+        answerfile=True,
+        summary=True,
+        description=_('iSCSI Portal user'),
+    )
+    def ISCSI_USER(self):
+        return 'OVEHOSTED_STORAGE/iSCSIPortalUser'
+
+    @ohostedattrs(
+        answerfile=True,
+        summary=True,
+        description=_('iSCSI Target Name'),
+    )
+    def ISCSI_TARGET(self):
+        return 'OVEHOSTED_STORAGE/iSCSITargetName'
+
+    ISCSI_PASSWORD = 'OVEHOSTED_STORAGE/iSCSIPortalPassword'
 
 
 @util.export
@@ -610,6 +684,7 @@ class Stages(object):
     CONFIG_BOOT_DEVICE = 'ohosted.boot.configuration.available'
     CONFIG_STORAGE_EARLY = 'ohosted.storage.configuration.early'
     CONFIG_STORAGE_LATE = 'ohosted.storage.configuration.late'
+    CONFIG_STORAGE_ISCSI = 'ohosted.storage.iscsi.configuration.available'
     CONFIG_STORAGE_NFS = 'ohosted.storage.nfs.configuration.available'
     CONFIG_ADDITIONAL_HOST = 'ohosted.core.additional.host'
     REQUIRE_ANSWER_FILE = 'ohosted.core.require.answerfile'
@@ -675,6 +750,7 @@ class Defaults(object):
     DEFAULT_SSHD_PORT = 22
     DEFAULT_EMULATED_MACHINE = 'pc'
     DEAFULT_RHEL_EMULATED_MACHINE = 'rhel6.5.0'
+    DEFAULT_ISCSI_PORT = 3260
 
 
 @util.export

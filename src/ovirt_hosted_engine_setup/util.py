@@ -93,6 +93,3 @@ class VirtUserContext(object):
         os.seteuid(self._euid)
         os.setegid(self._egid)
         os.umask(self._umask)
-
-
-# vim: expandtab tabstop=4 shiftwidth=4
