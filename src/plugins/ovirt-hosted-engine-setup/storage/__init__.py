@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -24,11 +24,13 @@
 from otopi import util
 
 
+from . import nfs
 from . import storage
 
 
 @util.export
 def createPlugins(context):
+    nfs.Plugin(context=context)
     storage.Plugin(context=context)
 
 

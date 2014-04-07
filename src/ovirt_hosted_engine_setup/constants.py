@@ -63,6 +63,20 @@ def ohostedattrs(
 
 @util.export
 @util.codegen
+class FileSystemTypes(object):
+    NFS = 'nfs'
+
+
+@util.export
+@util.codegen
+class DomainTypes(object):
+    NFS3 = 'nfs3'
+    NFS4 = 'nfs4'
+    GLUSTERFS = 'glusterfs'
+
+
+@util.export
+@util.codegen
 class FileLocations(object):
     SYSCONFDIR = '/etc'
     DATADIR = '/usr/share'
@@ -594,7 +608,9 @@ class NotificationsEnv(object):
 @util.codegen
 class Stages(object):
     CONFIG_BOOT_DEVICE = 'ohosted.boot.configuration.available'
-    CONFIG_STORAGE = 'ohosted.storage.configuration.available'
+    CONFIG_STORAGE_EARLY = 'ohosted.storage.configuration.early'
+    CONFIG_STORAGE_LATE = 'ohosted.storage.configuration.late'
+    CONFIG_STORAGE_NFS = 'ohosted.storage.nfs.configuration.available'
     CONFIG_ADDITIONAL_HOST = 'ohosted.core.additional.host'
     REQUIRE_ANSWER_FILE = 'ohosted.core.require.answerfile'
     CONFIG_OVF_IMPORT = 'ohosted.configuration.ovf'

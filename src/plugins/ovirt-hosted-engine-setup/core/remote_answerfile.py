@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -224,7 +224,7 @@ class Plugin(plugin.PluginBase):
         name=ohostedcons.Stages.REQUIRE_ANSWER_FILE,
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         after=(
-            ohostedcons.Stages.CONFIG_STORAGE,
+            ohostedcons.Stages.DIALOG_TITLES_E_STORAGE,
             ohostedcons.Stages.DIALOG_TITLES_S_SYSTEM,
         ),
         before=(

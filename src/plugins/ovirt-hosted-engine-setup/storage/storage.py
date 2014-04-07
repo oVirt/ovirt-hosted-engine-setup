@@ -22,13 +22,10 @@
 Local storage domain plugin.
 """
 
-import os
 import re
 import uuid
 import gettext
 import stat
-import tempfile
-import time
 
 
 from otopi import constants as otopicons
@@ -37,7 +34,6 @@ from otopi import plugin
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
-from ovirt_hosted_engine_setup import domains as ohosteddomains
 from ovirt_hosted_engine_setup import tasks
 from ovirt_hosted_engine_setup import util as ohostedutil
 
@@ -58,7 +54,6 @@ class Plugin(plugin.PluginBase):
     GLUSTERFS_DOMAIN = 7
 
     DATA_DOMAIN = 1
-    UMOUNT_TRIES = 10
 
     _RE_NOT_ALPHANUMERIC = re.compile(r"[^-\w]")
     _NOT_VALID_NAME_MSG = _(
@@ -70,7 +65,6 @@ class Plugin(plugin.PluginBase):
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
-        self._checker = ohosteddomains.DomainChecker()
         self.vdsClient = util.loadModule(
             path=ohostedcons.FileLocations.VDS_CLIENT_DIR,
             name='vdsClient'
@@ -83,77 +77,6 @@ class Plugin(plugin.PluginBase):
         self.pool_exists = False
         self._connected = False
         self._monitoring = False
-
-    def _mount(self, path, connection, domain_type):
-        fstype = ''
-        opts = []
-
-        if domain_type == 'nfs3':
-            fstype = 'nfs'
-            opts.append('vers=3')
-        elif domain_type == 'nfs4':
-            fstype = 'nfs'
-            opts.append('vers=4')
-
-        if fstype == 'nfs':
-            opts.append('retry=1')
-
-        mount_cmd = (
-            self.command.get('mount'),
-            '-t%s' % fstype,
-        )
-
-        if opts:
-            mount_cmd += (
-                '-o%s' % ','.join(opts),
-            )
-
-        mount_cmd += (
-            connection,
-            path,
-        )
-
-        rc, stdout, stderr = self.execute(
-            mount_cmd,
-            raiseOnError=False
-        )
-        error = '\n'.join(stderr)
-        if rc != 0:
-            self.logger.error(
-                _(
-                    'Error while mounting specified storage path: {error}'
-                ).format(
-                    error=error,
-                )
-            )
-            raise RuntimeError(error)
-
-    def _umount(self, path):
-        rc = -1
-        tries = self.UMOUNT_TRIES
-        while tries > 0:
-            rc, _stdout, _stderr = self.execute(
-                (
-                    self.command.get('umount'),
-                    path
-                ),
-                raiseOnError=False
-            )
-            if rc == 0:
-                tries = -1
-            else:
-                tries -= 1
-                time.sleep(1)
-                # rc, stdout and stderr are automatically logged as debug
-                self.execute(
-                    (
-                        self.command.get('lsof'),
-                        '+D%s' % path,
-                        '-xfl'
-                    ),
-                    raiseOnError=False
-                )
-        return rc
 
     def _re_deploying_host(self):
         interactive = self.environment[ohostedcons.CoreEnv.RE_DEPLOY] is None
@@ -289,31 +212,6 @@ class Plugin(plugin.PluginBase):
                             _('Invalid value for Host ID: must be integer')
                         )
 
-    def _check_domain_rights(self, path):
-        rc, _stdout, _stderr = self.execute(
-            (
-                self.command.get('sudo'),
-                '-u', 'vdsm',
-                '-g', 'kvm',
-                'test',
-                '-r', path,
-                '-a',
-                '-w', path,
-                '-a',
-                '-x', path,
-            ),
-            raiseOnError=False
-        )
-        if rc != 0:
-            raise RuntimeError(
-                _(
-                    'permission settings on the specified storage do not '
-                    'allow access to the storage to vdsm user and kvm group. '
-                    'Verify permission settings on the specified storage '
-                    'or specify another location'
-                )
-            )
-
     def _validName(self, name):
         if (
             name is None or
@@ -321,27 +219,6 @@ class Plugin(plugin.PluginBase):
         ):
             return False
         return True
-
-    def _validateDomain(self, connection, domain_type):
-        path = tempfile.mkdtemp()
-        try:
-            self._mount(path, connection, domain_type)
-            self._checker.check_valid_path(path)
-            self._check_domain_rights(path)
-            self._checker.check_base_writable(path)
-            self._checker.check_available_space(
-                path,
-                ohostedcons.Const.MINIMUM_SPACE_STORAGEDOMAIN_MB
-            )
-        finally:
-            if self._umount(path) == 0:
-                os.rmdir(path)
-            else:
-                self.logger.warning(
-                    _('Cannot unmount {path}').format(
-                        path=path,
-                    )
-                )
 
     def _getExistingDomain(self):
         self._storageServerConnection()
@@ -622,6 +499,97 @@ class Plugin(plugin.PluginBase):
                 _('Cannot setup Hosted Engine with connected storage pools')
             )
 
+    def _customizeStorageDomainName(self):
+        interactive = self.environment[
+            ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
+        ] is None
+        while not self._validName(
+            self.environment[
+                ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
+            ]
+        ):
+            self.environment[
+                ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
+            ] = self.dialog.queryString(
+                name='OVEHOSTED_STORAGE_DOMAIN_NAME',
+                note=_(
+                    'Please provide storage domain name. '
+                    '[@DEFAULT@]: '
+                ),
+                prompt=True,
+                caseSensitive=True,
+                default=ohostedcons.Defaults.DEFAULT_STORAGE_DOMAIN_NAME,
+            )
+            if not self._validName(
+                self.environment[
+                    ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
+                ]
+            ):
+                if interactive:
+                    self.dialog.note(
+                        text=_(
+                            'Storage domain name cannot be empty. '
+                            '{notvalid}'
+                        ).format(
+                            notvalid=self._NOT_VALID_NAME_MSG
+                        )
+                    )
+                else:
+                    raise RuntimeError(
+                        _(
+                            'Storage domain name cannot be empty. '
+                            '{notvalid}'
+                        ).format(
+                            notvalid=self._NOT_VALID_NAME_MSG
+                        )
+                    )
+
+    def _customizeStorageDatacenterName(self):
+        interactive = self.environment[
+            ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME
+        ] is None
+        while not self._validName(
+            self.environment[
+                ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME
+            ]
+        ):
+            self.environment[
+                ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME
+            ] = self.dialog.queryString(
+                name='OVEHOSTED_STORAGE_DATACENTER_NAME',
+                note=_(
+                    'Local storage datacenter name is an internal name '
+                    'and currently will not be shown in engine\'s admin UI.'
+                    'Please enter local datacenter name [@DEFAULT@]: '
+                ),
+                prompt=True,
+                caseSensitive=True,
+                default=ohostedcons.Defaults.DEFAULT_STORAGE_DATACENTER_NAME,
+            )
+            if not self._validName(
+                self.environment[
+                    ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME
+                ]
+            ):
+                if interactive:
+                    self.dialog.note(
+                        text=_(
+                            'Data center name cannot be empty. '
+                            '{notvalid}'
+                        ).format(
+                            notvalid=self._NOT_VALID_NAME_MSG
+                        )
+                    )
+                else:
+                    raise RuntimeError(
+                        _(
+                            'Data center name cannot be empty. '
+                            '{notvalid}'
+                        ).format(
+                            notvalid=self._NOT_VALID_NAME_MSG
+                        )
+                    )
+
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
     )
@@ -676,26 +644,17 @@ class Plugin(plugin.PluginBase):
         )
 
     @plugin.event(
-        stage=plugin.Stages.STAGE_SETUP,
-    )
-    def _setup(self):
-        self.command.detect('mount')
-        self.command.detect('umount')
-        self.command.detect('lsof')
-        self.command.detect('sudo')
-
-    @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
-        name=ohostedcons.Stages.CONFIG_STORAGE,
+        name=ohostedcons.Stages.CONFIG_STORAGE_EARLY,
         priority=plugin.Stages.PRIORITY_FIRST,
         after=(
             ohostedcons.Stages.DIALOG_TITLES_S_STORAGE,
         ),
         before=(
-            ohostedcons.Stages.DIALOG_TITLES_E_STORAGE,
+            ohostedcons.Stages.CONFIG_STORAGE_NFS,
         ),
     )
-    def _customization(self):
+    def _early_customization(self):
         self.dialog.note(
             _(
                 'During customization use CTRL-D to abort.'
@@ -703,207 +662,72 @@ class Plugin(plugin.PluginBase):
         )
         self.serv = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         self._check_existing_pools()
-        interactive = (
-            self.environment[
-                ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
-            ] is None or
-            self.environment[
-                ohostedcons.StorageEnv.DOMAIN_TYPE
-            ] is None
-        )
-        validDomain = False
-        while not validDomain:
-            try:
-                if interactive:
-                    self.environment[
-                        ohostedcons.StorageEnv.DOMAIN_TYPE
-                    ] = self.dialog.queryString(
-                        name='OVEHOSTED_STORAGE_DOMAIN_TYPE',
-                        note=_(
-                            'Please specify the storage '
-                            'you would like to use (@VALUES@)[@DEFAULT@]: '
-                        ),
-                        prompt=True,
-                        caseSensitive=True,
-                        validValues=(
-                            # Enable when glusterfs issues are solved:
-                            # 'glusterfs',
-                            'nfs3',
-                            'nfs4',
-                        ),
-                        default='nfs3',
-                    )
-
-                    self.environment[
-                        ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
-                    ] = self.dialog.queryString(
-                        name='OVEHOSTED_STORAGE_DOMAIN_CONNECTION',
-                        note=_(
-                            'Please specify the full shared storage '
-                            'connection path to use (example: host:/path): '
-                        ),
-                        prompt=True,
-                        caseSensitive=True,
-                    )
-
-                self._validateDomain(
-                    connection=self.environment[
-                        ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
-                    ],
-                    domain_type=self.environment[
-                        ohostedcons.StorageEnv.DOMAIN_TYPE
-                    ],
-                )
-
-                validDomain = True
-
-            except (ValueError, RuntimeError) as e:
-                if interactive:
-                    self.logger.debug('exception', exc_info=True)
-                    self.logger.error(
-                        _(
-                            'Cannot access storage connection '
-                            '{connection}: {error}'
-                        ).format(
-                            connection=self.environment[
-                                ohostedcons.StorageEnv.
-                                STORAGE_DOMAIN_CONNECTION
-                            ],
-                            error=e,
-                        )
-                    )
-                else:
-                    raise e
-            except ohosteddomains.InsufficientSpaceError as e:
-                self.logger.debug('exception', exc_info=True)
-                self.logger.debug(e)
-                min_requirement = '%0.2f' % (
-                    ohostedcons.Const.MINIMUM_SPACE_STORAGEDOMAIN_MB / 1024.0
-                )
-                if interactive:
-                    self.logger.error(
-                        _(
-                            'Storage domain for self hosted engine '
-                            'is too small: '
-                            'you should have at least {min_r} GB free'.format(
-                                min_r=min_requirement,
-                            )
-                        )
-                    )
-                else:
-                    raise RuntimeError(
-                        _(
-                            'Storage domain for self hosted engine '
-                            'is too small: '
-                            'you should have at least {min_r} GB free'.format(
-                                min_r=min_requirement,
-                            )
-                        )
-                    )
         if self.environment[
             ohostedcons.StorageEnv.DOMAIN_TYPE
-        ] == 'nfs3':
+        ] is None:
+            self.environment[
+                ohostedcons.StorageEnv.DOMAIN_TYPE
+            ] = self.dialog.queryString(
+                name='OVEHOSTED_STORAGE_DOMAIN_TYPE',
+                note=_(
+                    'Please specify the storage '
+                    'you would like to use (@VALUES@)[@DEFAULT@]: '
+                ),
+                prompt=True,
+                caseSensitive=True,
+                validValues=(
+                    # Enable when glusterfs issues are solved:
+                    # ohostedcons.DomainTypes.GLUSTERFS,
+                    ohostedcons.DomainTypes.NFS3,
+                    ohostedcons.DomainTypes.NFS4,
+                ),
+                default=ohostedcons.DomainTypes.NFS3,
+            )
+
+        if self.environment[
+            ohostedcons.StorageEnv.DOMAIN_TYPE
+        ] == ohostedcons.DomainTypes.NFS3:
             self.storageType = self.NFS_DOMAIN
             self.protocol_version = 3
         elif self.environment[
             ohostedcons.StorageEnv.DOMAIN_TYPE
-        ] == 'nfs4':
+        ] == ohostedcons.DomainTypes.NFS4:
             self.storageType = self.NFS_DOMAIN
             self.protocol_version = 4
         elif self.environment[
             ohostedcons.StorageEnv.DOMAIN_TYPE
-        ] == 'glusterfs':
+        ] == ohostedcons.DomainTypes.GLUSTERFS:
             self.storageType = self.GLUSTERFS_DOMAIN
+        else:
+            raise RuntimeError(
+                _(
+                    'Invalid domain type: {dtype}'
+                ).format(
+                    dtype=self.environment[
+                        ohostedcons.StorageEnv.DOMAIN_TYPE
+                    ],
+                )
+            )
+        # Here the execution flow go to specific plugin activated by domain
+        # type.
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CUSTOMIZATION,
+        name=ohostedcons.Stages.CONFIG_STORAGE_LATE,
+        priority=plugin.Stages.PRIORITY_FIRST,
+        after=(
+            ohostedcons.Stages.CONFIG_STORAGE_NFS,
+        ),
+        before=(
+            ohostedcons.Stages.DIALOG_TITLES_E_STORAGE,
+        ),
+    )
+    def _late_customization(self):
+        # This will be executed after specific plugin activated by domain
+        # type finishes.
         self._getExistingDomain()
-
-        interactive = self.environment[
-            ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
-        ] is None
-        while not self._validName(
-            self.environment[
-                ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
-            ]
-        ):
-            self.environment[
-                ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
-            ] = self.dialog.queryString(
-                name='OVEHOSTED_STORAGE_DOMAIN_NAME',
-                note=_(
-                    'Please provide storage domain name. '
-                    '[@DEFAULT@]: '
-                ),
-                prompt=True,
-                caseSensitive=True,
-                default=ohostedcons.Defaults.DEFAULT_STORAGE_DOMAIN_NAME,
-            )
-            if not self._validName(
-                self.environment[
-                    ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
-                ]
-            ):
-                if interactive:
-                    self.dialog.note(
-                        text=_(
-                            'Storage domain name cannot be empty. '
-                            '{notvalid}'
-                        ).format(
-                            notvalid=self._NOT_VALID_NAME_MSG
-                        )
-                    )
-                else:
-                    raise RuntimeError(
-                        _(
-                            'Storage domain name cannot be empty. '
-                            '{notvalid}'
-                        ).format(
-                            notvalid=self._NOT_VALID_NAME_MSG
-                        )
-                    )
-
-        interactive = self.environment[
-            ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME
-        ] is None
-        while not self._validName(
-            self.environment[
-                ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME
-            ]
-        ):
-            self.environment[
-                ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME
-            ] = self.dialog.queryString(
-                name='OVEHOSTED_STORAGE_DATACENTER_NAME',
-                note=_(
-                    'Local storage datacenter name is an internal name '
-                    'and currently will not be shown in engine\'s admin UI.'
-                    'Please enter local datacenter name [@DEFAULT@]: '
-                ),
-                prompt=True,
-                caseSensitive=True,
-                default=ohostedcons.Defaults.DEFAULT_STORAGE_DATACENTER_NAME,
-            )
-            if not self._validName(
-                self.environment[
-                    ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME
-                ]
-            ):
-                if interactive:
-                    self.dialog.note(
-                        text=_(
-                            'Data center name cannot be empty. '
-                            '{notvalid}'
-                        ).format(
-                            notvalid=self._NOT_VALID_NAME_MSG
-                        )
-                    )
-                else:
-                    raise RuntimeError(
-                        _(
-                            'Data center name cannot be empty. '
-                            '{notvalid}'
-                        ).format(
-                            notvalid=self._NOT_VALID_NAME_MSG
-                        )
-                    )
+        self._customizeStorageDomainName()
+        self._customizeStorageDatacenterName()
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
