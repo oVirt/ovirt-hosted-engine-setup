@@ -58,13 +58,8 @@ AC_ARG_VAR([PEP8], [path to pep8 utility])
 AC_CHECK_PROGS([PEP8], [pep8])
 AC_ARG_VAR([RPMBUILD], [path to rpmbuild utility])
 AC_CHECK_PROGS([RPMBUILD], [rpmbuild])
-AC_ARG_VAR([OTOPI_BUNDLE], [path to otopi-bundle utility])
-AC_PATH_PROGS([OTOPI_BUNDLE], [otopi-bundle],, [/usr/share/otopi])
 
 AM_PATH_PYTHON([2.6],, [AC_MSG_ERROR([Cannot find python])])
-AX_PYTHON_MODULE([otopi], [fatal])
-
-test -z "${OTOPI_BUNDLE}" && AC_MSG_ERROR([otopi-bundle required but missing])
 
 otopiplugindir="\$(datadir)/otopi/plugins"
 ovirthostedengineplugindir="\$(pkgdatadir)/plugins"

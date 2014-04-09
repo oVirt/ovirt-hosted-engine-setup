@@ -55,7 +55,6 @@ Requires:       sanlock-python >= 2.8
 Requires:       lsof
 Requires:       iptables
 BuildRequires:  gettext
-BuildRequires:  otopi-devtools >= 1.2.0
 BuildRequires:  python2-devel
 
 Requires:       %{engine}-sdk-python >= 3.4.0.6
