@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -67,7 +67,7 @@ class Plugin(plugin.PluginBase):
             )
             waiter = tasks.VMDownWaiter(self.environment)
             if not waiter.wait():
-                #The VM is down but not destroyed
+                # The VM is down but not destroyed
                 vdscommand = [self.command.get('vdsClient')]
                 if self.environment[ohostedcons.VDSMEnv.USE_SSL]:
                     vdscommand.append('-s')

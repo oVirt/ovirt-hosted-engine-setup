@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -144,7 +144,7 @@ class Plugin(plugin.PluginBase):
             else:
                 tries -= 1
                 time.sleep(1)
-                #rc, stdout and stderr are automatically logged as debug
+                # rc, stdout and stderr are automatically logged as debug
                 self.execute(
                     (
                         self.command.get('lsof'),

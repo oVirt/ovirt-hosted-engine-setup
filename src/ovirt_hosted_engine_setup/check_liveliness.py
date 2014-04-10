@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     except IOError:
         sys.stderr.write(_('Error reading the configuration file\n'))
         sys.exit(2)
-    if not 'fqdn' in config:
+    if 'fqdn' not in config:
         sys.stderr.write(
             _(
                 'Incomplete configuration, missing FQDN '

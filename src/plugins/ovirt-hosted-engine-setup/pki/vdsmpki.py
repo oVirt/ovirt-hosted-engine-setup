@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -134,9 +134,9 @@ class Plugin(plugin.PluginBase):
         self.environment[ohostedcons.VDSMEnv.SPICE_SUBJECT] = subject
 
     def _generateSPICEcerts(self):
-        #'https://fedoraproject.org/wiki/
-        #QA:Testcase_Virtualization_Manually_
-        #set_spice_listening_port_with_TLS_port_set'
+        # 'https://fedoraproject.org/wiki/
+        # QA:Testcase_Virtualization_Manually_
+        # set_spice_listening_port_with_TLS_port_set'
         self.logger.info(_('Generating libvirt-spice certificates'))
         self._tmpdir = tempfile.mkdtemp()
         expire = '1095'  # FIXME: configurable?

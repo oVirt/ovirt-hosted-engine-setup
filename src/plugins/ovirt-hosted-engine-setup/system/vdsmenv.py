@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -121,7 +121,7 @@ class Plugin(plugin.PluginBase):
         ),
     )
     def _late_setup(self):
-        #We need vdsmd up for customization checks
+        # We need vdsmd up for customization checks
         if not self.services.status(
             name=self.environment[
                 ohostedcons.VDSMEnv.VDSMD_SERVICE
@@ -179,7 +179,7 @@ class Plugin(plugin.PluginBase):
             ],
             state=True,
         )
-        #We need to restart the daemon for reloading the configuration
+        # We need to restart the daemon for reloading the configuration
         for state in (False, True):
             self.services.state(
                 name=self.environment[

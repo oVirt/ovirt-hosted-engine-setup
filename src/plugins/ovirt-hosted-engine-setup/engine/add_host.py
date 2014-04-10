@@ -125,7 +125,7 @@ class Plugin(plugin.PluginBase):
                 if os.path.exists(authorized_keys_file):
                     with open(authorized_keys_file, 'r') as f:
                         content = f.read().splitlines()
-                if not authorized_keys_line in content:
+                if authorized_keys_line not in content:
                     content.append(authorized_keys_line)
                     with transaction.Transaction() as localtransaction:
                         localtransaction.append(
@@ -207,7 +207,7 @@ class Plugin(plugin.PluginBase):
             try:
                 state = engine_api.hosts.get(host).status.state
             except Exception as exc:
-                #sadly all ovirtsdk errors inherit only from Exception
+                # Sadly all ovirtsdk errors inherit only from Exception
                 self.logger.debug(
                     'Error fetching host state: {error}'.format(
                         error=str(exc),
@@ -502,7 +502,7 @@ class Plugin(plugin.PluginBase):
                 )
             )
         else:
-            #This works only if the host is up.
+            # This works only if the host is up.
             self.logger.debug('Setting CPU for the cluster')
             try:
                 cluster = engine_api.clusters.get(cluster_name)

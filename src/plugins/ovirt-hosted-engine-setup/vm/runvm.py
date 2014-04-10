@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -134,8 +134,8 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
         ),
     )
     def _boot_from_install_media(self):
-        #Need to be done after firewall closeup for allowing the user to
-        #connect from remote.
+        # Need to be done after firewall closeup for allowing the user to
+        # connect from remote.
         os_installed = False
         while not os_installed:
             self._create_vm()

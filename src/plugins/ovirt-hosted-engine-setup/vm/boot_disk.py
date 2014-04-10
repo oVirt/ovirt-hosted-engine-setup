@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -318,7 +318,7 @@ class Plugin(plugin.PluginBase):
             self.logger.error(_('The specified file does not exists'))
             success = False
         else:
-            #decode ovf file content
+            # Decode ovf file content
             tar = tarfile.open(path, 'r:gz')
             try:
                 ovf_xml = None

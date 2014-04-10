@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -48,16 +48,16 @@ class Plugin(plugin.PluginBase):
         priority=plugin.Stages.PRIORITY_LAST + 10000,
     )
     def _terminate(self):
-        #TODO: libvirt has an issue in a destructor that cause an error
-        #message to be printed on stderr. The error is not relevant for us
-        #but it's really ugly to see at the end of the setup execution.
-        #Remove this plugin once libvirt is fixed.
-        #The error reported is:
-        #Exception AttributeError:
-        #AttributeError("virConnect instance has no attribute
-        #  'domainEventCallbacks'",) in
-        #<bound method  virConnect.__del__ of
-        #<libvirt.virConnect instance at  0x4280f38>> ignored
+        # TODO: libvirt has an issue in a destructor that cause an error
+        # message to be printed on stderr. The error is not relevant for us
+        # but it's really ugly to see at the end of the setup execution.
+        # Remove this plugin once libvirt is fixed.
+        # The error reported is:
+        # Exception AttributeError:
+        # AttributeError("virConnect instance has no attribute
+        #   'domainEventCallbacks'",) in
+        # <bound method  virConnect.__del__ of
+        # <libvirt.virConnect instance at  0x4280f38>> ignored
         sys.stderr.close()
 
 

@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -99,7 +99,7 @@ class VMDownWaiter(base.Base):
                 stats = response['statsList'][0]
                 down = (stats['status'] == 'Down')
             elif code == 1:
-                #assuming VM destroyed
+                # Assuming VM destroyed
                 down = True
                 destroyed = True
             else:

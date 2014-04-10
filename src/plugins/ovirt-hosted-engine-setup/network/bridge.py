@@ -161,7 +161,7 @@ class Plugin(plugin.PluginBase):
         ] is None
         if interactive:
             default = ohostedcons.Defaults.DEFAULT_BRIDGE_IF
-            if not default in validValues:
+            if default not in validValues:
                 default = validValues[0]
             self.environment[
                 ohostedcons.NetworkEnv.BRIDGE_IF

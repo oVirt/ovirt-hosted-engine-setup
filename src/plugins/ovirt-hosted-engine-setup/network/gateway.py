@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -136,7 +136,6 @@ class Plugin(plugin.PluginBase):
                     raise RuntimeError(_('Specified gateway is not pingable'))
                 else:
                     self.logger.error(_('Specified gateway is not pingable'))
-
 
 
 # vim: expandtab tabstop=4 shiftwidth=4
