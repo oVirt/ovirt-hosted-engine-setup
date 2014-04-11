@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,10 @@ VM cdrom configuration plugin.
 
 
 import gettext
+import grp
+import os
+import pwd
+import stat
 
 
 from otopi import util
@@ -46,23 +50,47 @@ class Plugin(plugin.PluginBase):
         super(Plugin, self).__init__(context=context)
 
     def _check_iso_readable(self, filepath):
-        try:
-            self.execute(
+        realpath = os.path.realpath(filepath)
+        file_stat = os.stat(realpath)
+        readable = False
+        if stat.S_ISBLK(file_stat.st_mode):
+            # Host device must be available to qemu user
+            if (
+                (file_stat.st_mode & stat.S_IROTH) or
                 (
-                    self.command.get('sudo'),
-                    '-u',
-                    'vdsm',
-                    '-g',
-                    'kvm',
-                    'test',
-                    '-r',
-                    filepath,
-                ),
-                raiseOnError=True
-            )
-            readable = True
-        except RuntimeError:
-            readable = False
+                    file_stat.st_mode & stat.S_IRGRP and
+                    file_stat.st_gid in [
+                        g.gr_gid
+                        for g in grp.getgrall()
+                        if 'qemu' in g.gr_mem
+                    ]
+                ) or
+                (
+                    file_stat.st_mode & stat.S_IRUSR and
+                    file_stat.st_uid == pwd.getpwnam('qemu').pw_uid
+                )
+            ):
+                readable = True
+        else:
+            # iso images may be on existing ISO domains and must be readable
+            # by vdsm user
+            try:
+                self.execute(
+                    (
+                        self.command.get('sudo'),
+                        '-u',
+                        'vdsm',
+                        '-g',
+                        'kvm',
+                        'test',
+                        '-r',
+                        realpath,
+                    ),
+                    raiseOnError=True
+                )
+                readable = True
+            except RuntimeError:
+                self.logger.debug('read test failed')
         return readable
 
     @plugin.event(
