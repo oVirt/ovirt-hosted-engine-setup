@@ -23,7 +23,7 @@ define([VERSION_MINOR], [2])
 define([VERSION_FIX], [0])
 define([VERSION_NUMBER], VERSION_MAJOR[.]VERSION_MINOR[.]VERSION_FIX)
 define([VERSION_RELEASE], [0.0])
-define([VERSION_SUFFIX], [master.][m4_esyscmd([date -u +%Y%m%d%H%M%S | tr -d '\n'])])
+define([VERSION_SUFFIX], [master])
 
 AC_INIT([ovirt-hosted-engine-setup], [VERSION_NUMBER[-]VERSION_RELEASE[.]VERSION_SUFFIX])
 PACKAGE_RPM_VERSION="VERSION_NUMBER"
