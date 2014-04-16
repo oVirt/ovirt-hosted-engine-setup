@@ -57,7 +57,7 @@ Requires:       iptables
 BuildRequires:  gettext
 BuildRequires:  python2-devel
 
-Requires:       %{engine}-sdk-python >= 3.4.0.6
+Requires:       %{engine}-sdk-python >= 3.4.0.7
 Requires:       qemu-img
 
 %description
