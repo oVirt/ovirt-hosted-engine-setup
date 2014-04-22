@@ -241,11 +241,12 @@ class Plugin(plugin.PluginBase):
             ))
         return isUp
 
-    def _wait_cluster_cpu_ready(self, cluster):
+    def _wait_cluster_cpu_ready(self, engine_api, cluster_name):
         tries = self.VDSM_RETRIES
         cpu = None
         while cpu is None and tries > 0:
             tries -= 1
+            cluster = engine_api.clusters.get(cluster_name)
             cpu = cluster.get_cpu()
             if cpu is None:
                 self.logger.debug(
@@ -269,7 +270,7 @@ class Plugin(plugin.PluginBase):
                 'Timed out while waiting for cluster to become ready. '
                 'Please check the logs.'
             ))
-        return cpu
+        return cluster, cpu
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
@@ -462,9 +463,10 @@ class Plugin(plugin.PluginBase):
             #This works only if the host is up.
             self.logger.debug('Setting CPU for the cluster')
             try:
-                cluster = engine_api.clusters.get('Default')
-                self.logger.debug(cluster.__dict__)
-                cpu = self._wait_cluster_cpu_ready(cluster)
+                cluster, cpu = self._wait_cluster_cpu_ready(
+                    engine_api,
+                    'Default'
+                )
                 self.logger.debug(cpu.__dict__)
                 cpu.set_id(self.environment[ohostedcons.VDSMEnv.ENGINE_CPU])
                 cluster.set_cpu(cpu)
