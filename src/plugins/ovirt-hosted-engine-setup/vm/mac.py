@@ -86,12 +86,12 @@ class Plugin(plugin.PluginBase):
                     ),
                     prompt=True,
                     default=default_mac,
-                )
+                ).strip()
             valid = ohostedutil.validMAC(
                 self.environment[ohostedcons.VMEnv.MAC_ADDR])
             if not valid and not interactive:
                 raise RuntimeError(
-                    _('Invalid mac address specified: {mac}').format(
+                    _('Invalid mac address specified: \'{mac}\'').format(
                         mac=self.environment[
                             ohostedcons.VMEnv.MAC_ADDR
                         ],
@@ -99,7 +99,7 @@ class Plugin(plugin.PluginBase):
                 )
             if not valid and interactive:
                 self.logger.error(
-                    _('Invalid mac address specified: {mac}').format(
+                    _('Invalid mac address specified: \'{mac}\'').format(
                         mac=self.environment[
                             ohostedcons.VMEnv.MAC_ADDR
                         ],
