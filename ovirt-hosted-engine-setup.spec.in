@@ -39,7 +39,7 @@ BuildArch:      noarch
 
 Requires:       python
 Requires:       python-ethtool >= 0.6-3
-Requires:       otopi >= 1.2.0
+Requires:       otopi >= 1.2.1
 Requires:       vdsm >= 4.14.0
 Requires:       vdsm-cli >= 4.14.0
 Requires:       vdsm-python >= 4.14.0
