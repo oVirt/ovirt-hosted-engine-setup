@@ -280,6 +280,9 @@ class Plugin(plugin.PluginBase):
             ohostedcons.EngineEnv.ADMIN_PASSWORD,
             None
         )
+        self.environment[otopicons.CoreEnv.LOG_FILTER_KEYS].append(
+            ohostedcons.EngineEnv.ADMIN_PASSWORD
+        )
         self.environment.setdefault(
             ohostedcons.EngineEnv.APP_HOST_NAME,
             None
@@ -375,9 +378,6 @@ class Plugin(plugin.PluginBase):
                     raise RuntimeError(
                         _('Empty password not allowed for user admin')
                     )
-        self.environment[otopicons.CoreEnv.LOG_FILTER].append(
-            self.environment[ohostedcons.EngineEnv.ADMIN_PASSWORD]
-        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_VALIDATION,

@@ -27,6 +27,8 @@ import gettext
 
 from otopi import util
 from otopi import plugin
+from otopi import constants as otopicons
+
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import mixins
@@ -51,6 +53,9 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
         self.environment.setdefault(
             ohostedcons.VMEnv.VM_PASSWD,
             self._generateTempVncPassword()
+        )
+        self.environment[otopicons.CoreEnv.LOG_FILTER_KEYS].append(
+            ohostedcons.VMEnv.VM_PASSWD
         )
         self.environment.setdefault(
             ohostedcons.VMEnv.VM_PASSWD_VALIDITY_SECS,

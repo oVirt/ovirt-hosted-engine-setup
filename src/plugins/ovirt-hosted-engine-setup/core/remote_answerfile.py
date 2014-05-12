@@ -129,9 +129,6 @@ class Plugin(plugin.PluginBase):
                 self.environment[
                     ohostedcons.FirstHostEnv.ROOT_PASSWORD
                 ] = password
-                self.environment[otopicons.CoreEnv.LOG_FILTER].append(
-                    password
-                )
                 try:
                     fd, self._tmp_ans = tempfile.mkstemp(
                         dir=self.environment[ohostedcons.CoreEnv.TEMPDIR],
@@ -210,6 +207,9 @@ class Plugin(plugin.PluginBase):
         self.environment.setdefault(
             ohostedcons.FirstHostEnv.ROOT_PASSWORD,
             None
+        )
+        self.environment[otopicons.CoreEnv.LOG_FILTER_KEYS].append(
+            ohostedcons.FirstHostEnv.ROOT_PASSWORD
         )
         self.environment.setdefault(
             ohostedcons.FirstHostEnv.FETCH_ANSWER,
