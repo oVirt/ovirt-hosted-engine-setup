@@ -49,6 +49,25 @@ class Plugin(plugin.PluginBase):
         super(Plugin, self).__init__(context=context)
 
     @plugin.event(
+        stage=plugin.Stages.STAGE_PROGRAMS,
+    )
+    def _programs(self):
+        for service in (
+            ohostedcons.Const.HA_AGENT_SERVICE,
+            ohostedcons.Const.HA_BROCKER_SERVICE,
+        ):
+            if self.services.status(
+                name=service,
+            ):
+                raise RuntimeError(
+                    _(
+                        'Hosted Engine HA services are already running on '
+                        'this system. Hosted Engine cannot be deployed on '
+                        'a host already running those services.'
+                    )
+                )
+
+    @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
         after=(
             ohostedcons.Stages.HOST_ADDED,
