@@ -162,6 +162,12 @@ class Plugin(plugin.PluginBase):
                                 _('Cannot use the same ID used by first host')
                             )
                     # ensure nobody else is using it
+                    if self.storageType in (
+                        ohostedcons.VDSMConstants.ISCSI_DOMAIN,
+                    ):
+                        # For iSCSI we need to connect the pool for
+                        # having /rhev populated.
+                        self._storagePoolConnection()
                     all_host_stats = {}
                     with ohostedutil.VirtUserContext(
                         environment=self.environment,
@@ -237,7 +243,6 @@ class Plugin(plugin.PluginBase):
                         ohostedcons.StorageEnv.SD_UUID
                     ]
                 )
-                self._handleHostId()
                 pool_list = domain_info['pool']
                 if pool_list:
                     self.pool_exists = True
@@ -245,7 +250,8 @@ class Plugin(plugin.PluginBase):
                     self.environment[
                         ohostedcons.StorageEnv.SP_UUID
                     ] = spUUID
-                    self._storagePoolConnection()
+                self._handleHostId()
+                if self.pool_exists:
                     pool_info = self._getStoragePoolInfo(spUUID)
                     if pool_info:
                         self.environment[
