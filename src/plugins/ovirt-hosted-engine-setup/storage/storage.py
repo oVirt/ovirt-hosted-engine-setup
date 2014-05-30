@@ -39,6 +39,7 @@ from ovirt_hosted_engine_setup import util as ohostedutil
 
 
 from ovirt_hosted_engine_ha.client import client
+from ovirt_hosted_engine_ha.lib import storage_backends
 
 
 _ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
@@ -161,45 +162,6 @@ class Plugin(plugin.PluginBase):
                             raise RuntimeError(
                                 _('Cannot use the same ID used by first host')
                             )
-                    # ensure nobody else is using it
-                    if self.storageType in (
-                        ohostedcons.VDSMConstants.ISCSI_DOMAIN,
-                    ):
-                        # For iSCSI we need to connect the pool for
-                        # having /rhev populated.
-                        self._storagePoolConnection()
-                    all_host_stats = {}
-                    with ohostedutil.VirtUserContext(
-                        environment=self.environment,
-                        umask=stat.S_IWGRP | stat.S_IWOTH,
-                    ):
-                        ha_cli = client.HAClient()
-                        all_host_stats = ha_cli.get_all_host_stats_direct(
-                            dom_type=self.environment[
-                                ohostedcons.StorageEnv.DOMAIN_TYPE
-                            ],
-                            sd_uuid=self.environment[
-                                ohostedcons.StorageEnv.SD_UUID
-                            ],
-                            service_type=self.environment[
-                                ohostedcons.SanlockEnv.LOCKSPACE_NAME
-                            ] + ".metadata",
-                        )
-                    if (
-                        int(
-                            self.environment[ohostedcons.StorageEnv.HOST_ID]
-                        ) in all_host_stats.keys() and
-                        not self._re_deploying_host()
-                    ):
-                        valid = False
-                        if interactive:
-                            self.logger.error(
-                                _('Invalid value for Host ID: already used')
-                            )
-                        else:
-                            raise RuntimeError(
-                                _('Invalid value for Host ID: already used')
-                            )
                     else:
                         valid = True
                 except ValueError:
@@ -212,6 +174,102 @@ class Plugin(plugin.PluginBase):
                         raise RuntimeError(
                             _('Invalid value for Host ID: must be integer')
                         )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_VALIDATION,
+        condition=lambda self: self.environment[
+            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+        ],
+        after=(
+            ohostedcons.Stages.LOCKSPACE_VALID,
+        ),
+    )
+    def _validation(self):
+        """
+        Check that host id is not already in use
+        """
+        if self.storageType in (
+            ohostedcons.VDSMConstants.ISCSI_DOMAIN,
+        ):
+            # For iSCSI we need to connect the pool for
+            # having /rhev populated.
+            self._storagePoolConnection()
+            # And we need also to connect metadata LVMs
+            # Prepare the Backend interface
+            # Get UUIDs of the storage
+            lockspace = self.environment[
+                ohostedcons.SanlockEnv.LOCKSPACE_NAME
+            ]
+            activate_devices = {
+                lockspace + '.lockspace': (
+                    storage_backends.VdsmBackend.Device(
+                        image_uuid=self.environment[
+                            ohostedcons.StorageEnv.
+                            LOCKSPACE_IMAGE_UUID
+                        ],
+                        volume_uuid=self.environment[
+                            ohostedcons.StorageEnv.
+                            LOCKSPACE_VOLUME_UUID
+                        ],
+                    )
+                ),
+                lockspace + '.metadata': (
+                    storage_backends.VdsmBackend.Device(
+                        image_uuid=self.environment[
+                            ohostedcons.StorageEnv.
+                            METADATA_IMAGE_UUID
+                        ],
+                        volume_uuid=self.environment[
+                            ohostedcons.StorageEnv.
+                            METADATA_VOLUME_UUID
+                        ],
+                    )
+                ),
+            }
+            backend = storage_backends.VdsmBackend(
+                sd_uuid=self.environment[
+                    ohostedcons.StorageEnv.SD_UUID
+                ],
+                sp_uuid=self.environment[
+                    ohostedcons.StorageEnv.SP_UUID
+                ],
+                dom_type=self.environment[
+                    ohostedcons.StorageEnv.DOMAIN_TYPE
+                ],
+                **activate_devices
+            )
+            with ohostedutil.VirtUserContext(
+                self.environment,
+                # umask 007
+                umask=stat.S_IRWXO
+            ):
+                backend.connect()
+        all_host_stats = {}
+        with ohostedutil.VirtUserContext(
+            environment=self.environment,
+            umask=stat.S_IWGRP | stat.S_IWOTH,
+        ):
+            ha_cli = client.HAClient()
+            all_host_stats = ha_cli.get_all_host_stats_direct(
+                dom_type=self.environment[
+                    ohostedcons.StorageEnv.DOMAIN_TYPE
+                ],
+                sd_uuid=self.environment[
+                    ohostedcons.StorageEnv.SD_UUID
+                ],
+                service_type=self.environment[
+                    ohostedcons.SanlockEnv.LOCKSPACE_NAME
+                ] + ".metadata",
+            )
+        if (
+            int(
+                self.environment[ohostedcons.StorageEnv.HOST_ID]
+            ) in all_host_stats.keys() and
+            not self._re_deploying_host()
+        ):
+            raise RuntimeError(
+                _('Invalid value for Host ID: already used')
+            )
 
     def _validName(self, name):
         if (

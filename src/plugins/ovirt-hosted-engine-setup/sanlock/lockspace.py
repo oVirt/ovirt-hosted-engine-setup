@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -27,13 +27,14 @@ import sanlock
 import stat
 import os
 
+
 from otopi import util
 from otopi import plugin
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import util as ohostedutil
-from ovirt_hosted_engine_ha.lib.storage_backends import FilesystemBackend
+from ovirt_hosted_engine_ha.lib import storage_backends
 
 _ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
@@ -59,6 +60,50 @@ class Plugin(plugin.PluginBase):
             ohostedcons.SanlockEnv.LOCKSPACE_NAME,
             ohostedcons.Defaults.DEFAULT_LOCKSPACE_NAME
         )
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.METADATA_VOLUME_UUID,
+            None
+        )
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.METADATA_IMAGE_UUID,
+            None
+        )
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.LOCKSPACE_VOLUME_UUID,
+            None
+        )
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.LOCKSPACE_IMAGE_UUID,
+            None
+        )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_VALIDATION,
+        condition=lambda self: self.environment[
+            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+        ],
+        name=ohostedcons.Stages.LOCKSPACE_VALID,
+    )
+    def _validation(self):
+        """
+        On additional hosts, check that answer file provided UUIDs for
+        metadata and lockspace.
+        On first host they will be provided at MISC stage when creating
+        them.
+        """
+        if None in (
+            self.environment[ohostedcons.StorageEnv.METADATA_VOLUME_UUID],
+            self.environment[ohostedcons.StorageEnv.METADATA_IMAGE_UUID],
+            self.environment[ohostedcons.StorageEnv.LOCKSPACE_VOLUME_UUID],
+            self.environment[ohostedcons.StorageEnv.LOCKSPACE_IMAGE_UUID],
+        ):
+            raise RuntimeError(
+                _(
+                    'Answer file lacks lockspace UUIDs, please use an '
+                    'answer file generated from the same version you '
+                    'are using on this additional host'
+                )
+            )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
@@ -71,6 +116,11 @@ class Plugin(plugin.PluginBase):
         ),
     )
     def _misc(self):
+        """
+        Here the storage pool is connected and activated.
+        Pass needed configuration to HA VdsmBackend for initializing
+        the metadata and lockspace volumes.
+        """
         self.logger.info(_('Verifying sanlock lockspace initialization'))
         self.services.state(
             name=self.environment[
@@ -79,16 +129,22 @@ class Plugin(plugin.PluginBase):
             state=True,
         )
 
-        uuid = self.environment[ohostedcons.StorageEnv.SD_UUID]
         dom_type = self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE]
+        lockspace = self.environment[ohostedcons.SanlockEnv.LOCKSPACE_NAME]
+        host_id = self.environment[ohostedcons.StorageEnv.HOST_ID]
 
         # Prepare the Backend interface
         # - this supports nfs, iSCSI and Gluster automatically
-        backend = FilesystemBackend(sd_uuid=uuid,
-                                    dom_type=dom_type)
-
-        lockspace = self.environment[ohostedcons.SanlockEnv.LOCKSPACE_NAME]
-        host_id = self.environment[ohostedcons.StorageEnv.HOST_ID]
+        activate_devices = {
+            lockspace + '.lockspace': None,  # created by backend
+            lockspace + '.metadata': None,   # created by backend
+        }
+        backend = storage_backends.VdsmBackend(
+            sd_uuid=self.environment[ohostedcons.StorageEnv.SD_UUID],
+            sp_uuid=self.environment[ohostedcons.StorageEnv.SP_UUID],
+            dom_type=dom_type,
+            **activate_devices
+        )
 
         # Compute the size needed to store metadata for all hosts
         # and for the global cluster state
@@ -104,8 +160,25 @@ class Plugin(plugin.PluginBase):
             # 1MB is good for 2000 clients when the block size is 512B
             created = backend.create({
                 lockspace + '.lockspace': 1024*1024*backend.blocksize/512,
-                lockspace + '.metadata': md_size
+                lockspace + '.metadata': md_size,
             })
+
+            # Get UUIDs of the storage
+            metadata_device = backend.get_device(lockspace + '.metadata')
+            self.environment[
+                ohostedcons.StorageEnv.METADATA_VOLUME_UUID
+            ] = metadata_device.volume_uuid
+            self.environment[
+                ohostedcons.StorageEnv.METADATA_IMAGE_UUID
+            ] = metadata_device.image_uuid
+
+            lockspace_device = backend.get_device(lockspace + '.lockspace')
+            self.environment[
+                ohostedcons.StorageEnv.LOCKSPACE_VOLUME_UUID
+            ] = lockspace_device.volume_uuid
+            self.environment[
+                ohostedcons.StorageEnv.LOCKSPACE_IMAGE_UUID
+            ] = lockspace_device.image_uuid
 
             # for lv_based storage (like iscsi) creates symlinks in /rhev/..
             # for nfs does nothing (the real files are already in /rhev/..)
@@ -152,5 +225,6 @@ class Plugin(plugin.PluginBase):
                 offset=offset
             )
         backend.disconnect()
+
 
 # vim: expandtab tabstop=4 shiftwidth=4

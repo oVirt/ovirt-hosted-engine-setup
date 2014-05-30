@@ -93,6 +93,18 @@ class Plugin(plugin.PluginBase):
             '@BRIDGE@': self.environment[
                 ohostedcons.NetworkEnv.BRIDGE_NAME
             ],
+            '@METADATA_VOLUME_UUID@': self.environment[
+                ohostedcons.StorageEnv.METADATA_VOLUME_UUID
+            ],
+            '@METADATA_IMAGE_UUID@': self.environment[
+                ohostedcons.StorageEnv.METADATA_IMAGE_UUID
+            ],
+            '@LOCKSPACE_VOLUME_UUID@': self.environment[
+                ohostedcons.StorageEnv.LOCKSPACE_VOLUME_UUID
+            ],
+            '@LOCKSPACE_IMAGE_UUID@': self.environment[
+                ohostedcons.StorageEnv.LOCKSPACE_IMAGE_UUID
+            ],
             '@IQN@': '',
             '@PORTAL@': '',
             '@USER@': '',

@@ -502,6 +502,30 @@ class StorageEnv(object):
 
     ISCSI_PASSWORD = 'OVEHOSTED_STORAGE/iSCSIPortalPassword'
 
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def METADATA_VOLUME_UUID(self):
+        return 'OVEHOSTED_STORAGE/metadataVolumeUUID'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def METADATA_IMAGE_UUID(self):
+        return 'OVEHOSTED_STORAGE/metadataImageUUID'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def LOCKSPACE_VOLUME_UUID(self):
+        return 'OVEHOSTED_STORAGE/lockspaceVolumeUUID'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def LOCKSPACE_IMAGE_UUID(self):
+        return 'OVEHOSTED_STORAGE/lockspaceImageUUID'
+
 
 @util.export
 @util.codegen
@@ -703,6 +727,7 @@ class Stages(object):
     BRIDGE_AVAILABLE = 'ohosted.network.bridge.available'
     LIBVIRT_CONFIGURED = 'ohosted.libvirt.configured'
     SAVE_CONFIG = 'ohosted.save.config'
+    LOCKSPACE_VALID = 'ohosted.lockspace.valid'
     SSHD_START = 'ohosted.sshd.started'
     OS_INSTALLED = 'ohosted.vm.state.os.installed'
     INSTALLED_VM_RUNNING = 'ohosted.vm.state.os.installed.running'
