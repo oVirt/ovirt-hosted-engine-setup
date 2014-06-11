@@ -34,6 +34,7 @@ import ethtool
 from otopi import util
 from otopi import plugin
 from vdsm import netinfo
+from vdsm import vdscli
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
@@ -194,96 +195,42 @@ class Plugin(plugin.PluginBase):
     )
     def _misc(self):
         self.logger.info(_('Configuring the management bridge'))
-        selected = self.environment[ohostedcons.NetworkEnv.BRIDGE_IF]
-        vds_caps = self.environment[
-            ohostedcons.VDSMEnv.VDS_CLI
-        ].s.getVdsCapabilities()['info']
-        self.logger.debug(
-            'getVdsCapabilities for {selected}: {caps}'.format(
-                selected=selected,
-                caps=vds_caps,
-            )
-        )
-        nics_caps = vds_caps['nics']
-        vlan_caps = vds_caps['vlans']
-        bond_caps = vds_caps['bondings']
-        iface = selected
-        bond = ''
-        vlan = ''
-        caps = None
-        if selected in vlan_caps:
-            iface = vlan_caps[selected]['iface']
-            vlan = vlan_caps[selected]['vlanid']
-            caps = vlan_caps[selected]
-        elif netinfo.isbonding(iface):
-            bond = iface
-            iface = ','.join(netinfo.slaves(bond))
-            caps = bond_caps[selected]
-        else:
-            caps = nics_caps[selected]
-
+        conn = vdscli.connect()
+        net_info = netinfo.NetInfo(_getVdsCapabilities(conn))
+        bridge_port = self.environment[ohostedcons.NetworkEnv.BRIDGE_IF]
         bridge = self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME]
-        cmd = [self.command.get('vdsClient')]
-        if self.environment[ohostedcons.VDSMEnv.USE_SSL]:
-            cmd.append('-s')
-        cmd += [
-            'localhost',
-            'addNetwork',
-            'bridge=%s' % bridge,
-            'vlan=%s' % vlan,
-            'bond=%s' % bond,
-            'nics=%s' % iface,
-            'force=False',
-            'bridged=True',
-            'ONBOOT=yes',
-        ]
-        boot_proto = None
-        if 'BOOTPROTO' in caps['cfg']:
-            boot_proto = caps['cfg']['BOOTPROTO']
-            cmd += ['bootproto=%s' % boot_proto]
-
-        if boot_proto in ('dhcp', 'bootp'):
-            cmd += [
-                'blockingdhcp=true',
-            ]
+        networks = {bridge: {}}
+        if bridge_port in net_info.vlans:
+            port_info = net_info.vlans[bridge_port]
+            networks[bridge]['vlan'] = port_info['vlanid']
+            iface = port_info['iface']
+            if iface in net_info.bondings:
+                networks[bridge]['bonding'] = iface
+            else:
+                networks[bridge]['nic'] = iface
+        elif bridge_port in net_info.bondings:
+            networks[bridge]['bonding'] = bridge_port
+            port_info = net_info.bondings[bridge_port]
+        elif bridge_port in net_info.nics:
+            networks[bridge]['nic'] = bridge_port
+            port_info = net_info.nics[bridge_port]
         else:
-            # Static configuration
-            cmd += [
-                'ipaddr=%s' % caps['addr'],
-                'netmask=%s' % caps['netmask'],
-            ]
-            if 'GATEWAY' in caps['cfg']:
-                cmd += [
-                    'gateway=%s' % caps['cfg']['GATEWAY'],
-                ]
-        self.execute(
-            cmd,
-            raiseOnError=True
-        )
+            raise RuntimeError('The selected device %s is not a supported '
+                               'bridge port' % bridge_port)
 
-        # TODO: refactor above with vdsmcli API and check if it still works
-        # since previously it got stuck on EL6
-        # from vdsm import vdscli
-        # s = vdscli.connect()
-        # s.setupNetwork(
-        #     {'netname': {'vlan': vlan, 'nic': iface, 'bootproto': boot_proto,
-        #     'blockingdhcp': True},
-        #     {},
-        #     {'connectivityCheck': False}
-        # )
+        if 'BOOTPROTO' in port_info['cfg']:
+            networks[bridge]['bootproto'] = port_info['cfg']['BOOTPROTO']
+        if networks[bridge].get('bootproto') == 'dhcp':
+            networks[bridge]['blockingdhcp'] = True
+        else:
+            networks[bridge]['ipaddr'] = port_info['addr']
+            networks[bridge]['netmask'] = port_info['netmask']
+            gateway = port_info.get('gateway')
+            if gateway is not None:
+                networks[bridge]['gateway'] = gateway
 
-        status = self.environment[
-            ohostedcons.VDSMEnv.VDS_CLI
-        ].s.setSafeNetworkConfig()
-        self.logger.debug(status)
-        if status['status']['code'] != 0:
-            raise RuntimeError(status['status']['message'])
-
-        for state in (False, True):
-            self.services.state(
-                name='network',
-                state=state,
-            )
+        _setupNetworks(conn, networks, {}, {'connectivityCheck': False})
+        _setSafeNetworkConfig(conn)
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
@@ -293,6 +240,32 @@ class Plugin(plugin.PluginBase):
     )
     def _closeup(self):
         self.services.startup('network', True)
+
+
+def _setupNetworks(conn, networks, bonds, options):
+    result = conn.setupNetworks(networks, bonds, options)
+    code, message = result['status']['code'], result['status']['message']
+    if code != 0:
+        raise RuntimeError('Failed to setup networks %r. Error code: "%s" '
+                           'message: "%s"' % (networks, code, message))
+
+
+def _getVdsCapabilities(conn):
+    result = conn.getVdsCapabilities()
+    code, message = result['status']['code'], result['status']['message']
+    if code != 0 or 'info' not in result:
+        raise RuntimeError('Failed to get vds capabilities. Error code: '
+                           '"%s" message: "%s"' % (code, message))
+    return result['info']
+
+
+def _setSafeNetworkConfig(conn):
+    result = conn.setSafeNetworkConfig()
+    code, message = result['status']['code'], result['status']['message']
+    if code != 0:
+        raise RuntimeError('Failed to persist network configuration. '
+                           'Error code: "%s" message: "%s"' %
+                           (code, message))
 
 
 # vim: expandtab tabstop=4 shiftwidth=4
