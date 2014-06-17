@@ -91,13 +91,13 @@ class Plugin(plugin.PluginBase):
         self._save_answers()
 
     @plugin.event(
-        stage=plugin.Stages.STAGE_CLOSEUP,
+        stage=plugin.Stages.STAGE_CLEANUP,
         priority=plugin.Stages.PRIORITY_LAST,
         condition=lambda self: self.environment[
             ohostedcons.CoreEnv.ANSWER_FILE
         ] is not None
     )
-    def _save_answers_at_closeup(self):
+    def _save_answers_at_cleanup(self):
         self._save_answers()
         self.logger.info(
             _("Answer file '{name}' has been updated").format(
