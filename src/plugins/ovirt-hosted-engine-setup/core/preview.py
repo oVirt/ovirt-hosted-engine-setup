@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -91,7 +91,7 @@ class Plugin(plugin.PluginBase):
                 prompt=True,
                 validValues=(_('Yes'), _('No')),
                 caseSensitive=False,
-                default=_('No'),
+                default=_('Yes'),
             ) == _('Yes').lower()
 
         if not self.environment[ohostedcons.CoreEnv.CONFIRM_SETTINGS]:
