@@ -52,7 +52,7 @@ class Plugin(plugin.PluginBase):
         )
 
     @plugin.event(
-        stage=plugin.Stages.STAGE_VALIDATION,
+        stage=plugin.Stages.STAGE_CLEANUP,
         priority=plugin.Stages.PRIORITY_LAST,
         condition=lambda self: self.environment[
             ohostedcons.CoreEnv.ANSWER_FILE
