@@ -119,6 +119,13 @@ cpu check plugin.
     )
     def _customization(self):
         cpu, compatible = self._getCompatibleCpuModels()
+
+        if len(compatible) == 0:
+            raise RuntimeError(
+                _('Hardware virtualization support is not available:\n'
+                  'please check BIOS settings and turn on NX support '
+                  'if available')
+            )
         self.logger.debug(
             'Compatible CPU models are: %s',
             compatible,
