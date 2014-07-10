@@ -488,6 +488,13 @@ class Plugin(plugin.PluginBase):
                     details=e.detail
                 )
             )
+            raise RuntimeError(
+                _(
+                    'Cannot add the host to cluster {cluster}'
+                ).format(
+                    cluster=cluster_name,
+                )
+            )
         up = self._wait_host_ready(
             engine_api,
             self.environment[ohostedcons.EngineEnv.APP_HOST_NAME]
