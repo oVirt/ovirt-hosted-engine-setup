@@ -30,7 +30,7 @@ Version:        @PACKAGE_RPM_VERSION@
 Release:        @PACKAGE_RPM_RELEASE@%{?release_suffix}%{?dist}
 License:        LGPLv2+
 URL:            http://www.ovirt.org
-Source:         http://resources.ovirt.org/pub/ovirt-snapshot/src/%{name}-%{package_version}.tar.gz
+Source:         http://resources.ovirt.org/pub/ovirt-3.5-snapshot/src/%{name}/%{name}-%{package_version}.tar.gz
 Group:          Applications/System
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -38,11 +38,11 @@ BuildArch:      noarch
 
 Requires:       python
 Requires:       python-ethtool >= 0.6-3
-Requires:       otopi >= 1.2.1
-Requires:       vdsm >= 4.14.0
-Requires:       vdsm-cli >= 4.14.0
-Requires:       vdsm-python >= 4.14.0
-Requires:       ovirt-host-deploy >= 1.2.0
+Requires:       otopi >= 1.2.2
+Requires:       vdsm >= 4.16.0
+Requires:       vdsm-cli >= 4.16.0
+Requires:       vdsm-python >= 4.16.0
+Requires:       ovirt-host-deploy >= 1.2.2
 Requires:       openssh-server
 Requires:       python-paramiko
 Requires:       virt-viewer
@@ -57,7 +57,7 @@ Requires:       iptables
 BuildRequires:  gettext
 BuildRequires:  python2-devel
 
-Requires:       %{engine}-sdk-python >= 3.4.0.7
+Requires:       %{engine}-sdk-python >= 3.5.0.2
 Requires:       qemu-img
 
 %description
@@ -93,5 +93,8 @@ make %{?_smp_mflags} install DESTDIR="%{buildroot}"
 %{vdsmhooksdir}/before_vm_start/
 
 %changelog
+* Fri Jul 11 2014 Sandro Bonazzola <sbonazzo@redhat.com> - 1.2.0-0.1.master
+- 1.2.0-0.1.master
+
 * Fri Jan 17 2014 Sandro Bonazzola <sbonazzo@redhat.com> - 1.2.0-0.0.master
 - 1.2.0-0.0.master
