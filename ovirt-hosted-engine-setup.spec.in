@@ -31,7 +31,7 @@ Version:        @PACKAGE_RPM_VERSION@
 Release:        @PACKAGE_RPM_RELEASE@%{?release_suffix}%{?dist}
 License:        LGPLv2+
 URL:            http://www.ovirt.org
-Source:         http://resources.ovirt.org/pub/ovirt-3.4-snapshot/src/%{name}/%{name}-%{package_version}.tar.gz
+Source:         http://resources.ovirt.org/pub/ovirt-3.4/src/%{name}/%{name}-%{package_version}.tar.gz
 Group:          Applications/System
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -50,7 +50,7 @@ Requires:       virt-viewer
 Requires:       openssl
 Requires:       sudo
 Requires:       bind-utils
-Requires:       ovirt-hosted-engine-ha >= 1.1.4
+Requires:       ovirt-hosted-engine-ha >= 1.1.5
 Requires:       sanlock >= 2.8
 Requires:       sanlock-python >= 2.8
 Requires:       lsof
@@ -95,6 +95,9 @@ make %{?_smp_mflags} install DESTDIR="%{buildroot}"
 %{vdsmhooksdir}/before_vm_start/
 
 %changelog
+* Wed Jul 16 2014 Sandro Bonazzola <sbonazzo@redhat.com> - 1.1.5-1
+- updated to 1.1.5
+
 * Mon Jun 09 2014 Sandro Bonazzola <sbonazzo@redhat.com> - 1.1.5-0.0.master
 - 1.1.5-0.0.master
 
