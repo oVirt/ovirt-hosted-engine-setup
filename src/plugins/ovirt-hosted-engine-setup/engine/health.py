@@ -53,6 +53,9 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
             ohostedcons.Stages.INSTALLED_VM_RUNNING,
         ),
         name=ohostedcons.Stages.ENGINE_ALIVE,
+        condition=lambda self: (
+            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
+        ),
     )
     def _closeup(self):
         poll = True
@@ -60,17 +63,16 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
             ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
         ]
         live_checker = check_liveliness.LivelinessChecker()
-        if not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]:
-            self.dialog.note(
-                _('Please install and setup the engine in the VM.')
+        self.dialog.note(
+            _('Please install and setup the engine in the VM.')
+        )
+        self.dialog.note(
+            _(
+                'You may also be interested in '
+                'installing ovirt-guest-agent-common package '
+                'in the VM.'
             )
-            self.dialog.note(
-                _(
-                    'You may also be interested in '
-                    'installing ovirt-guest-agent-common package '
-                    'in the VM.'
-                )
-            )
+        )
         while poll:
             response = self.dialog.queryString(
                 name='OVEHOSTED_ENGINE_UP',
