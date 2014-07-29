@@ -23,12 +23,15 @@
 
 import os
 import random
+import re
 
 
 from otopi import util
 
 
 from . import constants as ohostedcons
+
+UNICAST_MAC_ADDR = re.compile("[a-fA-F0-9][02468aAcCeE](:[a-fA-F0-9]{2}){5}")
 
 
 @util.export
@@ -54,19 +57,15 @@ def randomMAC():
 
 
 def validMAC(mac):
-    fields = mac.split(':')
-    if len(fields) != 6:
-        return False
-    for field in fields:
-        if len(field) != 2:
-            return False
-        try:
-            val = int(field, 16)
-        except ValueError:
-            return False
-        if val < 0 or val > 255:
-            return False
-    return True
+    """
+    Ensure that mac is a valid unicast MAC address.
+    @see: https://bugzilla.redhat.com/1116785
+    @see: "http://libvirt.org/git/?
+        p=libvirt.git;
+        a=commitdiff;
+        h=0007237301586aa90f58a7cc8d7cb29a16b00470"
+    """
+    return (UNICAST_MAC_ADDR.match(mac) is not None)
 
 
 class VirtUserContext(object):

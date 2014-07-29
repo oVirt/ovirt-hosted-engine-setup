@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
 
 
 """
-VM mac address configuration plugin.
+VM MAC address configuration plugin.
 """
 
 
@@ -40,7 +40,7 @@ _ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 @util.export
 class Plugin(plugin.PluginBase):
     """
-    VM mac address configuration plugin.
+    VM MAC address configuration plugin.
     """
 
     def __init__(self, context):
@@ -81,17 +81,20 @@ class Plugin(plugin.PluginBase):
                 ] = self.dialog.queryString(
                     name='ovehosted_vmenv_mac',
                     note=_(
-                        'You may specify a MAC address for the VM or '
+                        'You may specify a unicast MAC address for the VM or '
                         'accept a randomly generated default [@DEFAULT@]: '
                     ),
                     prompt=True,
                     default=default_mac,
                 ).strip()
             valid = ohostedutil.validMAC(
-                self.environment[ohostedcons.VMEnv.MAC_ADDR])
+                self.environment[ohostedcons.VMEnv.MAC_ADDR]
+            )
             if not valid and not interactive:
                 raise RuntimeError(
-                    _('Invalid mac address specified: \'{mac}\'').format(
+                    _(
+                        'Invalid unicast MAC address specified: \'{mac}\''
+                    ).format(
                         mac=self.environment[
                             ohostedcons.VMEnv.MAC_ADDR
                         ],
@@ -99,7 +102,9 @@ class Plugin(plugin.PluginBase):
                 )
             if not valid and interactive:
                 self.logger.error(
-                    _('Invalid mac address specified: \'{mac}\'').format(
+                    _(
+                        'Invalid unicast MAC address specified: \'{mac}\''
+                    ).format(
                         mac=self.environment[
                             ohostedcons.VMEnv.MAC_ADDR
                         ],
