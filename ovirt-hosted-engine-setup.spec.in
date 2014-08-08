@@ -58,7 +58,14 @@ BuildRequires:  gettext
 BuildRequires:  python2-devel
 
 Requires:       %{engine}-sdk-python >= 3.6.0.0
+
+%if 0%{?fedora}
 Requires:       qemu-img
+%endif
+
+%if 0%{?rhel}
+Requires:       qemu-img-rhev >= 0.12.1.2-2.415
+%endif
 
 %description
 Hosted engine tool for oVirt project.
