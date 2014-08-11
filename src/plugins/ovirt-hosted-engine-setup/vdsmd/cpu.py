@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -43,13 +43,19 @@ _ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 @util.export
 class Plugin(plugin.PluginBase):
     """
-cpu check plugin.
+    cpu check plugin.
     """
+
+    # CPU list from ovirt-engine: git grep ServerCPUList | grep 3.5
     CPU_FAMILIES = (
+        {'model': 'model_Haswell', 'name': 'Intel Haswell Family'},
+        {'model': 'model_SandyBridge', 'name': 'Intel SandyBridge Family'},
         {'model': 'model_Westmere', 'name': 'Intel Westmere Family'},
         {'model': 'model_Nehalem', 'name': 'Intel Nehalem Family'},
         {'model': 'model_Penryn', 'name': 'Intel Penryn Family'},
         {'model': 'model_Conroe', 'name': 'Intel Conroe Family'},
+        {'model': 'model_Opteron_G5', 'name': 'AMD Opteron G5'},
+        {'model': 'model_Opteron_G4', 'name': 'AMD Opteron G4'},
         {'model': 'model_Opteron_G3', 'name': 'AMD Opteron G3'},
         {'model': 'model_Opteron_G2', 'name': 'AMD Opteron G2'},
         {'model': 'model_Opteron_G1', 'name': 'AMD Opteron G1'},
