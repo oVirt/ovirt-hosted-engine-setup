@@ -500,6 +500,14 @@ class StorageEnv(object):
     def ISCSI_TARGET(self):
         return 'OVEHOSTED_STORAGE/iSCSITargetName'
 
+    @ohostedattrs(
+        answerfile=True,
+        summary=True,
+        description=_('iSCSI LUN ID'),
+    )
+    def ISCSI_LUN_ID(self):
+        return 'OVEHOSTED_STORAGE/iSCSILunId'
+
     ISCSI_PASSWORD = 'OVEHOSTED_STORAGE/iSCSIPortalPassword'
 
     @ohostedattrs(
