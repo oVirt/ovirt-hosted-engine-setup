@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -54,6 +54,16 @@ class Plugin(plugin.PluginBase):
             None
         )
         ssh_connected = not os.getenv('SSH_CLIENT') is None
+        if ssh_connected and os.getenv('TERM') is None:
+            self.logger.error(
+                _(
+                    'It has been detected that this program is executed '
+                    'through an SSH connection without pseudo-tty '
+                    'allocation.\n'
+                    'Please run again ssh adding -t option\n'
+                )
+            )
+            raise context.Abort('Aborted due to missing requirement')
         screen_used = os.getenv('TERM') == 'screen'
         if ssh_connected and not screen_used:
             interactive = self.environment[
