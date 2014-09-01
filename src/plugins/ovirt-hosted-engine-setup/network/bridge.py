@@ -38,6 +38,7 @@ from vdsm import vdscli
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
+from ovirt_hosted_engine_setup import vds_info
 
 
 _ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
@@ -196,39 +197,13 @@ class Plugin(plugin.PluginBase):
     def _misc(self):
         self.logger.info(_('Configuring the management bridge'))
         conn = vdscli.connect()
-        net_info = netinfo.NetInfo(_getVdsCapabilities(conn))
-        bridge_port = self.environment[ohostedcons.NetworkEnv.BRIDGE_IF]
-        bridge = self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME]
-        networks = {bridge: {}}
-        if bridge_port in net_info.vlans:
-            port_info = net_info.vlans[bridge_port]
-            networks[bridge]['vlan'] = port_info['vlanid']
-            iface = port_info['iface']
-            if iface in net_info.bondings:
-                networks[bridge]['bonding'] = iface
-            else:
-                networks[bridge]['nic'] = iface
-        elif bridge_port in net_info.bondings:
-            networks[bridge]['bonding'] = bridge_port
-            port_info = net_info.bondings[bridge_port]
-        elif bridge_port in net_info.nics:
-            networks[bridge]['nic'] = bridge_port
-            port_info = net_info.nics[bridge_port]
-        else:
-            raise RuntimeError('The selected device %s is not a supported '
-                               'bridge port' % bridge_port)
-
-        if 'BOOTPROTO' in port_info['cfg']:
-            networks[bridge]['bootproto'] = port_info['cfg']['BOOTPROTO']
-        if networks[bridge].get('bootproto') == 'dhcp':
-            networks[bridge]['blockingdhcp'] = True
-        else:
-            networks[bridge]['ipaddr'] = port_info['addr']
-            networks[bridge]['netmask'] = port_info['netmask']
-            gateway = port_info.get('gateway')
-            if gateway is not None:
-                networks[bridge]['gateway'] = gateway
-
+        networks = {
+            self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME]:
+            vds_info.network(
+                vds_info.capabilities(conn),
+                self.environment[ohostedcons.NetworkEnv.BRIDGE_IF]
+            )
+        }
         _setupNetworks(conn, networks, {}, {'connectivityCheck': False})
         _setSafeNetworkConfig(conn)
 
@@ -248,15 +223,6 @@ def _setupNetworks(conn, networks, bonds, options):
     if code != 0:
         raise RuntimeError('Failed to setup networks %r. Error code: "%s" '
                            'message: "%s"' % (networks, code, message))
-
-
-def _getVdsCapabilities(conn):
-    result = conn.getVdsCapabilities()
-    code, message = result['status']['code'], result['status']['message']
-    if code != 0 or 'info' not in result:
-        raise RuntimeError('Failed to get vds capabilities. Error code: '
-                           '"%s" message: "%s"' % (code, message))
-    return result['info']
 
 
 def _setSafeNetworkConfig(conn):

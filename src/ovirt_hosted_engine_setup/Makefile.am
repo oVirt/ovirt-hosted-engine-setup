@@ -45,6 +45,7 @@ dist_ovirthostedenginelib_PYTHON = \
 	tasks.py \
 	vm_status.py \
 	mixins.py \
+	vds_info.py \
 	$(NULL)
 
 nodist_ovirthostedenginelib_PYTHON = \
