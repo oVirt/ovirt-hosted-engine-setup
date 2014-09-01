@@ -46,7 +46,12 @@ from otopi import transaction
 from otopi import filetransaction
 
 
+from vdsm import netinfo
+from vdsm import vdscli
+
+
 from ovirt_hosted_engine_setup import constants as ohostedcons
+from ovirt_hosted_engine_setup import vds_info
 
 
 _ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
@@ -420,6 +425,23 @@ class Plugin(plugin.PluginBase):
                 ],
                 ca_file=self.cert,
             )
+
+            conn = vdscli.connect()
+            net_info = netinfo.NetInfo(vds_info.capabilities(conn))
+            bridge_port = self.environment[ohostedcons.NetworkEnv.BRIDGE_IF]
+            if bridge_port in net_info.vlans:
+                self.logger.debug(
+                    'Updating engine\'s management network to be vlanned'
+                )
+                vlan_id = net_info.vlans[bridge_port]['vlanid']
+                mgmt_network = engine_api.networks.get(
+                    name=self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME]
+                )
+                mgmt_network.set_vlan(
+                    self._ovirtsdk_xml.params.VLAN(id=vlan_id)
+                )
+                mgmt_network.update()
+
             self.logger.debug('Adding the host to the cluster')
             cluster_name = self.environment[
                 ohostedcons.EngineEnv.HOST_CLUSTER_NAME
