@@ -297,7 +297,6 @@ class CoreEnv(object):
 class NetworkEnv(object):
 
     @ohostedattrs(
-        answerfile=True,
         summary=True,
         description=_('Bridge interface'),
     )
