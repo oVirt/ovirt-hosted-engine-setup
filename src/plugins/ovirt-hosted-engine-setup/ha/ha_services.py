@@ -24,6 +24,7 @@ HA services
 
 
 import gettext
+import os
 
 
 from otopi import util
@@ -59,13 +60,27 @@ class Plugin(plugin.PluginBase):
             if self.services.status(
                 name=service,
             ):
-                raise RuntimeError(
-                    _(
-                        'Hosted Engine HA services are already running on '
-                        'this system. Hosted Engine cannot be deployed on '
-                        'a host already running those services.'
+                if os.path.exists(ohostedcons.FileLocations.ENGINE_VM_CONF):
+                    raise RuntimeError(
+                        _(
+                            'Hosted Engine HA services are already running '
+                            'on this system. Hosted Engine cannot be '
+                            'deployed on a host already running those '
+                            'services.'
+                        )
                     )
-                )
+                else:
+                    # Services are running by accident:
+                    # stopping them and continue the setup.
+                    # Related-To: https://bugzilla.redhat.com/1134873
+                    for service in (
+                        ohostedcons.Const.HA_AGENT_SERVICE,
+                        ohostedcons.Const.HA_BROCKER_SERVICE,
+                    ):
+                        self.services.state(
+                            name=service,
+                            state=False,
+                        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
