@@ -25,6 +25,7 @@ import configparser
 import gettext
 import os
 import paramiko
+import socket
 import tempfile
 
 
@@ -67,12 +68,13 @@ class Plugin(plugin.PluginBase):
                     prompt=True,
                     caseSensitive=True,
                 )
+            transport = None
             try:
                 transport = paramiko.Transport((self.environment[
                     ohostedcons.FirstHostEnv.FQDN
                 ], 22))
                 valid = True
-            except paramiko.SSHException as e:
+            except (paramiko.SSHException, socket.gaierror) as e:
                 self.logger.debug('exception', exc_info=True)
                 if fqdn_interactive:
                     self.logger.error(
@@ -97,7 +99,8 @@ class Plugin(plugin.PluginBase):
                         )
                     )
             finally:
-                transport.close()
+                if transport is not None:
+                    transport.close()
 
     def _fetch_answer_file(self):
         self.logger.debug('_fetch_answer_file')
@@ -117,7 +120,7 @@ class Plugin(plugin.PluginBase):
                     prompt=True,
                     hidden=True,
                 )
-
+            transport = None
             try:
                 transport = paramiko.Transport(
                     (
@@ -141,7 +144,7 @@ class Plugin(plugin.PluginBase):
                     )
                 finally:
                     sftp.close()
-            except paramiko.AuthenticationException:
+            except paramiko.AuthenticationException as e:
                 self.logger.error(
                     _('Invalid password for host {fqdn}').format(
                         fqdn=fqdn,
@@ -155,7 +158,7 @@ class Plugin(plugin.PluginBase):
                             'on first host'
                         )
                     )
-            except paramiko.SSHException as e:
+            except (paramiko.SSHException, socket.gaierror) as e:
                 self.logger.debug('exception', exc_info=True)
                 self.logger.error(
                     _('Unable to connect to {fqdn}. Error:{error}').format(
@@ -172,7 +175,8 @@ class Plugin(plugin.PluginBase):
                         )
                     )
             finally:
-                transport.close()
+                if transport is not None:
+                    transport.close()
         self.logger.info(_('Answer file successfully downloaded'))
 
     def _parse_answer_file(self):
