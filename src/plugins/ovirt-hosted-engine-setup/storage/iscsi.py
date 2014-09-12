@@ -182,6 +182,7 @@ class Plugin(plugin.PluginBase):
             password=self.environment[ohostedcons.StorageEnv.ISCSI_PASSWORD],
             iqn=target,
         )
+
         lun_list = ''
         lun_size = {}
         lun_device = {}
@@ -244,8 +245,7 @@ class Plugin(plugin.PluginBase):
     def _iscsi_get_lun_list(self, ip, port, user, password, iqn):
         retry = self._MAXRETRY
         iscsi_lun_list = []
-        iqn_found = False
-        while not iqn_found and retry > 0:
+        for _try in range(0, retry):
             devices = self.serv.s.getDeviceList(
                 ohostedcons.VDSMConstants.ISCSI_DOMAIN
             )
@@ -256,35 +256,40 @@ class Plugin(plugin.PluginBase):
                 for path in device['pathlist']:
                     if path['iqn'] == iqn:
                         iscsi_lun_list.append(device)
-                        iqn_found = True
-            if not iqn_found:
-                self.logger.info('Discovering iSCSI node')
-                self._iscsi_discovery(
-                    ip,
-                    port,
-                    user,
-                    password,
-                )
-                self.logger.info('Connecting to the storage server')
-                res = self.serv.s.connectStorageServer(
-                    ohostedcons.VDSMConstants.ISCSI_DOMAIN,
-                    self.vdsClient.BLANK_UUID,
-                    [
-                        {
-                            'connection': ip,
-                            'iqn': iqn,
-                            'portal': '0',
-                            'user': user,
-                            'password': password,
-                            'port': port,
-                            'id': self.vdsClient.BLANK_UUID,
-                        }
-                    ]
-                )
-                if res['status']['code'] != 0:
-                    raise RuntimeError(devices['status']['message'])
-                retry -= 1
-                time.sleep(self._RETRY_DELAY)
+            if iscsi_lun_list:
+                break
+
+            self.logger.info('Discovering iSCSI node')
+            self._iscsi_discovery(
+                ip,
+                port,
+                user,
+                password,
+            )
+            self.logger.info('Connecting to the storage server')
+            res = self.serv.s.connectStorageServer(
+                ohostedcons.VDSMConstants.ISCSI_DOMAIN,
+                self.vdsClient.BLANK_UUID,
+                [
+                    {
+                        'connection': ip,
+                        'iqn': iqn,
+                        'portal': '0',
+                        'user': user,
+                        'password': password,
+                        'port': port,
+                        'id': self.vdsClient.BLANK_UUID,
+                    }
+                ]
+            )
+            if res['status']['code'] != 0:
+                raise RuntimeError(devices['status']['message'])
+            retry -= 1
+            time.sleep(self._RETRY_DELAY)
+        else:
+            raise RuntimeError("Unable to retrieve the list of LUN(s) please "
+                               "check the SELinux log and settings on your "
+                               "iscsi target")
         return iscsi_lun_list
 
     def _iscsi_get_device(self, ip, port, user, password, iqn, lun):
