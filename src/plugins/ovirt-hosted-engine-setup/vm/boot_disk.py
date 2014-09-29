@@ -249,11 +249,19 @@ class Plugin(plugin.PluginBase):
             ] = int(
                 disk.attrib['{http://schemas.dmtf.org/ovf/envelope/1/}size']
             )
-            self.environment[
-                ohostedcons.StorageEnv.IMAGE_DESC
-            ] = disk.attrib[
-                '{http://schemas.dmtf.org/ovf/envelope/1/}disk-alias'
-            ]
+            try:
+                self.environment[
+                    ohostedcons.StorageEnv.IMAGE_DESC
+                ] = disk.attrib[
+                    '{http://schemas.dmtf.org/ovf/envelope/1/}disk-alias'
+                ]
+            except KeyError:
+                self.logger.warning(
+                    _(
+                        'OVF does not contain a valid image description, '
+                        'using default.'
+                    )
+                )
             self._source_image = os.path.join(
                 'images',
                 disk.attrib[
