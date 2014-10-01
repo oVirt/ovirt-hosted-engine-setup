@@ -72,6 +72,8 @@ def network(caps, device):
         gateway = port_info.get('gateway')
         if gateway is not None:
             attrs['gateway'] = gateway
+        elif 'GATEWAY' in port_info['cfg']:
+            attrs['gateway'] = port_info['cfg']['GATEWAY']
     return attrs
 
 
