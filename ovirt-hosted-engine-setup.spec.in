@@ -39,9 +39,9 @@ BuildArch:      noarch
 Requires:       python
 Requires:       python-ethtool >= 0.6-3
 Requires:       otopi >= 1.2.3
-Requires:       vdsm >= 4.16.4
-Requires:       vdsm-cli >= 4.16.4
-Requires:       vdsm-python >= 4.16.4
+Requires:       vdsm >= 4.16.6
+Requires:       vdsm-cli >= 4.16.6
+Requires:       vdsm-python >= 4.16.6
 Requires:       ovirt-host-deploy >= 1.2.3
 Requires:       openssh-server
 Requires:       python-paramiko
@@ -100,6 +100,9 @@ make %{?_smp_mflags} install DESTDIR="%{buildroot}"
 %{vdsmhooksdir}/before_vm_start/
 
 %changelog
+* Thu Oct  2 2014 Sandro Bonazzola <sbonazzo@redhat.com> - 1.2.1-1
+- 1.2.1-1
+
 * Mon Sep 22 2014 Sandro Bonazzola <sbonazzo@redhat.com> - 1.2.0-1
 - 1.2.0-1
 
