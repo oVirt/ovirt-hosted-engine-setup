@@ -27,6 +27,7 @@ import sys
 
 
 from ovirt_hosted_engine_ha.client import client
+from ovirt_hosted_engine_ha.lib.exceptions import BrokerConnectionError
 
 
 _ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
@@ -56,11 +57,15 @@ class VmStatus(object):
         ha_cli = client.HAClient()
         try:
             all_host_stats = ha_cli.get_all_host_stats()
-        except socket.error:
+        except (socket.error, BrokerConnectionError) as e:
+            sys.stderr.write(
+                _('{0}\n'.format(str(e)))
+            )
             sys.stderr.write(
                 _('Cannot connect to the HA daemon, please check the logs.\n')
             )
-            all_host_stats = {}
+            # there is no reason to continue if we can't connect to the daemon
+            return
 
         try:
             cluster_stats = ha_cli.get_all_stats(client.HAClient.
