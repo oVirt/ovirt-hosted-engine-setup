@@ -91,6 +91,9 @@ class Plugin(plugin.PluginBase):
         after=(
             ohostedcons.Stages.HOST_ADDED,
         ),
+        before=(
+            ohostedcons.Stages.VDSCLI_RECONNECTED,
+        ),
         condition=(
             lambda self: self.environment[
                 ohostedcons.StorageEnv.DOMAIN_TYPE

@@ -30,7 +30,6 @@ import time
 
 from otopi import util
 from otopi import plugin
-from vdsm import vdscli
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
@@ -161,7 +160,7 @@ class Plugin(plugin.PluginBase):
             )
 
     def _check_replica_level(self, connection):
-        cli = vdscli.connect()
+        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         server, volume = connection.split(':')
         if volume[0] == '/':
             volume = volume[1:]

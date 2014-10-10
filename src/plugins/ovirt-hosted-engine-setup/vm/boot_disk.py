@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2014 Red Hat, Inc.
+# Copyright (C) 2013-2015 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -115,8 +115,8 @@ class ImageTransaction(transaction.TransactionElement):
         info = json.decoder.JSONDecoder().decode('\n'.join(stdout))
         source_size = int(info['virtual-size'])
 
-        serv = self._parent.environment[ohostedcons.VDSMEnv.VDS_CLIENT]
-        size = serv.s.getVolumeSize(
+        cli = self._parent.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        size = cli.getVolumeSize(
             self._parent.environment[ohostedcons.StorageEnv.SD_UUID],
             self._parent.environment[ohostedcons.StorageEnv.SP_UUID],
             self._parent.environment[ohostedcons.StorageEnv.IMG_UUID],

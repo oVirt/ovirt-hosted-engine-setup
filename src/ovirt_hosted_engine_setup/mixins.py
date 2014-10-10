@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2015 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -36,18 +36,11 @@ class VmOperations(object):
     Hosted engine VM manipulation features for otopi Plugin objects
     """
 
+    POWER_MAX_TRIES = 10
+    POWER_DELAY = 1
     TICKET_MAX_TRIES = 10
     TICKET_DELAY = 1
     POWEROFF_CHECK_INTERVALL = 1
-
-    @property
-    def _vdscommand(self):
-        if not hasattr(self, '_vdscommand_val'):
-            self._vdscommand_val = [self.command.get('vdsClient')]
-            if self.environment[ohostedcons.VDSMEnv.USE_SSL]:
-                self._vdscommand_val.append('-s')
-            self._vdscommand_val.append('localhost')
-        return self._vdscommand_val
 
     def _generateTempVncPassword(self):
         self.logger.info(
@@ -61,18 +54,20 @@ class VmOperations(object):
     def _generateUserMessage(self, console_type):
         displayPort = 5900
         displaySecurePort = 5901
-        serv = self.environment[ohostedcons.VDSMEnv.VDS_CLIENT]
+        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         try:
-            stats = serv.s.getVmStats(
+            stats = cli.getVmStats(
                 self.environment[ohostedcons.VMEnv.VM_UUID]
             )
             self.logger.debug(stats)
-            if not stats['status']['code'] == 0:
+            if stats['status']['code'] != 0:
                 self.logger.error(stats['status']['message'])
             else:
                 statsList = stats['statsList'][0]
-                displaySecurePort = statsList['displaySecurePort']
-                displayPort = statsList['displayPort']
+                displaySecurePort = statsList.get(
+                    'displaySecurePort', displaySecurePort
+                )
+                displayPort = statsList.get('displayPort', displayPort)
         except Exception:
             self.logger.debug(
                 'Error getting VM stats',
@@ -132,34 +127,170 @@ class VmOperations(object):
                 time.sleep(self.POWEROFF_CHECK_INTERVALL)
 
         self.logger.info(_('Creating VM'))
-        cmd = self._vdscommand + [
-            'create',
-            ohostedcons.FileLocations.ENGINE_VM_CONF,
-        ]
-        self.execute(
-            cmd,
-            raiseOnError=True
-        )
+        # TODO: check if we can move this to configurevm.py
+        # and get rid of the template.
+        conf = {
+            'vmId': self.environment[ohostedcons.VMEnv.VM_UUID],
+            'memSize': self.environment[ohostedcons.VMEnv.MEM_SIZE_MB],
+            'display': self.environment[ohostedcons.VMEnv.CONSOLE_TYPE],
+            'emulatedMachine': self.environment[
+                ohostedcons.VMEnv.EMULATED_MACHINE
+            ],
+            'cpuType': self.environment[
+                ohostedcons.VDSMEnv.VDSM_CPU
+            ].replace('model_', ''),
+            'spiceSecureChannels': (
+                'smain,sdisplay,sinputs,scursor,splayback,'
+                'srecord,ssmartcard,susbredir'
+            ),
+            'vmName': ohostedcons.Const.HOSTED_ENGINE_VM_NAME,
+            'smp': self.environment[ohostedcons.VMEnv.VCPUS],
+            'devices': [
+                {
+                    'device': 'scsi',
+                    'model': 'virtio-scsi',
+                    'type': 'controller'
+                },
+                {
+                    'device': 'console',
+                    'specParams': {},
+                    'type': 'console',
+                    'deviceId': self.environment[
+                        ohostedcons.VMEnv.CONSOLE_UUID
+                    ],
+                    'alias': 'console0'
+                },
+            ],
+        }
+        cdrom = {
+            'index': '2',
+            'iface': 'ide',
+            'address': {
+                'controller': '0',
+                'target': '0',
+                'unit': '0',
+                'bus': '1',
+                'type': 'drive'
+            },
+            'specParams': {},
+            'readonly': 'true',
+            'deviceId': self.environment[ohostedcons.VMEnv.CDROM_UUID],
+            'path': (
+                self.environment[ohostedcons.VMEnv.CDROM]
+                if self.environment[
+                    ohostedcons.VMEnv.CDROM
+                ] is not None
+                else ''
+            ),
+            'device': 'cdrom',
+            'shared': 'false',
+            'type': 'disk',
+        }
+        if self.environment[ohostedcons.VMEnv.BOOT] == 'cdrom':
+            cdrom['bootOrder'] = '1'
+        conf['devices'].append(cdrom)
+        disk = {
+            'index': '0',
+            'iface': 'virtio',
+            'format': 'raw',
+            'poolID': ohostedcons.Const.BLANK_UUID,
+            'volumeID': self.environment[ohostedcons.StorageEnv.VOL_UUID],
+            'imageID': self.environment[ohostedcons.StorageEnv.IMG_UUID],
+            'specParams': {},
+            'readonly': 'false',
+            'domainID': self.environment[ohostedcons.StorageEnv.SD_UUID],
+            'optional': 'false',
+            'deviceId': self.environment[ohostedcons.StorageEnv.IMG_UUID],
+            'address': {
+                'bus': '0x00',
+                'slot': '0x06',
+                'domain': '0x0000',
+                'type': 'pci',
+                'function': '0x0'
+            },
+            'device': 'disk',
+            'shared': 'exclusive',
+            'propagateErrors': 'off',
+            'type': 'disk',
+        }
+        if self.environment[ohostedcons.VMEnv.BOOT] == 'disk':
+            disk['bootOrder'] = '1'
+        conf['devices'].append(disk)
+        nic = {
+            'nicModel': 'pv',
+            'macAddr': self.environment[ohostedcons.VMEnv.MAC_ADDR],
+            'linkActive': 'true',
+            'network': self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME],
+            'filter': 'vdsm-no-mac-spoofing',
+            'specParams': {},
+            'deviceId': self.environment[ohostedcons.VMEnv.NIC_UUID],
+            'address': {
+                'bus': '0x00',
+                'slot': '0x03',
+                'domain': '0x0000',
+                'type': 'pci',
+                'function': '0x0'
+            },
+            'device': 'bridge',
+            'type': 'interface',
+        }
+        if self.environment[ohostedcons.VMEnv.BOOT] == 'pxe':
+            nic['bootOrder'] = '1'
+        conf['devices'].append(nic)
+
+        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        status = cli.create(conf)
+        self.logger.debug(status)
+        if status['status']['code'] != 0:
+            raise RuntimeError(
+                _(
+                    'Cannot create the VM: {message}'
+                ).format(
+                    message=status['status']['message']
+                )
+            )
+        # Now it's in WaitForLaunch, need to be on powering up
+        powering = False
+        tries = self.POWER_MAX_TRIES
+        while not powering and tries > 0:
+            tries -= 1
+            stats = cli.getVmStats(
+                self.environment[ohostedcons.VMEnv.VM_UUID]
+            )
+            self.logger.debug(stats)
+            if stats['status']['code'] != 0:
+                raise RuntimeError(stats['status']['message'])
+            else:
+                statsList = stats['statsList'][0]
+                if statsList['status'] in ('Powering up', 'Up'):
+                    powering = True
+                elif statsList['status'] == 'Down':
+                    # VM creation failure
+                    tries = 0
+                else:
+                    time.sleep(self.POWER_DELAY)
+        if not powering:
+            raise RuntimeError(
+                _(
+                    'The VM is not powering up: please check VDSM logs'
+                )
+            )
+
         password_set = False
         tries = self.TICKET_MAX_TRIES
         while not password_set and tries > 0:
             tries -= 1
-            try:
-                cmd = self._vdscommand + [
-                    'setVmTicket',
-                    self.environment[ohostedcons.VMEnv.VM_UUID],
-                    self.environment[ohostedcons.VMEnv.VM_PASSWD],
-                    self.environment[
-                        ohostedcons.VMEnv.VM_PASSWD_VALIDITY_SECS
-                    ],
-                ]
-                self.execute(
-                    cmd,
-                    raiseOnError=True
-                )
+            status = cli.setVmTicket(
+                self.environment[ohostedcons.VMEnv.VM_UUID],
+                self.environment[ohostedcons.VMEnv.VM_PASSWD],
+                self.environment[
+                    ohostedcons.VMEnv.VM_PASSWD_VALIDITY_SECS
+                ],
+            )
+            self.logger.debug(status)
+            if status['status']['code'] == 0:
                 password_set = True
-            except RuntimeError as e:
-                self.logger.debug(str(e))
+            else:
                 time.sleep(self.TICKET_DELAY)
         if not password_set:
             raise RuntimeError(
@@ -218,11 +349,9 @@ class VmOperations(object):
             )
 
     def _destroy_vm(self):
-        cmd = self._vdscommand + [
-            'destroy',
-            self.environment[ohostedcons.VMEnv.VM_UUID]
-        ]
-        self.execute(cmd, raiseOnError=True)
+        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        res = cli.destroy(self.environment[ohostedcons.VMEnv.VM_UUID])
+        self.logger.debug(res)
 
     def _wait_vm_destroyed(self):
         waiter = tasks.VMDownWaiter(self.environment)

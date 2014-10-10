@@ -45,7 +45,6 @@ from otopi import filetransaction
 
 
 from vdsm import netinfo
-from vdsm import vdscli
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
@@ -567,7 +566,7 @@ class Plugin(plugin.PluginBase):
             )
 
         try:
-            conn = vdscli.connect()
+            conn = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
             net_info = netinfo.NetInfo(vds_info.capabilities(conn))
             bridge_port = self.environment[ohostedcons.NetworkEnv.BRIDGE_IF]
             if bridge_port in net_info.vlans:
@@ -674,6 +673,8 @@ class Plugin(plugin.PluginBase):
             engine_api,
             self.environment[ohostedcons.EngineEnv.APP_HOST_NAME]
         )
+        # TODO: host-deploy restarted vdscli so we need to
+        # connect again
         if not up:
             self.logger.error(
                 _(

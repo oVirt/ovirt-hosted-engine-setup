@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2014 Red Hat, Inc.
+# Copyright (C) 2013-2015 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -34,7 +34,6 @@ import ethtool
 from otopi import util
 from otopi import plugin
 from vdsm import netinfo
-from vdsm import vdscli
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
@@ -83,8 +82,6 @@ class Plugin(plugin.PluginBase):
                 )
             )
             self._enabled = False
-        else:
-            self.command.detect('vdsClient')
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
@@ -196,7 +193,7 @@ class Plugin(plugin.PluginBase):
     )
     def _misc(self):
         self.logger.info(_('Configuring the management bridge'))
-        conn = vdscli.connect()
+        conn = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         networks = {
             self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME]:
             vds_info.network(

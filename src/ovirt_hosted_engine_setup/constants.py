@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2014 Red Hat, Inc.
+# Copyright (C) 2013-2015 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -117,10 +117,6 @@ class FileLocations(object):
         OVIRT_HOSTED_ENGINE_SETUP,
     )
 
-    VDS_CLIENT_DIR = os.path.join(
-        DATADIR,
-        'vdsm',
-    )
     ENGINE_VM_TEMPLATE = os.path.join(
         config.DATADIR,
         OVIRT_HOSTED_ENGINE_SETUP,
@@ -688,7 +684,6 @@ class VDSMEnv(object):
     VDSM_UID = 'OVEHOSTED_VDSM/vdsmUid'
     KVM_GID = 'OVEHOSTED_VDSM/kvmGid'
     VDS_CLI = 'OVEHOSTED_VDSM/vdscli'
-    VDS_CLIENT = 'OVEHOSTED_VDSM/vdsClient'
 
     @ohostedattrs(
         answerfile=True,
@@ -797,6 +792,7 @@ class Stages(object):
         'ohosted.network.firewallmanager.templates.available'
     VDSMD_CONF_LOADED = 'ohosted.vdsm.conf.loaded'
     HOST_ADDED = 'ohosted.engine.host.added'
+    VDSCLI_RECONNECTED = 'ohosted.engine.vdscli.reconnected'
     HA_START = 'ohosted.engine.ha.start'
     VDSM_LIBVIRT_CONFIGURED = 'ohosted.vdsm.libvirt.configured'
     NODE_FILES_PERSIST_S = 'ohosted.node.files.persist.start'

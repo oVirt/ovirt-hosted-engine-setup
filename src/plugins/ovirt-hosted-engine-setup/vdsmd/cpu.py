@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2014 Red Hat, Inc.
+# Copyright (C) 2013-2015 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,6 @@ cpu check plugin.
 """
 
 
-import sys
 import gettext
 
 
@@ -65,21 +64,19 @@ class Plugin(plugin.PluginBase):
         super(Plugin, self).__init__(context=context)
 
     def _getCompatibleCpuModels(self):
-        self.logger.debug('Attempting to load the caps vdsm module')
-        savedPath = sys.path
-        ret = None
-        try:
-            sys.path.append(ohostedcons.FileLocations.VDS_CLIENT_DIR)
-            caps = util.loadModule(
-                path=ohostedcons.FileLocations.VDS_CLIENT_DIR,
-                name='caps',
-            )
-            ret = (
-                caps.CpuInfo().model(),
-                caps._getCompatibleCpuModels(),
-            )
-        finally:
-            sys.path = savedPath
+        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        caps = cli.getVdsCapabilities()
+        if caps['status']['code'] != 0:
+            raise RuntimeError(caps['status']['message'])
+        cpuModel = caps['info']['cpuModel']
+        cpuCompatibles = [
+            x for x in caps['info']['cpuFlags'].split(',')
+            if x.startswith('model_')
+        ]
+        ret = (
+            cpuModel,
+            cpuCompatibles
+        )
         return ret
 
     @plugin.event(

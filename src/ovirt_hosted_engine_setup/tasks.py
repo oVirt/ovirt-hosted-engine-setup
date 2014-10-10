@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2014 Red Hat, Inc.
+# Copyright (C) 2013-2015 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -42,11 +42,11 @@ class TaskWaiter(base.Base):
         self.environment = environment
 
     def wait(self):
-        serv = self.environment[ohostedcons.VDSMEnv.VDS_CLIENT]
+        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         wait = True
         while wait:
             self.logger.debug('Waiting for existing tasks to complete')
-            statuses = serv.s.getAllTasksStatuses()
+            statuses = cli.getAllTasksStatuses()
             code = statuses['status']['code']
             message = statuses['status']['message']
             if code != 0:
@@ -63,7 +63,7 @@ class TaskWaiter(base.Base):
                 if tasksStatuses[taskID]['taskState'] != 'finished':
                     all_completed = False
                 else:
-                    serv.clearTask([taskID])
+                    cli.clearTask(taskID)
             if all_completed:
                 wait = False
             else:
@@ -83,13 +83,13 @@ class VMDownWaiter(base.Base):
         self.environment = environment
 
     def wait(self):
-        serv = self.environment[ohostedcons.VDSMEnv.VDS_CLIENT]
+        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         down = False
         destroyed = False
         while not down:
             time.sleep(self.POLLING_INTERVAL)
             self.logger.debug('Waiting for VM down')
-            response = serv.s.getVmStats(
+            response = cli.getVmStats(
                 self.environment[ohostedcons.VMEnv.VM_UUID]
             )
             code = response['status']['code']
@@ -120,12 +120,12 @@ class DomainMonitorWaiter(base.Base):
         self.environment = environment
 
     def wait(self, sdUUID):
-        serv = self.environment[ohostedcons.VDSMEnv.VDS_CLIENT]
+        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         acquired = False
         while not acquired:
             time.sleep(self.POLLING_INTERVAL)
             self.logger.debug('Waiting for domain monitor')
-            response = serv.s.getVdsStats()
+            response = cli.getVdsStats()
             self.logger.debug(response)
             if response['status']['code'] != 0:
                 self.logger.debug(response['status']['message'])

@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2014 Red Hat, Inc.
+# Copyright (C) 2013-2015 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -50,35 +50,14 @@ class Plugin(plugin.PluginBase):
         super(Plugin, self).__init__(context=context)
 
     def _connect(self):
-        vdsClient = util.loadModule(
-            path=ohostedcons.FileLocations.VDS_CLIENT_DIR,
-            name='vdsClient'
-        )
-        serv = None
-        if vdsClient._glusterEnabled:
-            serv = vdsClient.ge.GlusterService()
-        else:
-            serv = vdsClient.service()
-        serv.useSSL = self.environment[ohostedcons.VDSMEnv.USE_SSL]
-        if hasattr(vdscli, 'cannonizeAddrPort'):
-            server, serverPort = vdscli.cannonizeAddrPort(
-                'localhost'
-            ).split(':', 1)
-            serv.do_connect(server, serverPort)
-        else:
-            hostPort = vdscli.cannonizeHostPort('localhost')
-            serv.do_connect(hostPort)
-
         cli = vdscli.connect()
         self.environment[ohostedcons.VDSMEnv.VDS_CLI] = cli
-
-        self.environment[ohostedcons.VDSMEnv.VDS_CLIENT] = serv
         vdsmReady = False
         retry = 0
         while not vdsmReady and retry < self.MAX_RETRY:
             retry += 1
             try:
-                hwinfo = serv.s.getVdsHardwareInfo()
+                hwinfo = cli.getVdsHardwareInfo()
                 self.logger.debug(str(hwinfo))
                 if hwinfo['status']['code'] == 0:
                     vdsmReady = True
@@ -104,10 +83,6 @@ class Plugin(plugin.PluginBase):
         self.environment.setdefault(
             ohostedcons.VDSMEnv.KVM_GID,
             grp.getgrnam('kvm').gr_gid
-        )
-        self.environment.setdefault(
-            ohostedcons.VDSMEnv.VDS_CLIENT,
-            None
         )
         self.environment.setdefault(
             ohostedcons.VDSMEnv.VDS_CLI,
@@ -196,5 +171,16 @@ class Plugin(plugin.PluginBase):
             )
         self._connect()
 
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CLOSEUP,
+        after=(
+            ohostedcons.Stages.HOST_ADDED,
+        ),
+        name=ohostedcons.Stages.VDSCLI_RECONNECTED,
+    )
+    def _closeup(self):
+        # We need to reconnect cause host-deploy
+        # restarted vdsm adding the host
+        self._connect()
 
 # vim: expandtab tabstop=4 shiftwidth=4

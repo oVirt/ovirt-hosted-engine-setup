@@ -571,6 +571,7 @@ class Plugin(plugin.PluginBase):
             domList,
             mVer
         )
+        self.logger.debug(status)
         if status['status']['code'] != 0:
             raise RuntimeError(status['status']['message'])
 
@@ -644,6 +645,7 @@ class Plugin(plugin.PluginBase):
             maxHostID,
             version
         )
+        self.logger.debug(status)
         if status['status']['code'] != 0:
             raise RuntimeError(status['status']['message'])
 
@@ -653,9 +655,9 @@ class Plugin(plugin.PluginBase):
         status = self.cli.spmStop(
             spUUID,
         )
+        self.logger.debug(status)
         if status['status']['code'] != 0:
             raise RuntimeError(status['status']['message'])
-        self.logger.debug(status)
 
     def _activateStorageDomain(self):
         self.logger.debug('activateStorageDomain')
@@ -752,7 +754,7 @@ class Plugin(plugin.PluginBase):
             ] = self.dialog.queryString(
                 name='OVEHOSTED_STORAGE_DATACENTER_NAME',
                 note=_(
-                    'Local storage datacenter name is an internal name '
+                    'Local storage datacenter name is an internal name\n'
                     'and currently will not be shown in engine\'s admin UI.\n'
                     'Please enter local datacenter name [@DEFAULT@]: '
                 ),

@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2014 Red Hat, Inc.
+# Copyright (C) 2013-2015 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -183,14 +183,14 @@ class Plugin(plugin.PluginBase):
         spUUID = self.environment[ohostedcons.StorageEnv.SP_UUID]
         imgUUID = self.environment[ohostedcons.StorageEnv.IMG_UUID]
         volUUID = self.environment[ohostedcons.StorageEnv.VOL_UUID]
-        serv = self.environment[ohostedcons.VDSMEnv.VDS_CLIENT]
+        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
 
         if self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE] in (
             ohostedcons.DomainTypes.ISCSI,
         ):
             # Checking the available space on VG where
             # we have to preallocate the image
-            vginfo = serv.s.getVGInfo(
+            vginfo = cli.getVGInfo(
                 self.environment[ohostedcons.StorageEnv.VG_UUID]
             )
             self.logger.debug(vginfo)
@@ -227,31 +227,36 @@ class Plugin(plugin.PluginBase):
             preallocate = ohostedcons.VolumeTypes.PREALLOCATED_VOL
 
         diskType = 2
-        status, message = serv.createVolume([
+        status = cli.createVolume(
             sdUUID,
             spUUID,
             imgUUID,
-            self.environment[ohostedcons.StorageEnv.IMAGE_SIZE_GB],
+            str(
+                int(
+                    self.environment[ohostedcons.StorageEnv.IMAGE_SIZE_GB]
+                ) * pow(2, 30)
+            ),
             volFormat,
             preallocate,
             diskType,
             volUUID,
             self.environment[ohostedcons.StorageEnv.IMAGE_DESC],
-        ])
-        if status == 0:
+        )
+        self.logger.debug(status)
+        if status['status']['code'] == 0:
             self.logger.debug(
                 (
                     'Created volume {newUUID}, request was:\n'
                     '- image: {imgUUID}\n'
                     '- volume: {volUUID}'
                 ).format(
-                    newUUID=message,
+                    newUUID=status['status']['message'],
                     imgUUID=imgUUID,
                     volUUID=volUUID,
                 )
             )
         else:
-            raise RuntimeError(message)
+            raise RuntimeError(status['status']['message'])
         waiter = tasks.TaskWaiter(self.environment)
         waiter.wait()
 

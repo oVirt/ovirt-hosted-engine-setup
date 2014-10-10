@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2014 Red Hat, Inc.
+# Copyright (C) 2013-2015 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -70,8 +70,6 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
         stage=plugin.Stages.STAGE_SETUP,
     )
     def _setup(self):
-        # Can't use python api here, it will call sys.exit
-        self.command.detect('vdsClient')
         self.command.detect('remote-viewer')
 
     @plugin.event(

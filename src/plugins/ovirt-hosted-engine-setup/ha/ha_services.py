@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2014 Red Hat, Inc.
+# Copyright (C) 2013-2015 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -85,7 +85,7 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
         after=(
-            ohostedcons.Stages.HOST_ADDED,
+            ohostedcons.Stages.VDSCLI_RECONNECTED,
         ),
         name=ohostedcons.Stages.HA_START,
     )
@@ -102,18 +102,20 @@ class Plugin(plugin.PluginBase):
             waiter = tasks.VMDownWaiter(self.environment)
             if not waiter.wait():
                 # The VM is down but not destroyed
-                vdscommand = [self.command.get('vdsClient')]
-                if self.environment[ohostedcons.VDSMEnv.USE_SSL]:
-                    vdscommand.append('-s')
-                vdscommand += [
-                    'localhost',
-                    'destroy',
-                    self.environment[ohostedcons.VMEnv.VM_UUID],
-                ]
-                self.execute(
-                    vdscommand,
-                    raiseOnError=True
+                status = self.environment[
+                    ohostedcons.VDSMEnv.VDS_CLI
+                ].destroy(
+                    self.environment[ohostedcons.VMEnv.VM_UUID]
                 )
+                self.logger.debug(status)
+                if status['status']['code'] != 0:
+                    self.logger.error(
+                        _(
+                            'Cannot destroy the Hosted Engine VM: ' +
+                            status['status']['message']
+                        )
+                    )
+                    raise RuntimeError(status['status']['message'])
         self.logger.info(_('Enabling and starting HA services'))
         for service in (
             ohostedcons.Const.HA_AGENT_SERVICE,
@@ -127,5 +129,6 @@ class Plugin(plugin.PluginBase):
                 name=service,
                 state=True,
             )
+
 
 # vim: expandtab tabstop=4 shiftwidth=4

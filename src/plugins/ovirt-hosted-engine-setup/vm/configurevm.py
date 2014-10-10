@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2015 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -55,10 +55,6 @@ class Plugin(plugin.PluginBase):
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
-        self.vdsClient = util.loadModule(
-            path=ohostedcons.FileLocations.VDS_CLIENT_DIR,
-            name='vdsClient'
-        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
@@ -95,8 +91,8 @@ class Plugin(plugin.PluginBase):
         name=ohostedcons.Stages.VDSMD_LATE_SETUP_READY,
     )
     def _late_setup(self):
-        serv = self.environment[ohostedcons.VDSMEnv.VDS_CLIENT]
-        response = serv.s.list()
+        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        response = cli.list()
         if response['status']['code'] == 0:
             self.logger.debug(response['vmList'])
             if response['vmList']:
@@ -180,7 +176,7 @@ class Plugin(plugin.PluginBase):
     def _misc(self):
         self.logger.info(_('Configuring VM'))
         subst = {
-            '@SP_UUID@': self.vdsClient.BLANK_UUID,
+            '@SP_UUID@': ohostedcons.Const.BLANK_UUID,
             '@SD_UUID@': self.environment[
                 ohostedcons.StorageEnv.SD_UUID
             ],
