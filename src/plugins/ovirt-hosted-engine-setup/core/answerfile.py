@@ -22,11 +22,14 @@
 
 
 import gettext
+import os
+import datetime
 
 
 from otopi import util
 from otopi import common
 from otopi import plugin
+from otopi import constants as otopicons
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
@@ -42,18 +45,13 @@ class Plugin(plugin.PluginBase):
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
 
-    def _save_answers(self):
+    def _save_answers(self, name):
         self.logger.info(
             _("Generating answer file '{name}'").format(
-                name=self.environment[ohostedcons.CoreEnv.ANSWER_FILE],
+                name=name,
             )
         )
-        with open(
-            self.resolveFile(
-                self.environment[ohostedcons.CoreEnv.ANSWER_FILE]
-            ),
-            'w'
-        ) as f:
+        with open(self.resolveFile(name), 'w') as f:
             f.write('[environment:default]\n')
             for c in ohostedcons.__dict__['__hosted_attrs__']:
                 for k in c.__dict__.values():
@@ -76,34 +74,45 @@ class Plugin(plugin.PluginBase):
     )
     def _init(self):
         self.environment.setdefault(
-            ohostedcons.CoreEnv.ANSWER_FILE,
+            ohostedcons.CoreEnv.ETC_ANSWER_FILE,
             ohostedcons.FileLocations.OVIRT_HOSTED_ENGINE_ANSWERS
         )
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_VALIDATION,
-        priority=plugin.Stages.PRIORITY_LAST,
-        condition=lambda self: self.environment[
-            ohostedcons.CoreEnv.ANSWER_FILE
-        ] is not None
-    )
-    def _save_answers_at_validation(self):
-        self._save_answers()
+        self.environment.setdefault(
+            ohostedcons.CoreEnv.USER_ANSWER_FILE,
+            None
+        )
+        self._answers = []
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLEANUP,
         priority=plugin.Stages.PRIORITY_LAST,
-        condition=lambda self: self.environment[
-            ohostedcons.CoreEnv.ANSWER_FILE
-        ] is not None
     )
     def _save_answers_at_cleanup(self):
-        self._save_answers()
-        self.logger.info(
-            _("Answer file '{name}' has been updated").format(
-                name=self.environment[ohostedcons.CoreEnv.ANSWER_FILE],
+        self._answers.extend(
+            (
+                os.path.join(
+                    (
+                        ohostedcons.FileLocations.
+                        OVIRT_HOSTED_ENGINE_ANSWERS_ARCHIVE_DIR
+                    ),
+                    'answers-%s.conf' % (
+                        datetime.datetime.now().strftime('%Y%m%d%H%M%S'),
+                    )
+                ),
+                self.environment[
+                    ohostedcons.CoreEnv.USER_ANSWER_FILE
+                ],
             )
         )
+        if not self.environment[otopicons.BaseEnv.ERROR]:
+            self._answers.append(
+                self.environment[
+                    ohostedcons.CoreEnv.ETC_ANSWER_FILE
+                ]
+            )
+        for name in self._answers:
+            if name:
+                self._save_answers(name)
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

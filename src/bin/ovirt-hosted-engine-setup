@@ -51,7 +51,7 @@ while [ -n "$1" ]; do
 			environment="${environment} APPEND:CORE/configFileAppend=str:${v}"
 		;;
 		--generate-answer=*)
-			environment="${environment} OVEHOSTED_CORE/answerFile=str:${v}"
+			environment="${environment} OVEHOSTED_CORE/userAnswerFile=str:${v}"
 		;;
 		--help)
 			usage

@@ -50,6 +50,7 @@ install-data-local:
 	$(MKDIR_P) $(DESTDIR)/$(sysconfdir)/ovirt-hosted-engine-setup.env.d
 	$(MKDIR_P) $(DESTDIR)/$(sysconfdir)/ovirt-hosted-engine
 	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/log/ovirt-hosted-engine-setup
+	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/lib/ovirt-hosted-engine-setup/answers
 
 install-exec-local: ovirt-hosted-engine-setup
 	$(MKDIR_P) $(DESTDIR)/$(sbindir)

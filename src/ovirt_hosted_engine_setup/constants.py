@@ -147,6 +147,12 @@ class FileLocations(object):
         OVIRT_HOSTED_ENGINE,
         'answers.conf'
     )
+    OVIRT_HOSTED_ENGINE_ANSWERS_ARCHIVE_DIR = os.path.join(
+        config.LOCALSTATEDIR,
+        'lib',
+        OVIRT_HOSTED_ENGINE_SETUP,
+        'answers'
+    )
     HOSTED_ENGINE_IPTABLES_TEMPLATE = os.path.join(
         config.DATADIR,
         OVIRT_HOSTED_ENGINE_SETUP,
@@ -280,7 +286,8 @@ class Const(object):
 @util.export
 @util.codegen
 class CoreEnv(object):
-    ANSWER_FILE = 'OVEHOSTED_CORE/answerFile'
+    USER_ANSWER_FILE = 'OVEHOSTED_CORE/userAnswerFile'
+    ETC_ANSWER_FILE = 'OVEHOSTED_CORE/etcAnswerFile'
     REQUIREMENTS_CHECK_ENABLED = 'OVEHOSTED_CORE/checkRequirements'
     ADDITIONAL_HOST_ENABLED = 'OVEHOSTED_CORE/additionalHostEnabled'
     IS_ADDITIONAL_HOST = 'OVEHOSTED_CORE/isAdditionalHost'
