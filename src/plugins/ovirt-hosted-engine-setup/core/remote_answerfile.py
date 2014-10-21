@@ -139,7 +139,7 @@ class Plugin(plugin.PluginBase):
                     os.close(fd)
                     sftp = paramiko.SFTPClient.from_transport(transport)
                     sftp.get(
-                        '/etc/ovirt-hosted-engine/answers.conf',
+                        ohostedcons.CoreEnv.ETC_ANSWER_FILE,
                         self._tmp_ans
                     )
                 finally:
