@@ -68,6 +68,18 @@ def validMAC(mac):
     return (UNICAST_MAC_ADDR.match(mac) is not None)
 
 
+def persist(path):
+    try:
+        from ovirt.node.utils.fs import Config
+        cfg = Config()
+        cfg.persist(path)
+    except ImportError:
+        raise RuntimeError(
+            'Use ohostedcons.CoreEnv.NODE_SETUP for ensuring module '
+            'availability'
+        )
+
+
 class VirtUserContext(object):
     """
     Switch to vdsm:kvm user with provided umask

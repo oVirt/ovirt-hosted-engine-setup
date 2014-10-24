@@ -33,6 +33,7 @@ from otopi import constants as otopicons
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
+from ovirt_hosted_engine_setup import util as ohostedutil
 
 
 _ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
@@ -51,7 +52,8 @@ class Plugin(plugin.PluginBase):
                 name=name,
             )
         )
-        with open(self.resolveFile(name), 'w') as f:
+        path = self.resolveFile(name)
+        with open(path, 'w') as f:
             f.write('[environment:default]\n')
             for c in ohostedcons.__dict__['__hosted_attrs__']:
                 for k in c.__dict__.values():
@@ -68,6 +70,17 @@ class Plugin(plugin.PluginBase):
                                         else v,
                                     )
                                 )
+        if self.environment[ohostedcons.CoreEnv.NODE_SETUP]:
+            try:
+                ohostedutil.persist(path)
+            except Exception as e:
+                self.logger.debug(
+                    'Error persisting {path}'.format(
+                        path=path,
+                    ),
+                    exc_info=True,
+                )
+                self.logger.error(e)
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,

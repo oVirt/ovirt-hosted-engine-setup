@@ -35,6 +35,7 @@ from otopi import plugin
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
+from ovirt_hosted_engine_setup import util as ohostedutil
 
 
 _ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
@@ -285,6 +286,37 @@ class Plugin(plugin.PluginBase):
     def _validation(self):
         if os.path.exists(ohostedcons.FileLocations.LIBVIRT_SPICE_SERVER_CERT):
             self._getSPICEcerts()
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CLOSEUP,
+        after=(
+            ohostedcons.Stages.NODE_FILES_PERSIST_S,
+        ),
+        before=(
+            ohostedcons.Stages.NODE_FILES_PERSIST_E,
+        ),
+        condition=lambda self: self.environment[
+            ohostedcons.CoreEnv.NODE_SETUP
+        ],
+    )
+    def _persist_files_start(self):
+        self.logger.debug('Saving persisting PKI configuration')
+        for path in (
+            ohostedcons.FileLocations.VDSMCERT,
+            ohostedcons.FileLocations.LIBVIRT_SPICE_SERVER_CERT,
+        ):
+            try:
+                if os.path.exists(path):
+                    # here we need the whole directory to be persisted
+                    ohostedutil.persist(os.path.dirname(path))
+            except Exception as e:
+                self.logger.debug(
+                    'Error persisting {path}'.format(
+                        path=path,
+                    ),
+                    exc_info=True,
+                )
+                self.logger.error(e)
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLEANUP,
