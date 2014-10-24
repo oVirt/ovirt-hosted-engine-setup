@@ -303,6 +303,7 @@ class CoreEnv(object):
     SCREEN_PROCEED = 'OVEHOSTED_CORE/screenProceed'
     CONFIRM_SETTINGS = 'OVEHOSTED_CORE/confirmSettings'
     RE_DEPLOY = 'OVEHOSTED_CORE/additionalHostReDeployment'
+    NODE_SETUP = 'OVEHOSTED_CORE/nodeSetup'
 
 
 @util.export
@@ -775,6 +776,8 @@ class Stages(object):
     HOST_ADDED = 'ohosted.engine.host.added'
     HA_START = 'ohosted.engine.ha.start'
     VDSM_LIBVIRT_CONFIGURED = 'ohosted.vdsm.libvirt.configured'
+    NODE_FILES_PERSIST_S = 'ohosted.node.files.persist.start'
+    NODE_FILES_PERSIST_E = 'ohosted.node.files.persist.end'
 
     DIALOG_TITLES_S_VM = 'ohosted.dialog.titles.vm.start'
     DIALOG_TITLES_E_VM = 'ohosted.dialog.titles.vm.end'

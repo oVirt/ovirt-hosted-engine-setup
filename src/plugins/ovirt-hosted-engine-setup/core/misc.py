@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -31,6 +31,7 @@ from otopi import plugin
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
+from ovirt_hosted_engine_setup import util as ohostedutil
 
 
 _ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
@@ -96,10 +97,69 @@ class Plugin(plugin.PluginBase):
             ohostedcons.CoreEnv.REQUIREMENTS_CHECK_ENABLED,
             True
         )
+        self.environment[ohostedcons.CoreEnv.NODE_SETUP] = False
+        try:
+            # avoid: pyflakes 'Config' imported but unused error
+            import ovirt.node.utils.fs
+            if hasattr(ovirt.node.utils.fs, 'Config'):
+                self.environment[ohostedcons.CoreEnv.NODE_SETUP] = True
+        except ImportError:
+            self.logger.debug('Disabling persisting file configuration')
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CLOSEUP,
+        name=ohostedcons.Stages.NODE_FILES_PERSIST_S,
+        after=(
+            ohostedcons.Stages.HA_START,
+        ),
+        before=(
+            ohostedcons.Stages.NODE_FILES_PERSIST_E,
+        ),
+        condition=lambda self: self.environment[
+            ohostedcons.CoreEnv.NODE_SETUP
+        ],
+    )
+    def _persist_files_start(self):
+        # Using two stages here because some files can be written out of
+        # transactions
+        self.logger.debug('Saving persisting file configuration')
+        for path in self.environment[
+            otopicons.CoreEnv.MODIFIED_FILES
+        ] + [
+            self.environment[otopicons.CoreEnv.LOG_DIR],
+        ]:
+            try:
+                ohostedutil.persist(path)
+            except Exception as e:
+                self.logger.debug(
+                    'Error persisting {path}'.format(
+                        path=path,
+                    ),
+                    exc_info=True,
+                )
+                self.logger.error(e)
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CLOSEUP,
+        name=ohostedcons.Stages.NODE_FILES_PERSIST_E,
+        after=(
+            ohostedcons.Stages.NODE_FILES_PERSIST_S,
+        ),
+        condition=lambda self: self.environment[
+            ohostedcons.CoreEnv.NODE_SETUP
+        ],
+    )
+    def _persist_files_end(self):
+        # Using two stages here because some files can be written out of
+        # transactions
+        self.logger.debug('Finished persisting file configuration')
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
         priority=plugin.Stages.PRIORITY_LAST,
+        after=(
+            ohostedcons.Stages.NODE_FILES_PERSIST_E,
+        ),
     )
     def _closeup(self):
         self.dialog.note(
