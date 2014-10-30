@@ -147,17 +147,18 @@ class Plugin(plugin.PluginBase):
                 )
             )
 
-    def _validateDomain(self, connection, domain_type):
+    def _validateDomain(self, connection, domain_type, check_space):
         path = tempfile.mkdtemp()
         try:
             self._mount(path, connection, domain_type)
             self._checker.check_valid_path(path)
             self._check_domain_rights(path)
             self._checker.check_base_writable(path)
-            self._checker.check_available_space(
-                path,
-                ohostedcons.Const.MINIMUM_SPACE_STORAGEDOMAIN_MB
-            )
+            if check_space:
+                self._checker.check_available_space(
+                    path,
+                    ohostedcons.Const.MINIMUM_SPACE_STORAGEDOMAIN_MB
+                )
         finally:
             if self._umount(path) == 0:
                 os.rmdir(path)
@@ -222,6 +223,7 @@ class Plugin(plugin.PluginBase):
                     domain_type=self.environment[
                         ohostedcons.StorageEnv.DOMAIN_TYPE
                     ],
+                    check_space=False,
                 )
                 validDomain = True
             except (ValueError, RuntimeError) as e:
@@ -267,3 +269,59 @@ class Plugin(plugin.PluginBase):
                             )
                         )
                     )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CUSTOMIZATION,
+        after=(
+            ohostedcons.Stages.CONFIG_STORAGE_LATE,
+        ),
+        before=(
+            ohostedcons.Stages.DIALOG_TITLES_E_STORAGE,
+        ),
+        condition=(
+            lambda self: (
+                not self.environment[
+                    ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+                ] and
+                self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE] in (
+                    # ohostedcons.DomainTypes.GLUSTERFS,
+                    ohostedcons.DomainTypes.NFS3,
+                    ohostedcons.DomainTypes.NFS4,
+                )
+            )
+        ),
+    )
+    def _late_customization(self):
+        # On first host we need to check if we have enough space too.
+        # We must skip this check on additional hosts because the space is
+        # already filled with the Hosted Engine VM image.
+        # Sadly we can't go back to previous customization stage so here
+        # we can only fail the setup.
+        try:
+            self._validateDomain(
+                connection=self.environment[
+                    ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
+                ],
+                domain_type=self.environment[
+                    ohostedcons.StorageEnv.DOMAIN_TYPE
+                ],
+                check_space=True,
+            )
+        except ohosteddomains.InsufficientSpaceError as e:
+            self.logger.debug('exception', exc_info=True)
+            self.logger.debug(e)
+            min_requirement = '%0.2f' % (
+                ohostedcons.Const.MINIMUM_SPACE_STORAGEDOMAIN_MB / 1024.0
+            )
+            raise RuntimeError(
+                _(
+                    'Storage domain for self hosted engine '
+                    'is too small: '
+                    'you should have at least {min_r} GB free'.format(
+                        min_r=min_requirement,
+                    )
+                )
+            )
+
+
+# vim: expandtab tabstop=4 shiftwidth=4
