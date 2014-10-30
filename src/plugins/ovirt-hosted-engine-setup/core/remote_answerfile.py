@@ -139,7 +139,7 @@ class Plugin(plugin.PluginBase):
                     os.close(fd)
                     sftp = paramiko.SFTPClient.from_transport(transport)
                     sftp.get(
-                        ohostedcons.CoreEnv.ETC_ANSWER_FILE,
+                        self.environment[ohostedcons.CoreEnv.ETC_ANSWER_FILE],
                         self._tmp_ans
                     )
                 finally:
