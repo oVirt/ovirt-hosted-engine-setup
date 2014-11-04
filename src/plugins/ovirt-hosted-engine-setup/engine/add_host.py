@@ -205,6 +205,7 @@ class Plugin(plugin.PluginBase):
             'Waiting for the host to become operational in the engine. '
             'This may take several minutes...'
         ))
+
         tries = self.VDSM_RETRIES
         isUp = False
         while not isUp and tries > 0:
@@ -245,6 +246,56 @@ class Plugin(plugin.PluginBase):
                 'Please check the logs.'
             ))
         return isUp
+
+    def _check_network_configuration(self, engine_api, host):
+        try:
+            cluster = engine_api.clusters.get(
+                self.environment[
+                    ohostedcons.EngineEnv.HOST_CLUSTER_NAME
+                ]
+            )
+            h = engine_api.hosts.get(host)
+            required_networks = set(
+                [
+                    rn.get_id()
+                    for rn in cluster.networks.list(required=True)
+                ]
+            )
+            configured_networks = set(
+                [
+                    nic.get_network().get_id()
+                    for nic in h.nics.list()
+                    if nic.get_network()
+                ]
+            )
+            if (
+                len(required_networks) > 1 and
+                required_networks > configured_networks
+            ):
+                tbc = required_networks - configured_networks
+                rnet = [
+                    engine_api.networks.get(id=rn).get_name() for rn in tbc
+                ]
+                self.dialog.note(
+                    _(
+                        '\nThe following required networks\n'
+                        '  {rnet}\n'
+                        'still need to be configured on {host} '
+                        'in order to make it\n'
+                        'operational. Please setup them via the engine '
+                        'webadmin UI or flag them as not required.\n'
+                    ).format(
+                        rnet=rnet,
+                        host=host,
+                    )
+                )
+        except Exception as exc:
+            # Sadly all ovirtsdk errors inherit only from Exception
+            self.logger.debug(
+                'Error fetching the network configuration: {error}'.format(
+                    error=str(exc),
+                )
+            )
 
     def _wait_cluster_cpu_ready(self, engine_api, cluster_name):
         tries = self.VDSM_RETRIES
@@ -518,9 +569,14 @@ class Plugin(plugin.PluginBase):
                 )
             )
 
-        if not self.environment[
+        if self.environment[
             ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
         ]:
+            self._check_network_configuration(
+                engine_api,
+                self.environment[ohostedcons.EngineEnv.APP_HOST_NAME],
+            )
+        else:
             up = self._wait_host_ready(
                 engine_api,
                 self.environment[ohostedcons.EngineEnv.APP_HOST_NAME]
