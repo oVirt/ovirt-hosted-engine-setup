@@ -83,7 +83,6 @@ class Plugin(plugin.PluginBase):
         super(Plugin, self).__init__(context=context)
         self._ovirtsdk_api = ovirtsdk.api
         self._ovirtsdk_xml = ovirtsdk.xml
-        self.cert = None
 
     def _getPKICert(self):
         self.logger.debug('Acquiring ca.crt from the engine')
@@ -99,10 +98,13 @@ class Plugin(plugin.PluginBase):
             content = urlObj.read()
             if content:
                 self.logger.debug(content)
-                fd, self.cert = tempfile.mkstemp(
+                fd, cert = tempfile.mkstemp(
                     prefix='engine-ca',
                     suffix='.crt',
                 )
+                self.environment[
+                    ohostedcons.EngineEnv.TEMPORARY_CERT_FILE
+                ] = cert
                 os.fchmod(fd, 0o600)
                 with os.fdopen(fd, 'w') as fileobj:
                     fileobj.write(content)
@@ -347,6 +349,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.EngineEnv.HOST_CLUSTER_NAME,
             None
         )
+        self.environment.setdefault(
+            ohostedcons.EngineEnv.TEMPORARY_CERT_FILE,
+            None
+        )
         self._selinux_enabled = False
 
     @plugin.event(
@@ -474,7 +480,9 @@ class Plugin(plugin.PluginBase):
                 password=self.environment[
                     ohostedcons.EngineEnv.ADMIN_PASSWORD
                 ],
-                ca_file=self.cert,
+                ca_file=self.environment[
+                    ohostedcons.EngineEnv.TEMPORARY_CERT_FILE
+                ],
             )
 
             conn = vdscli.connect()
@@ -627,8 +635,9 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_CLEANUP,
     )
     def _cleanup(self):
-        if self.cert is not None and os.path.exists(self.cert):
-            os.unlink(self.cert)
+        cert = self.environment[ohostedcons.EngineEnv.TEMPORARY_CERT_FILE]
+        if cert is not None and os.path.exists(cert):
+            os.unlink(cert)
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

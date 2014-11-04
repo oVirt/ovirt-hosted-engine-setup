@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -27,6 +27,7 @@ from otopi import util
 from . import os_install
 from . import fqdn
 from . import health
+from . import add_disk
 from . import add_host
 
 
@@ -35,6 +36,7 @@ def createPlugins(context):
     os_install.Plugin(context=context)
     fqdn.Plugin(context=context)
     health.Plugin(context=context)
+    add_disk.Plugin(context=context)
     add_host.Plugin(context=context)
 
 

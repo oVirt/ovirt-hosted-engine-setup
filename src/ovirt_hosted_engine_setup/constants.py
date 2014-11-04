@@ -374,6 +374,8 @@ class EngineEnv(object):
     def HOST_CLUSTER_NAME(self):
         return 'OVEHOSTED_ENGINE/clusterName'
 
+    TEMPORARY_CERT_FILE = 'OVEHOSTED_ENGINE/temporaryCertificate'
+
 
 @util.export
 @util.codegen
@@ -433,6 +435,14 @@ class StorageEnv(object):
     @ohostedattrs(
         answerfile=True,
         summary=True,
+        description=_('Image alias'),
+    )
+    def IMG_ALIAS(self):
+        return 'OVEHOSTED_STORAGE/imgAlias'
+
+    @ohostedattrs(
+        answerfile=True,
+        summary=True,
         description=_('Storage type'),
     )
     def STORAGE_TYPE(self):
@@ -449,6 +459,8 @@ class StorageEnv(object):
     )
     def VG_UUID(self):
         return 'OVEHOSTED_STORAGE/vgUUID'
+
+    GUID = 'OVEHOSTED_STORAGE/GUID'
 
     @ohostedattrs(
         answerfile=True,
@@ -790,6 +802,7 @@ class Defaults(object):
     DEFAULT_EMULATED_MACHINE = 'pc'
     DEAFULT_RHEL_EMULATED_MACHINE = 'rhel6.5.0'
     DEFAULT_ISCSI_PORT = 3260
+    DEFAULT_IMAGE_ALIAS = 'hosted_engine'
 
 
 @util.export
