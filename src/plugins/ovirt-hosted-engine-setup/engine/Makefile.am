@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt with a manager in a VM
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -28,6 +28,7 @@ dist_my_PYTHON = \
 	__init__.py \
 	fqdn.py \
 	health.py \
+	add_disk.py \
 	add_host.py \
 	os_install.py \
 	$(NULL)

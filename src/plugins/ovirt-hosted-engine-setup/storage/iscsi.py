@@ -350,6 +350,7 @@ class Plugin(plugin.PluginBase):
             self.environment[
                 ohostedcons.StorageEnv.VG_UUID
             ] = device['vgUUID']
+        self.environment[ohostedcons.StorageEnv.GUID] = device['GUID']
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -391,6 +392,10 @@ class Plugin(plugin.PluginBase):
         )
         self.environment.setdefault(
             ohostedcons.StorageEnv.VG_UUID,
+            None
+        )
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.GUID,
             None
         )
 
