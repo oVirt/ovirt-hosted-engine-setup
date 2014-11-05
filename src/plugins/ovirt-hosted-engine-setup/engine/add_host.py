@@ -517,48 +517,54 @@ class Plugin(plugin.PluginBase):
                     cluster=cluster_name,
                 )
             )
-        up = self._wait_host_ready(
-            engine_api,
-            self.environment[ohostedcons.EngineEnv.APP_HOST_NAME]
-        )
-        if not up:
-            self.logger.error(
-                _(
-                    'Unable to add {host} to the manager'
-                ).format(
-                    host=self.environment[
-                        ohostedcons.EngineEnv.APP_HOST_NAME
-                    ],
-                )
+
+        if not self.environment[
+            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+        ]:
+            up = self._wait_host_ready(
+                engine_api,
+                self.environment[ohostedcons.EngineEnv.APP_HOST_NAME]
             )
-        else:
-            # This works only if the host is up.
-            self.logger.debug('Setting CPU for the cluster')
-            try:
-                cluster, cpu = self._wait_cluster_cpu_ready(
-                    engine_api,
-                    cluster_name
-                )
-                self.logger.debug(cpu.__dict__)
-                cpu.set_id(self.environment[ohostedcons.VDSMEnv.ENGINE_CPU])
-                cluster.set_cpu(cpu)
-                cluster.update()
-            except ovirtsdk.infrastructure.errors.RequestError as e:
-                self.logger.debug(
-                    'Cannot set CPU level of cluster {cluster}'.format(
-                        cluster=cluster_name,
-                    ),
-                    exc_info=True,
-                )
+            if not up:
                 self.logger.error(
                     _(
-                        'Cannot automatically set CPU level '
-                        'of cluster {cluster}:\n{details}\n'
+                        'Unable to add {host} to the manager'
                     ).format(
-                        cluster=cluster_name,
-                        details=e.detail
+                        host=self.environment[
+                            ohostedcons.EngineEnv.APP_HOST_NAME
+                        ],
                     )
                 )
+            else:
+                # This works only if the host is up.
+                self.logger.debug('Setting CPU for the cluster')
+                try:
+                    cluster, cpu = self._wait_cluster_cpu_ready(
+                        engine_api,
+                        cluster_name
+                    )
+                    self.logger.debug(cpu.__dict__)
+                    cpu.set_id(
+                        self.environment[ohostedcons.VDSMEnv.ENGINE_CPU]
+                    )
+                    cluster.set_cpu(cpu)
+                    cluster.update()
+                except ovirtsdk.infrastructure.errors.RequestError as e:
+                    self.logger.debug(
+                        'Cannot set CPU level of cluster {cluster}'.format(
+                            cluster=cluster_name,
+                        ),
+                        exc_info=True,
+                    )
+                    self.logger.error(
+                        _(
+                            'Cannot automatically set CPU level '
+                            'of cluster {cluster}:\n{details}\n'
+                        ).format(
+                            cluster=cluster_name,
+                            details=e.detail
+                        )
+                    )
         engine_api.disconnect()
 
     @plugin.event(
