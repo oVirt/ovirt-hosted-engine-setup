@@ -275,6 +275,13 @@ class Const(object):
     HA_AGENT_SERVICE = 'ovirt-ha-agent'
     HA_BROCKER_SERVICE = 'ovirt-ha-broker'
     HOSTED_ENGINE_VM_NAME = 'HostedEngine'
+    # On block devices the VM image should be preallocated into the VG
+    # The VG by itself introduces some overhead that we need to take care of
+    # verifying  the image size before creating them
+    # TODO get this values from VDSM APIs instead of hardcoding it
+    # TODO now the overhead is > 4GBiB cause we are creating a storage domain
+    # maybe we can do better
+    STORAGE_DOMAIN_OVERHEAD_GIB = 5
     METADATA_CHUNK_SIZE = 4096
     MAX_HOST_ID = 250
     HA_NOTIF_SMTP_SERVER = 'smtp-server'
@@ -527,6 +534,8 @@ class StorageEnv(object):
         return 'OVEHOSTED_STORAGE/iSCSILunId'
 
     ISCSI_PASSWORD = 'OVEHOSTED_STORAGE/iSCSIPortalPassword'
+
+    BDEVICE_SIZE_GB = 'OVEHOSTED_STORAGE/blockDeviceSizeGB'
 
     @ohostedattrs(
         answerfile=True,

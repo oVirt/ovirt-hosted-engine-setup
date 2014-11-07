@@ -31,6 +31,7 @@ from otopi import plugin
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
+from ovirt_hosted_engine_setup import domains as ohosteddomains
 from ovirt_hosted_engine_setup import tasks
 
 
@@ -84,6 +85,18 @@ class Plugin(plugin.PluginBase):
         interactive = self.environment[
             ohostedcons.StorageEnv.IMAGE_SIZE_GB
         ] is None
+
+        estimate_gb = None
+        if self.environment[
+            ohostedcons.StorageEnv.BDEVICE_SIZE_GB
+        ] is not None:
+            # Conservative estimate, the exact value could be gathered from
+            # vginfo but at this point the VG has still has to be created.
+            # Later on it will be checked against the real value
+            estimate_gb = int(self.environment[
+                ohostedcons.StorageEnv.BDEVICE_SIZE_GB
+            ]) - ohostedcons.Const.STORAGE_DOMAIN_OVERHEAD_GIB
+
         valid = False
         while not valid:
             if interactive:
@@ -100,7 +113,19 @@ class Plugin(plugin.PluginBase):
                 )
             try:
                 valid = True
-                if int(
+                if estimate_gb is not None and int(
+                    self.environment[ohostedcons.StorageEnv.IMAGE_SIZE_GB]
+                ) > estimate_gb:
+                    self.logger.warning(
+                        _(
+                            'Not enough free space, '
+                            'about {estimate} GiB are available'
+                        ).format(
+                            estimate=estimate_gb
+                        )
+                    )
+                    valid = False
+                if valid and int(
                     self.environment[ohostedcons.StorageEnv.IMAGE_SIZE_GB]
                 ) < ohostedcons.Defaults.DEFAULT_IMAGE_SIZE_GB:
                     self.logger.warning(
@@ -159,6 +184,38 @@ class Plugin(plugin.PluginBase):
         imgUUID = self.environment[ohostedcons.StorageEnv.IMG_UUID]
         volUUID = self.environment[ohostedcons.StorageEnv.VOL_UUID]
         serv = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+
+        if self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE] in (
+            ohostedcons.DomainTypes.ISCSI,
+        ):
+            # Checking the available space on VG where
+            # we have to preallocate the image
+            vginfo = serv.s.getVGInfo(
+                self.environment[ohostedcons.StorageEnv.VG_UUID]
+            )
+            self.logger.debug(vginfo)
+            if vginfo['status']['code'] != 0:
+                raise RuntimeError(vginfo['status']['message'])
+            vgfree = int(vginfo['info']['vgfree'])
+            available_gb = vgfree / pow(2, 30)
+            if int(
+                self.environment[
+                    ohostedcons.StorageEnv.IMAGE_SIZE_GB
+                ]
+            ) > available_gb:
+                raise ohosteddomains.InsufficientSpaceError(
+                    _(
+                        'Error: the VG on block device has capacity of only '
+                        '{available_gb} GiB while '
+                        '{image_gb} GiB is required for the image'
+                    ).format(
+                        available_gb=available_gb,
+                        image_gb=self.environment[
+                            ohostedcons.StorageEnv.IMAGE_SIZE_GB
+                        ],
+                    )
+                )
+
         self.logger.info(_('Creating VM Image'))
         self.logger.debug('createVolume')
         volFormat = ohostedcons.VolumeFormat.RAW_FORMAT
