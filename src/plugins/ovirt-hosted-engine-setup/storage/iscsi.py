@@ -337,6 +337,9 @@ class Plugin(plugin.PluginBase):
                     minimum=ohostedcons.Const.MINIMUM_SPACE_STORAGEDOMAIN_MB,
                 )
             )
+        self.environment[
+            ohostedcons.StorageEnv.BDEVICE_SIZE_GB
+        ] = size_mb / pow(2, 10)
         if self.environment[
             ohostedcons.StorageEnv.VG_UUID
         ] is not None:

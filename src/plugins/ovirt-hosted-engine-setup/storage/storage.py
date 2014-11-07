@@ -785,6 +785,10 @@ class Plugin(plugin.PluginBase):
             None
         )
         self.environment.setdefault(
+            ohostedcons.StorageEnv.BDEVICE_SIZE_GB,
+            None
+        )
+        self.environment.setdefault(
             ohostedcons.CoreEnv.ADDITIONAL_HOST_ENABLED,
             False
         )
