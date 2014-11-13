@@ -182,6 +182,9 @@ class Plugin(plugin.PluginBase):
             password=self.environment[ohostedcons.StorageEnv.ISCSI_PASSWORD],
             iqn=target,
         )
+        if len(available_luns) == 0:
+            self.logger.error(_('Cannot find any LUN on the selected target'))
+            return None
 
         lun_list = ''
         lun_size = {}
@@ -456,14 +459,15 @@ class Plugin(plugin.PluginBase):
                 default=valid_targets[0]
             )
             lun = self._customize_lun(target)
-            try:
-                self._validate_domain(target, lun)
-                valid_lun = True
-            except Exception as e:
-                self.logger.debug('exception', exc_info=True)
-                self.logger.error(e)
-                if not self._interactive:
-                    raise RuntimeError(_('Cannot access iSCSI LUN'))
+            if lun is not None:
+                try:
+                    self._validate_domain(target, lun)
+                    valid_lun = True
+                except Exception as e:
+                    self.logger.debug('exception', exc_info=True)
+                    self.logger.error(e)
+                    if not self._interactive:
+                        raise RuntimeError(_('Cannot access iSCSI LUN'))
 
         self.environment[ohostedcons.StorageEnv.ISCSI_TARGET] = target
         self.environment[ohostedcons.StorageEnv.ISCSI_LUN_ID] = lun
