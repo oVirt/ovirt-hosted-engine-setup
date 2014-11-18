@@ -44,11 +44,11 @@ class Plugin(plugin.PluginBase):
         super(Plugin, self).__init__(context=context)
 
     @plugin.event(
-        stage=plugin.Stages.STAGE_INIT,
+        stage=plugin.Stages.STAGE_SETUP,
         priority=plugin.Stages.PRIORITY_HIGH,
         condition=lambda self: not self.environment[otopicons.BaseEnv.ABORTED],
     )
-    def _init(self):
+    def _setup(self):
         self.environment.setdefault(
             ohostedcons.CoreEnv.SCREEN_PROCEED,
             None

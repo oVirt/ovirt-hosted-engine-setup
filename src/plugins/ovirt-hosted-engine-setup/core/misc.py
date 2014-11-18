@@ -57,19 +57,24 @@ class Plugin(plugin.PluginBase):
             ohostedcons.FileLocations.OVIRT_HOSTED_ENGINE_SETUP
         )
         self.environment.setdefault(
-            ohostedcons.CoreEnv.DEPLOY_PROCEED,
-            None
-        )
-        self.environment.setdefault(
             otopicons.CoreEnv.LOG_DIR,
             ohostedcons.FileLocations.OVIRT_HOSTED_ENGINE_SETUP_LOGDIR
         )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
-        priority=plugin.Stages.PRIORITY_FIRST,
     )
     def _init(self):
+        self.environment.setdefault(
+            ohostedcons.CoreEnv.DEPLOY_PROCEED,
+            None
+        )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_SETUP,
+        priority=plugin.Stages.PRIORITY_FIRST,
+    )
+    def _setup(self):
         interactive = self.environment[
             ohostedcons.CoreEnv.DEPLOY_PROCEED
         ] is None
