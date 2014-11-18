@@ -292,6 +292,7 @@ class Const(object):
 
 @util.export
 @util.codegen
+@ohostedattrsclass
 class CoreEnv(object):
     USER_ANSWER_FILE = 'OVEHOSTED_CORE/userAnswerFile'
     ETC_ANSWER_FILE = 'OVEHOSTED_CORE/etcAnswerFile'
@@ -299,9 +300,25 @@ class CoreEnv(object):
     ADDITIONAL_HOST_ENABLED = 'OVEHOSTED_CORE/additionalHostEnabled'
     IS_ADDITIONAL_HOST = 'OVEHOSTED_CORE/isAdditionalHost'
     TEMPDIR = 'OVEHOSTED_CORE/tempDir'
-    DEPLOY_PROCEED = 'OVEHOSTED_CORE/deployProceed'
-    SCREEN_PROCEED = 'OVEHOSTED_CORE/screenProceed'
-    CONFIRM_SETTINGS = 'OVEHOSTED_CORE/confirmSettings'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def DEPLOY_PROCEED(self):
+        return 'OVEHOSTED_CORE/deployProceed'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def SCREEN_PROCEED(self):
+        return 'OVEHOSTED_CORE/screenProceed'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def CONFIRM_SETTINGS(self):
+        return 'OVEHOSTED_CORE/confirmSettings'
+
     RE_DEPLOY = 'OVEHOSTED_CORE/additionalHostReDeployment'
     NODE_SETUP = 'OVEHOSTED_CORE/nodeSetup'
 
@@ -367,10 +384,15 @@ class NetworkEnv(object):
 @ohostedattrsclass
 class EngineEnv(object):
 
-    ADMIN_PASSWORD = 'OVEHOSTED_ENGINE/adminPassword'
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def ADMIN_PASSWORD(self):
+        return 'OVEHOSTED_ENGINE/adminPassword'
 
     @ohostedattrs(
         summary=True,
+        answerfile=True,
         description=_('Host name for web application'),
     )
     def APP_HOST_NAME(self):
