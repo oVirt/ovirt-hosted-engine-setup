@@ -364,9 +364,13 @@ class Plugin(plugin.PluginBase):
             ):
                 self._storageServerConnection(disconnect=True)
         else:
-            self.environment[
-                ohostedcons.CoreEnv.ADDITIONAL_HOST_ENABLED
-            ] = True
+            valid = self._validateStorageDomain(
+                self.environment[
+                    ohostedcons.StorageEnv.SD_UUID
+                ]
+            )
+            if valid[0] != 0:
+                raise RuntimeError(_('Invalid Storage Domain'))
 
     def _getStorageDomainsList(self, spUUID=None):
         if not spUUID:
@@ -379,6 +383,14 @@ class Plugin(plugin.PluginBase):
             for entry in response['domlist']:
                 domains.append(entry)
         return domains
+
+    def _validateStorageDomain(self, sdUUID):
+        self.logger.debug('validateStorageDomain')
+        response = self.serv.s.validateStorageDomain(sdUUID)
+        self.logger.debug(response)
+        if response['status']['code']:
+            return response['status']['code'], response['status']['message']
+        return 0, ''
 
     def _getStorageDomainInfo(self, sdUUID):
         self.logger.debug('getStorageDomainInfo')
@@ -576,6 +588,7 @@ class Plugin(plugin.PluginBase):
             method_args += [
                 master,
                 master_ver,
+                sdUUID+'=active',
             ]
         self.logger.debug(debug_msg)
         status, message = method(args=method_args)
