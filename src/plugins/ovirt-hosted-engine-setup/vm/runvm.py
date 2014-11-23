@@ -154,10 +154,12 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
                         'selection:\n\n'
                         '(1) Continue setup - VM installation is complete\n'
                         '(2) Reboot the VM and restart installation\n'
-                        '(3) Abort setup\n\n(@VALUES@)[@DEFAULT@]: '
+                        '(3) Abort setup\n'
+                        '(4) Destroy VM and abort setup\n'
+                        '\n(@VALUES@)[@DEFAULT@]: '
                     ),
                     prompt=True,
-                    validValues=(_('1'), _('2'), _('3')),
+                    validValues=(_('1'), _('2'), _('3'), _('4')),
                     default=_('1'),
                     caseSensitive=False)
                 if response == _('1').lower():
@@ -170,7 +172,12 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
                 elif response == _('2').lower():
                     self._destroy_vm()
                 elif response == _('3').lower():
-                    raise RuntimeError('OS installation aborted by user')
+                    raise RuntimeError(_('OS installation aborted by user'))
+                elif response == _('4').lower():
+                    self._destroy_vm()
+                    raise RuntimeError(
+                        _('VM destroyed and setup aborted by user')
+                    )
                 else:
                     self.logger.error(
                         'Invalid option \'{0}\''.format(response)

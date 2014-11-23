@@ -80,10 +80,12 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
                     'To continue make a selection from the options below:\n'
                     '(1) Continue setup - engine installation is complete\n'
                     '(2) Power off and restart the VM\n'
-                    '(3) Abort setup\n\n(@VALUES@)[@DEFAULT@]: '
+                    '(3) Abort setup\n'
+                    '(4) Destroy VM and abort setup\n'
+                    '\n(@VALUES@)[@DEFAULT@]: '
                 ),
                 prompt=True,
-                validValues=(_('1'), _('2'), _('3')),
+                validValues=(_('1'), _('2'), _('3'), _('4')),
                 default=_('1'),
                 caseSensitive=False)
             if response == _('1').lower():
@@ -98,6 +100,11 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
                 self._create_vm()
             elif response == _('3').lower():
                 raise RuntimeError('Engine polling aborted by user')
+            elif response == _('4').lower():
+                self._destroy_vm()
+                raise RuntimeError(
+                    _('VM destroyed and setup aborted by user')
+                )
             else:
                 self.logger.error(
                     'Invalid option \'{0}\''.format(response)
