@@ -464,6 +464,7 @@ class Plugin(plugin.PluginBase):
         name=ohostedcons.Stages.HOST_ADDED,
     )
     def _closeup(self):
+        # TODO: refactor into shorter and simpler functions
         self._getPKICert()
         self._getSSHkey()
         cluster_name = None
@@ -484,15 +485,40 @@ class Plugin(plugin.PluginBase):
                     ohostedcons.EngineEnv.TEMPORARY_CERT_FILE
                 ],
             )
+        except ovirtsdk.infrastructure.errors.RequestError as e:
+            self.logger.error(
+                _(
+                    'Cannot connect to engine APIs on {fqdn}:\n '
+                    '{details}\n'
+                ).format(
+                    fqdn=self.environment[
+                        ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+                    ],
+                    details=e.detail
+                )
+            )
+            raise RuntimeError(
+                _(
+                    'Cannot connect to engine APIs on {fqdn}'
+                ).format(
+                    fqdn=self.environment[
+                        ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+                    ],
+                )
+            )
 
+        try:
             conn = vdscli.connect()
             net_info = netinfo.NetInfo(vds_info.capabilities(conn))
             bridge_port = self.environment[ohostedcons.NetworkEnv.BRIDGE_IF]
             if bridge_port in net_info.vlans:
                 self.logger.debug(
-                    'Updating engine\'s management network to be vlanned'
+                    "Updating engine's management network to be vlanned"
                 )
                 vlan_id = net_info.vlans[bridge_port]['vlanid']
+                self.logger.debug(
+                    "Getting engine's management network via engine's APIs"
+                )
                 mgmt_network = engine_api.networks.get(
                     name=self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME]
                 )
@@ -501,10 +527,12 @@ class Plugin(plugin.PluginBase):
                 )
                 mgmt_network.update()
 
-            self.logger.debug('Adding the host to the cluster')
             cluster_name = self.environment[
                 ohostedcons.EngineEnv.HOST_CLUSTER_NAME
             ]
+            self.logger.debug(
+                "Getting the list of available clusters via engine's APIs"
+            )
             if cluster_name is not None:
                 if cluster_name not in [
                     c.get_name()
@@ -536,6 +564,7 @@ class Plugin(plugin.PluginBase):
                 self.environment[
                     ohostedcons.EngineEnv.HOST_CLUSTER_NAME
                 ] = cluster_name
+            self.logger.debug('Adding the host to the cluster')
             engine_api.hosts.add(
                 self._ovirtsdk_xml.params.Host(
                     name=self.environment[
