@@ -73,15 +73,13 @@ class Plugin(plugin.PluginBase):
                 readable = True
         else:
             # iso images may be on existing ISO domains and must be readable
-            # by vdsm user
+            # by qemu user
             try:
                 self.execute(
                     (
                         self.command.get('sudo'),
                         '-u',
-                        'vdsm',
-                        '-g',
-                        'kvm',
+                        'qemu',
                         'test',
                         '-r',
                         realpath,
