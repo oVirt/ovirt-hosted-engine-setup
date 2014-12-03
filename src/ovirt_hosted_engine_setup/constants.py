@@ -384,15 +384,10 @@ class NetworkEnv(object):
 @ohostedattrsclass
 class EngineEnv(object):
 
-    @ohostedattrs(
-        answerfile=True,
-    )
-    def ADMIN_PASSWORD(self):
-        return 'OVEHOSTED_ENGINE/adminPassword'
+    ADMIN_PASSWORD = 'OVEHOSTED_ENGINE/adminPassword'
 
     @ohostedattrs(
         summary=True,
-        answerfile=True,
         description=_('Host name for web application'),
     )
     def APP_HOST_NAME(self):
