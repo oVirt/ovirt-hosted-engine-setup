@@ -74,7 +74,7 @@ class Plugin(plugin.PluginBase):
             (?P<address>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})
             .+
             \s+
-            (?P<interface>\w+)
+            (?P<interface>[a-zA-Z0-9_.]+)
             $
     """
     )
