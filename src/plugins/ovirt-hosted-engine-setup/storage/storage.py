@@ -286,6 +286,7 @@ class Plugin(plugin.PluginBase):
         return nfspath[0] + ':' + ename
 
     def _getExistingDomain(self):
+        self.logger.debug('_getExistingDomain')
         if self.storageType in (
             ohostedcons.VDSMConstants.ISCSI_DOMAIN,
             ohostedcons.VDSMConstants.FC_DOMAIN,
@@ -327,7 +328,9 @@ class Plugin(plugin.PluginBase):
         elif self.storageType in (
             ohostedcons.VDSMConstants.NFS_DOMAIN,
             ohostedcons.VDSMConstants.GLUSTERFS_DOMAIN,
-        ):
+        ) and not self.environment[
+            ohostedcons.StorageEnv.GLUSTER_PROVISIONING_ENABLED
+        ]:
             self._storageServerConnection()
             domains = self._getStorageDomainsList()
             for sdUUID in domains:
@@ -379,7 +382,9 @@ class Plugin(plugin.PluginBase):
             if self.storageType in (
                 ohostedcons.VDSMConstants.NFS_DOMAIN,
                 ohostedcons.VDSMConstants.GLUSTERFS_DOMAIN,
-            ):
+            ) and not self.environment[
+                ohostedcons.StorageEnv.GLUSTER_PROVISIONING_ENABLED
+            ]:
                 self._storageServerConnection(disconnect=True)
         else:
             valid = self._validateStorageDomain(

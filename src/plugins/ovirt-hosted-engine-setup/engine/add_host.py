@@ -658,6 +658,15 @@ class Plugin(plugin.PluginBase):
                 self.environment[
                     ohostedcons.EngineEnv.HOST_CLUSTER_NAME
                 ] = cluster_name
+            cluster = engine_api.clusters.get(cluster_name)
+            # Configuring the cluster for Hyper Converged support if enabled
+            if self.environment[
+                ohostedcons.StorageEnv.GLUSTER_PROVISIONING_ENABLED
+            ]:
+                cluster.set_gluster_service(True)
+                cluster.update()
+                cluster = engine_api.clusters.get(cluster_name)
+
             self.logger.debug('Adding the host to the cluster')
             engine_api.hosts.add(
                 self._ovirtsdk_xml.params.Host(
@@ -669,7 +678,7 @@ class Plugin(plugin.PluginBase):
                     # TODO: Make it configurable like engine fqdn.
                     address=socket.gethostname(),
                     reboot_after_installation=False,
-                    cluster=engine_api.clusters.get(cluster_name),
+                    cluster=cluster,
                     ssh=self._ovirtsdk_xml.params.SSH(
                         authentication_method='publickey',
                         port=self.environment[

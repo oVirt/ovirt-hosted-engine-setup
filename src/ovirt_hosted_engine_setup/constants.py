@@ -146,6 +146,11 @@ class FileLocations(object):
         OVIRT_HOSTED_ENGINE,
         'vm.conf'
     )
+    GLUSTERD_VOL = os.path.join(
+        SYSCONFDIR,
+        'glusterfs',
+        'glusterd.vol'
+    )
     OVIRT_HOSTED_ENGINE_TEMPLATE = os.path.join(
         config.DATADIR,
         OVIRT_HOSTED_ENGINE_SETUP,
@@ -287,6 +292,7 @@ class FileLocations(object):
 class Const(object):
     MINIMUM_SPACE_STORAGEDOMAIN_MB = 20480
     FIRST_HOST_ID = 1
+    GLUSTERD_SERVICE = 'glusterd'
     HA_AGENT_SERVICE = 'ovirt-ha-agent'
     HA_BROCKER_SERVICE = 'ovirt-ha-broker'
     HOSTED_ENGINE_VM_NAME = 'HostedEngine'
@@ -525,6 +531,30 @@ class StorageEnv(object):
     )
     def DOMAIN_TYPE(self):
         return 'OVEHOSTED_STORAGE/domainType'
+
+    @ohostedattrs(
+        answerfile=True,
+        summary=True,
+        description=_('GlusterFS Brick Provisioning'),
+    )
+    def GLUSTER_PROVISIONING_ENABLED(self):
+        return 'OVEHOSTED_STORAGE/glusterProvisioningEnabled'
+
+    @ohostedattrs(
+        answerfile=True,
+        summary=True,
+        description=_('GlusterFS Brick'),
+    )
+    def GLUSTER_BRICK(self):
+        return 'OVEHOSTED_STORAGE/glusterBrick'
+
+    @ohostedattrs(
+        answerfile=True,
+        summary=True,
+        description=_('GlusterFS Share Name'),
+    )
+    def GLUSTER_SHARE_NAME(self):
+        return 'OVEHOSTED_STORAGE/glusterProvisionedShareName'
 
     @ohostedattrs(
         answerfile=True,
@@ -792,6 +822,7 @@ class Stages(object):
     CONFIG_STORAGE_LATE = 'ohosted.storage.configuration.late'
     CONFIG_STORAGE_BLOCKD = 'ohosted.storage.blockd.configuration.available'
     CONFIG_STORAGE_NFS = 'ohosted.storage.nfs.configuration.available'
+    GLUSTER_PROVISIONING = 'ohosted.storage.gluster.provisioned'
     CONFIG_ADDITIONAL_HOST = 'ohosted.core.additional.host'
     CONFIG_CLOUD_INIT_OPTIONS = 'ohosted.boot.configuration.cloud_init_options'
     REQUIRE_ANSWER_FILE = 'ohosted.core.require.answerfile'
@@ -842,6 +873,7 @@ class Stages(object):
 @util.export
 @util.codegen
 class Defaults(object):
+    DEFAULT_GLUSTER_SHARE_NAME = 'hosted_engine_glusterfs'
     DEFAULT_STORAGE_DOMAIN_NAME = 'hosted_storage'
     DEFAULT_STORAGE_DATACENTER_NAME = 'hosted_datacenter'
     DEFAULT_VDSMD_SERVICE = 'vdsmd'

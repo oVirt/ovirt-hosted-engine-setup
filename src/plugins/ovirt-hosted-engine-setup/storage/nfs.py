@@ -169,7 +169,7 @@ class Plugin(plugin.PluginBase):
         response = cli.glusterVolumesList(volume, server)
         self.logger.debug(response)
         if response['status']['code'] != 0:
-            # TODO: check if a more informative message can be given
+            self.logger.error(_('Failed to retrieve the Gluster Volume list'))
             raise RuntimeError(response['status']['message'])
         volumes = response['volumes']
         if volume not in volumes:
@@ -246,7 +246,10 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.DomainTypes.GLUSTERFS,
                 ohostedcons.DomainTypes.NFS3,
                 ohostedcons.DomainTypes.NFS4,
-            )
+            ) and
+            not self.environment[
+                ohostedcons.StorageEnv.GLUSTER_PROVISIONING_ENABLED
+            ]
         ),
     )
     def _customization(self):
@@ -347,7 +350,10 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.DomainTypes.GLUSTERFS,
                 ohostedcons.DomainTypes.NFS3,
                 ohostedcons.DomainTypes.NFS4,
-            )
+            ) and
+            not self.environment[
+                ohostedcons.StorageEnv.GLUSTER_PROVISIONING_ENABLED
+            ]
         ),
     )
     def _late_customization(self):
