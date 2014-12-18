@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2014 Red Hat, Inc.
+# Copyright (C) 2014-2015 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
 
 
 """
-Local storage domain plugin.
+NFS / GlusterFS storage plugin.
 """
 
 import os
@@ -30,6 +30,7 @@ import time
 
 from otopi import util
 from otopi import plugin
+from vdsm import vdscli
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
@@ -61,6 +62,8 @@ class Plugin(plugin.PluginBase):
         elif domain_type == ohostedcons.DomainTypes.NFS4:
             fstype = ohostedcons.FileSystemTypes.NFS
             opts.append('vers=4')
+        elif domain_type == ohostedcons.DomainTypes.GLUSTERFS:
+            fstype = ohostedcons.FileSystemTypes.GLUSTERFS
 
         if fstype == ohostedcons.FileSystemTypes.NFS:
             opts.append('retry=1')
@@ -82,7 +85,11 @@ class Plugin(plugin.PluginBase):
 
         rc, _stdout, stderr = self.execute(
             mount_cmd,
-            raiseOnError=False
+            raiseOnError=False,
+            env={
+                'LC_ALL': 'C',
+            },
+
         )
         error = '\n'.join(stderr)
         if rc != 0:
@@ -104,7 +111,10 @@ class Plugin(plugin.PluginBase):
                     self.command.get('umount'),
                     path
                 ),
-                raiseOnError=False
+                raiseOnError=False,
+                env={
+                    'LC_ALL': 'C',
+                },
             )
             if rc == 0:
                 tries = -1
@@ -118,7 +128,10 @@ class Plugin(plugin.PluginBase):
                         '+D%s' % path,
                         '-xfl'
                     ),
-                    raiseOnError=False
+                    raiseOnError=False,
+                    env={
+                        'LC_ALL': 'C',
+                    },
                 )
         return rc
 
@@ -147,7 +160,44 @@ class Plugin(plugin.PluginBase):
                 )
             )
 
+    def _check_replica_level(self, connection):
+        cli = vdscli.connect()
+        server, volume = connection.split(':')
+        if volume[0] == '/':
+            volume = volume[1:]
+        self.logger.debug('glusterVolumesList')
+        response = cli.glusterVolumesList(volume, server)
+        self.logger.debug(response)
+        if response['status']['code'] != 0:
+            # TODO: check if a more informative message can be given
+            raise RuntimeError(response['status']['message'])
+        volumes = response['volumes']
+        if volume not in volumes:
+            raise RuntimeError(_('GlusterFS Volume does not exist!'))
+        if str(volumes[volume]['replicaCount']) != '3':
+            raise RuntimeError(
+                _(
+                    'GlusterFS Volume is not using replica 3'
+                )
+            )
+        self.logger.info(_('GlusterFS replica 3 Volume detected'))
+
     def _validateDomain(self, connection, domain_type, check_space):
+        if self.environment[
+            ohostedcons.StorageEnv.DOMAIN_TYPE
+        ] == ohostedcons.DomainTypes.GLUSTERFS:
+            # FIXME: mount.glusterfs exit with code 0 also on failure
+            # without any stderr content.
+            # https://bugzilla.redhat.com/show_bug.cgi?id=1128165
+            # https://bugzilla.redhat.com/show_bug.cgi?id=1173513
+            # https://bugzilla.redhat.com/show_bug.cgi?id=1173515
+            self.logger.warning(
+                _(
+                    'Due to several bugs in mount.glusterfs the validation '
+                    'of GlusterFS share cannot be reliable.'
+                )
+            )
+            self._check_replica_level(connection)
         path = tempfile.mkdtemp()
         try:
             self._mount(path, connection, domain_type)
@@ -187,17 +237,24 @@ class Plugin(plugin.PluginBase):
         before=(
             ohostedcons.Stages.CONFIG_STORAGE_LATE,
         ),
-        condition=(
-            lambda self: self.environment[
-                ohostedcons.StorageEnv.DOMAIN_TYPE
-            ] in (
-                # ohostedcons.DomainTypes.GLUSTERFS,
+        condition=lambda self: (
+            self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE] in (
+                ohostedcons.DomainTypes.GLUSTERFS,
                 ohostedcons.DomainTypes.NFS3,
                 ohostedcons.DomainTypes.NFS4,
             )
         ),
     )
     def _customization(self):
+        if self.environment[
+            ohostedcons.StorageEnv.DOMAIN_TYPE
+        ] == ohostedcons.DomainTypes.GLUSTERFS:
+            self.logger.warning(
+                _(
+                    'Please note that Replica 3 support is required for '
+                    'the shared storage.'
+                )
+            )
         interactive = self.environment[
             ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
         ] is None
@@ -278,16 +335,14 @@ class Plugin(plugin.PluginBase):
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_STORAGE,
         ),
-        condition=(
-            lambda self: (
-                not self.environment[
-                    ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-                ] and
-                self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE] in (
-                    # ohostedcons.DomainTypes.GLUSTERFS,
-                    ohostedcons.DomainTypes.NFS3,
-                    ohostedcons.DomainTypes.NFS4,
-                )
+        condition=lambda self: (
+            not self.environment[
+                ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+            ] and
+            self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE] in (
+                ohostedcons.DomainTypes.GLUSTERFS,
+                ohostedcons.DomainTypes.NFS3,
+                ohostedcons.DomainTypes.NFS4,
             )
         ),
     )

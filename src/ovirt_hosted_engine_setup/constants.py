@@ -65,6 +65,7 @@ def ohostedattrs(
 @util.codegen
 class FileSystemTypes(object):
     NFS = 'nfs'
+    GLUSTERFS = 'glusterfs'
 
 
 @util.export

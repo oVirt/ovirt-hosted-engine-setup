@@ -437,18 +437,21 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VDSMConstants.NFS_DOMAIN,
             ohostedcons.VDSMConstants.GLUSTERFS_DOMAIN,
         ):
-            conList = [
-                {
-                    'connection': self.environment[
-                        ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
-                    ],
-                    'user': 'kvm',
-                    'id': self.environment[
-                        ohostedcons.StorageEnv.CONNECTION_UUID
-                    ],
-                    'protocol_version': self.protocol_version,
-                }
-            ]
+            conDict = {
+                'connection': self.environment[
+                    ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
+                ],
+                'user': 'kvm',
+                'id': self.environment[
+                    ohostedcons.StorageEnv.CONNECTION_UUID
+                ],
+            }
+            if self.storageType == ohostedcons.VDSMConstants.NFS_DOMAIN:
+                conDict['protocol_version'] = self.protocol_version
+            if self.storageType == ohostedcons.VDSMConstants.GLUSTERFS_DOMAIN:
+                conDict['tpgt'] = '1'
+                conDict['vfs_type'] = 'glusterfs'
+            conList = [conDict]
         elif self.storageType in (
             ohostedcons.VDSMConstants.ISCSI_DOMAIN,
         ):
@@ -545,6 +548,24 @@ class Plugin(plugin.PluginBase):
         masterDom = sdUUID
         domList = sdUUID  # str: domain,domain,...
         mVer = 1
+        self.logger.debug((
+            'createStoragePool(args=['
+            'poolType={poolType},'
+            'spUUID={spUUID},'
+            'poolName={poolName},'
+            'masterDom={masterDom},'
+            'domList={domList},'
+            'mVer={mVer}'
+            '])'
+        ).format(
+            poolType=poolType,
+            spUUID=spUUID,
+            poolName=poolName,
+            masterDom=masterDom,
+            domList=domList,
+            mVer=mVer,
+        ))
+
         status, message = self.serv.createStoragePool(args=[
             poolType,
             spUUID,
@@ -857,8 +878,7 @@ class Plugin(plugin.PluginBase):
                 prompt=True,
                 caseSensitive=True,
                 validValues=(
-                    # Enable when glusterfs issues are solved:
-                    # ohostedcons.DomainTypes.GLUSTERFS,
+                    ohostedcons.DomainTypes.GLUSTERFS,
                     ohostedcons.DomainTypes.ISCSI,
                     ohostedcons.DomainTypes.NFS3,
                     ohostedcons.DomainTypes.NFS4,
