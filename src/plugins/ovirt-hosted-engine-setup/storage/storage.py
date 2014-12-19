@@ -277,7 +277,15 @@ class Plugin(plugin.PluginBase):
             self._RE_NOT_ALPHANUMERIC.search(name)
         ):
             return False
-        return True
+
+    def _removeNFSTrailingSlash(self, path):
+        nfspath = path.split(":")
+        nfspath[0]
+        if len(nfspath[1]) > 1:
+            ename = nfspath[1].rstrip('/')
+        else:
+            ename = nfspath[1]
+        return nfspath[0] + ':' + ename
 
     def _getExistingDomain(self):
         if self.storageType in (
@@ -326,9 +334,13 @@ class Plugin(plugin.PluginBase):
                 if (
                     domain_info and
                     'remotePath' in domain_info and
-                    domain_info['remotePath'] == self.environment[
-                        ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
-                    ]
+                    self._removeNFSTrailingSlash(
+                        domain_info['remotePath']
+                    ) == self._removeNFSTrailingSlash(
+                        self.environment[
+                            ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
+                        ]
+                    )
                 ):
                     self.domain_exists = True
                     self.environment[
