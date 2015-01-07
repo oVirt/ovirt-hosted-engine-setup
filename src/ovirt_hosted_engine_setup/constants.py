@@ -378,6 +378,8 @@ class NetworkEnv(object):
     def SSHD_PORT(self):
         return 'OVEHOSTED_NETWORK/sshdPort'
 
+    PROMPT_REQUIRED_NETWORKS = 'OVEHOSTED_NETWORK/promptRequiredNetworks'
+
 
 @util.export
 @util.codegen

@@ -184,6 +184,11 @@ class Plugin(plugin.PluginBase):
                     )
                 )
                 state = ''
+            self.logger.debug(
+                'VDSM host in {state} state'.format(
+                    state=state,
+                )
+            )
             if 'failed' in state:
                 self.logger.error(_(
                     'The VDSM host was found in a failed state. '
@@ -194,11 +199,16 @@ class Plugin(plugin.PluginBase):
                 isUp = True
                 self.logger.info(_('The VDSM Host is now operational'))
             else:
-                self.logger.debug(
-                    'VDSM host in {state} state'.format(
-                        state=state,
-                    )
-                )
+                if state == 'non_operational':
+                    if not self._check_network_configuration(
+                        engine_api,
+                        self.environment[ohostedcons.EngineEnv.APP_HOST_NAME],
+                    ):
+                        # It's up, but non-operational and missing some
+                        # required networks. _check_network_configuration
+                        # already gave enough info, rest of code can assume
+                        # it's up.
+                        isUp = True
                 if tries % 30 == 0:
                     self.logger.info(_(
                         'Still waiting for VDSM host to become operational...'
@@ -212,6 +222,8 @@ class Plugin(plugin.PluginBase):
         return isUp
 
     def _check_network_configuration(self, engine_api, host):
+        """Return True if we should continue trying to add the host"""
+        ret = True
         try:
             cluster = engine_api.clusters.get(
                 self.environment[
@@ -248,11 +260,45 @@ class Plugin(plugin.PluginBase):
                         'in order to make it\n'
                         'operational. Please setup them via the engine '
                         'webadmin UI or flag them as not required.\n'
+                        'When finished, activate the host in the webadmin. '
                     ).format(
                         rnet=rnet,
                         host=host,
                     )
                 )
+                ret  = (
+                    False if not self.environment[
+                        ohostedcons.NetworkEnv.PROMPT_REQUIRED_NETWORKS
+                    ] else
+                    self.dialog.queryString(
+                        name='OVEHOSTED_REQUIRED_NETWORKS',
+                        note=_(
+                            'Retry checking host status or ignore this '
+                            'and continue '
+                            "(@VALUES@)[@DEFAULT@]? "
+                        ),
+                        prompt=True,
+                        validValues=(_('Retry'), _('Ignore')),
+                        caseSensitive=False,
+                        default=_('Retry'),
+                    ) == _('Retry').lower()
+                )
+                if not ret:
+                    self.logger.warning(
+                        _('Not waiting for required networks to be set up')
+                    )
+                    self.dialog.note(
+                        _(
+                            'To finish deploying, please:\n'
+                            '- set up required networks for this host\n'
+                            '- activate it\n'
+                            '- restart the hosted-engine high availability '
+                            'services by running on this machine:\n'
+                            '  # service ovirt-ha-agent restart\n'
+                            '  # service ovirt-ha-broker restart\n'
+                        )
+                    )
+
         except Exception as exc:
             # Sadly all ovirtsdk errors inherit only from Exception
             self.logger.debug(
@@ -260,6 +306,7 @@ class Plugin(plugin.PluginBase):
                     error=str(exc),
                 )
             )
+        return ret
 
     def _wait_cluster_cpu_ready(self, engine_api, cluster_name):
         tries = self.VDSM_RETRIES
@@ -314,6 +361,10 @@ class Plugin(plugin.PluginBase):
         self.environment.setdefault(
             ohostedcons.EngineEnv.TEMPORARY_CERT_FILE,
             None
+        )
+        self.environment.setdefault(
+            ohostedcons.NetworkEnv.PROMPT_REQUIRED_NETWORKS,
+            True
         )
         self._selinux_enabled = False
 
@@ -571,58 +622,50 @@ class Plugin(plugin.PluginBase):
                 )
             )
 
-        if self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ]:
-            self._check_network_configuration(
-                engine_api,
-                self.environment[ohostedcons.EngineEnv.APP_HOST_NAME],
+        up = self._wait_host_ready(
+            engine_api,
+            self.environment[ohostedcons.EngineEnv.APP_HOST_NAME]
+        )
+        if not up:
+            self.logger.error(
+                _(
+                    'Unable to add {host} to the manager'
+                ).format(
+                    host=self.environment[
+                        ohostedcons.EngineEnv.APP_HOST_NAME
+                    ],
+                )
             )
         else:
-            up = self._wait_host_ready(
-                engine_api,
-                self.environment[ohostedcons.EngineEnv.APP_HOST_NAME]
-            )
-            if not up:
+            # This works only if the host is up.
+            self.logger.debug('Setting CPU for the cluster')
+            try:
+                cluster, cpu = self._wait_cluster_cpu_ready(
+                    engine_api,
+                    cluster_name
+                )
+                self.logger.debug(cpu.__dict__)
+                cpu.set_id(
+                    self.environment[ohostedcons.VDSMEnv.ENGINE_CPU]
+                )
+                cluster.set_cpu(cpu)
+                cluster.update()
+            except ovirtsdk.infrastructure.errors.RequestError as e:
+                self.logger.debug(
+                    'Cannot set CPU level of cluster {cluster}'.format(
+                        cluster=cluster_name,
+                    ),
+                    exc_info=True,
+                )
                 self.logger.error(
                     _(
-                        'Unable to add {host} to the manager'
+                        'Cannot automatically set CPU level '
+                        'of cluster {cluster}:\n{details}\n'
                     ).format(
-                        host=self.environment[
-                            ohostedcons.EngineEnv.APP_HOST_NAME
-                        ],
+                        cluster=cluster_name,
+                        details=e.detail
                     )
                 )
-            else:
-                # This works only if the host is up.
-                self.logger.debug('Setting CPU for the cluster')
-                try:
-                    cluster, cpu = self._wait_cluster_cpu_ready(
-                        engine_api,
-                        cluster_name
-                    )
-                    self.logger.debug(cpu.__dict__)
-                    cpu.set_id(
-                        self.environment[ohostedcons.VDSMEnv.ENGINE_CPU]
-                    )
-                    cluster.set_cpu(cpu)
-                    cluster.update()
-                except ovirtsdk.infrastructure.errors.RequestError as e:
-                    self.logger.debug(
-                        'Cannot set CPU level of cluster {cluster}'.format(
-                            cluster=cluster_name,
-                        ),
-                        exc_info=True,
-                    )
-                    self.logger.error(
-                        _(
-                            'Cannot automatically set CPU level '
-                            'of cluster {cluster}:\n{details}\n'
-                        ).format(
-                            cluster=cluster_name,
-                            details=e.detail
-                        )
-                    )
         engine_api.disconnect()
 
     @plugin.event(
