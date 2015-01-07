@@ -29,9 +29,7 @@ import re
 import tempfile
 import time
 import urllib2
-
-
-import ethtool
+import socket
 
 
 import ovirtsdk.api
@@ -165,42 +163,6 @@ class Plugin(plugin.PluginBase):
                         path=path
                     )
                 )
-
-    def _getIPAddress(self):
-        address = None
-        stdout = ''
-        if (
-            self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME] in
-            ethtool.get_devices()
-        ):
-            self.logger.debug('Acquiring bridge address')
-            rc, stdout, stderr = self.execute(
-                args=(
-                    self.command.get('ip'),
-                    'addr',
-                    'show',
-                    self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME],
-                ),
-            )
-        else:
-            self.logger.debug('Acquiring nic address')
-            rc, stdout, stderr = self.execute(
-                args=(
-                    self.command.get('ip'),
-                    'addr',
-                    'show',
-                    self.environment[ohostedcons.NetworkEnv.BRIDGE_IF],
-                ),
-            )
-        for line in stdout:
-            addressmatch = self._ADDRESS_RE.match(line)
-            if addressmatch is not None:
-                address = addressmatch.group('address')
-                break
-        if address is None:
-            raise RuntimeError(_('Cannot acquire bridge address'))
-        self.logger.debug(address)
-        return address
 
     def _wait_host_ready(self, engine_api, host):
         self.logger.info(_(
@@ -570,7 +532,10 @@ class Plugin(plugin.PluginBase):
                     name=self.environment[
                         ohostedcons.EngineEnv.APP_HOST_NAME
                     ],
-                    address=self._getIPAddress(),
+                    # Note that the below is required for compatibility
+                    # with vdsm-generated pki. See bz 1178535.
+                    # TODO: Make it configurable like engine fqdn.
+                    address=socket.gethostname(),
                     reboot_after_installation=False,
                     cluster=engine_api.clusters.get(cluster_name),
                     ssh=self._ovirtsdk_xml.params.SSH(
