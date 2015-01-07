@@ -293,5 +293,11 @@ class Plugin(plugin.PluginBase):
                         ),
                     )
 
+    @plugin.event(
+        stage=plugin.Stages.STAGE_VALIDATION,
+    )
+    def _validation(self):
+        self._validateFQDN(socket.gethostname())
+        self._validateFQDNresolvability(socket.gethostname())
 
 # vim: expandtab tabstop=4 shiftwidth=4
