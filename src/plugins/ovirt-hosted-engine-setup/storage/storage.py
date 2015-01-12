@@ -292,9 +292,9 @@ class Plugin(plugin.PluginBase):
                 vginfo = self.cli.getVGInfo(
                     self.environment[ohostedcons.StorageEnv.VG_UUID]
                 )
+                self.logger.debug(vginfo)
                 if vginfo['status']['code'] != 0:
                     raise RuntimeError(vginfo['status']['message'])
-                self.domain_exists = True
                 self.environment[
                     ohostedcons.CoreEnv.ADDITIONAL_HOST_ENABLED
                 ] = True
@@ -306,13 +306,15 @@ class Plugin(plugin.PluginBase):
                         ohostedcons.StorageEnv.SD_UUID
                     ]
                 )
-                pool_list = domain_info['pool']
-                if pool_list:
-                    self.pool_exists = True
-                    spUUID = pool_list[0]
-                    self.environment[
-                        ohostedcons.StorageEnv.SP_UUID
-                    ] = spUUID
+                if 'uuid' in domain_info:
+                    self.domain_exists = True
+                    pool_list = domain_info['pool']
+                    if pool_list:
+                        self.pool_exists = True
+                        spUUID = pool_list[0]
+                        self.environment[
+                            ohostedcons.StorageEnv.SP_UUID
+                        ] = spUUID
                 self._handleHostId()
                 if self.pool_exists:
                     pool_info = self._getStoragePoolInfo(spUUID)
