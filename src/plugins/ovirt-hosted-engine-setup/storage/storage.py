@@ -61,11 +61,7 @@ class Plugin(plugin.PluginBase):
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
-        self.vdsClient = util.loadModule(
-            path=ohostedcons.FileLocations.VDS_CLIENT_DIR,
-            name='vdsClient'
-        )
-        self.serv = None
+        self.cli = None
         self.waiter = None
         self.storageType = None
         self.protocol_version = None
@@ -284,7 +280,7 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VDSMConstants.ISCSI_DOMAIN,
         ):
             if self.environment[ohostedcons.StorageEnv.VG_UUID] is not None:
-                vginfo = self.serv.s.getVGInfo(
+                vginfo = self.cli.getVGInfo(
                     self.environment[ohostedcons.StorageEnv.VG_UUID]
                 )
                 if vginfo['status']['code'] != 0:
@@ -374,10 +370,10 @@ class Plugin(plugin.PluginBase):
 
     def _getStorageDomainsList(self, spUUID=None):
         if not spUUID:
-            spUUID = self.vdsClient.BLANK_UUID
+            spUUID = ohostedcons.Const.BLANK_UUID
         self.logger.debug('getStorageDomainsList')
         domains = []
-        response = self.serv.s.getStorageDomainsList(spUUID)
+        response = self.cli.getStorageDomainsList(spUUID)
         self.logger.debug(response)
         if response['status']['code'] == 0:
             for entry in response['domlist']:
@@ -386,7 +382,7 @@ class Plugin(plugin.PluginBase):
 
     def _validateStorageDomain(self, sdUUID):
         self.logger.debug('validateStorageDomain')
-        response = self.serv.s.validateStorageDomain(sdUUID)
+        response = self.cli.validateStorageDomain(sdUUID)
         self.logger.debug(response)
         if response['status']['code']:
             return response['status']['code'], response['status']['message']
@@ -395,7 +391,7 @@ class Plugin(plugin.PluginBase):
     def _getStorageDomainInfo(self, sdUUID):
         self.logger.debug('getStorageDomainInfo')
         info = {}
-        response = self.serv.s.getStorageDomainInfo(sdUUID)
+        response = self.cli.getStorageDomainInfo(sdUUID)
         self.logger.debug(response)
         if response['status']['code'] == 0:
             for key, respinfo in response['info'].iteritems():
@@ -405,7 +401,7 @@ class Plugin(plugin.PluginBase):
     def _getStoragePoolInfo(self, spUUID):
         self.logger.debug('getStoragePoolInfo')
         info = {}
-        response = self.serv.s.getStoragePoolInfo(spUUID)
+        response = self.cli.getStoragePoolInfo(spUUID)
         self.logger.debug(response)
         if response['status']['code'] == 0:
             for key in response['info'].keys():
@@ -413,13 +409,13 @@ class Plugin(plugin.PluginBase):
         return info
 
     def _storageServerConnection(self, disconnect=False):
-        method = self.serv.s.connectStorageServer
+        method = self.cli.connectStorageServer
         debug_msg = 'connectStorageServer'
         if disconnect:
-            method = self.serv.s.disconnectStorageServer
+            method = self.cli.disconnectStorageServer
             debug_msg = 'disconnectStorageServer'
         self.logger.debug(debug_msg)
-        spUUID = self.vdsClient.BLANK_UUID
+        spUUID = ohostedcons.Const.BLANK_UUID
         conList = None
         if self.storageType in (
             ohostedcons.VDSMConstants.NFS_DOMAIN,
@@ -507,19 +503,19 @@ class Plugin(plugin.PluginBase):
             raise RuntimeError(_('Invalid Storage Type'))
         domainType = ohostedcons.VDSMConstants.DATA_DOMAIN
         version = 3
-        status, message = self.serv.createStorageDomain(args=[
+        status = self.cli.createStorageDomain(
             self.storageType,
             sdUUID,
             domainName,
             typeSpecificArgs,
             domainType,
             version
-        ])
-        if status != 0:
-            raise RuntimeError(message)
-        self.logger.debug(self.serv.s.repoStats())
+        )
+        if status['status']['code'] != 0:
+            raise RuntimeError(status['status']['message'])
+        self.logger.debug(self.cli.repoStats())
         self.logger.debug(
-            self.serv.s.getStorageDomainStats(sdUUID)
+            self.cli.getStorageDomainStats(sdUUID)
         )
 
     def _createStoragePool(self):
@@ -531,22 +527,40 @@ class Plugin(plugin.PluginBase):
             ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME
         ]
         masterDom = sdUUID
-        domList = sdUUID  # str: domain,domain,...
+        domList = [sdUUID]
         mVer = 1
-        status, message = self.serv.createStoragePool(args=[
+        self.logger.debug((
+            'createStoragePool(args=['
+            'poolType={poolType},'
+            'spUUID={spUUID},'
+            'poolName={poolName},'
+            'masterDom={masterDom},'
+            'domList={domList},'
+            'mVer={mVer}'
+            '])'
+        ).format(
+            poolType=poolType,
+            spUUID=spUUID,
+            poolName=poolName,
+            masterDom=masterDom,
+            domList=domList,
+            mVer=mVer,
+        ))
+
+        status = self.cli.createStoragePool(
             poolType,
             spUUID,
             poolName,
             masterDom,
             domList,
             mVer
-        ])
-        if status != 0:
-            raise RuntimeError(message)
+        )
+        if status['status']['code'] != 0:
+            raise RuntimeError(status['status']['message'])
 
     def _startMonitoringDomain(self):
         self.logger.debug('_startMonitoringDomain')
-        status = self.serv.s.startMonitoringDomain(
+        status = self.cli.startMonitoringDomain(
             self.environment[ohostedcons.StorageEnv.SD_UUID],
             self.environment[ohostedcons.StorageEnv.HOST_ID]
         )
@@ -559,7 +573,7 @@ class Plugin(plugin.PluginBase):
 
     def _stopMonitoringDomain(self):
         self.logger.debug('_stopMonitoringDomain')
-        status = self.serv.s.stopMonitoringDomain(
+        status = self.cli.stopMonitoringDomain(
             self.environment[ohostedcons.StorageEnv.SD_UUID],
             self.environment[ohostedcons.StorageEnv.HOST_ID]
         )
@@ -574,7 +588,7 @@ class Plugin(plugin.PluginBase):
         scsi_key = spUUID
         master = sdUUID
         master_ver = 1
-        method = self.serv.connectStoragePool
+        method = self.cli.connectStoragePool
         method_args = [
             spUUID,
             ID,
@@ -582,18 +596,18 @@ class Plugin(plugin.PluginBase):
         ]
         debug_msg = 'connectStoragePool'
         if disconnect:
-            method = self.serv.disconnectStoragePool
+            method = self.cli.disconnectStoragePool
             debug_msg = 'disconnectStoragePool'
         else:
             method_args += [
                 master,
                 master_ver,
-                sdUUID+'=active',
+                {sdUUID: 'active'},
             ]
         self.logger.debug(debug_msg)
-        status, message = method(args=method_args)
-        if status != 0:
-            raise RuntimeError(message)
+        status = method(*method_args)
+        if status['status']['code'] != 0:
+            raise RuntimeError(status['status']['message'])
         self._connected = not disconnect
 
     def _spmStart(self):
@@ -605,7 +619,7 @@ class Plugin(plugin.PluginBase):
         scsiFencing = 'false'
         maxHostID = ohostedcons.Const.MAX_HOST_ID
         version = 3
-        status, status_uuid = self.serv.spmStart(args=[
+        status = self.cli.spmStart(
             spUUID,
             prevID,
             prevLVER,
@@ -613,43 +627,40 @@ class Plugin(plugin.PluginBase):
             scsiFencing,
             maxHostID,
             version
-        ])
-        if status != 0:
-            raise RuntimeError(status_uuid)
-        self.logger.debug(status_uuid)
+        )
+        if status['status']['code'] != 0:
+            raise RuntimeError(status['status']['message'])
 
     def _spmStop(self):
         self.logger.debug('spmStop')
         spUUID = self.environment[ohostedcons.StorageEnv.SP_UUID]
-        status, status_uuid = self.serv.spmStop(
-            args=[
-                spUUID,
-            ],
+        status = self.cli.spmStop(
+            spUUID,
         )
-        if status != 0:
-            raise RuntimeError(status_uuid)
-        self.logger.debug(status_uuid)
+        if status['status']['code'] != 0:
+            raise RuntimeError(status['status']['message'])
+        self.logger.debug(status)
 
     def _activateStorageDomain(self):
         self.logger.debug('activateStorageDomain')
         sdUUID = self.environment[ohostedcons.StorageEnv.SD_UUID]
         spUUID = self.environment[ohostedcons.StorageEnv.SP_UUID]
-        status, message = self.serv.activateStorageDomain(args=[
+        status = self.cli.activateStorageDomain(
             sdUUID,
             spUUID
-        ])
-        if status != 0:
-            raise RuntimeError(message)
+        )
+        if status['status']['code'] != 0:
+            raise RuntimeError(status['status']['message'])
         self.waiter.wait()
-        self.logger.debug(self.serv.s.getSpmStatus(spUUID))
-        info = self.serv.s.getStoragePoolInfo(spUUID)
+        self.logger.debug(self.cli.getSpmStatus(spUUID))
+        info = self.cli.getStoragePoolInfo(spUUID)
         self.logger.debug(info)
-        self.logger.debug(self.serv.s.repoStats())
+        self.logger.debug(self.cli.repoStats())
 
     def _check_existing_pools(self):
         self.logger.debug('_check_existing_pools')
         self.logger.debug('getConnectedStoragePoolsList')
-        pools = self.serv.s.getConnectedStoragePoolsList()
+        pools = self.cli.getConnectedStoragePoolsList()
         self.logger.debug(pools)
         if pools['status']['code'] != 0:
             raise RuntimeError(pools['status']['message'])
@@ -832,7 +843,7 @@ class Plugin(plugin.PluginBase):
                 'During customization use CTRL-D to abort.'
             )
         )
-        self.serv = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        self.cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         self._check_existing_pools()
         domain_type = self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE]
         if domain_type is None:
@@ -906,7 +917,7 @@ class Plugin(plugin.PluginBase):
     )
     def _misc(self):
         self.waiter = tasks.TaskWaiter(self.environment)
-        self.serv = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        self.cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         self._check_existing_pools()
         if self.storageType in (
             ohostedcons.VDSMConstants.NFS_DOMAIN,
@@ -922,7 +933,7 @@ class Plugin(plugin.PluginBase):
         elif self.storageType in (
             ohostedcons.VDSMConstants.ISCSI_DOMAIN,
         ):
-            devices = self.serv.s.getDeviceList(
+            devices = self.cli.getDeviceList(
                 ohostedcons.VDSMConstants.ISCSI_DOMAIN
             )
             self.logger.debug(devices)

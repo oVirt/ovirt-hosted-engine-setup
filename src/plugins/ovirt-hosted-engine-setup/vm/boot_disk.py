@@ -115,7 +115,7 @@ class ImageTransaction(transaction.TransactionElement):
         info = json.decoder.JSONDecoder().decode('\n'.join(stdout))
         source_size = int(info['virtual-size'])
 
-        serv = self._parent.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        serv = self._parent.environment[ohostedcons.VDSMEnv.VDS_CLIENT]
         size = serv.s.getVolumeSize(
             self._parent.environment[ohostedcons.StorageEnv.SD_UUID],
             self._parent.environment[ohostedcons.StorageEnv.SP_UUID],

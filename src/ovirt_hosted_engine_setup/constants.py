@@ -288,6 +288,7 @@ class Const(object):
     HA_NOTIF_SMTP_PORT = 'smtp-port'
     HA_NOTIF_SMTP_SOURCE_EMAIL = 'source-email'
     HA_NOTIF_SMTP_DEST_EMAILS = 'destination-emails'
+    BLANK_UUID = '00000000-0000-0000-0000-000000000000'
 
 
 @util.export
@@ -685,7 +686,8 @@ class VDSMEnv(object):
     VDSMD_SERVICE = 'OVEHOSTED_VDSM/serviceName'
     VDSM_UID = 'OVEHOSTED_VDSM/vdsmUid'
     KVM_GID = 'OVEHOSTED_VDSM/kvmGid'
-    VDS_CLI = 'OVEHOSTED_VDSM/vdsClient'
+    VDS_CLI = 'OVEHOSTED_VDSM/vdscli'
+    VDS_CLIENT = 'OVEHOSTED_VDSM/vdsClient'
 
     @ohostedattrs(
         answerfile=True,

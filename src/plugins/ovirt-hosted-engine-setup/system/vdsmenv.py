@@ -69,7 +69,10 @@ class Plugin(plugin.PluginBase):
             hostPort = vdscli.cannonizeHostPort('localhost')
             serv.do_connect(hostPort)
 
-        self.environment[ohostedcons.VDSMEnv.VDS_CLI] = serv
+        cli = vdscli.connect()
+        self.environment[ohostedcons.VDSMEnv.VDS_CLI] = cli
+
+        self.environment[ohostedcons.VDSMEnv.VDS_CLIENT] = serv
         vdsmReady = False
         retry = 0
         while not vdsmReady and retry < self.MAX_RETRY:
@@ -101,6 +104,10 @@ class Plugin(plugin.PluginBase):
         self.environment.setdefault(
             ohostedcons.VDSMEnv.KVM_GID,
             grp.getgrnam('kvm').gr_gid
+        )
+        self.environment.setdefault(
+            ohostedcons.VDSMEnv.VDS_CLIENT,
+            None
         )
         self.environment.setdefault(
             ohostedcons.VDSMEnv.VDS_CLI,

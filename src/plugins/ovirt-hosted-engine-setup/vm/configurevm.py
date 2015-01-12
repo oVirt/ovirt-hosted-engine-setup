@@ -95,7 +95,7 @@ class Plugin(plugin.PluginBase):
         name=ohostedcons.Stages.VDSMD_LATE_SETUP_READY,
     )
     def _late_setup(self):
-        serv = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        serv = self.environment[ohostedcons.VDSMEnv.VDS_CLIENT]
         response = serv.s.list()
         if response['status']['code'] == 0:
             self.logger.debug(response['vmList'])
