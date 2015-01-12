@@ -183,7 +183,7 @@ class Plugin(plugin.PluginBase):
         spUUID = self.environment[ohostedcons.StorageEnv.SP_UUID]
         imgUUID = self.environment[ohostedcons.StorageEnv.IMG_UUID]
         volUUID = self.environment[ohostedcons.StorageEnv.VOL_UUID]
-        serv = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        serv = self.environment[ohostedcons.VDSMEnv.VDS_CLIENT]
 
         if self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE] in (
             ohostedcons.DomainTypes.ISCSI,

@@ -61,7 +61,7 @@ class VmOperations(object):
     def _generateUserMessage(self, console_type):
         displayPort = 5900
         displaySecurePort = 5901
-        serv = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        serv = self.environment[ohostedcons.VDSMEnv.VDS_CLIENT]
         try:
             stats = serv.s.getVmStats(
                 self.environment[ohostedcons.VMEnv.VM_UUID]

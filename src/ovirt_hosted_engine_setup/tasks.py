@@ -42,7 +42,7 @@ class TaskWaiter(base.Base):
         self.environment = environment
 
     def wait(self):
-        serv = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        serv = self.environment[ohostedcons.VDSMEnv.VDS_CLIENT]
         wait = True
         while wait:
             self.logger.debug('Waiting for existing tasks to complete')
@@ -83,7 +83,7 @@ class VMDownWaiter(base.Base):
         self.environment = environment
 
     def wait(self):
-        serv = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        serv = self.environment[ohostedcons.VDSMEnv.VDS_CLIENT]
         down = False
         destroyed = False
         while not down:
@@ -120,7 +120,7 @@ class DomainMonitorWaiter(base.Base):
         self.environment = environment
 
     def wait(self, sdUUID):
-        serv = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        serv = self.environment[ohostedcons.VDSMEnv.VDS_CLIENT]
         acquired = False
         while not acquired:
             time.sleep(self.POLLING_INTERVAL)

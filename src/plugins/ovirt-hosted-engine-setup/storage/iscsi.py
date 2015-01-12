@@ -52,11 +52,7 @@ class Plugin(plugin.PluginBase):
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
         self._interactive = False
-        self.serv = None
-        self.vdsClient = util.loadModule(
-            path=ohostedcons.FileLocations.VDS_CLIENT_DIR,
-            name='vdsClient'
-        )
+        self.cli = None
 
     def _customize_ip_address(self):
         valid = False
@@ -232,7 +228,7 @@ class Plugin(plugin.PluginBase):
         return str(lun)
 
     def _iscsi_discovery(self, address, port, user, password):
-        targets = self.serv.s.discoverSendTargets(
+        targets = self.cli.discoverSendTargets(
             {
                 'connection': address,
                 'port': port,
@@ -249,7 +245,7 @@ class Plugin(plugin.PluginBase):
         retry = self._MAXRETRY
         iscsi_lun_list = []
         for _try in range(0, retry):
-            devices = self.serv.s.getDeviceList(
+            devices = self.cli.getDeviceList(
                 ohostedcons.VDSMConstants.ISCSI_DOMAIN
             )
             self.logger.debug(devices)
@@ -270,9 +266,9 @@ class Plugin(plugin.PluginBase):
                 password,
             )
             self.logger.info('Connecting to the storage server')
-            res = self.serv.s.connectStorageServer(
+            res = self.cli.connectStorageServer(
                 ohostedcons.VDSMConstants.ISCSI_DOMAIN,
-                self.vdsClient.BLANK_UUID,
+                ohostedcons.Const.BLANK_UUID,
                 [
                     {
                         'connection': ip,
@@ -281,7 +277,7 @@ class Plugin(plugin.PluginBase):
                         'user': user,
                         'password': password,
                         'port': port,
-                        'id': self.vdsClient.BLANK_UUID,
+                        'id': ohostedcons.Const.BLANK_UUID,
                     }
                 ]
             )
@@ -421,7 +417,7 @@ class Plugin(plugin.PluginBase):
         ),
     )
     def _customization(self):
-        self.serv = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        self.cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         valid_access = False
         valid_lun = False
         address = None
@@ -502,7 +498,7 @@ class Plugin(plugin.PluginBase):
         if self.environment[ohostedcons.StorageEnv.VG_UUID] is None:
             # If we don't have a volume group we must create it
             self.logger.info(_('Creating Volume Group'))
-            dom = self.serv.s.createVG(
+            dom = self.cli.createVG(
                 self.environment[ohostedcons.StorageEnv.SD_UUID],
                 [
                     iscsi_device['GUID'],
@@ -516,7 +512,7 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.StorageEnv.VG_UUID
             ] = dom['uuid']
 
-        vginfo = self.serv.s.getVGInfo(
+        vginfo = self.cli.getVGInfo(
             self.environment[ohostedcons.StorageEnv.VG_UUID]
         )
         self.logger.debug(vginfo)
