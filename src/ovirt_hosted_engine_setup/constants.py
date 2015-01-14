@@ -402,6 +402,7 @@ class EngineEnv(object):
         return 'OVEHOSTED_ENGINE/clusterName'
 
     TEMPORARY_CERT_FILE = 'OVEHOSTED_ENGINE/temporaryCertificate'
+    PROMPT_NON_OPERATIONAL = 'OVEHOSTED_ENGINE/promptNonOperational'
 
 
 @util.export
