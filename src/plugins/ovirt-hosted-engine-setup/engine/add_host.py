@@ -200,12 +200,12 @@ class Plugin(plugin.PluginBase):
                 self.logger.info(_('The VDSM Host is now operational'))
             else:
                 if state == 'non_operational':
-                    if not self._check_network_configuration(
+                    if not self._retry_non_operational(
                         engine_api,
                         self.environment[ohostedcons.EngineEnv.APP_HOST_NAME],
                     ):
                         # It's up, but non-operational and missing some
-                        # required networks. _check_network_configuration
+                        # required networks. _retry_non_operational
                         # already gave enough info, rest of code can assume
                         # it's up.
                         isUp = True
@@ -221,7 +221,7 @@ class Plugin(plugin.PluginBase):
             ))
         return isUp
 
-    def _check_network_configuration(self, engine_api, host):
+    def _retry_non_operational(self, engine_api, host):
         """Return True if we should continue trying to add the host"""
         ret = True
         try:
@@ -298,6 +298,48 @@ class Plugin(plugin.PluginBase):
                             '  # service ovirt-ha-broker restart\n'
                         )
                     )
+            else:
+                # No missing required networks, perhaps some other issue?
+                self.dialog.note(
+                    _(
+                        'The host {host} is in non-operational state.\n'
+                        'Please try to activate it via the engine '
+                        'webadmin UI.\n'
+                    ).format(
+                        host=host,
+                    )
+                )
+                ret  = (
+                    False if not self.environment[
+                        ohostedcons.EngineEnv.PROMPT_NON_OPERATIONAL
+                    ] else
+                    self.dialog.queryString(
+                        name='OVEHOSTED_NON_OPERATIONAL',
+                        note=_(
+                            'Retry checking host status or ignore this '
+                            'and continue '
+                            "(@VALUES@)[@DEFAULT@]? "
+                        ),
+                        prompt=True,
+                        validValues=(_('Retry'), _('Ignore')),
+                        caseSensitive=False,
+                        default=_('Retry'),
+                    ) == _('Retry').lower()
+                )
+                if not ret:
+                    self.logger.warning(
+                        _('Host left in non-operational state')
+                    )
+                    self.dialog.note(
+                        _(
+                            'To finish deploying, please:\n'
+                            '- activate it\n'
+                            '- restart the hosted-engine high availability '
+                            'services by running on this machine:\n'
+                            '  # service ovirt-ha-agent restart\n'
+                            '  # service ovirt-ha-broker restart\n'
+                        )
+                    )
 
         except Exception as exc:
             # Sadly all ovirtsdk errors inherit only from Exception
@@ -364,6 +406,10 @@ class Plugin(plugin.PluginBase):
         )
         self.environment.setdefault(
             ohostedcons.NetworkEnv.PROMPT_REQUIRED_NETWORKS,
+            True
+        )
+        self.environment.setdefault(
+            ohostedcons.EngineEnv.PROMPT_NON_OPERATIONAL,
             True
         )
         self._selinux_enabled = False
