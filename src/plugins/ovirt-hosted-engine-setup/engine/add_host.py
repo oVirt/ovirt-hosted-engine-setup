@@ -266,7 +266,7 @@ class Plugin(plugin.PluginBase):
                         host=host,
                     )
                 )
-                ret  = (
+                ret = (
                     False if not self.environment[
                         ohostedcons.NetworkEnv.PROMPT_REQUIRED_NETWORKS
                     ] else
