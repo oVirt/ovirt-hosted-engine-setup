@@ -738,7 +738,7 @@ class Plugin(plugin.PluginBase):
                 name='OVEHOSTED_STORAGE_DATACENTER_NAME',
                 note=_(
                     'Local storage datacenter name is an internal name '
-                    'and currently will not be shown in engine\'s admin UI. '
+                    'and currently will not be shown in engine\'s admin UI.\n'
                     'Please enter local datacenter name [@DEFAULT@]: '
                 ),
                 prompt=True,
