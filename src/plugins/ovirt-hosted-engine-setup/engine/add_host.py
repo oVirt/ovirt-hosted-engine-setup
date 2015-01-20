@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2014 Red Hat, Inc.
+# Copyright (C) 2013-2015 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -309,7 +309,7 @@ class Plugin(plugin.PluginBase):
                         host=host,
                     )
                 )
-                ret  = (
+                ret = (
                     False if not self.environment[
                         ohostedcons.EngineEnv.PROMPT_NON_OPERATIONAL
                     ] else
