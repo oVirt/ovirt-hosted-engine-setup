@@ -547,10 +547,10 @@ class StorageEnv(object):
     @ohostedattrs(
         answerfile=True,
         summary=True,
-        description=_('iSCSI LUN ID'),
+        description=_('LUN ID'),
     )
-    def ISCSI_LUN_ID(self):
-        return 'OVEHOSTED_STORAGE/iSCSILunId'
+    def LUN_ID(self):
+        return 'OVEHOSTED_STORAGE/LunID'
 
     ISCSI_PASSWORD = 'OVEHOSTED_STORAGE/iSCSIPortalPassword'
 

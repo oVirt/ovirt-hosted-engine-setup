@@ -182,24 +182,47 @@ class Plugin(plugin.PluginBase):
             self.logger.error(_('Cannot find any LUN on the selected target'))
             return None
 
+        f_luns = []
         lun_list = ''
-        lun_size = {}
-        lun_device = {}
-        default = None
         for entry in available_luns:
+            activep = 0
+            failedp = 0
             for pathstatus in entry['pathstatus']:
-                lun_device[pathstatus['lun']] = pathstatus['physdev']
-                lun_size[
-                    pathstatus['lun']
-                ] = int(entry['capacity']) / pow(2, 20)
-        values = lun_device.keys()
-        values.sort()
-        for lunid in values:
-            lun_list += '\t {lunid} - {physdev} - {size}MB\n'.format(
-                lunid=lunid,
-                physdev=lun_device[lunid],
-                size=lun_size[lunid]
+                if pathstatus['state'] == 'active':
+                    activep += 1
+                else:
+                    failedp += 1
+            f_luns.append(
+                {
+                    'index': str(len(f_luns)+1),
+                    'GUID': entry['GUID'],
+                    'capacityGiB': int(entry['capacity']) / pow(2, 30),
+                    'vendorID': entry['vendorID'],
+                    'productID': entry['productID'],
+                    'status': entry['status'],
+                    'activep': activep,
+                    'failedp': failedp,
+                }
             )
+        for entry in f_luns:
+            lun_list += _(
+                '\t[{i}]\t{guid}\t{capacityGiB}GiB\t{vendorID}\t{productID}\n'
+                '\t\tstatus: {status}, paths: {ap} active'
+            ).format(
+                i=entry['index'],
+                guid=entry['GUID'],
+                capacityGiB=entry['capacityGiB'],
+                vendorID=entry['vendorID'],
+                productID=entry['productID'],
+                status=entry['status'],
+                ap=entry['activep'],
+            )
+            if entry['failedp'] > 0:
+                lun_list += _(', {fp} failed').format(
+                    fp=entry['failedp'],
+                )
+            lun_list += '\n\n'
+
         self.dialog.note(
             _(
                 'The following luns have been found on the requested target:\n'
@@ -208,24 +231,22 @@ class Plugin(plugin.PluginBase):
                 lun_list=lun_list,
             )
         )
-        if len(values) > 0:
-            values.sort()
-            default = values[0]
-        lun = self.environment[ohostedcons.StorageEnv.ISCSI_LUN_ID]
-        if lun is None:
+        lunGUID = self.environment[ohostedcons.StorageEnv.LUN_ID]
+        if lunGUID is None:
             self._interactive = True
-            lun = self.dialog.queryString(
+            slun = self.dialog.queryString(
                 name='OVEHOSTED_STORAGE_ISCSI_LUN',
                 note=_(
-                    'Please specify the lun id '
+                    'Please select the destination LUN '
                     '(@VALUES@) [@DEFAULT@]: '
                 ),
                 prompt=True,
                 caseSensitive=True,
-                default=default,
-                validValues=values,
+                default='1',
+                validValues=[i['index'] for i in f_luns],
             )
-        return str(lun)
+            lunGUID = f_luns[int(slun)-1]['GUID']
+        return lunGUID
 
     def _iscsi_discovery(self, address, port, user, password):
         targets = self.cli.discoverSendTargets(
@@ -291,24 +312,23 @@ class Plugin(plugin.PluginBase):
                                "iscsi target")
         return iscsi_lun_list
 
-    def _iscsi_get_device(self, ip, port, user, password, iqn, lun):
+    def _iscsi_get_device(self, ip, port, user, password, iqn, lunGUID):
         available_luns = self._iscsi_get_lun_list(
             ip, port, user, password, iqn
         )
         for iscsi_device in available_luns:
-            for pathstatus in iscsi_device['pathstatus']:
-                if pathstatus['lun'] == lun:
+            if iscsi_device['GUID'] == lunGUID:
                     return iscsi_device
         return None
 
-    def _validate_domain(self, target, lun):
+    def _validate_domain(self, target, lunGUID):
         device = self._iscsi_get_device(
             ip=self.environment[ohostedcons.StorageEnv.ISCSI_IP_ADDR],
             port=self.environment[ohostedcons.StorageEnv.ISCSI_PORT],
             user=self.environment[ohostedcons.StorageEnv.ISCSI_USER],
             password=self.environment[ohostedcons.StorageEnv.ISCSI_PASSWORD],
             iqn=target,
-            lun=lun
+            lunGUID=lunGUID
         )
         if device is None:
             raise RuntimeError(
@@ -324,11 +344,11 @@ class Plugin(plugin.PluginBase):
         if size_mb < ohostedcons.Const.MINIMUM_SPACE_STORAGEDOMAIN_MB:
             raise ohosteddomains.InsufficientSpaceError(
                 _(
-                    'Error: device {iqn} has capacity of only '
+                    'Error: device {lunGUID} has capacity of only '
                     '{capacity}Mb while a minimum of '
                     '{minimum}Mb is  required'
                 ).format(
-                    iqn=target,
+                    lunGUID=lunGUID,
                     capacity=size_mb,
                     minimum=ohostedcons.Const.MINIMUM_SPACE_STORAGEDOMAIN_MB,
                 )
@@ -389,7 +409,7 @@ class Plugin(plugin.PluginBase):
             None
         )
         self.environment.setdefault(
-            ohostedcons.StorageEnv.ISCSI_LUN_ID,
+            ohostedcons.StorageEnv.LUN_ID,
             None
         )
         self.environment.setdefault(
@@ -425,7 +445,7 @@ class Plugin(plugin.PluginBase):
         user = None
         password = None
         target = None
-        lun = None
+        lunGUID = None
         valid_targets = []
         while not valid_access:
             address = self._customize_ip_address()
@@ -457,10 +477,10 @@ class Plugin(plugin.PluginBase):
                 values=valid_targets,
                 default=valid_targets[0]
             )
-            lun = self._customize_lun(target)
-            if lun is not None:
+            lunGUID = self._customize_lun(target)
+            if lunGUID is not None:
                 try:
-                    self._validate_domain(target, lun)
+                    self._validate_domain(target, lunGUID)
                     valid_lun = True
                 except Exception as e:
                     self.logger.debug('exception', exc_info=True)
@@ -469,7 +489,7 @@ class Plugin(plugin.PluginBase):
                         raise RuntimeError(_('Cannot access iSCSI LUN'))
 
         self.environment[ohostedcons.StorageEnv.ISCSI_TARGET] = target
-        self.environment[ohostedcons.StorageEnv.ISCSI_LUN_ID] = lun
+        self.environment[ohostedcons.StorageEnv.LUN_ID] = lunGUID
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
@@ -492,7 +512,7 @@ class Plugin(plugin.PluginBase):
             user=self.environment[ohostedcons.StorageEnv.ISCSI_USER],
             password=self.environment[ohostedcons.StorageEnv.ISCSI_PASSWORD],
             iqn=self.environment[ohostedcons.StorageEnv.ISCSI_TARGET],
-            lun=self.environment[ohostedcons.StorageEnv.ISCSI_LUN_ID],
+            lunGUID=self.environment[ohostedcons.StorageEnv.LUN_ID],
         )
 
         if self.environment[ohostedcons.StorageEnv.VG_UUID] is None:
