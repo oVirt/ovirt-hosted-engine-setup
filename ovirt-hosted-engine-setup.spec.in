@@ -62,10 +62,16 @@ Requires:       %{engine}-sdk-python >= 3.6.0.0
 
 %if 0%{?fedora}
 Requires:       qemu-img
+%if %{fedora} >= 21
+Requires:       iptables-services
+%endif
 %endif
 
 %if 0%{?rhel}
 Requires:       qemu-img-rhev >= 0.12.1.2-2.415
+%if 0%{?rhel} >= 7
+Requires:       iptables-services
+%endif
 %endif
 
 %description
