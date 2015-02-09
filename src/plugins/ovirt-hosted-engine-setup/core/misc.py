@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2014 Red Hat, Inc.
+# Copyright (C) 2013-2015 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -69,6 +69,7 @@ class Plugin(plugin.PluginBase):
             ohostedcons.CoreEnv.DEPLOY_PROCEED,
             None
         )
+        self.environment[ohostedcons.CoreEnv.NODE_SETUP] = False
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -102,7 +103,6 @@ class Plugin(plugin.PluginBase):
             ohostedcons.CoreEnv.REQUIREMENTS_CHECK_ENABLED,
             True
         )
-        self.environment[ohostedcons.CoreEnv.NODE_SETUP] = False
         try:
             # avoid: pyflakes 'Config' imported but unused error
             import ovirt.node.utils.fs
