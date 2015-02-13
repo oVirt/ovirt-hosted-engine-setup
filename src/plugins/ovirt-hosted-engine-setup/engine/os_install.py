@@ -59,15 +59,13 @@ class Plugin(plugin.PluginBase):
         ],
     )
     def _closeup(self):
-        # TODO: now mixins._create_vm dinamically generates
-        # VM config from env variables.
-        # It would be better to do it from the template
-        self.environment[ohostedcons.VMEnv.BOOT] = 'disk'
         self.environment[ohostedcons.VMEnv.SUBST][
             '@BOOT_DISK@'
         ] = ',bootOrder:1'
         self.environment[ohostedcons.VMEnv.SUBST]['@BOOT_PXE@'] = ''
         self.environment[ohostedcons.VMEnv.SUBST]['@BOOT_CDROM@'] = ''
+        # Eject the cd-rom if present
+        self.environment[ohostedcons.VMEnv.SUBST]['@CDROM@'] = ''
         content = ohostedutil.processTemplate(
             template=ohostedcons.FileLocations.ENGINE_VM_TEMPLATE,
             subst=self.environment[ohostedcons.VMEnv.SUBST],
