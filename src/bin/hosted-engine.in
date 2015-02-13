@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2014 Red Hat, Inc.
+# Copyright (C) 2013-2015 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -269,16 +269,21 @@ return ;}
         exit 1
     fi
     echo "Connecting Storage Server"
-    if [ ! "${domainType}" == "iscsi" ] ; then
+    if [ "${domainType}" == "glusterfs" ] ; then
             ${VDSCOMMAND} connectStorageServer \
             "${storageType}" \
             "${spUUID}" \
-            connection="${storage},iqn=,portal=,user=kvm,password=,id=${connectionUUID},port=,protocol_version=${protocol_version}"
-    else
-        ${VDSCOMMAND} connectStorageServer \
+            connection="${storage},user=kvm,id=${connectionUUID},tpgt=1,vfs_type=glusterfs"
+    elif [ "${domainType}" == "iscsi" ] ; then
+            ${VDSCOMMAND} connectStorageServer \
             "${storageType}" \
             "${spUUID}" \
             connection="${storage},iqn=${iqn},portal=${portal},user=${user},password=${password},id=${connectionUUID},port=${port}"
+    else
+            ${VDSCOMMAND} connectStorageServer \
+            "${storageType}" \
+            "${spUUID}" \
+            connection="${storage},user=kvm,id=${connectionUUID},protocol_version=${protocol_version}"
     fi
 }
 
