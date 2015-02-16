@@ -26,7 +26,7 @@ MAINTAINERCLEANFILES = \
 mydir=$(ovirthostedengineplugindir)/ovirt-hosted-engine-setup/storage
 dist_my_PYTHON = \
 	__init__.py \
-	iscsi.py \
+	blockd.py \
 	nfs.py \
 	storage.py \
 	$(NULL)

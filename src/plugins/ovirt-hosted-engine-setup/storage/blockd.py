@@ -42,7 +42,7 @@ _ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 @util.export
 class Plugin(plugin.PluginBase):
     """
-    iSCSI storage domain plugin.
+    Block devices (iSCSI, FC) storage domain plugin.
     """
 
     _MAXRETRY = 2
@@ -53,6 +53,7 @@ class Plugin(plugin.PluginBase):
         super(Plugin, self).__init__(context=context)
         self._interactive = False
         self.cli = None
+        self.domainType = None
 
     def _customize_ip_address(self):
         valid = False
@@ -170,14 +171,19 @@ class Plugin(plugin.PluginBase):
             )
         return target
 
-    def _customize_lun(self, target):
-        available_luns = self._iscsi_get_lun_list(
-            ip=self.environment[ohostedcons.StorageEnv.ISCSI_IP_ADDR],
-            port=self.environment[ohostedcons.StorageEnv.ISCSI_PORT],
-            user=self.environment[ohostedcons.StorageEnv.ISCSI_USER],
-            password=self.environment[ohostedcons.StorageEnv.ISCSI_PASSWORD],
-            iqn=target,
-        )
+    def _customize_lun(self, domainType, target):
+        if domainType == ohostedcons.DomainTypes.ISCSI:
+            available_luns = self._iscsi_get_lun_list(
+                ip=self.environment[ohostedcons.StorageEnv.ISCSI_IP_ADDR],
+                port=self.environment[ohostedcons.StorageEnv.ISCSI_PORT],
+                user=self.environment[ohostedcons.StorageEnv.ISCSI_USER],
+                password=self.environment[
+                    ohostedcons.StorageEnv.ISCSI_PASSWORD
+                ],
+                iqn=target,
+            )
+        elif domainType == ohostedcons.DomainTypes.FC:
+            available_luns = self._fc_get_lun_list()
         if len(available_luns) == 0:
             self.logger.error(_('Cannot find any LUN on the selected target'))
             return None
@@ -235,7 +241,7 @@ class Plugin(plugin.PluginBase):
         if lunGUID is None:
             self._interactive = True
             slun = self.dialog.queryString(
-                name='OVEHOSTED_STORAGE_ISCSI_LUN',
+                name='OVEHOSTED_STORAGE_BLOCKD_LUN',
                 note=_(
                     'Please select the destination LUN '
                     '(@VALUES@) [@DEFAULT@]: '
@@ -312,6 +318,18 @@ class Plugin(plugin.PluginBase):
                                "iscsi target")
         return iscsi_lun_list
 
+    def _fc_get_lun_list(self):
+        fc_lun_list = []
+        devices = self.cli.getDeviceList(
+            ohostedcons.VDSMConstants.FC_DOMAIN
+        )
+        self.logger.debug(devices)
+        if devices['status']['code'] != 0:
+            raise RuntimeError(devices['status']['message'])
+        for device in devices['devList']:
+            fc_lun_list.append(device)
+        return fc_lun_list
+
     def _iscsi_get_device(self, ip, port, user, password, iqn, lunGUID):
         available_luns = self._iscsi_get_lun_list(
             ip, port, user, password, iqn
@@ -321,15 +339,27 @@ class Plugin(plugin.PluginBase):
                     return iscsi_device
         return None
 
-    def _validate_domain(self, target, lunGUID):
-        device = self._iscsi_get_device(
-            ip=self.environment[ohostedcons.StorageEnv.ISCSI_IP_ADDR],
-            port=self.environment[ohostedcons.StorageEnv.ISCSI_PORT],
-            user=self.environment[ohostedcons.StorageEnv.ISCSI_USER],
-            password=self.environment[ohostedcons.StorageEnv.ISCSI_PASSWORD],
-            iqn=target,
-            lunGUID=lunGUID
-        )
+    def _fc_get_device(self, lunGUID):
+        available_luns = self._fc_get_lun_list()
+        for fc_device in available_luns:
+            if fc_device['GUID'] == lunGUID:
+                    return fc_device
+        return None
+
+    def _validate_domain(self, domainType, target, lunGUID):
+        if domainType == ohostedcons.DomainTypes.ISCSI:
+            device = self._iscsi_get_device(
+                ip=self.environment[ohostedcons.StorageEnv.ISCSI_IP_ADDR],
+                port=self.environment[ohostedcons.StorageEnv.ISCSI_PORT],
+                user=self.environment[ohostedcons.StorageEnv.ISCSI_USER],
+                password=self.environment[
+                    ohostedcons.StorageEnv.ISCSI_PASSWORD
+                ],
+                iqn=target,
+                lunGUID=lunGUID
+            )
+        elif domainType == ohostedcons.DomainTypes.FC:
+            device = self._fc_get_device(lunGUID)
         if device is None:
             raise RuntimeError(
                 _('The requested device is not listed by VDSM')
@@ -423,72 +453,80 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
-        name=ohostedcons.Stages.CONFIG_STORAGE_ISCSI,
+        name=ohostedcons.Stages.CONFIG_STORAGE_BLOCKD,
         after=(
             ohostedcons.Stages.CONFIG_STORAGE_EARLY,
         ),
         before=(
             ohostedcons.Stages.CONFIG_STORAGE_LATE,
         ),
-        condition=(
-            lambda self: self.environment[
+        condition=lambda self: (
+            self.environment[
                 ohostedcons.StorageEnv.DOMAIN_TYPE
-            ] == ohostedcons.DomainTypes.ISCSI
+            ] == ohostedcons.DomainTypes.ISCSI or
+            self.environment[
+                ohostedcons.StorageEnv.DOMAIN_TYPE
+            ] == ohostedcons.DomainTypes.FC
         ),
     )
     def _customization(self):
         self.cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        valid_access = False
-        valid_lun = False
-        address = None
-        port = None
-        user = None
-        password = None
-        target = None
+        self.domainType = self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE]
         lunGUID = None
-        valid_targets = []
-        while not valid_access:
-            address = self._customize_ip_address()
-            port = self._customize_port()
-            user = self._customize_user()
-            password = self._customize_password(user)
-            self.environment[otopicons.CoreEnv.LOG_FILTER].append(password)
-            # Validating access
-            try:
-                valid_targets = self._iscsi_discovery(
-                    address,
-                    port,
-                    user,
-                    password,
-                )
-                valid_access = True
-            except RuntimeError as e:
-                self.logger.debug('exception', exc_info=True)
-                self.logger.error(e)
-                if not self._interactive:
-                    raise RuntimeError(_('Cannot access iSCSI portal'))
-        self.environment[ohostedcons.StorageEnv.ISCSI_IP_ADDR] = address
-        self.environment[ohostedcons.StorageEnv.ISCSI_PORT] = port
-        self.environment[ohostedcons.StorageEnv.ISCSI_USER] = user
-        self.environment[ohostedcons.StorageEnv.ISCSI_PASSWORD] = password
+        valid_lun = False
+        target = None
+        if self.domainType == ohostedcons.DomainTypes.ISCSI:
+            valid_access = False
+            address = None
+            port = None
+            user = None
+            password = None
+            valid_targets = []
+            while not valid_access:
+                address = self._customize_ip_address()
+                port = self._customize_port()
+                user = self._customize_user()
+                password = self._customize_password(user)
+                self.environment[otopicons.CoreEnv.LOG_FILTER].append(password)
+                # Validating access
+                try:
+                    valid_targets = self._iscsi_discovery(
+                        address,
+                        port,
+                        user,
+                        password,
+                    )
+                    valid_access = True
+                except RuntimeError as e:
+                    self.logger.debug('exception', exc_info=True)
+                    self.logger.error(e)
+                    if not self._interactive:
+                        raise RuntimeError(_('Cannot access iSCSI portal'))
+            self.environment[ohostedcons.StorageEnv.ISCSI_IP_ADDR] = address
+            self.environment[ohostedcons.StorageEnv.ISCSI_PORT] = port
+            self.environment[ohostedcons.StorageEnv.ISCSI_USER] = user
+            self.environment[ohostedcons.StorageEnv.ISCSI_PASSWORD] = password
 
         while not valid_lun:
-            target = self._customize_target(
-                values=valid_targets,
-                default=valid_targets[0]
-            )
-            lunGUID = self._customize_lun(target)
+            if self.domainType == ohostedcons.DomainTypes.ISCSI:
+                target = self._customize_target(
+                    values=valid_targets,
+                    default=valid_targets[0]
+                )
+            else:
+                target = None
+            lunGUID = self._customize_lun(self.domainType, target)
             if lunGUID is not None:
                 try:
-                    self._validate_domain(target, lunGUID)
+                    self._validate_domain(self.domainType, target, lunGUID)
                     valid_lun = True
                 except Exception as e:
                     self.logger.debug('exception', exc_info=True)
                     self.logger.error(e)
                     if not self._interactive:
-                        raise RuntimeError(_('Cannot access iSCSI LUN'))
-
-        self.environment[ohostedcons.StorageEnv.ISCSI_TARGET] = target
+                        raise RuntimeError(_('Cannot access LUN'))
+        if self.domainType == ohostedcons.DomainTypes.ISCSI:
+            self.environment[ohostedcons.StorageEnv.ISCSI_TARGET] = target
         self.environment[ohostedcons.StorageEnv.LUN_ID] = lunGUID
 
     @plugin.event(
@@ -499,29 +537,23 @@ class Plugin(plugin.PluginBase):
         before=(
             ohostedcons.Stages.STORAGE_AVAILABLE,
         ),
-        condition=(
-            lambda self: self.environment[
+        condition=lambda self: (
+            self.environment[
                 ohostedcons.StorageEnv.DOMAIN_TYPE
-            ] == ohostedcons.DomainTypes.ISCSI
+            ] == ohostedcons.DomainTypes.ISCSI or
+            self.environment[
+                ohostedcons.StorageEnv.DOMAIN_TYPE
+            ] == ohostedcons.DomainTypes.FC
         ),
     )
     def _misc(self):
-        iscsi_device = self._iscsi_get_device(
-            ip=self.environment[ohostedcons.StorageEnv.ISCSI_IP_ADDR],
-            port=self.environment[ohostedcons.StorageEnv.ISCSI_PORT],
-            user=self.environment[ohostedcons.StorageEnv.ISCSI_USER],
-            password=self.environment[ohostedcons.StorageEnv.ISCSI_PASSWORD],
-            iqn=self.environment[ohostedcons.StorageEnv.ISCSI_TARGET],
-            lunGUID=self.environment[ohostedcons.StorageEnv.LUN_ID],
-        )
-
         if self.environment[ohostedcons.StorageEnv.VG_UUID] is None:
             # If we don't have a volume group we must create it
             self.logger.info(_('Creating Volume Group'))
             dom = self.cli.createVG(
                 self.environment[ohostedcons.StorageEnv.SD_UUID],
                 [
-                    iscsi_device['GUID'],
+                    self.environment[ohostedcons.StorageEnv.LUN_ID],
                 ],
                 False,
             )
@@ -538,7 +570,10 @@ class Plugin(plugin.PluginBase):
         self.logger.debug(vginfo)
         if vginfo['status']['code'] != 0:
             raise RuntimeError(vginfo['status']['message'])
-        if self.environment[ohostedcons.StorageEnv.ISCSI_PORTAL] is None:
+        if (
+            self.domainType == ohostedcons.DomainTypes.ISCSI and
+            self.environment[ohostedcons.StorageEnv.ISCSI_PORTAL] is None
+        ):
             try:
                 for pv in vginfo['info']['pvlist']:
                     for path in pv['pathlist']:

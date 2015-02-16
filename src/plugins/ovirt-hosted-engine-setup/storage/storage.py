@@ -186,6 +186,7 @@ class Plugin(plugin.PluginBase):
         """
         if self.storageType in (
             ohostedcons.VDSMConstants.ISCSI_DOMAIN,
+            ohostedcons.VDSMConstants.FC_DOMAIN,
         ):
             # For iSCSI we need to connect the pool for
             # having /rhev populated.
@@ -287,6 +288,7 @@ class Plugin(plugin.PluginBase):
     def _getExistingDomain(self):
         if self.storageType in (
             ohostedcons.VDSMConstants.ISCSI_DOMAIN,
+            ohostedcons.VDSMConstants.FC_DOMAIN,
         ):
             if self.environment[ohostedcons.StorageEnv.VG_UUID] is not None:
                 vginfo = self.cli.getVGInfo(
@@ -513,6 +515,7 @@ class Plugin(plugin.PluginBase):
             ]
         elif self.storageType in (
             ohostedcons.VDSMConstants.ISCSI_DOMAIN,
+            ohostedcons.VDSMConstants.FC_DOMAIN,
         ):
             typeSpecificArgs = self.environment[
                 ohostedcons.StorageEnv.VG_UUID
@@ -854,7 +857,7 @@ class Plugin(plugin.PluginBase):
         ),
         before=(
             ohostedcons.Stages.CONFIG_STORAGE_NFS,
-            ohostedcons.Stages.CONFIG_STORAGE_ISCSI,
+            ohostedcons.Stages.CONFIG_STORAGE_BLOCKD,
         ),
     )
     def _early_customization(self):
@@ -878,6 +881,7 @@ class Plugin(plugin.PluginBase):
                 validValues=(
                     ohostedcons.DomainTypes.GLUSTERFS,
                     ohostedcons.DomainTypes.ISCSI,
+                    ohostedcons.DomainTypes.FC,
                     ohostedcons.DomainTypes.NFS3,
                     ohostedcons.DomainTypes.NFS4,
                 ),
@@ -894,6 +898,9 @@ class Plugin(plugin.PluginBase):
             self.storageType = ohostedcons.VDSMConstants.GLUSTERFS_DOMAIN
         elif domain_type == ohostedcons.DomainTypes.ISCSI:
             self.storageType = ohostedcons.VDSMConstants.ISCSI_DOMAIN
+        elif domain_type == ohostedcons.DomainTypes.FC:
+            self.storageType = ohostedcons.VDSMConstants.FC_DOMAIN
+
         else:
             raise RuntimeError(
                 _(
@@ -914,7 +921,7 @@ class Plugin(plugin.PluginBase):
         priority=plugin.Stages.PRIORITY_FIRST,
         after=(
             ohostedcons.Stages.CONFIG_STORAGE_NFS,
-            ohostedcons.Stages.CONFIG_STORAGE_ISCSI,
+            ohostedcons.Stages.CONFIG_STORAGE_BLOCKD,
         ),
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_STORAGE,
@@ -953,7 +960,7 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VDSMConstants.ISCSI_DOMAIN,
         ):
             devices = self.cli.getDeviceList(
-                ohostedcons.VDSMConstants.ISCSI_DOMAIN
+                self.storageType
             )
             self.logger.debug(devices)
             if devices['status']['code'] != 0:
@@ -966,10 +973,15 @@ class Plugin(plugin.PluginBase):
                     ]:
                         iscsi_device = device
                         break
-
             if iscsi_device is None:
                 self.logger.info(_('Connecting Storage Domain'))
                 self._storageServerConnection()
+            if not self.domain_exists:
+                self.logger.info(_('Creating Storage Domain'))
+                self._createStorageDomain()
+        if self.storageType in (
+            ohostedcons.VDSMConstants.FC_DOMAIN,
+        ):
             if not self.domain_exists:
                 self.logger.info(_('Creating Storage Domain'))
                 self._createStorageDomain()

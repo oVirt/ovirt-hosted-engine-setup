@@ -95,21 +95,46 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.VDSCLI_RECONNECTED,
         ),
         condition=(
-            lambda self: self.environment[
-                ohostedcons.StorageEnv.DOMAIN_TYPE
-            ] == ohostedcons.DomainTypes.ISCSI and
+            lambda self: (
+                self.environment[
+                    ohostedcons.StorageEnv.DOMAIN_TYPE
+                ] == ohostedcons.DomainTypes.ISCSI or
+                self.environment[
+                    ohostedcons.StorageEnv.DOMAIN_TYPE
+                ] == ohostedcons.DomainTypes.FC
+            ) and
             not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
         ),
     )
     def _closeup(self):
-        lun = ovirtsdk.xml.params.LogicalUnit(
-            id=self.environment[ohostedcons.StorageEnv.GUID],
-            address=self.environment[ohostedcons.StorageEnv.ISCSI_IP_ADDR],
-            port=int(self.environment[ohostedcons.StorageEnv.ISCSI_PORT]),
-            target=self.environment[ohostedcons.StorageEnv.ISCSI_TARGET],
-            username=self.environment[ohostedcons.StorageEnv.ISCSI_USER],
-            password=self.environment[ohostedcons.StorageEnv.ISCSI_PASSWORD],
-        )
+        if self.environment[
+            ohostedcons.StorageEnv.DOMAIN_TYPE
+        ] == ohostedcons.DomainTypes.ISCSI:
+            lun = ovirtsdk.xml.params.LogicalUnit(
+                id=self.environment[ohostedcons.StorageEnv.GUID],
+                address=self.environment[ohostedcons.StorageEnv.ISCSI_IP_ADDR],
+                port=int(self.environment[ohostedcons.StorageEnv.ISCSI_PORT]),
+                target=self.environment[ohostedcons.StorageEnv.ISCSI_TARGET],
+                username=self.environment[ohostedcons.StorageEnv.ISCSI_USER],
+                password=self.environment[
+                    ohostedcons.StorageEnv.ISCSI_PASSWORD
+                ],
+            )
+            stype = 'iscsi'
+        elif self.environment[
+            ohostedcons.StorageEnv.DOMAIN_TYPE
+        ] == ohostedcons.DomainTypes.FC:
+            # it's not really possible today to add a FC LUN as a direct LUN
+            # but adding it as a fake iSCSI Direct LUN is enough to
+            # prevent improper usage of the hosted engine LUN
+            lun = ovirtsdk.xml.params.LogicalUnit(
+                id=self.environment[ohostedcons.StorageEnv.GUID],
+                address='0.0.0.0',
+                port=int(ohostedcons.Defaults.DEFAULT_ISCSI_PORT),
+                target='none',
+            )
+            stype = 'iscsi'
+
         disk = ovirtsdk.xml.params.Disk(
             alias=self.environment[ohostedcons.StorageEnv.IMG_ALIAS],
             description=self.environment[ohostedcons.StorageEnv.IMAGE_DESC],
@@ -117,7 +142,7 @@ class Plugin(plugin.PluginBase):
             sgio='unfiltered',
             format='raw',
             lun_storage=ovirtsdk.xml.params.Storage(
-                type_='iscsi',
+                type_=stype,
                 logical_unit=[
                     lun,
                 ],

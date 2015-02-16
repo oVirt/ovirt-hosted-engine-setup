@@ -24,14 +24,14 @@
 from otopi import util
 
 
-from . import iscsi
+from . import blockd
 from . import nfs
 from . import storage
 
 
 @util.export
 def createPlugins(context):
-    iscsi.Plugin(context=context)
+    blockd.Plugin(context=context)
     nfs.Plugin(context=context)
     storage.Plugin(context=context)
 

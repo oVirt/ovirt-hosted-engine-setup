@@ -75,6 +75,7 @@ class DomainTypes(object):
     NFS4 = 'nfs4'
     GLUSTERFS = 'glusterfs'
     ISCSI = 'iscsi'
+    FC = 'fc'
 
 
 @util.export
@@ -97,6 +98,7 @@ class VolumeFormat(object):
 @util.codegen
 class VDSMConstants(object):
     NFS_DOMAIN = 1
+    FC_DOMAIN = 2
     ISCSI_DOMAIN = 3
     GLUSTERFS_DOMAIN = 7
     DATA_DOMAIN = 1
@@ -762,7 +764,7 @@ class Stages(object):
     CONFIG_BOOT_DEVICE = 'ohosted.boot.configuration.available'
     CONFIG_STORAGE_EARLY = 'ohosted.storage.configuration.early'
     CONFIG_STORAGE_LATE = 'ohosted.storage.configuration.late'
-    CONFIG_STORAGE_ISCSI = 'ohosted.storage.iscsi.configuration.available'
+    CONFIG_STORAGE_BLOCKD = 'ohosted.storage.blockd.configuration.available'
     CONFIG_STORAGE_NFS = 'ohosted.storage.nfs.configuration.available'
     CONFIG_ADDITIONAL_HOST = 'ohosted.core.additional.host'
     REQUIRE_ANSWER_FILE = 'ohosted.core.require.answerfile'

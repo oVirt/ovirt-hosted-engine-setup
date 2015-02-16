@@ -187,6 +187,7 @@ class Plugin(plugin.PluginBase):
 
         if self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE] in (
             ohostedcons.DomainTypes.ISCSI,
+            ohostedcons.DomainTypes.FC,
         ):
             # Checking the available space on VG where
             # we have to preallocate the image
@@ -222,6 +223,7 @@ class Plugin(plugin.PluginBase):
         preallocate = ohostedcons.VolumeTypes.SPARSE_VOL
         if self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE] in (
             ohostedcons.DomainTypes.ISCSI,
+            ohostedcons.DomainTypes.FC,
         ):
             # Can't use sparse volume on block devices
             preallocate = ohostedcons.VolumeTypes.PREALLOCATED_VOL
