@@ -256,6 +256,37 @@ class Plugin(plugin.PluginBase):
             lunGUID = f_luns[int(slun)-1]['GUID']
         return lunGUID
 
+    def _customize_forcecreatevg(self):
+        if self.environment[
+            ohostedcons.StorageEnv.FORCE_CREATEVG
+        ] is None:
+            self.environment[
+                ohostedcons.StorageEnv.FORCE_CREATEVG
+            ] = self.dialog.queryString(
+                name='OVEHOSTED_FORCE_CREATEVG',
+                note=_(
+                    'The selected device is already used.\n'
+                    'To create a vg on this device, you must use Force.\n'
+                    'WARNING: This will destroy existing data on the device.\n'
+                    "(@VALUES@)[@DEFAULT@]? "
+                ),
+                prompt=True,
+                validValues=(_('Force'), _('Abort')),
+                caseSensitive=False,
+                default=_('Abort'),
+            ).lower() == _('Force').lower()
+
+    def _create_vg(self, forceVG=False):
+        return self.cli.createVG(
+            self.environment[ohostedcons.StorageEnv.SD_UUID],
+            [
+                self.environment[
+                    ohostedcons.StorageEnv.LUN_ID
+                ],
+            ],
+            forceVG,
+        )
+
     def _iscsi_discovery(self, address, port, user, password):
         targets = self.cli.discoverSendTargets(
             {
@@ -366,6 +397,7 @@ class Plugin(plugin.PluginBase):
             raise RuntimeError(
                 _('The requested device is not listed by VDSM')
             )
+        self.logger.debug(device)
         size_mb = int(device['capacity']) / pow(2, 20)
         self.logger.debug(
             'Available space on {iqn} is {space}Mb'.format(
@@ -404,6 +436,16 @@ class Plugin(plugin.PluginBase):
             self.environment[
                 ohostedcons.StorageEnv.VG_UUID
             ] = device['vgUUID']
+
+        if device['status'] == 'used' and device['vgUUID'] == '':
+            self._customize_forcecreatevg()
+            if not self.environment[
+                ohostedcons.StorageEnv.FORCE_CREATEVG
+            ]:
+                raise RuntimeError(
+                    _('The selected LUN is dirty; please clean it and retry')
+                )
+
         self.environment[ohostedcons.StorageEnv.GUID] = device['GUID']
 
     @plugin.event(
@@ -450,6 +492,10 @@ class Plugin(plugin.PluginBase):
         )
         self.environment.setdefault(
             ohostedcons.StorageEnv.GUID,
+            None
+        )
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.FORCE_CREATEVG,
             None
         )
 
@@ -551,17 +597,44 @@ class Plugin(plugin.PluginBase):
     def _misc(self):
         if self.environment[ohostedcons.StorageEnv.VG_UUID] is None:
             # If we don't have a volume group we must create it
+            forceVG = False
+            if self.environment[
+                ohostedcons.StorageEnv.FORCE_CREATEVG
+            ]:
+                forceVG = True
             self.logger.info(_('Creating Volume Group'))
-            dom = self.cli.createVG(
-                self.environment[ohostedcons.StorageEnv.SD_UUID],
-                [
-                    self.environment[ohostedcons.StorageEnv.LUN_ID],
-                ],
-                False,
-            )
+            dom = self._create_vg(forceVG)
             self.logger.debug(dom)
             if dom['status']['code'] != 0:
-                raise RuntimeError(dom['status']['message'])
+                self.logger.error(
+                    _(
+                        'Error creating Volume Group: {message}'
+                    ).format(
+                        message=dom['status']['message']
+                    )
+                )
+                if not forceVG:
+                    # eventually retry forcing VG creation on dirty storage
+                    self._customize_forcecreatevg()
+                    if not self.environment[
+                        ohostedcons.StorageEnv.FORCE_CREATEVG
+                    ]:
+                        raise RuntimeError(dom['status']['message'])
+                    else:
+                        forceVG = True
+                        dom = self._create_vg(forceVG)
+                        self.logger.debug(dom)
+                        if dom['status']['code'] != 0:
+                            self.logger.error(
+                                _(
+                                    'Error creating Volume Group: {message}'
+                                ).format(
+                                    message=dom['status']['message']
+                                )
+                            )
+                            raise RuntimeError(dom['status']['message'])
+                else:
+                    raise RuntimeError(dom['status']['message'])
             self.environment[
                 ohostedcons.StorageEnv.VG_UUID
             ] = dom['uuid']

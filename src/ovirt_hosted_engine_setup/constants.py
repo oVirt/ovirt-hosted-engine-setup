@@ -585,6 +585,8 @@ class StorageEnv(object):
     def LOCKSPACE_IMAGE_UUID(self):
         return 'OVEHOSTED_STORAGE/lockspaceImageUUID'
 
+    FORCE_CREATEVG = 'OVEHOSTED_ENGINE/forceCreateVG'
+
 
 @util.export
 @util.codegen
