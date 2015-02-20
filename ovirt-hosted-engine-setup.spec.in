@@ -65,7 +65,7 @@ Requires:       iptables-services
 %endif
 
 %if 0%{?rhel}
-Requires:       qemu-img-rhev >= 0.12.1.2-2.415
+Requires:       qemu-img-rhev >= 0.12.1.2-2.448
 %if 0%{?rhel} >= 7
 Requires:       iptables-services
 %endif
@@ -106,6 +106,9 @@ make %{?_smp_mflags} install DESTDIR="%{buildroot}"
 %{vdsmhooksdir}/before_vm_start/
 
 %changelog
+* Tue Mar 31 2015 Sandro Bonazzola <sbonazzo@redhat.com> - 1.2.4-0.0.master
+- 1.2.4-0.0.master
+
 * Tue Mar 31 2015 Sandro Bonazzola <sbonazzo@redhat.com> - 1.2.3-0.1.rc
 - 1.2.3-0.1.rc
 
