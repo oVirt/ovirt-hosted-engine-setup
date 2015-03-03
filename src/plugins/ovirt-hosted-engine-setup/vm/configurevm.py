@@ -232,7 +232,7 @@ class Plugin(plugin.PluginBase):
 
         if self.environment[
             ohostedcons.VMEnv.CDROM
-        ] is not None:
+        ]:
             subst['@CDROM@'] = self.environment[
                 ohostedcons.VMEnv.CDROM
             ]

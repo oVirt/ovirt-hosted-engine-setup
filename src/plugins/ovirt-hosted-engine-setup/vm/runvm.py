@@ -193,6 +193,16 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
         ],
     )
     def _boot_from_hd(self):
+        # Temporary attach cloud-init no-cloud iso if we have to
+        if (
+                self.environment[ohostedcons.VMEnv.BOOT] == 'disk' and
+                self.environment[ohostedcons.VMEnv.CDROM]
+        ):
+            self.environment[
+                ohostedcons.VMEnv.SUBST
+            ]['@CDROM@'] = self.environment[
+                ohostedcons.VMEnv.CDROM
+            ]
         self._create_vm()
 
 

@@ -116,24 +116,39 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.DIALOG_TITLES_E_VM,
         ),
         condition=lambda self: (
-            self.environment[ohostedcons.VMEnv.BOOT] == 'cdrom' and
+            (
+                self.environment[ohostedcons.VMEnv.BOOT] == 'cdrom' or
+                self.environment[ohostedcons.VMEnv.BOOT] == 'disk'
+            ) and
             not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
         )
     )
     def _customization(self):
+        mode = 'installation'
+        additional = ''
+        if self.environment[ohostedcons.VMEnv.BOOT] == 'disk':
+            additional = _(
+                'You can configure an optional ISO image '
+                'for cloud-init configuration\n'
+            )
+            mode = 'configuration'
         interactive = self.environment[
             ohostedcons.VMEnv.CDROM
         ] is None
         if not interactive:
-            if not self._check_iso_readable(
-                self.environment[ohostedcons.VMEnv.CDROM]
+            if (
+                    self.environment[ohostedcons.VMEnv.CDROM] and
+                    not self._check_iso_readable(
+                        self.environment[ohostedcons.VMEnv.CDROM]
+                    )
             ):
                 raise RuntimeError(
                     _(
-                        'The specified installation media is not '
+                        'The specified {mode} media is not '
                         'readable. Please ensure that {filepath} '
-                        'could be read by vdsm user or kvm group'
+                        'could be read by qemu user or kvm group'
                     ).format(
+                        mode=mode,
                         filepath=self.environment[
                             ohostedcons.VMEnv.CDROM
                         ]
@@ -147,8 +162,12 @@ class Plugin(plugin.PluginBase):
                 ] = self.dialog.queryString(
                     name='OVEHOSTED_VMENV_CDROM',
                     note=_(
-                        'Please specify path to installation media '
+                        '{additional}'
+                        'Please specify path to {mode} media '
                         'you would like to use [@DEFAULT@]: '
+                    ).format(
+                        additional=additional,
+                        mode=mode,
                     ),
                     prompt=True,
                     caseSensitive=True,
@@ -156,15 +175,24 @@ class Plugin(plugin.PluginBase):
                         ohostedcons.VMEnv.CDROM
                     ]),
                 )
-                valid = self._check_iso_readable(
-                    self.environment[ohostedcons.VMEnv.CDROM]
-                )
+                if mode == 'configuration':
+                    if self.environment[
+                        ohostedcons.VMEnv.CDROM
+                    ] == 'None':
+                        self.environment[
+                            ohostedcons.VMEnv.CDROM
+                        ] = False
+                        valid = True
+                if not valid:
+                    valid = self._check_iso_readable(
+                        self.environment[ohostedcons.VMEnv.CDROM]
+                    )
                 if not valid:
                     self.logger.error(
                         _(
                             'The specified installation media is not '
                             'readable. Please ensure that {filepath} '
-                            'could be read by vdsm user or kvm group '
+                            'could be read by qemu user or kvm group '
                             'or specify another installation media.'
                         ).format(
                             filepath=self.environment[

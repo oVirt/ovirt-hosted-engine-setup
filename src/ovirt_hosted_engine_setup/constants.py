@@ -634,7 +634,7 @@ class VMEnv(object):
     @ohostedattrs(
         answerfile=True,
         summary=True,
-        description=_('ISO image (for cdrom boot)'),
+        description=_('ISO image (cdrom boot/cloud-init)'),
     )
     def CDROM(self):
         return 'OVEHOSTED_VM/vmCDRom'
