@@ -46,6 +46,13 @@ class Plugin(plugin.PluginBase):
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
 
+    def _getMaxVCpus(self):
+        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        caps = cli.getVdsCapabilities()
+        if caps['status']['code'] != 0:
+            raise RuntimeError(caps['status']['message'])
+        return caps['info']['cpuCores']
+
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
     )
@@ -78,6 +85,7 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VMEnv.VCPUS
         ] is None
         valid = False
+        maxvcpus = int(self._getMaxVCpus())
         while not valid:
             if interactive:
                 self.environment[
@@ -117,6 +125,24 @@ class Plugin(plugin.PluginBase):
                         ) == _('Yes').lower()
                     ):
                         valid = False
+                if int(
+                    self.environment[ohostedcons.VMEnv.VCPUS]
+                ) > maxvcpus:
+                    message = _(
+                        'Invalid number of cpu specified: {vcpu}, '
+                        'while only {maxvcpus} are available on '
+                        'the host'
+                    ).format(
+                        vcpu=self.environment[
+                            ohostedcons.VMEnv.VCPUS
+                        ],
+                        maxvcpus=maxvcpus
+                    )
+                    if interactive:
+                        self.logger.warning(message)
+                        valid = False
+                    else:
+                        raise RuntimeError(message)
             except ValueError:
                 valid = False
                 if not interactive:
