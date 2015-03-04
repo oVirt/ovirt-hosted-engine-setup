@@ -287,7 +287,7 @@ class Plugin(plugin.PluginBase):
             )
             self.environment[
                 ohostedcons.VMEnv.VCPUS
-            ] = num_of_sockets * cpu_per_socket
+            ] = str(num_of_sockets * cpu_per_socket)
             self.logger.debug('Configuring memory')
             unit = tree.find(
                 'Content/Section/Item/{'
@@ -303,14 +303,12 @@ class Plugin(plugin.PluginBase):
                 )
             self.environment[
                 ohostedcons.VMEnv.MEM_SIZE_MB
-            ] = int(
-                tree.find(
-                    'Content/Section/Item/{'
-                    'http://schemas.dmtf.org/wbem/wscim/1/cim-schema'
-                    '/2/CIM_ResourceAllocationSettingData'
-                    '}VirtualQuantity'
-                ).text
-            )
+            ] = tree.find(
+                'Content/Section/Item/{'
+                'http://schemas.dmtf.org/wbem/wscim/1/cim-schema'
+                '/2/CIM_ResourceAllocationSettingData'
+                '}VirtualQuantity'
+            ).text
         except Exception as e:
             self.logger.debug(
                 'Error parsing OVF file',
