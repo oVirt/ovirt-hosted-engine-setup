@@ -172,7 +172,11 @@ class Plugin(plugin.PluginBase):
             raise RuntimeError(response['status']['message'])
         volumes = response['volumes']
         if volume not in volumes:
-            raise RuntimeError(_('GlusterFS Volume does not exist!'))
+            raise RuntimeError(
+                _('GlusterFS Volume {volume} does not exist!').format(
+                    volume=volume,
+                )
+            )
         if str(volumes[volume]['replicaCount']) != '3':
             raise RuntimeError(
                 _(
@@ -248,7 +252,7 @@ class Plugin(plugin.PluginBase):
         if self.environment[
             ohostedcons.StorageEnv.DOMAIN_TYPE
         ] == ohostedcons.DomainTypes.GLUSTERFS:
-            self.logger.warning(
+            self.logger.info(
                 _(
                     'Please note that Replica 3 support is required for '
                     'the shared storage.'
