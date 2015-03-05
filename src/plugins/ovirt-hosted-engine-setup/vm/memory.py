@@ -54,6 +54,11 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VMEnv.MEM_SIZE_MB,
             None
         )
+        # fixing values from answerfiles badly generated prior than 3.6
+        if type(self.environment[ohostedcons.VMEnv.MEM_SIZE_MB]) == int:
+            self.environment[
+                ohostedcons.VMEnv.MEM_SIZE_MB
+            ] = str(self.environment[ohostedcons.VMEnv.MEM_SIZE_MB])
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,

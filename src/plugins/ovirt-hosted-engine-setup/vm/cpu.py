@@ -54,6 +54,11 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VMEnv.VCPUS,
             None
         )
+        # fixing values from answerfiles badly generated prior than 3.6
+        if type(self.environment[ohostedcons.VMEnv.VCPUS]) == int:
+            self.environment[
+                ohostedcons.VMEnv.VCPUS
+            ] = str(self.environment[ohostedcons.VMEnv.VCPUS])
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
