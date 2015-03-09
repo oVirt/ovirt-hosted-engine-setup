@@ -22,21 +22,22 @@
 NFS / GlusterFS storage plugin.
 """
 
-import os
 import gettext
+import os
 import tempfile
 import time
 
 
-from otopi import util
 from otopi import plugin
+from otopi import util
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import domains as ohosteddomains
 
 
-_ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
+def _(m):
+    return gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
 
 @util.export

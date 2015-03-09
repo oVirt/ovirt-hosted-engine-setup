@@ -26,22 +26,22 @@ import contextlib
 import gettext
 import os
 import re
+import socket
 import tempfile
 import time
 import urllib2
-import socket
 
 
 import ovirtsdk.api
-import ovirtsdk.xml
 import ovirtsdk.infrastructure.errors
+import ovirtsdk.xml
 
 
-from otopi import util
-from otopi import plugin
 from otopi import constants as otopicons
-from otopi import transaction
 from otopi import filetransaction
+from otopi import plugin
+from otopi import transaction
+from otopi import util
 
 
 from vdsm import netinfo
@@ -51,7 +51,8 @@ from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import vds_info
 
 
-_ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
+def _(m):
+    return gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
 
 @util.export

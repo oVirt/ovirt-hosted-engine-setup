@@ -17,8 +17,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
-import time
+
 import gettext
+import time
 
 
 from otopi import base
@@ -28,7 +29,8 @@ from otopi import util
 from ovirt_hosted_engine_setup import constants as ohostedcons
 
 
-_ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
+def _(m):
+    return gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
 
 @util.export

@@ -23,20 +23,24 @@ sanlock lockspace initialization plugin.
 """
 
 import gettext
+import os
 import sanlock
 import stat
-import os
 
 
-from otopi import util
 from otopi import plugin
+from otopi import util
+
+
+from ovirt_hosted_engine_ha.lib import storage_backends
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import util as ohostedutil
-from ovirt_hosted_engine_ha.lib import storage_backends
 
-_ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
+
+def _(m):
+    return gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
 
 @util.export
@@ -152,8 +156,11 @@ class Plugin(plugin.PluginBase):
 
         # Compute the size needed to store metadata for all hosts
         # and for the global cluster state
-        md_size = (ohostedcons.Const.METADATA_CHUNK_SIZE
-                   * (ohostedcons.Const.MAX_HOST_ID + 1))
+        md_size = (
+            ohostedcons.Const.METADATA_CHUNK_SIZE * (
+                ohostedcons.Const.MAX_HOST_ID + 1
+            )
+        )
 
         with ohostedutil.VirtUserContext(
             self.environment,

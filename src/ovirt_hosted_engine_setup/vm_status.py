@@ -30,7 +30,8 @@ from ovirt_hosted_engine_ha.client import client
 from ovirt_hosted_engine_ha.lib.exceptions import BrokerConnectionError
 
 
-_ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
+def _(m):
+    return gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
 
 class VmStatus(object):

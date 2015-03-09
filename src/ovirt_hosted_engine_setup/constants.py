@@ -27,10 +27,13 @@ import sys
 
 
 from otopi import util
+
+
 from ovirt_hosted_engine_setup import config
 
 
-_ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
+def _(m):
+    return gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
 
 def ohostedattrsclass(o):

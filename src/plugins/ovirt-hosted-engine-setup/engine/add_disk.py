@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2014 Red Hat, Inc.
+# Copyright (C) 2014-2015 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -27,18 +27,19 @@ import gettext
 
 
 import ovirtsdk.api
-import ovirtsdk.xml
 import ovirtsdk.infrastructure.errors
+import ovirtsdk.xml
 
 
-from otopi import util
 from otopi import plugin
+from otopi import util
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 
 
-_ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
+def _(m):
+    return gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
 
 @util.export

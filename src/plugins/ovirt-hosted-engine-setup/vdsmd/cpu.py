@@ -26,8 +26,8 @@ cpu check plugin.
 import gettext
 
 
-from otopi import util
 from otopi import plugin
+from otopi import util
 
 
 from ovirt_host_deploy import hardware
@@ -36,7 +36,8 @@ from ovirt_host_deploy import hardware
 from ovirt_hosted_engine_setup import constants as ohostedcons
 
 
-_ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
+def _(m):
+    return gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
 
 @util.export

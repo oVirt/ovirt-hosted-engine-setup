@@ -22,15 +22,15 @@
 Local storage domain plugin.
 """
 
-import re
-import uuid
 import gettext
+import re
 import stat
+import uuid
 
 
 from otopi import constants as otopicons
-from otopi import util
 from otopi import plugin
+from otopi import util
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
@@ -42,7 +42,8 @@ from ovirt_hosted_engine_ha.client import client
 from ovirt_hosted_engine_ha.lib import storage_backends
 
 
-_ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
+def _(m):
+    return gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
 
 @util.export

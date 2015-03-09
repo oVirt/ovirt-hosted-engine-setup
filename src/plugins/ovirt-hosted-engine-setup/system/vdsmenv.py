@@ -20,15 +20,15 @@
 
 """VDSM misc plugin."""
 
-import pwd
-import grp
 import gettext
+import grp
+import pwd
 import socket
 import time
 
 
-from otopi import util
 from otopi import plugin
+from otopi import util
 
 
 from vdsm import vdscli
@@ -37,7 +37,8 @@ from vdsm import vdscli
 from ovirt_hosted_engine_setup import constants as ohostedcons
 
 
-_ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
+def _(m):
+    return gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
 
 @util.export

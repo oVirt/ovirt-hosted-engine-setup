@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2015 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -23,24 +23,23 @@ Firewall manager selection plugin.
 """
 
 
-import os
 import gettext
-
-
 import libxml2
+import os
 
 
-from otopi import util
-from otopi import plugin
 from otopi import constants as otopicons
 from otopi import filetransaction
+from otopi import plugin
+from otopi import util
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import util as ohostedutil
 
 
-_ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
+def _(m):
+    return gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
 
 @util.export
@@ -244,8 +243,9 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
         condition=lambda self: (
-            self.environment[ohostedcons.NetworkEnv.FIREWALL_MANAGER] is None
-            and
+            self.environment[
+                ohostedcons.NetworkEnv.FIREWALL_MANAGER
+            ] is None and
             not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
         ),
 

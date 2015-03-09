@@ -24,15 +24,15 @@ bridge configuration plugin.
 
 
 import errno
+import ethtool
 import gettext
 import os
 
 
-import ethtool
-
-
 from otopi import util
 from otopi import plugin
+
+
 from vdsm import netinfo
 
 
@@ -40,7 +40,8 @@ from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import vds_info
 
 
-_ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
+def _(m):
+    return gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
 
 @util.export

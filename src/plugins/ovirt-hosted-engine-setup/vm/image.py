@@ -22,12 +22,13 @@
 VM image creation plugin.
 """
 
-import uuid
+
 import gettext
+import uuid
 
 
-from otopi import util
 from otopi import plugin
+from otopi import util
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
@@ -35,7 +36,8 @@ from ovirt_hosted_engine_setup import domains as ohosteddomains
 from ovirt_hosted_engine_setup import tasks
 
 
-_ = lambda m: gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
+def _(m):
+    return gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
 
 @util.export
