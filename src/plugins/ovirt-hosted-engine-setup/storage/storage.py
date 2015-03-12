@@ -366,7 +366,14 @@ class Plugin(plugin.PluginBase):
                 ]
             )
             if valid[0] != 0:
-                raise RuntimeError(_('Invalid Storage Domain'))
+                raise RuntimeError(
+                    _(
+                        'Dirty Storage Domain: {message}\n'
+                        'Please clean the storage device and try again'
+                    ).format(
+                        message=valid[1],
+                    )
+                )
 
     def _getStorageDomainsList(self, spUUID=None):
         if not spUUID:
