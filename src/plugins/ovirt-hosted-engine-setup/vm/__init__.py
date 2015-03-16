@@ -26,6 +26,7 @@ from otopi import util
 
 from . import boot_cdrom
 from . import boot_disk
+from . import cloud_init
 from . import configurevm
 from . import cpu
 from . import image
@@ -39,6 +40,7 @@ from . import runvm
 def createPlugins(context):
     boot_cdrom.Plugin(context=context)
     boot_disk.Plugin(context=context)
+    cloud_init.Plugin(context=context)
     configurevm.Plugin(context=context)
     cpu.Plugin(context=context)
     image.Plugin(context=context)

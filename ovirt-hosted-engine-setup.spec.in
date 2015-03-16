@@ -53,6 +53,7 @@ Requires:       bind-utils
 Requires:       ovirt-hosted-engine-ha >= 1.3.0
 Requires:       sanlock >= 2.8
 Requires:       sanlock-python >= 2.8
+Requires:       genisoimage
 Requires:       lsof
 Requires:       iptables
 BuildRequires:  gettext

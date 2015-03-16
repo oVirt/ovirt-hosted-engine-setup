@@ -112,6 +112,7 @@ class Plugin(plugin.PluginBase):
         after=(
             ohostedcons.Stages.DIALOG_TITLES_S_VM,
             ohostedcons.Stages.CONFIG_BOOT_DEVICE,
+            ohostedcons.Stages.CONFIG_CLOUD_INIT_OPTIONS,
         ),
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_VM,
@@ -121,7 +122,13 @@ class Plugin(plugin.PluginBase):
                 self.environment[ohostedcons.VMEnv.BOOT] == 'cdrom' or
                 self.environment[ohostedcons.VMEnv.BOOT] == 'disk'
             ) and
-            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
+            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] and
+            not self.environment[
+                ohostedcons.VMEnv.GENERATE_CLOUD_INIT_ISO
+            ] in (
+                ohostedcons.Const.CLOUD_INIT_SKIP,
+                ohostedcons.Const.CLOUD_INIT_GENERATE,
+            )
         )
     )
     def _customization(self):

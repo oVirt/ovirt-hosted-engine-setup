@@ -292,6 +292,9 @@ class Const(object):
     HA_NOTIF_SMTP_DEST_EMAILS = 'destination-emails'
     BLANK_UUID = '00000000-0000-0000-0000-000000000000'
     VDSCLI_SSL_TIMEOUT = 900
+    CLOUD_INIT_GENERATE = 'generate'
+    CLOUD_INIT_SKIP = 'skip'
+    CLOUD_INIT_EXISTING = 'existing'
 
 
 @util.export
@@ -645,6 +648,10 @@ class VMEnv(object):
     def CDROM(self):
         return 'OVEHOSTED_VM/vmCDRom'
 
+    GENERATE_CLOUD_INIT_ISO = 'OVEHOSTED_VM/cloudInitISO'
+    CLOUD_INIT_ROOTPWD = 'OVEHOSTED_VM/cloudinitRootPwd'
+    CLOUD_INIT_INSTANCE_HOSTNAME = 'OVEHOSTED_VM/cloudinitInstanceHostName'
+
     @ohostedattrs(
         answerfile=True,
     )
@@ -773,6 +780,7 @@ class Stages(object):
     CONFIG_STORAGE_BLOCKD = 'ohosted.storage.blockd.configuration.available'
     CONFIG_STORAGE_NFS = 'ohosted.storage.nfs.configuration.available'
     CONFIG_ADDITIONAL_HOST = 'ohosted.core.additional.host'
+    CONFIG_CLOUD_INIT_OPTIONS = 'ohosted.boot.configuration.cloud_init_options'
     REQUIRE_ANSWER_FILE = 'ohosted.core.require.answerfile'
     CONFIG_OVF_IMPORT = 'ohosted.configuration.ovf'
     VDSMD_START = 'ohosted.vdsm.started'

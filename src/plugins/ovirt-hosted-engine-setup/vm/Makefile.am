@@ -30,6 +30,7 @@ dist_my_PYTHON = \
 	boot_disk.py \
 	cpu.py \
 	configurevm.py \
+	cloud_init.py \
 	image.py \
 	mac.py \
 	machine.py \

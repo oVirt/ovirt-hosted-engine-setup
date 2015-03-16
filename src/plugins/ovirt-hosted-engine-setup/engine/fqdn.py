@@ -244,6 +244,20 @@ class Plugin(plugin.PluginBase):
         ),
     )
     def _customization(self):
+        if (
+            self.environment[
+                ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+            ] is None and
+            self.environment[
+                ohostedcons.VMEnv.CLOUD_INIT_INSTANCE_HOSTNAME
+            ] is not None
+        ):
+            self.environment[
+                ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+            ] = self.environment[
+                ohostedcons.VMEnv.CLOUD_INIT_INSTANCE_HOSTNAME
+            ]
+
         interactive = self.environment[
             ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
         ] is None
