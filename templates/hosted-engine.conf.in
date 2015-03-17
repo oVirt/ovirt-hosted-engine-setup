@@ -3,7 +3,6 @@ vm_disk_id=@VM_DISK_ID@
 vmid=@VM_UUID@
 storage=@SHARED_STORAGE@
 conf=@CONF_FILE@
-service_start_time=0
 host_id=@HOST_ID@
 console=@CONSOLE_TYPE@
 domainType=@DOMAIN_TYPE@
