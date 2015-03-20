@@ -289,6 +289,7 @@ class Const(object):
     HA_NOTIF_SMTP_SOURCE_EMAIL = 'source-email'
     HA_NOTIF_SMTP_DEST_EMAILS = 'destination-emails'
     BLANK_UUID = '00000000-0000-0000-0000-000000000000'
+    VDSCLI_SSL_TIMEOUT = 900
 
 
 @util.export

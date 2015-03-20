@@ -69,7 +69,7 @@ class Plugin(plugin.PluginBase):
             hostPort = vdscli.cannonizeHostPort('localhost')
             serv.do_connect(hostPort)
 
-        cli = vdscli.connect()
+        cli = vdscli.connect(timeout=ohostedcons.Const.VDSCLI_SSL_TIMEOUT)
         self.environment[ohostedcons.VDSMEnv.VDS_CLI] = cli
 
         self.environment[ohostedcons.VDSMEnv.VDS_CLIENT] = serv
