@@ -51,7 +51,7 @@ class Plugin(plugin.PluginBase):
         super(Plugin, self).__init__(context=context)
 
     def _connect(self):
-        cli = vdscli.connect()
+        cli = vdscli.connect(timeout=ohostedcons.Const.VDSCLI_SSL_TIMEOUT)
         self.environment[ohostedcons.VDSMEnv.VDS_CLI] = cli
         vdsmReady = False
         retry = 0
