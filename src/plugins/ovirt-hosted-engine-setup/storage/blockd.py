@@ -314,7 +314,8 @@ class Plugin(plugin.PluginBase):
             for device in devices['devList']:
                 for path in device['pathlist']:
                     if path['iqn'] == iqn:
-                        iscsi_lun_list.append(device)
+                        if device not in iscsi_lun_list:
+                            iscsi_lun_list.append(device)
             if iscsi_lun_list:
                 break
 
