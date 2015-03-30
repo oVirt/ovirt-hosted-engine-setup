@@ -279,7 +279,6 @@ class Plugin(plugin.PluginBase):
 
     def _removeNFSTrailingSlash(self, path):
         nfspath = path.split(":")
-        nfspath[0]
         if len(nfspath[1]) > 1:
             ename = nfspath[1].rstrip('/')
         else:
@@ -336,6 +335,11 @@ class Plugin(plugin.PluginBase):
                 if (
                     domain_info and
                     'remotePath' in domain_info and
+                    'type' in domain_info and
+                    domain_info['type'] in (
+                        ohostedcons.VDSMConstants.NFS_DOMAIN,
+                        ohostedcons.VDSMConstants.GLUSTERFS_DOMAIN,
+                    ) and
                     self._removeNFSTrailingSlash(
                         domain_info['remotePath']
                     ) == self._removeNFSTrailingSlash(
