@@ -96,11 +96,11 @@ class Plugin(plugin.PluginBase):
         name=ohostedcons.Stages.CONFIG_CLOUD_INIT_OPTIONS,
     )
     def _customization(self):
-        interactive = {
+        interactive = set([
             self.environment[ohostedcons.VMEnv.GENERATE_CLOUD_INIT_ISO],
             self.environment[ohostedcons.VMEnv.CLOUD_INIT_ROOTPWD],
             self.environment[ohostedcons.VMEnv.CLOUD_INIT_INSTANCE_HOSTNAME],
-        } == {None}
+        ]) == set([None])
 
         if interactive:
             if self.dialog.queryString(
