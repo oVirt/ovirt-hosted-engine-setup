@@ -24,10 +24,13 @@ VM configuration plugin.
 
 
 import gettext
+import socket
+
 
 from otopi import constants as otopicons
 from otopi import plugin
 from otopi import util
+from vdsm import vdscli
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
@@ -142,46 +145,59 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
         # connect from remote.
         os_installed = False
         while not os_installed:
-            self._create_vm()
-            response = None
-            while response is None:
-                response = self.dialog.queryString(
-                    name='OVEHOSTED_INSTALLING_OS',
-                    note=_(
-                        'The VM has been started.  Install the OS and shut '
-                        'down or reboot it.  To continue please make a '
-                        'selection:\n\n'
-                        '(1) Continue setup - VM installation is complete\n'
-                        '(2) Reboot the VM and restart installation\n'
-                        '(3) Abort setup\n'
-                        '(4) Destroy VM and abort setup\n'
-                        '\n(@VALUES@)[@DEFAULT@]: '
-                    ),
-                    prompt=True,
-                    validValues=(_('1'), _('2'), _('3'), _('4')),
-                    default=_('1'),
-                    caseSensitive=False)
-                if response == _('1').lower():
-                    self.dialog.note(
-                        _('Waiting for VM to shut down...\n')
-                    )
-                    if not self._wait_vm_destroyed():
+            try:
+                self._create_vm()
+                response = None
+                while response is None:
+                    response = self.dialog.queryString(
+                        name='OVEHOSTED_INSTALLING_OS',
+                        note=_(
+                            'The VM has been started. '
+                            'Install the OS and shut down or reboot it. '
+                            'To continue please make a selection:\n\n'
+                            '(1) Continue setup - '
+                            'VM installation is complete\n'
+                            '(2) Reboot the VM and restart installation\n'
+                            '(3) Abort setup\n'
+                            '(4) Destroy VM and abort setup\n'
+                            '\n(@VALUES@)[@DEFAULT@]: '
+                        ),
+                        prompt=True,
+                        validValues=(_('1'), _('2'), _('3'), _('4')),
+                        default=_('1'),
+                        caseSensitive=False)
+                    if response == _('1').lower():
+                        self.dialog.note(
+                            _('Waiting for VM to shut down...\n')
+                        )
+                        if not self._wait_vm_destroyed():
+                            self._destroy_vm()
+                        os_installed = True
+                    elif response == _('2').lower():
                         self._destroy_vm()
-                    os_installed = True
-                elif response == _('2').lower():
-                    self._destroy_vm()
-                elif response == _('3').lower():
-                    raise RuntimeError(_('OS installation aborted by user'))
-                elif response == _('4').lower():
-                    self._destroy_vm()
-                    raise RuntimeError(
-                        _('VM destroyed and setup aborted by user')
-                    )
-                else:
-                    self.logger.error(
-                        'Invalid option \'{0}\''.format(response)
-                    )
-                    response = None
+                    elif response == _('3').lower():
+                        raise RuntimeError(
+                            _('OS installation aborted by user')
+                        )
+                    elif response == _('4').lower():
+                        self._destroy_vm()
+                        raise RuntimeError(
+                            _('VM destroyed and setup aborted by user')
+                        )
+                    else:
+                        self.logger.error(
+                            'Invalid option \'{0}\''.format(response)
+                        )
+                        response = None
+            except socket.error as e:
+                self.logger.debug(
+                    'Error talking with VDSM (%s), reconnecting.' % str(e),
+                    exc_info=True
+                )
+                cli = vdscli.connect(
+                    timeout=ohostedcons.Const.VDSCLI_SSL_TIMEOUT
+                )
+                self.environment[ohostedcons.VDSMEnv.VDS_CLI] = cli
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
@@ -204,7 +220,20 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
             ]['@CDROM@'] = self.environment[
                 ohostedcons.VMEnv.CDROM
             ]
-        self._create_vm()
+        created = False
+        while not created:
+            try:
+                self._create_vm()
+                created = True
+            except socket.error as e:
+                self.logger.debug(
+                    'Error talking with VDSM (%s), reconnecting.' % str(e),
+                    exc_info=True
+                )
+                cli = vdscli.connect(
+                    timeout=ohostedcons.Const.VDSCLI_SSL_TIMEOUT
+                )
+                self.environment[ohostedcons.VDSMEnv.VDS_CLI] = cli
 
 
 # vim: expandtab tabstop=4 shiftwidth=4
