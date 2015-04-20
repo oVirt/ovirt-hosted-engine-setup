@@ -618,7 +618,7 @@ class Plugin(plugin.PluginBase):
     def _storagePoolConnection(self, disconnect=False):
         spUUID = self.environment[ohostedcons.StorageEnv.SP_UUID]
         sdUUID = self.environment[ohostedcons.StorageEnv.SD_UUID]
-        ID = self.environment[ohostedcons.StorageEnv.HOST_ID]
+        ID = int(self.environment[ohostedcons.StorageEnv.HOST_ID])
         scsi_key = spUUID
         master = sdUUID
         master_ver = 1
