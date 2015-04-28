@@ -81,6 +81,7 @@ class Plugin(plugin.PluginBase):
         super(Plugin, self).__init__(context=context)
         self._ovirtsdk_api = ovirtsdk.api
         self._ovirtsdk_xml = ovirtsdk.xml
+        self._interactive_admin_pwd = True
 
     def _getPKICert(self):
         self.logger.debug('Acquiring ca.crt from the engine')
@@ -459,7 +460,7 @@ class Plugin(plugin.PluginBase):
                         _('Empty host name not allowed')
                     )
 
-        interactive = (
+        self._interactive_admin_pwd = (
             self.environment[ohostedcons.EngineEnv.ADMIN_PASSWORD] is None
         )
         while self.environment[ohostedcons.EngineEnv.ADMIN_PASSWORD] is None:
@@ -473,7 +474,7 @@ class Plugin(plugin.PluginBase):
                 hidden=True,
             )
             if password:
-                if not interactive:
+                if not self._interactive_admin_pwd:
                     self.environment[
                         ohostedcons.EngineEnv.ADMIN_PASSWORD
                     ] = password
@@ -493,7 +494,7 @@ class Plugin(plugin.PluginBase):
                     else:
                         self.logger.error(_('Passwords do not match'))
             else:
-                if interactive:
+                if self._interactive_admin_pwd:
                     self.logger.error(_('Please specify a password'))
                 else:
                     raise RuntimeError(
@@ -528,43 +529,77 @@ class Plugin(plugin.PluginBase):
         self._getSSHkey()
         cluster_name = None
         default_cluster_name = 'Default'
-        try:
-            self.logger.debug('Connecting to the Engine')
-            engine_api = self._ovirtsdk_api.API(
-                url='https://{fqdn}/ovirt-engine/api'.format(
-                    fqdn=self.environment[
-                        ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+        valid = False
+        while not valid:
+            try:
+                self.logger.info(_('Connecting to the Engine'))
+                engine_api = self._ovirtsdk_api.API(
+                    url='https://{fqdn}/ovirt-engine/api'.format(
+                        fqdn=self.environment[
+                            ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+                        ],
+                    ),
+                    username='admin@internal',
+                    password=self.environment[
+                        ohostedcons.EngineEnv.ADMIN_PASSWORD
                     ],
-                ),
-                username='admin@internal',
-                password=self.environment[
-                    ohostedcons.EngineEnv.ADMIN_PASSWORD
-                ],
-                ca_file=self.environment[
-                    ohostedcons.EngineEnv.TEMPORARY_CERT_FILE
-                ],
-            )
-        except ovirtsdk.infrastructure.errors.RequestError as e:
-            self.logger.error(
-                _(
-                    'Cannot connect to engine APIs on {fqdn}:\n '
-                    '{details}\n'
-                ).format(
-                    fqdn=self.environment[
-                        ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
-                    ],
-                    details=e.detail
-                )
-            )
-            raise RuntimeError(
-                _(
-                    'Cannot connect to engine APIs on {fqdn}'
-                ).format(
-                    fqdn=self.environment[
-                        ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+                    ca_file=self.environment[
+                        ohostedcons.EngineEnv.TEMPORARY_CERT_FILE
                     ],
                 )
-            )
+                # trigger first access
+                engine_api.clusters.list()
+                valid = True
+            except ovirtsdk.infrastructure.errors.RequestError as e:
+                if e.status == 401:
+                    if self._interactive_admin_pwd:
+                        self.logger.error(
+                            _(
+                                'The engine API didn''t accepted '
+                                'the administrator password you provided\n'
+                                'Please enter it again to retry.'
+                            )
+                        )
+                        self.environment[
+                            ohostedcons.EngineEnv.ADMIN_PASSWORD
+                        ] = self.dialog.queryString(
+                            name='ENGINE_ADMIN_PASSWORD',
+                            note=_(
+                                'Enter ''admin@internal'' user password that '
+                                'will be used for accessing '
+                                'the Administrator Portal: '
+                            ),
+                            prompt=True,
+                            hidden=True,
+                        )
+                    else:
+                        raise RuntimeError(
+                            _(
+                                'The engine API didn''t accepted '
+                                'the administrator password you provided\n'
+                            )
+                        )
+                else:
+                    self.logger.error(
+                        _(
+                            'Cannot connect to engine APIs on {fqdn}:\n'
+                            '{details}\n'
+                        ).format(
+                            fqdn=self.environment[
+                                ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+                            ],
+                            details=e.detail
+                        )
+                    )
+                    raise RuntimeError(
+                        _(
+                            'Cannot connect to engine APIs on {fqdn}'
+                        ).format(
+                            fqdn=self.environment[
+                                ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+                            ],
+                        )
+                    )
 
         try:
             conn = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
