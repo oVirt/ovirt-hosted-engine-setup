@@ -221,6 +221,7 @@ class Plugin(plugin.PluginBase):
         super(Plugin, self).__init__(context=context)
         self._source_image = None
         self._image_path = None
+        self._ovf_mem_size_mb = None
 
     def _parse_ovf(self, tar, ovf_xml):
         valid = True
@@ -302,9 +303,7 @@ class Plugin(plugin.PluginBase):
                         unit=unit,
                     )
                 )
-            self.environment[
-                ohostedcons.VMEnv.MEM_SIZE_MB
-            ] = tree.find(
+            self._ovf_mem_size_mb = tree.find(
                 'Content/Section/Item/{'
                 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema'
                 '/2/CIM_ResourceAllocationSettingData'
@@ -442,6 +441,27 @@ class Plugin(plugin.PluginBase):
                             ]
                         )
                     )
+
+        if self.environment[
+            ohostedcons.VMEnv.MEM_SIZE_MB
+        ] is None:
+            if interactive:
+                self.environment[
+                    ohostedcons.VMEnv.MEM_SIZE_MB
+                ] = self.dialog.queryString(
+                    name='ovehosted_vmenv_mem_ovf',
+                    note=_(
+                        'Please specify the memory size of the appliance '
+                        'in MB [Defaults to OVF value: @DEFAULT@]: '
+                    ),
+                    prompt=True,
+                    default=self._ovf_mem_size_mb,
+                )
+            else:
+                self.environment[
+                    ohostedcons.VMEnv.MEM_SIZE_MB
+                ] = self._ovf_mem_size_mb
+
         valid = False
         checker = ohosteddomains.DomainChecker()
         while not valid:
