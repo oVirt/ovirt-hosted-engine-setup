@@ -337,8 +337,8 @@ class Plugin(plugin.PluginBase):
                     'remotePath' in domain_info and
                     'type' in domain_info and
                     domain_info['type'] in (
-                        ohostedcons.VDSMConstants.NFS_DOMAIN,
-                        ohostedcons.VDSMConstants.GLUSTERFS_DOMAIN,
+                        ohostedcons.StorageDomainType.NFS,
+                        ohostedcons.StorageDomainType.GLUSTERFS,
                     ) and
                     self._removeNFSTrailingSlash(
                         domain_info['remotePath']

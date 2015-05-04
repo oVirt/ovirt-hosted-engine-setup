@@ -109,6 +109,19 @@ class VDSMConstants(object):
 
 @util.export
 @util.codegen
+class StorageDomainType(object):
+    UNKNOWN = 'UNKNOWN'
+    NFS = 'NFS'
+    FCP = 'FCP'
+    ISCSI = 'ISCSI'
+    LOCALFS = 'LOCALFS'
+    CIFS = 'CIFS'
+    SHAREDFS = 'SHAREDFS'
+    GLUSTERFS = 'GLUSTERFS'
+
+
+@util.export
+@util.codegen
 class FileLocations(object):
     SYSCONFDIR = '/etc'
     DATADIR = '/usr/share'
