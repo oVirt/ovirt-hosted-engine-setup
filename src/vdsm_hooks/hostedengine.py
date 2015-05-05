@@ -44,11 +44,42 @@ class HostedEngineHook(object):
             event_element.appendChild(self.domxml.createTextNode('destroy'))
             domain.appendChild(event_element)
 
+    def appendAgentDevice(self, path, name):
+        """
+          <channel type='unix'>
+             <target type='virtio' name=name/>
+             <source mode='bind' path=path+vm_uuid+'.'+name/>
+          </channel>
+        """
+        vm_uuid_element = self.domxml.getElementsByTagName('uuid')[0]
+        vm_uuid = vm_uuid_element.childNodes[0].nodeValue
+        devices = self.domxml.getElementsByTagName('devices')[0]
+
+        channel = self.domxml.createElement('channel')
+        channel.setAttribute('type', 'unix')
+
+        target = self.domxml.createElement('target')
+        target.setAttribute('type', 'virtio')
+        target.setAttribute('name', name)
+
+        source = self.domxml.createElement('source')
+        source.setAttribute('mode', 'bind')
+        source.setAttribute('path', path+vm_uuid+'.'+name)
+
+        channel.appendChild(target)
+        channel.appendChild(source)
+        devices.appendChild(channel)
+
     def main(self):
         if self.enabled:
             self.read_config()
             if self.is_hosted_engine_vm():
                 self.set_destroy_on_events()
+                # TODO: append only on first boot
+                self.appendAgentDevice(
+                    ohostedcons.Const.OVIRT_HE_CHANNEL_PATH,
+                    ohostedcons.Const.OVIRT_HE_CHANNEL_NAME,
+                )
             self.save()
 
 

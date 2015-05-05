@@ -314,6 +314,13 @@ class Const(object):
     CLOUD_INIT_GENERATE = 'generate'
     CLOUD_INIT_SKIP = 'skip'
     CLOUD_INIT_EXISTING = 'existing'
+    CLOUD_INIT_APPLIANCEANSWERS = '/root/ovirt-engine-answers'
+    CLOUD_INIT_HEANSWERS = '/root/heanswers.conf'
+    OVIRT_HE_CHANNEL_NAME = 'org.ovirt.hosted-engine-setup.0'
+    OVIRT_HE_CHANNEL_PATH = '/var/lib/libvirt/qemu/channels/'
+    VIRTIO_PORTS_PATH = '/dev/virtio-ports/'
+    E_SETUP_SUCCESS_STRING = 'HE_APPLIANCE_ENGINE_SETUP_SUCCESS'
+    E_SETUP_FAIL_STRING = 'HE_APPLIANCE_ENGINE_SETUP_FAIL'
 
 
 @util.export
@@ -691,9 +698,25 @@ class VMEnv(object):
     def CDROM(self):
         return 'OVEHOSTED_VM/vmCDRom'
 
-    GENERATE_CLOUD_INIT_ISO = 'OVEHOSTED_VM/cloudInitISO'
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def GENERATE_CLOUD_INIT_ISO(self):
+        return 'OVEHOSTED_VM/cloudInitISO'
+
     CLOUD_INIT_ROOTPWD = 'OVEHOSTED_VM/cloudinitRootPwd'
-    CLOUD_INIT_INSTANCE_HOSTNAME = 'OVEHOSTED_VM/cloudinitInstanceHostName'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def CLOUD_INIT_INSTANCE_HOSTNAME(self):
+        return 'OVEHOSTED_VM/cloudinitInstanceHostName'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def CLOUD_INIT_EXECUTE_ESETUP(self):
+        return 'OVEHOSTED_VM/cloudinitExecuteEngineSetup'
 
     @ohostedattrs(
         answerfile=True,

@@ -71,6 +71,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VMEnv.CLOUD_INIT_INSTANCE_HOSTNAME,
             None
         )
+        self.environment.setdefault(
+            ohostedcons.VMEnv.CLOUD_INIT_EXECUTE_ESETUP,
+            None
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -100,6 +104,7 @@ class Plugin(plugin.PluginBase):
             self.environment[ohostedcons.VMEnv.GENERATE_CLOUD_INIT_ISO],
             self.environment[ohostedcons.VMEnv.CLOUD_INIT_ROOTPWD],
             self.environment[ohostedcons.VMEnv.CLOUD_INIT_INSTANCE_HOSTNAME],
+            self.environment[ohostedcons.VMEnv.CLOUD_INIT_EXECUTE_ESETUP],
         ]) == set([None])
 
         if interactive:
@@ -164,6 +169,7 @@ class Plugin(plugin.PluginBase):
                     self.environment[
                         ohostedcons.VMEnv.CLOUD_INIT_INSTANCE_HOSTNAME
                     ] = False
+
                 while self.environment[
                     ohostedcons.VMEnv.CLOUD_INIT_ROOTPWD
                 ] is None:
@@ -197,12 +203,31 @@ class Plugin(plugin.PluginBase):
                         self.environment[
                             ohostedcons.VMEnv.CLOUD_INIT_ROOTPWD
                         ] = False
+
+                self.environment[
+                    ohostedcons.VMEnv.CLOUD_INIT_EXECUTE_ESETUP
+                ] = self.dialog.queryString(
+                    name='CI_EXECUTE_ESETUP',
+                    note=_(
+                        'Automatically execute '
+                        'engine-setup on the engine appliance on first boot '
+                        '(@VALUES@)[@DEFAULT@]? '
+                    ),
+                    prompt=True,
+                    validValues=(_('Yes'), _('No')),
+                    caseSensitive=False,
+                    default=_('Yes')
+                ) == _('Yes').lower()
+
         if (
             self.environment[
                 ohostedcons.VMEnv.CLOUD_INIT_ROOTPWD
             ] or
             self.environment[
                 ohostedcons.VMEnv.CLOUD_INIT_INSTANCE_HOSTNAME
+            ] or
+            self.environment[
+                ohostedcons.VMEnv.CLOUD_INIT_EXECUTE_ESETUP
             ]
         ):
             self.environment[
@@ -216,12 +241,14 @@ class Plugin(plugin.PluginBase):
     )
     def _misc(self):
         self._directory_name = tempfile.mkdtemp()
-        user_data = ''
+        user_data = (
+            '#cloud-config\n'
+            '# vim: syntax=yaml\n'
+        )
         f_user_data = os.path.join(self._directory_name, 'user-data')
         if self.environment[ohostedcons.VMEnv.CLOUD_INIT_ROOTPWD]:
             # TODO: use salted hashed password
-            user_data = (
-                '#cloud-config\n'
+            user_data += (
                 'ssh_pwauth: True\n'
                 'chpasswd:\n'
                 '  list: |\n'
@@ -232,6 +259,55 @@ class Plugin(plugin.PluginBase):
                     ohostedcons.VMEnv.CLOUD_INIT_ROOTPWD
                 ],
             )
+
+        if self.environment[ohostedcons.VMEnv.CLOUD_INIT_EXECUTE_ESETUP]:
+            org = 'Test'
+            if '.' in self.environment[
+                ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+            ]:
+                org = self.environment[
+                    ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+                ].split('.', 1)[1]
+
+            user_data += (
+                'write_files:\n'
+                ' - content: |\n'
+                '     [environment:default]\n'
+                '     OVESETUP_CONFIG/adminPassword=str:{password}\n'
+                '     OVESETUP_CONFIG/fqdn=str:{fqdn}\n'
+                '     OVESETUP_PKI/organization=str:{org}\n'
+                '   path: {heanswers}\n'
+                '   owner: root:root\n'
+                '   permissions: \'0640\'\n'
+                'runcmd:\n'
+                ' - /usr/bin/engine-setup --offline'
+                ' --config-append={applianceanswers}'
+                ' --config-append={heanswers}'
+                ' 1>{port}'
+                ' 2>&1\n'
+                ' - if [ $? -eq 0 ];'
+                ' then echo "{success_string}" >{port};'
+                ' else echo "{fail_string}" >{port};'
+                ' fi\n'
+                ' - rm {heanswers}'
+            ).format(
+                fqdn=self.environment[
+                    ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+                ],
+                org=org,
+                password=self.environment[
+                    ohostedcons.EngineEnv.ADMIN_PASSWORD
+                ],
+                applianceanswers=ohostedcons.Const.CLOUD_INIT_APPLIANCEANSWERS,
+                heanswers=ohostedcons.Const.CLOUD_INIT_HEANSWERS,
+                port=(
+                    ohostedcons.Const.VIRTIO_PORTS_PATH +
+                    ohostedcons.Const.OVIRT_HE_CHANNEL_NAME
+                ),
+                success_string=ohostedcons.Const.E_SETUP_SUCCESS_STRING,
+                fail_string=ohostedcons.Const.E_SETUP_FAIL_STRING,
+            )
+
         f = open(f_user_data, 'w')
         f.write(user_data)
         f.close()

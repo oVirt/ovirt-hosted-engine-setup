@@ -45,6 +45,7 @@ dist_ovirthostedenginelib_PYTHON = \
 	tasks.py \
 	vm_status.py \
 	mixins.py \
+	appliance_esetup.py \
 	vds_info.py \
 	$(NULL)
 
