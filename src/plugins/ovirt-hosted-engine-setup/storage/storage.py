@@ -134,9 +134,7 @@ class Plugin(plugin.PluginBase):
             valid = False
             while not valid:
                 if interactive:
-                    self.environment[
-                        ohostedcons.StorageEnv.HOST_ID
-                    ] = self.dialog.queryString(
+                    host_id = self.dialog.queryString(
                         name='OVEHOSTED_HOST_ID',
                         note=_(
                             'Please specify the Host ID '
@@ -145,11 +143,13 @@ class Plugin(plugin.PluginBase):
                         prompt=True,
                         default=ohostedcons.Const.FIRST_HOST_ID + 1,
                     )
+                else:
+                    host_id = self.environment[
+                        ohostedcons.StorageEnv.HOST_ID
+                    ]
                 try:
                     # ensure it's an int and not the FIRST_HOST_ID.
-                    if int(
-                        self.environment[ohostedcons.StorageEnv.HOST_ID]
-                    ) == ohostedcons.Const.FIRST_HOST_ID:
+                    if int(host_id) == ohostedcons.Const.FIRST_HOST_ID:
                         valid = False
                         if interactive:
                             self.logger.error(
@@ -161,6 +161,9 @@ class Plugin(plugin.PluginBase):
                             )
                     else:
                         valid = True
+                        self.environment[
+                            ohostedcons.StorageEnv.HOST_ID
+                        ] = int(host_id)
                 except ValueError:
                     valid = False
                     if interactive:
@@ -260,9 +263,9 @@ class Plugin(plugin.PluginBase):
                 ] + ".metadata",
             )
         if (
-            int(
-                self.environment[ohostedcons.StorageEnv.HOST_ID]
-            ) in all_host_stats.keys() and
+            self.environment[
+                ohostedcons.StorageEnv.HOST_ID
+            ] in all_host_stats.keys() and
             not self._re_deploying_host()
         ):
             raise RuntimeError(
@@ -623,7 +626,7 @@ class Plugin(plugin.PluginBase):
     def _storagePoolConnection(self, disconnect=False):
         spUUID = self.environment[ohostedcons.StorageEnv.SP_UUID]
         sdUUID = self.environment[ohostedcons.StorageEnv.SD_UUID]
-        ID = int(self.environment[ohostedcons.StorageEnv.HOST_ID])
+        ID = self.environment[ohostedcons.StorageEnv.HOST_ID]
         scsi_key = spUUID
         master = sdUUID
         master_ver = 1
