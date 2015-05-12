@@ -574,6 +574,10 @@ class Plugin(plugin.PluginBase):
                     self.logger.error(e)
                     if not self._interactive:
                         raise RuntimeError(_('Cannot access LUN'))
+            elif self.domainType == ohostedcons.DomainTypes.FC:
+                raise RuntimeError(
+                    _('No LUN is accessible on FC')
+                )
         if self.domainType == ohostedcons.DomainTypes.ISCSI:
             self.environment[ohostedcons.StorageEnv.ISCSI_TARGET] = target
         self.environment[ohostedcons.StorageEnv.LUN_ID] = lunGUID
