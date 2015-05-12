@@ -93,13 +93,22 @@ class Plugin(plugin.PluginBase):
     def _closeup(self):
         # shutdown the vm if this is first host.
         if not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]:
-            self.dialog.note(
-                _(
-                    'Please shutdown the VM allowing the system to launch it '
-                    'as a monitored service.\n'
-                    'The system will wait until the VM is down.'
+
+            if self.environment[
+                ohostedcons.VMEnv.AUTOMATE_VM_SHUTDOWN
+            ]:
+                self.logger.info(_('Shutting down the engine VM'))
+                cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+                res = cli.shutdown(self.environment[ohostedcons.VMEnv.VM_UUID])
+                self.logger.debug(res)
+            else:
+                self.dialog.note(
+                    _(
+                        'Please shutdown the VM allowing the system '
+                        'to launch it as a monitored service.\n'
+                        'The system will wait until the VM is down.'
+                    )
                 )
-            )
             waiter = tasks.VMDownWaiter(self.environment)
             if not waiter.wait():
                 # The VM is down but not destroyed

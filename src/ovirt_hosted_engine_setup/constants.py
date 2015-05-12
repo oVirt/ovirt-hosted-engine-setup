@@ -756,6 +756,14 @@ class VMEnv(object):
     def CONSOLE_TYPE(self):
         return 'OVEHOSTED_VDSM/consoleType'
 
+    @ohostedattrs(
+        answerfile=True,
+        summary=True,
+        description=_('Restart engine VM after engine-setup'),
+    )
+    def AUTOMATE_VM_SHUTDOWN(self):
+        return 'OVEHOSTED_VM/automateVMShutdown'
+
 
 @util.export
 @util.codegen

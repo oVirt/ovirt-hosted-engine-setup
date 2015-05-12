@@ -75,6 +75,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VMEnv.CLOUD_INIT_EXECUTE_ESETUP,
             None
         )
+        self.environment.setdefault(
+            ohostedcons.VMEnv.AUTOMATE_VM_SHUTDOWN,
+            None
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -218,6 +222,26 @@ class Plugin(plugin.PluginBase):
                     caseSensitive=False,
                     default=_('Yes')
                 ) == _('Yes').lower()
+
+        if self.environment[
+            ohostedcons.VMEnv.CLOUD_INIT_EXECUTE_ESETUP
+        ] and self.environment[
+            ohostedcons.VMEnv.AUTOMATE_VM_SHUTDOWN
+        ] is None:
+            self.environment[
+                ohostedcons.VMEnv.AUTOMATE_VM_SHUTDOWN
+            ] = self.dialog.queryString(
+                name='AUTOMATE_VM_SHUTDOWN',
+                note=_(
+                    'Automatically restart the engine VM '
+                    'as a monitored service after engine-setup '
+                    '(@VALUES@)[@DEFAULT@]? '
+                ),
+                prompt=True,
+                validValues=(_('Yes'), _('No')),
+                caseSensitive=False,
+                default=_('Yes')
+            ) == _('Yes').lower()
 
         if (
             self.environment[
