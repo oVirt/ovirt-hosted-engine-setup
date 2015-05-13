@@ -70,5 +70,4 @@ if [ ! -f "${scriptdir}/ovirt-hosted-engine-setup.env" ]; then
 fi
 . "${scriptdir}/ovirt-hosted-engine-setup.env"
 baseenv="APPEND:BASE/pluginPath=str:${scriptdir}/../plugins APPEND:BASE/pluginGroups=str:ovirt-hosted-engine-setup"
-otopienv=""
 exec "${otopidir}/otopi" "${baseenv} ${environment} ${otopienv}"
