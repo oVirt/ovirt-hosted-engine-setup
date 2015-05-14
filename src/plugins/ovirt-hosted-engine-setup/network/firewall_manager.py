@@ -121,9 +121,6 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         name=ohostedcons.Stages.NET_FIREWALL_MANAGER_AVAILABLE,
-        condition=lambda self: not self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
         after=(
             ohostedcons.Stages.DIALOG_TITLES_S_NETWORK,
         ),
@@ -138,6 +135,24 @@ class Plugin(plugin.PluginBase):
         # It has to be done here and not at init stage because it's assigned
         # at customization stage by otopi.
         self.environment[otopicons.NetEnv.FIREWALLD_AVAILABLE] = False
+
+        if (
+            self.environment[
+                ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+            ] and self.environment[
+                ohostedcons.NetworkEnv.FIREWALL_MANAGER
+            ] is not None
+        ):
+            self.logger.info(
+                _(
+                    "Additional host deployment, firewall manager is "
+                    "'{manager}'"
+                ).format(
+                    manager=self.environment[
+                        ohostedcons.NetworkEnv.FIREWALL_MANAGER
+                    ],
+                )
+            )
 
         if self.environment[ohostedcons.NetworkEnv.FIREWALL_MANAGER] is None:
             managers = []
@@ -187,10 +202,6 @@ class Plugin(plugin.PluginBase):
         after=(
             ohostedcons.Stages.NET_FIREWALL_MANAGER_AVAILABLE,
         ),
-        condition=lambda self: not self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
-        # must be always enabled to create examples on first host
     )
     def _process_templates(self):
         for service in self.environment[
