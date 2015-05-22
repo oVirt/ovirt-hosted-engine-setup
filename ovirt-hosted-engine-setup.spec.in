@@ -38,10 +38,10 @@ BuildArch:      noarch
 
 Requires:       python
 Requires:       python-ethtool >= 0.6-3
-Requires:       otopi >= 1.3.1
-Requires:       vdsm >= 4.16.13
-Requires:       vdsm-cli >= 4.16.13
-Requires:       vdsm-python >= 4.16.13
+Requires:       otopi >= 1.3.2
+Requires:       vdsm >= 4.16.16
+Requires:       vdsm-cli >= 4.16.16
+Requires:       vdsm-python >= 4.16.16
 Requires:       ovirt-host-deploy >= 1.3.1
 Requires:       openssh-server
 Requires:       python-paramiko
@@ -49,7 +49,7 @@ Requires:       virt-viewer
 Requires:       openssl
 Requires:       sudo
 Requires:       bind-utils
-Requires:       ovirt-hosted-engine-ha >= 1.2.5
+Requires:       ovirt-hosted-engine-ha >= 1.2.6
 Requires:       sanlock >= 2.8
 Requires:       sanlock-python >= 2.8
 Requires:       lsof
@@ -106,6 +106,9 @@ make %{?_smp_mflags} install DESTDIR="%{buildroot}"
 %{vdsmhooksdir}/before_vm_start/
 
 %changelog
+* Fri May 22 2015 Sandro Bonazzola <sbonazzo@redhat.com> - 1.2.4-1
+- 1.2.4-1
+
 * Tue Mar 31 2015 Sandro Bonazzola <sbonazzo@redhat.com> - 1.2.4-0.0.master
 - 1.2.4-0.0.master
 
