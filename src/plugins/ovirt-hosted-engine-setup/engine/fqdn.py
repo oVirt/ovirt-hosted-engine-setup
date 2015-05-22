@@ -249,13 +249,13 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
             ] is None and
             self.environment[
-                ohostedcons.VMEnv.CLOUD_INIT_INSTANCE_HOSTNAME
-            ] is not None
+                ohostedcons.CloudInit.INSTANCE_HOSTNAME
+            ]
         ):
             self.environment[
                 ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
             ] = self.environment[
-                ohostedcons.VMEnv.CLOUD_INIT_INSTANCE_HOSTNAME
+                ohostedcons.CloudInit.INSTANCE_HOSTNAME
             ]
 
         interactive = self.environment[

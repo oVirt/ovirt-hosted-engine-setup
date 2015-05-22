@@ -701,26 +701,6 @@ class VMEnv(object):
     @ohostedattrs(
         answerfile=True,
     )
-    def GENERATE_CLOUD_INIT_ISO(self):
-        return 'OVEHOSTED_VM/cloudInitISO'
-
-    CLOUD_INIT_ROOTPWD = 'OVEHOSTED_VM/cloudinitRootPwd'
-
-    @ohostedattrs(
-        answerfile=True,
-    )
-    def CLOUD_INIT_INSTANCE_HOSTNAME(self):
-        return 'OVEHOSTED_VM/cloudinitInstanceHostName'
-
-    @ohostedattrs(
-        answerfile=True,
-    )
-    def CLOUD_INIT_EXECUTE_ESETUP(self):
-        return 'OVEHOSTED_VM/cloudinitExecuteEngineSetup'
-
-    @ohostedattrs(
-        answerfile=True,
-    )
     def CDROM_UUID(self):
         return 'OVEHOSTED_VM/cdromUUID'
 
@@ -763,6 +743,55 @@ class VMEnv(object):
     )
     def AUTOMATE_VM_SHUTDOWN(self):
         return 'OVEHOSTED_VM/automateVMShutdown'
+
+
+@util.export
+@util.codegen
+@ohostedattrsclass
+class CloudInit(object):
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def GENERATE_ISO(self):
+        return 'OVEHOSTED_VM/cloudInitISO'
+
+    ROOTPWD = 'OVEHOSTED_VM/cloudinitRootPwd'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def INSTANCE_HOSTNAME(self):
+        return 'OVEHOSTED_VM/cloudinitInstanceHostName'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def INSTANCE_DOMAINNAME(self):
+        return 'OVEHOSTED_VM/cloudinitInstanceDomainName'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def EXECUTE_ESETUP(self):
+        return 'OVEHOSTED_VM/cloudinitExecuteEngineSetup'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def VM_STATIC_CIDR(self):
+        return 'OVEHOSTED_VM/cloudinitVMStaticCIDR'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def VM_DNS(self):
+        return 'OVEHOSTED_VM/cloudinitVMDNS'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def VM_ETC_HOSTS(self):
+        return 'OVEHOSTED_VM/cloudinitVMETCHOSTS'
 
 
 @util.export
@@ -853,9 +882,12 @@ class Stages(object):
     CONFIG_STORAGE_LATE = 'ohosted.storage.configuration.late'
     CONFIG_STORAGE_BLOCKD = 'ohosted.storage.blockd.configuration.available'
     CONFIG_STORAGE_NFS = 'ohosted.storage.nfs.configuration.available'
+    CONFIG_GATEWAY = 'ohosted.networking.gateway.configuration.available'
     GLUSTER_PROVISIONING = 'ohosted.storage.gluster.provisioned'
     CONFIG_ADDITIONAL_HOST = 'ohosted.core.additional.host'
     CONFIG_CLOUD_INIT_OPTIONS = 'ohosted.boot.configuration.cloud_init_options'
+    CONFIG_CLOUD_INIT_VM_NETWORKING = \
+        'ohosted.boot.configuration.cloud_init_vm_networking'
     REQUIRE_ANSWER_FILE = 'ohosted.core.require.answerfile'
     CONFIG_OVF_IMPORT = 'ohosted.configuration.ovf'
     VDSMD_START = 'ohosted.vdsm.started'

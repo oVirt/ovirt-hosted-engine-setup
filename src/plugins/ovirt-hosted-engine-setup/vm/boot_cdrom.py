@@ -124,7 +124,7 @@ class Plugin(plugin.PluginBase):
             ) and
             not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] and
             not self.environment[
-                ohostedcons.VMEnv.GENERATE_CLOUD_INIT_ISO
+                ohostedcons.CloudInit.GENERATE_ISO
             ] in (
                 ohostedcons.Const.CLOUD_INIT_SKIP,
                 ohostedcons.Const.CLOUD_INIT_GENERATE,

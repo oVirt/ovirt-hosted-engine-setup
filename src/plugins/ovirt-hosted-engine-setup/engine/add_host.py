@@ -25,7 +25,6 @@ Host adder plugin.
 import contextlib
 import gettext
 import os
-import re
 import socket
 import tempfile
 import time
@@ -63,19 +62,6 @@ class Plugin(plugin.PluginBase):
 
     VDSM_RETRIES = 600
     VDSM_DELAY = 1
-    _ADDRESS_RE = re.compile(
-        flags=re.VERBOSE,
-        pattern=r"""
-            \s+
-            inet
-            \s
-            (?P<address>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})
-            .+
-            \s+
-            (?P<interface>[a-zA-Z0-9_.]+)
-            $
-    """
-    )
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)

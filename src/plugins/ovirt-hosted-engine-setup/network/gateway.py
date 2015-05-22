@@ -33,6 +33,7 @@ from otopi import util
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
+from ovirt_hosted_engine_setup import util as ohostedutil
 
 
 def _(m):
@@ -50,22 +51,6 @@ class Plugin(plugin.PluginBase):
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
         self._enabled = True
-
-    def _check_gw_pingable(self, address):
-        try:
-            self.execute(
-                (
-                    self.command.get('ping'),
-                    '-c',
-                    '1',
-                    address,
-                ),
-                raiseOnError=True
-            )
-            pingable = True
-        except RuntimeError:
-            pingable = False
-        return pingable
 
     def _get_default_gw(self):
         gateway = None
@@ -106,6 +91,7 @@ class Plugin(plugin.PluginBase):
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_NETWORK,
         ),
+        name=ohostedcons.Stages.CONFIG_GATEWAY,
     )
     def _customization(self):
 
@@ -127,7 +113,8 @@ class Plugin(plugin.PluginBase):
                     caseSensitive=True,
                     default=self._get_default_gw(),
                 )
-            valid = self._check_gw_pingable(
+            valid = ohostedutil.check_is_pingable(
+                self,
                 self.environment[
                     ohostedcons.NetworkEnv.GATEWAY
                 ]

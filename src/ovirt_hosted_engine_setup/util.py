@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2014 Red Hat, Inc.
+# Copyright (C) 2013-2015 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -66,6 +66,24 @@ def validMAC(mac):
         h=0007237301586aa90f58a7cc8d7cb29a16b00470"
     """
     return (UNICAST_MAC_ADDR.match(mac) is not None)
+
+
+def check_is_pingable(base, address):
+    """
+    Ensure that an address is pingable
+    """
+    rc, stdout, stderr = base.execute(
+        (
+            base.command.get('ping'),
+            '-c',
+            '1',
+            str(address),
+        ),
+        raiseOnError=False,
+    )
+    if rc == 0:
+        return True
+    return False
 
 
 def persist(path):

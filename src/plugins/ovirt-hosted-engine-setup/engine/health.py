@@ -67,7 +67,7 @@ class Plugin(
     )
     def _closeup(self):
         esexecuting = self.environment[
-            ohostedcons.VMEnv.CLOUD_INIT_EXECUTE_ESETUP
+            ohostedcons.CloudInit.EXECUTE_ESETUP
         ]
         fqdn = self.environment[
             ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
