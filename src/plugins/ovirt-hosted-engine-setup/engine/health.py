@@ -75,7 +75,6 @@ class Plugin(
         live_checker = check_liveliness.LivelinessChecker()
         # manual engine setup execution
         if not esexecuting:
-            userpoll = True
             self.dialog.note(
                 _('Please install and setup the engine in the VM.')
             )
@@ -86,44 +85,9 @@ class Plugin(
                     'in the VM.'
                 )
             )
-            while userpoll:
-                response = self.dialog.queryString(
-                    name='OVEHOSTED_ENGINE_UP',
-                    note=_(
-                        'To continue make a selection from '
-                        'the options below:\n'
-                        '(1) Continue setup - engine installation '
-                        'is complete\n'
-                        '(2) Power off and restart the VM\n'
-                        '(3) Abort setup\n'
-                        '(4) Destroy VM and abort setup\n'
-                        '\n(@VALUES@)[@DEFAULT@]: '
-                    ),
-                    prompt=True,
-                    validValues=(_('1'), _('2'), _('3'), _('4')),
-                    default=_('1'),
-                    caseSensitive=False)
-                if response == _('1').lower():
-                    if live_checker.isEngineUp(fqdn):
-                        userpoll = False
-                    else:
-                        self.dialog.note(_(
-                            'Engine health status page is not yet reachable.\n'
-                        ))
-                elif response == _('2').lower():
-                    self._destroy_vm()
-                    self._create_vm()
-                elif response == _('3').lower():
-                    raise RuntimeError('Engine polling aborted by user')
-                elif response == _('4').lower():
-                    self._destroy_vm()
-                    raise RuntimeError(
-                        _('VM destroyed and setup aborted by user')
-                    )
-                else:
-                    self.logger.error(
-                        'Invalid option \'{0}\''.format(response)
-                    )
+            while not check_liveliness.manualSetupDispatcher(self, True, fqdn):
+                pass
+
         # automated engine setup execution on the appliance
         else:
             spath = (

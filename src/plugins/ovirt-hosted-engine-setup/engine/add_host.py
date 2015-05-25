@@ -46,6 +46,7 @@ from otopi import util
 from vdsm import netinfo
 
 
+from ovirt_hosted_engine_setup import check_liveliness
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import vds_info
 
@@ -516,14 +517,15 @@ class Plugin(plugin.PluginBase):
         cluster_name = None
         default_cluster_name = 'Default'
         valid = False
+        fqdn = self.environment[
+            ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+        ]
         while not valid:
             try:
                 self.logger.info(_('Connecting to the Engine'))
                 engine_api = self._ovirtsdk_api.API(
                     url='https://{fqdn}/ovirt-engine/api'.format(
-                        fqdn=self.environment[
-                            ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
-                        ],
+                        fqdn=fqdn,
                     ),
                     username='admin@internal',
                     password=self.environment[
@@ -571,134 +573,141 @@ class Plugin(plugin.PluginBase):
                             'Cannot connect to engine APIs on {fqdn}:\n'
                             '{details}\n'
                         ).format(
-                            fqdn=self.environment[
-                                ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
-                            ],
-                            details=e.detail
+                            fqdn=fqdn,
+                            details=e.detail,
                         )
                     )
                     raise RuntimeError(
                         _(
                             'Cannot connect to engine APIs on {fqdn}'
                         ).format(
-                            fqdn=self.environment[
-                                ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
-                            ],
+                            fqdn=fqdn,
                         )
                     )
 
-        try:
-            conn = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-            net_info = netinfo.NetInfo(vds_info.capabilities(conn))
-            bridge_port = self.environment[ohostedcons.NetworkEnv.BRIDGE_IF]
-            if bridge_port in net_info.vlans:
-                self.logger.debug(
-                    "Updating engine's management network to be vlanned"
-                )
-                vlan_id = net_info.vlans[bridge_port]['vlanid']
-                self.logger.debug(
-                    "Getting engine's management network via engine's APIs"
-                )
-                mgmt_network = engine_api.networks.get(
-                    name=self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME]
-                )
-                mgmt_network.set_vlan(
-                    self._ovirtsdk_xml.params.VLAN(id=vlan_id)
-                )
-                mgmt_network.update()
-
-            cluster_name = self.environment[
-                ohostedcons.EngineEnv.HOST_CLUSTER_NAME
-            ]
-            self.logger.debug(
-                "Getting the list of available clusters via engine's APIs"
-            )
-            if cluster_name is not None:
-                if cluster_name not in [
-                    c.get_name()
-                    for c in engine_api.clusters.list()
-                ]:
-                    raise RuntimeError(
-                        _(
-                            'Specified cluster does not exist: {cluster}'
-                        ).format(
-                            cluster=cluster_name,
-                        )
+        added_to_cluster = False
+        while not added_to_cluster:
+            try:
+                conn = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+                net_info = netinfo.NetInfo(vds_info.capabilities(conn))
+                bridge_port = self.environment[
+                    ohostedcons.NetworkEnv.BRIDGE_IF
+                ]
+                if bridge_port in net_info.vlans:
+                    self.logger.debug(
+                        "Updating engine's management network to be vlanned"
                     )
-            else:
-                cluster_l = [c.get_name() for c in engine_api.clusters.list()]
-                cluster_name = (
-                    default_cluster_name if default_cluster_name in
-                    cluster_l else cluster_l[0]
-                )
-                cluster_name = self.dialog.queryString(
-                    name='cluster_name',
-                    note=_(
-                        'Enter the name of the cluster to which you want to '
-                        'add the host (@VALUES@) [@DEFAULT@]: '
-                    ),
-                    prompt=True,
-                    default=cluster_name,
-                    validValues=cluster_l,
-                )
-                self.environment[
+                    vlan_id = net_info.vlans[bridge_port]['vlanid']
+                    self.logger.debug(
+                        "Getting engine's management network via engine's APIs"
+                    )
+                    mgmt_network = engine_api.networks.get(
+                        name=self.environment[
+                            ohostedcons.NetworkEnv.BRIDGE_NAME]
+                    )
+                    mgmt_network.set_vlan(
+                        self._ovirtsdk_xml.params.VLAN(id=vlan_id)
+                    )
+                    mgmt_network.update()
+
+                cluster_name = self.environment[
                     ohostedcons.EngineEnv.HOST_CLUSTER_NAME
-                ] = cluster_name
-            cluster = engine_api.clusters.get(cluster_name)
-            # Configuring the cluster for Hyper Converged support if enabled
-            if self.environment[
-                ohostedcons.StorageEnv.GLUSTER_PROVISIONING_ENABLED
-            ]:
-                cluster.set_gluster_service(True)
-                cluster.update()
+                ]
+                self.logger.debug(
+                    "Getting the list of available clusters via engine's APIs"
+                )
+                if cluster_name is not None:
+                    if cluster_name not in [
+                        c.get_name()
+                        for c in engine_api.clusters.list()
+                    ]:
+                        raise RuntimeError(
+                            _(
+                                'Specified cluster does not exist: {cluster}'
+                            ).format(
+                                cluster=cluster_name,
+                            )
+                        )
+                else:
+                    cluster_l = [
+                        c.get_name()
+                        for c in engine_api.clusters.list()
+                    ]
+                    cluster_name = (
+                        default_cluster_name if default_cluster_name in
+                        cluster_l else cluster_l[0]
+                    )
+                    cluster_name = self.dialog.queryString(
+                        name='cluster_name',
+                        note=_(
+                            'Enter the name of the cluster to which '
+                            'you want to add the host (@VALUES@) '
+                            '[@DEFAULT@]: '
+                        ),
+                        prompt=True,
+                        default=cluster_name,
+                        validValues=cluster_l,
+                    )
+                    self.environment[
+                        ohostedcons.EngineEnv.HOST_CLUSTER_NAME
+                    ] = cluster_name
                 cluster = engine_api.clusters.get(cluster_name)
+                # Configuring the cluster for Hyper Converged support if
+                # enabled
+                if self.environment[
+                    ohostedcons.StorageEnv.GLUSTER_PROVISIONING_ENABLED
+                ]:
+                    cluster.set_gluster_service(True)
+                    cluster.update()
+                    cluster = engine_api.clusters.get(cluster_name)
 
-            self.logger.debug('Adding the host to the cluster')
-            engine_api.hosts.add(
-                self._ovirtsdk_xml.params.Host(
-                    name=self.environment[
-                        ohostedcons.EngineEnv.APP_HOST_NAME
-                    ],
-                    # Note that the below is required for compatibility
-                    # with vdsm-generated pki. See bz 1178535.
-                    # TODO: Make it configurable like engine fqdn.
-                    address=socket.gethostname(),
-                    reboot_after_installation=False,
-                    cluster=cluster,
-                    ssh=self._ovirtsdk_xml.params.SSH(
-                        authentication_method='publickey',
-                        port=self.environment[
-                            ohostedcons.NetworkEnv.SSHD_PORT
+                self.logger.debug('Adding the host to the cluster')
+
+                engine_api.hosts.add(
+                    self._ovirtsdk_xml.params.Host(
+                        name=self.environment[
+                            ohostedcons.EngineEnv.APP_HOST_NAME
                         ],
+                        # Note that the below is required for compatibility
+                        # with vdsm-generated pki. See bz 1178535.
+                        # TODO: Make it configurable like engine fqdn.
+                        address=socket.gethostname(),
+                        reboot_after_installation=False,
+                        cluster=cluster,
+                        ssh=self._ovirtsdk_xml.params.SSH(
+                            authentication_method='publickey',
+                            port=self.environment[
+                                ohostedcons.NetworkEnv.SSHD_PORT
+                            ],
+                        ),
+                        override_iptables=self.environment[
+                            otopicons.NetEnv.IPTABLES_ENABLE
+                        ],
+                    )
+                )
+                added_to_cluster = True
+            except ovirtsdk.infrastructure.errors.RequestError as e:
+                self.logger.debug(
+                    'Cannot add the host to cluster {cluster}'.format(
+                        cluster=cluster_name,
                     ),
-                    override_iptables=self.environment[
-                        otopicons.NetEnv.IPTABLES_ENABLE
-                    ],
+                    exc_info=True,
                 )
-            )
-        except ovirtsdk.infrastructure.errors.RequestError as e:
-            self.logger.debug(
-                'Cannot add the host to cluster {cluster}'.format(
-                    cluster=cluster_name,
-                ),
-                exc_info=True,
-            )
-            self.logger.error(
-                _(
-                    'Cannot automatically add the host '
-                    'to cluster {cluster}:\n{details}\n'
-                ).format(
-                    cluster=cluster_name,
-                    details=e.detail
+                self.logger.error(
+                    _(
+                        'Cannot automatically add the host '
+                        'to cluster {cluster}:\n{details}\n'
+                    ).format(
+                        cluster=cluster_name,
+                        details=e.detail
+                    )
                 )
-            )
-            raise RuntimeError(
-                _(
-                    'Cannot add the host to cluster {cluster}'
-                ).format(
-                    cluster=cluster_name,
-                )
-            )
+                while not check_liveliness.manualSetupDispatcher(
+                    self,
+                    True,
+                    fqdn
+                ):
+                    pass
 
         up = self._wait_host_ready(
             engine_api,

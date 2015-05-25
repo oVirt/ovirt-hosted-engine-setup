@@ -33,6 +33,7 @@ from otopi import util
 from vdsm import vdscli
 
 
+from ovirt_hosted_engine_setup import check_liveliness
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import mixins
 
@@ -144,51 +145,10 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
         # Need to be done after firewall closeup for allowing the user to
         # connect from remote.
         os_installed = False
+        self._create_vm()
         while not os_installed:
             try:
-                self._create_vm()
-                response = None
-                while response is None:
-                    response = self.dialog.queryString(
-                        name='OVEHOSTED_INSTALLING_OS',
-                        note=_(
-                            'The VM has been started. '
-                            'Install the OS and shut down or reboot it. '
-                            'To continue please make a selection:\n\n'
-                            '(1) Continue setup - '
-                            'VM installation is complete\n'
-                            '(2) Reboot the VM and restart installation\n'
-                            '(3) Abort setup\n'
-                            '(4) Destroy VM and abort setup\n'
-                            '\n(@VALUES@)[@DEFAULT@]: '
-                        ),
-                        prompt=True,
-                        validValues=(_('1'), _('2'), _('3'), _('4')),
-                        default=_('1'),
-                        caseSensitive=False)
-                    if response == _('1').lower():
-                        self.dialog.note(
-                            _('Waiting for VM to shut down...\n')
-                        )
-                        if not self._wait_vm_destroyed():
-                            self._destroy_vm()
-                        os_installed = True
-                    elif response == _('2').lower():
-                        self._destroy_vm()
-                    elif response == _('3').lower():
-                        raise RuntimeError(
-                            _('OS installation aborted by user')
-                        )
-                    elif response == _('4').lower():
-                        self._destroy_vm()
-                        raise RuntimeError(
-                            _('VM destroyed and setup aborted by user')
-                        )
-                    else:
-                        self.logger.error(
-                            'Invalid option \'{0}\''.format(response)
-                        )
-                        response = None
+                os_installed = check_liveliness.manualSetupDispatcher(self)
             except socket.error as e:
                 self.logger.debug(
                     'Error talking with VDSM (%s), reconnecting.' % str(e),
