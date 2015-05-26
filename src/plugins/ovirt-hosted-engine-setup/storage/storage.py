@@ -648,7 +648,14 @@ class Plugin(plugin.PluginBase):
         self.logger.debug(debug_msg)
         status = method(*method_args)
         if status['status']['code'] != 0:
-            raise RuntimeError(status['status']['message'])
+            raise RuntimeError(
+                _(
+                    'Dirty Storage Domain: {message}\n'
+                    'Please clean the storage device and try again'
+                ).format(
+                    message=status['status']['message'],
+                )
+            )
         self._connected = not disconnect
 
     def _spmStart(self):
