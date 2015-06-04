@@ -227,6 +227,7 @@ class Plugin(plugin.PluginBase):
             preallocate = ohostedcons.VolumeTypes.PREALLOCATED_VOL
 
         diskType = 2
+        # creates a volume on the storage (SPM verb)
         status, message = serv.createVolume([
             sdUUID,
             spUUID,
@@ -254,6 +255,16 @@ class Plugin(plugin.PluginBase):
             raise RuntimeError(message)
         waiter = tasks.TaskWaiter(self.environment)
         waiter.wait()
+        # Expose the image (e.g., activates the lv) on the host (HSM verb).
+        self.logger.debug('prepareImage')
+        status, message = serv.prepareImage([
+            spUUID,
+            sdUUID,
+            imgUUID,
+            volUUID,
+        ])
+        if status != 0:
+            raise RuntimeError('Failed preparing images: %s' % message)
 
 
 # vim: expandtab tabstop=4 shiftwidth=4
