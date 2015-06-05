@@ -151,6 +151,11 @@ class FileLocations(object):
         'glusterfs',
         'glusterd.vol'
     )
+    OVIRT_APPLIANCES_DESC_DIR = os.path.join(
+        config.SYSCONFDIR,
+        OVIRT_HOSTED_ENGINE,
+    )
+    OVIRT_APPLIANCES_DESC_FILENAME_TEMPLATE = '*-appliance.conf'
     OVIRT_HOSTED_ENGINE_TEMPLATE = os.path.join(
         config.DATADIR,
         OVIRT_HOSTED_ENGINE_SETUP,
@@ -945,7 +950,7 @@ class Defaults(object):
     DEFAULT_IMAGE_DESC = 'Hosted Engine Image'
     DEFAULT_IMAGE_SIZE_GB = 25  # based on minimum requirements.
     DEFAULT_MEM_SIZE_MB = 4096  # based on minimum requirements.
-    DEFAULT_BOOT = 'cdrom'  # boot device - drive C or cdrom or pxe
+    DEFAULT_BOOT = 'disk'  # boot device - drive C or cdrom or pxe
     DEFAULT_CDROM = '/dev/null'
     DEFAULT_BRIDGE_IF = 'em1'
     DEFAULT_BRIDGE_NAME = 'ovirtmgmt'

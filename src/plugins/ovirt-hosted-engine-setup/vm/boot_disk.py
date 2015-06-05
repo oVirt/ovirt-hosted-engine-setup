@@ -23,8 +23,11 @@ VM disk import plugin.
 """
 
 
+import configparser
 import gettext
 import glob
+import hashlib
+from io import StringIO
 import json
 import os
 import shutil
@@ -223,6 +226,65 @@ class Plugin(plugin.PluginBase):
         self._image_path = None
         self._ovf_mem_size_mb = None
 
+    def _detect_appliances(self):
+        self.logger.info(_('Detecting available oVirt engine appliances'))
+        appliances = []
+        config = configparser.ConfigParser()
+        config.optionxform = str
+        confdir = os.path.join(
+            ohostedcons.FileLocations.OVIRT_APPLIANCES_DESC_DIR,
+            ohostedcons.FileLocations.OVIRT_APPLIANCES_DESC_FILENAME_TEMPLATE,
+        )
+        conffiles = glob.glob(confdir)
+        fakesection = 'appliance'
+        keys = ['description', 'version', 'path', 'sha1sum']
+        for cf in conffiles:
+            self.logger.debug('parsing: ' + cf)
+            with open(cf) as stream:
+                fakefile = StringIO(
+                    u'[{s}]\n'.format(s=fakesection) + stream.read()
+                )
+                config.readfp(fakefile)
+            if set(
+                    [config.has_option(fakesection, k) for k in keys]
+            ) == set([True]):
+                app = {k: config.get(fakesection, k)
+                       for k in keys
+                       }
+                app.update(
+                    {'index': str(len(appliances)+1)}
+                )
+                appliances.append(app)
+            else:
+                self.logger.error('error parsing: ' + cf)
+        self.logger.debug('available appliances: ' + str(appliances))
+        if not appliances:
+            self.logger.info(_(
+                'No engine appliance image is available on your system.'
+            ))
+            self.dialog.note(_(
+                'Using an oVirt engine appliance could greatly speed-up '
+                'ovirt hosted-engine deploy.\n'
+                'You could get oVirt engine appliance installing '
+                'ovirt-engine-appliance rpm.'
+            ))
+        return appliances
+
+    def _file_hash(self, filename):
+        h = hashlib.sha1()
+        with open(filename, 'rb') as file:
+            chunk = 0
+            while chunk != b'':
+                chunk = file.read(1024)
+                h.update(chunk)
+        self.logger.debug(
+            "calculated sha1sum for '{f}': {h}".format(
+                f=filename,
+                h=h.hexdigest(),
+            )
+        )
+        return h.hexdigest()
+
     def _parse_ovf(self, tar, ovf_xml):
         valid = True
         tmpdir = tempfile.mkdtemp()
@@ -402,26 +464,87 @@ class Plugin(plugin.PluginBase):
         interactive = self.environment[
             ohostedcons.VMEnv.OVF
         ] is None
-        valid = False
-        while not valid:
-            if interactive:
-                self.environment[
-                    ohostedcons.VMEnv.OVF
-                ] = self.dialog.queryString(
-                    name='OVEHOSTED_VMENV_OVF',
-                    note=_(
-                        'Please specify path to OVF archive '
-                        'you would like to use [@DEFAULT@]: '
-                    ),
-                    prompt=True,
-                    caseSensitive=True,
-                    default=str(self.environment[
-                        ohostedcons.VMEnv.OVF
-                    ]),
+        appliances = []
+        if interactive:
+            appliances = self._detect_appliances()
+            if appliances:
+                directlyOVA = str(len(appliances)+1)
+                app_list = ''
+                for entry in appliances:
+                    app_list += _(
+                        '\t[{i}] - {description} - {version}\n'
+                    ).format(
+                        i=entry['index'],
+                        description=entry['description'],
+                        version=entry['version'],
+                    )
+                app_list += (
+                    _('\t[{i}] - Directly select an OVA file\n').format(
+                        i=directlyOVA,
+                    )
                 )
 
-            valid = self._check_ovf(self.environment[ohostedcons.VMEnv.OVF])
-            if not valid:
+        valid = False
+        while not valid:
+            if not interactive:
+                ova_path = self.environment[ohostedcons.VMEnv.OVF]
+            else:
+                ova_path = ''
+                if appliances:
+                    self.dialog.note(
+                        _(
+                            'The following appliance have been '
+                            'found on your system:\n'
+                            '{app_list}'
+                        ).format(
+                            app_list=app_list,
+                        )
+                    )
+                    sapp = self.dialog.queryString(
+                        name='OVEHOSTED_BOOT_DISK_APPLIANCE',
+                        note=_(
+                            'Please select an appliance '
+                            '(@VALUES@) [@DEFAULT@]: '
+                        ),
+                        prompt=True,
+                        caseSensitive=True,
+                        default='1',
+                        validValues=[
+                            str(i+1) for i in range(len(appliances)+1)
+                        ],
+                    )
+                    if sapp != directlyOVA:
+                        ova_path = appliances[int(sapp)-1]['path']
+                        self.logger.info(_('Verifying its sha1sum'))
+                        if (
+                            self._file_hash(ova_path) !=
+                            appliances[int(sapp)-1]['sha1sum']
+                        ):
+                            self.logger.error(
+                                _(
+                                    "The selected appliance is invalid: the "
+                                    "sha1sum of the selected file ('{p}') "
+                                    "doesn't match the expected value."
+                                ).format(p=ova_path)
+                            )
+                            continue
+                if not ova_path:
+                    ova_path = self.dialog.queryString(
+                        name='OVEHOSTED_VMENV_OVF',
+                        note=_(
+                            'Please specify path to OVF archive '
+                            'you would like to use [@DEFAULT@]: '
+                        ),
+                        prompt=True,
+                        caseSensitive=True,
+                        default=str(self.environment[
+                            ohostedcons.VMEnv.OVF
+                        ]),
+                    )
+            valid = self._check_ovf(ova_path)
+            if valid:
+                self.environment[ohostedcons.VMEnv.OVF] = ova_path
+            else:
                 if interactive:
                     self.logger.error(
                         _(

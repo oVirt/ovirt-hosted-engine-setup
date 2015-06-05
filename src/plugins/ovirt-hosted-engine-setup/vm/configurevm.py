@@ -137,8 +137,9 @@ class Plugin(plugin.PluginBase):
                     ] = self.dialog.queryString(
                         name='OVEHOSTED_VMENV_BOOT',
                         note=_(
-                            'Please specify the device to boot the VM '
-                            'from (@VALUES@) [@DEFAULT@]: '
+                            'Please specify the device to boot the VM from '
+                            '(choose disk for the oVirt engine appliance)\n'
+                            '(@VALUES@) [@DEFAULT@]: '
                         ),
                         prompt=True,
                         caseSensitive=True,
