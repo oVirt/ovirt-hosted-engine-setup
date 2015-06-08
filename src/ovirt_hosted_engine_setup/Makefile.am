@@ -42,6 +42,7 @@ dist_ovirthostedenginelib_PYTHON = \
 	domains.py \
 	util.py \
 	reinitialize_lockspace.py \
+	heconflib.py \
 	set_maintenance.py \
 	tasks.py \
 	vm_status.py \

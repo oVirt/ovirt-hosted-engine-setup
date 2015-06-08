@@ -72,6 +72,11 @@ class Plugin(plugin.PluginBase):
             template=ohostedcons.FileLocations.ENGINE_VM_TEMPLATE,
             subst=self.environment[ohostedcons.VMEnv.SUBST],
         )
+        self.environment[
+            ohostedcons.StorageEnv.VM_CONF_CONTENT
+        ] = content
+        #  TODO: deprecate the file system instance when the
+        #  agent will be ready
         with transaction.Transaction() as localtransaction:
             localtransaction.append(
                 filetransaction.FileTransaction(

@@ -43,6 +43,7 @@ from otopi import util
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import domains as ohosteddomains
 from ovirt_hosted_engine_setup.ovf import ovfenvelope
+from ovirt_hosted_engine_setup import util as ohostedutil
 
 
 def _(m):
@@ -67,35 +68,14 @@ class ImageTransaction(transaction.TransactionElement):
         """
         Return path of the volume file inside the domain
         """
-        volume_path = ohostedcons.FileLocations.SD_MOUNT_PARENT_DIR
-        if self._parent.environment[
-            ohostedcons.StorageEnv.DOMAIN_TYPE
-        ] == 'glusterfs':
-            volume_path = os.path.join(
-                volume_path,
-                'glusterSD',
-            )
-        volume_path = os.path.join(
-            volume_path,
-            '*',
+        return ohostedutil.get_volume_path(
+            self._parent.environment[
+                ohostedcons.StorageEnv.DOMAIN_TYPE
+            ],
             self._parent.environment[ohostedcons.StorageEnv.SD_UUID],
-            'images',
             self._parent.environment[ohostedcons.StorageEnv.IMG_UUID],
             self._parent.environment[ohostedcons.StorageEnv.VOL_UUID]
         )
-        volumes = glob.glob(volume_path)
-        if not volumes:
-            raise RuntimeError(
-                _(
-                    'Path to volume {vol_uuid} not found in {root}'
-                ).format(
-                    vol_uuid=self._parent.environment[
-                        ohostedcons.StorageEnv.VOL_UUID
-                    ],
-                    root=ohostedcons.FileLocations.SD_MOUNT_PARENT_DIR,
-                )
-            )
-        return volumes[0]
 
     def _validate_volume(self):
         self._parent.logger.info(

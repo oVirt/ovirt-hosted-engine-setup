@@ -290,6 +290,11 @@ class FileLocations(object):
         ENGINE_HA_CONFDIR,
         'broker.conf'
     )
+    HECONFD_VERSION = 'version'
+    HECONFD_ANSWERFILE = 'fhanswers.conf'
+    HECONFD_HECONF = 'hosted-engine.conf'
+    HECONFD_BROKER_CONF = 'broker.conf'
+    HECONFD_VM_CONF = 'vm.conf'
 
 
 @util.export
@@ -646,6 +651,25 @@ class StorageEnv(object):
 
     FORCE_CREATEVG = 'OVEHOSTED_ENGINE/forceCreateVG'
 
+    ANSWERFILE_CONTENT = 'OVEHOSTED_STORAGE/storageAnswerFileContent'
+    HECONF_CONTENT = 'OVEHOSTED_STORAGE/storageHEConfContent'
+    BROKER_CONF_CONTENT = 'OVEHOSTED_STORAGE/brokerConfContent'
+    VM_CONF_CONTENT = 'OVEHOSTED_STORAGE/vmConfContent'
+    CONF_IMAGE_SIZE_GB = 'OVEHOSTED_STORAGE/confImageSizeGB'
+    CONF_IMAGE_DESC = 'OVEHOSTED_STORAGE/confImageDesc'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def CONF_IMG_UUID(self):
+        return 'OVEHOSTED_STORAGE/confImageUUID'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def CONF_VOL_UUID(self):
+        return 'OVEHOSTED_STORAGE/confVolUUID'
+
 
 @util.export
 @util.codegen
@@ -925,6 +949,10 @@ class Stages(object):
     VDSM_LIBVIRT_CONFIGURED = 'ohosted.vdsm.libvirt.configured'
     NODE_FILES_PERSIST_S = 'ohosted.node.files.persist.start'
     NODE_FILES_PERSIST_E = 'ohosted.node.files.persist.end'
+    CONF_VOLUME_AVAILABLE = 'ohosted.conf.volume.available'
+    BROKER_CONF_AVAILABLE = 'ohosted.notifications.broker.conf.available'
+    ANSWER_FILE_AVAILABLE = 'ohosted.notifications.answerfile.available'
+    CONF_IMAGE_AVAILABLE = 'ohosted.notifications.confimage.available'
 
     DIALOG_TITLES_S_VM = 'ohosted.dialog.titles.vm.start'
     DIALOG_TITLES_E_VM = 'ohosted.dialog.titles.vm.end'
@@ -948,8 +976,10 @@ class Defaults(object):
     DEFAULT_SANLOCK_SERVICE = 'sanlock'
     DEFAULT_LOCKSPACE_NAME = 'hosted-engine'
     DEFAULT_IMAGE_DESC = 'Hosted Engine Image'
+    DEFAULT_CONF_IMAGE_DESC = 'Hosted Engine Configuration Image'
     DEFAULT_IMAGE_SIZE_GB = 25  # based on minimum requirements.
     DEFAULT_MEM_SIZE_MB = 4096  # based on minimum requirements.
+    DEFAULT_CONF_IMAGE_SIZE_GB = 1
     DEFAULT_BOOT = 'disk'  # boot device - drive C or cdrom or pxe
     DEFAULT_CDROM = '/dev/null'
     DEFAULT_BRIDGE_IF = 'em1'

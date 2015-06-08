@@ -33,7 +33,7 @@ from otopi import util
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import domains as ohosteddomains
-from ovirt_hosted_engine_setup import tasks
+from ovirt_hosted_engine_setup import util as ohostedutil
 
 
 def _(m):
@@ -201,21 +201,20 @@ class Plugin(plugin.PluginBase):
                 raise RuntimeError(vginfo['status']['message'])
             vgfree = int(vginfo['info']['vgfree'])
             available_gb = vgfree / pow(2, 30)
-            if int(
-                self.environment[
-                    ohostedcons.StorageEnv.IMAGE_SIZE_GB
-                ]
-            ) > available_gb:
+            required_size = int(self.environment[
+                ohostedcons.StorageEnv.IMAGE_SIZE_GB
+            ]) + int(self.environment[
+                ohostedcons.StorageEnv.CONF_IMAGE_SIZE_GB
+            ])
+            if required_size > available_gb:
                 raise ohosteddomains.InsufficientSpaceError(
                     _(
                         'Error: the VG on block device has capacity of only '
                         '{available_gb} GiB while '
-                        '{image_gb} GiB is required for the image'
+                        '{required_size} GiB is required for the image'
                     ).format(
                         available_gb=available_gb,
-                        image_gb=self.environment[
-                            ohostedcons.StorageEnv.IMAGE_SIZE_GB
-                        ],
+                        required_size=required_size,
                     )
                 )
 
@@ -231,50 +230,20 @@ class Plugin(plugin.PluginBase):
             preallocate = ohostedcons.VolumeTypes.PREALLOCATED_VOL
 
         diskType = 2
-        # creates a volume on the storage (SPM verb)
-        status = cli.createVolume(
-            sdUUID,
-            spUUID,
-            imgUUID,
-            str(
-                int(
-                    self.environment[ohostedcons.StorageEnv.IMAGE_SIZE_GB]
-                ) * pow(2, 30)
-            ),
+
+        ohostedutil.create_prepare_image(
+            self.logger,
+            cli,
             volFormat,
             preallocate,
-            diskType,
+            sdUUID,
+            spUUID,
+            imgUUID,
             volUUID,
+            diskType,
+            self.environment[ohostedcons.StorageEnv.IMAGE_SIZE_GB],
             self.environment[ohostedcons.StorageEnv.IMAGE_DESC],
         )
-        self.logger.debug(status)
-        if status['status']['code'] == 0:
-            self.logger.debug(
-                (
-                    'Created volume {newUUID}, request was:\n'
-                    '- image: {imgUUID}\n'
-                    '- volume: {volUUID}'
-                ).format(
-                    newUUID=status['status']['message'],
-                    imgUUID=imgUUID,
-                    volUUID=volUUID,
-                )
-            )
-        else:
-            raise RuntimeError(status['status']['message'])
-        waiter = tasks.TaskWaiter(self.environment)
-        waiter.wait()
-        # Expose the image (e.g., activates the lv) on the host (HSM verb).
-        self.logger.debug('prepareImage')
-        response = cli.prepareImage(
-            spUUID,
-            sdUUID,
-            imgUUID,
-            volUUID
-        )
-        self.logger.debug(response)
-        if response['status']['code'] != 0:
-            raise RuntimeError(response['status']['message'])
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

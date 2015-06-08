@@ -26,6 +26,7 @@ from otopi import util
 
 from . import blockd
 from . import glusterfs
+from . import heconf
 from . import nfs
 from . import storage
 
@@ -34,6 +35,7 @@ from . import storage
 def createPlugins(context):
     blockd.Plugin(context=context)
     glusterfs.Plugin(context=context)
+    heconf.Plugin(context=context)
     nfs.Plugin(context=context)
     storage.Plugin(context=context)
 

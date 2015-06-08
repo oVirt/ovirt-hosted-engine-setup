@@ -34,45 +34,6 @@ def _(m):
 
 
 @util.export
-class TaskWaiter(base.Base):
-    """
-    Task waiting utility.
-    """
-
-    def __init__(self, environment):
-        super(TaskWaiter, self).__init__()
-        self.environment = environment
-
-    def wait(self):
-        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        wait = True
-        while wait:
-            self.logger.debug('Waiting for existing tasks to complete')
-            statuses = cli.getAllTasksStatuses()
-            code = statuses['status']['code']
-            message = statuses['status']['message']
-            if code != 0:
-                raise RuntimeError(
-                    _(
-                        'Error getting task status: {error}'
-                    ).format(
-                        error=message
-                    )
-                )
-            tasksStatuses = statuses['allTasksStatus']
-            all_completed = True
-            for taskID in tasksStatuses:
-                if tasksStatuses[taskID]['taskState'] != 'finished':
-                    all_completed = False
-                else:
-                    cli.clearTask(taskID)
-            if all_completed:
-                wait = False
-            else:
-                time.sleep(1)
-
-
-@util.export
 class VMDownWaiter(base.Base):
     """
     VM down waiting utility.

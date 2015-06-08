@@ -21,9 +21,12 @@
 """Utils."""
 
 
+import gettext
+import glob
 import os
 import random
 import re
+import time
 
 
 from otopi import util
@@ -32,6 +35,10 @@ from otopi import util
 from . import constants as ohostedcons
 
 UNICAST_MAC_ADDR = re.compile("[a-fA-F0-9][02468aAcCeE](:[a-fA-F0-9]{2}){5}")
+
+
+def _(m):
+    return gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
 
 @util.export
@@ -96,6 +103,122 @@ def persist(path):
             'Use ohostedcons.CoreEnv.NODE_SETUP for ensuring module '
             'availability'
         )
+
+
+def get_volume_path(type, sd_uuid, img_uuid, vol_uuid):
+    """
+    Return path of the volume file inside the domain
+    """
+    volume_path = ohostedcons.FileLocations.SD_MOUNT_PARENT_DIR
+    if type == 'glusterfs':
+        volume_path = os.path.join(
+            volume_path,
+            'glusterSD',
+        )
+    volume_path = os.path.join(
+        volume_path,
+        '*',
+        sd_uuid,
+        'images',
+        img_uuid,
+        vol_uuid,
+    )
+    volumes = glob.glob(volume_path)
+    if not volumes:
+        raise RuntimeError(
+            'Path to volume {vol_uuid} not found in {root}'.format(
+                vol_uuid=vol_uuid,
+                root=ohostedcons.FileLocations.SD_MOUNT_PARENT_DIR,
+            )
+        )
+    return volumes[0]
+
+
+def task_wait(cli, logger):
+    wait = True
+    while wait:
+        if logger:
+            logger.debug('Waiting for existing tasks to complete')
+        statuses = cli.getAllTasksStatuses()
+        code = statuses['status']['code']
+        message = statuses['status']['message']
+        if code != 0:
+            raise RuntimeError(
+                _(
+                    'Error getting task status: {error}'
+                ).format(
+                    error=message
+                )
+            )
+        tasksStatuses = statuses['allTasksStatus']
+        all_completed = True
+        for taskID in tasksStatuses:
+            if tasksStatuses[taskID]['taskState'] != 'finished':
+                all_completed = False
+            else:
+                cli.clearTask(taskID)
+        if all_completed:
+            wait = False
+        else:
+            time.sleep(1)
+
+
+def create_prepare_image(
+        logger,
+        cli,
+        volFormat,
+        preallocate,
+        sdUUID,
+        spUUID,
+        imgUUID,
+        volUUID,
+        diskType,
+        sizeGB,
+        desc
+):
+    # creates a volume on the storage (SPM verb)
+    status = cli.createVolume(
+        sdUUID,
+        spUUID,
+        imgUUID,
+        str(int(sizeGB) * pow(2, 30)),
+        volFormat,
+        preallocate,
+        diskType,
+        volUUID,
+        desc,
+    )
+    if logger:
+        logger.debug(status)
+    if status['status']['code'] == 0:
+        if logger:
+            logger.debug(
+                (
+                    'Created configuration volume {newUUID}, request was:\n'
+                    '- image: {imgUUID}\n'
+                    '- volume: {volUUID}'
+                ).format(
+                    newUUID=status['status']['message'],
+                    imgUUID=imgUUID,
+                    volUUID=volUUID,
+                )
+            )
+    else:
+        raise RuntimeError(status['status']['message'])
+    task_wait(cli, logger)
+    # Expose the image (e.g., activates the lv) on the host (HSM verb).
+    if logger:
+        logger.debug('configuration volume: prepareImage')
+    response = cli.prepareImage(
+        spUUID,
+        sdUUID,
+        imgUUID,
+        volUUID
+    )
+    if logger:
+        logger.debug(response)
+    if response['status']['code'] != 0:
+        raise RuntimeError(response['status']['message'])
 
 
 class VirtUserContext(object):

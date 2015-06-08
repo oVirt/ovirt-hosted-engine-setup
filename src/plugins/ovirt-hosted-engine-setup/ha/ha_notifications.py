@@ -216,15 +216,23 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
         condition=lambda self: self._enabled,
+        name=ohostedcons.Stages.BROKER_CONF_AVAILABLE,
     )
     def _misc(self):
         f = StringIO.StringIO()
         try:
             self._cfg.write(f)
+            self.environment[
+                ohostedcons.StorageEnv.BROKER_CONF_CONTENT
+            ] = f.getvalue()
+            #  TODO: deprecate the file system instance when the
+            #  broker will be ready
             self.environment[otopicons.CoreEnv.MAIN_TRANSACTION].append(
                 filetransaction.FileTransaction(
                     name=self._conffile,
-                    content=f.getvalue(),
+                    content=self.environment[
+                        ohostedcons.StorageEnv.BROKER_CONF_CONTENT
+                    ],
                     modifiedList=self.environment[
                         otopicons.CoreEnv.MODIFIED_FILES
                     ],

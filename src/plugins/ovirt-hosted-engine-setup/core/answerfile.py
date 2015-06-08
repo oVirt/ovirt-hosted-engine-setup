@@ -26,6 +26,9 @@ import gettext
 import os
 
 
+from io import StringIO
+
+
 from otopi import common
 from otopi import constants as otopicons
 from otopi import plugin
@@ -47,6 +50,24 @@ class Plugin(plugin.PluginBase):
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
 
+    def _generate_answers(self, f):
+        f.write(u'[environment:default]\n')
+        for c in ohostedcons.__dict__['__hosted_attrs__']:
+            for k in c.__dict__.values():
+                if hasattr(k, '__hosted_attrs__'):
+                    if k.__hosted_attrs__['answerfile']:
+                        k = k.fget(None)
+                        if k in self.environment:
+                            v = self.environment[k]
+                            f.write(
+                                u'%s=%s:%s\n' % (
+                                    k,
+                                    common.typeName(v),
+                                    '\n'.join(v) if isinstance(v, list)
+                                    else v,
+                                )
+                            )
+
     def _save_answers(self, name):
         self.logger.info(
             _("Generating answer file '{name}'").format(
@@ -55,22 +76,7 @@ class Plugin(plugin.PluginBase):
         )
         path = self.resolveFile(name)
         with open(path, 'w') as f:
-            f.write('[environment:default]\n')
-            for c in ohostedcons.__dict__['__hosted_attrs__']:
-                for k in c.__dict__.values():
-                    if hasattr(k, '__hosted_attrs__'):
-                        if k.__hosted_attrs__['answerfile']:
-                            k = k.fget(None)
-                            if k in self.environment:
-                                v = self.environment[k]
-                                f.write(
-                                    '%s=%s:%s\n' % (
-                                        k,
-                                        common.typeName(v),
-                                        '\n'.join(v) if isinstance(v, list)
-                                        else v,
-                                    )
-                                )
+            self._generate_answers(f)
         if self.environment[ohostedcons.CoreEnv.NODE_SETUP]:
             try:
                 ohostedutil.persist(path)
@@ -96,6 +102,22 @@ class Plugin(plugin.PluginBase):
             None
         )
         self._answers = []
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CLOSEUP,
+        name=ohostedcons.Stages.ANSWER_FILE_AVAILABLE,
+    )
+    def _closeup(self):
+        # TODO: ensure to generate after latest env value modification
+        # otherwise that value will not be in the file copied to the engine VM
+        f = StringIO()
+        try:
+            self._generate_answers(f)
+            self.environment[
+                ohostedcons.StorageEnv.ANSWERFILE_CONTENT
+            ] = f.getvalue()
+        finally:
+            f.close()
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLEANUP,

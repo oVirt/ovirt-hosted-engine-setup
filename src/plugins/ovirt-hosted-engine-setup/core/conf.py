@@ -51,6 +51,7 @@ class Plugin(plugin.PluginBase):
         after=(
             ohostedcons.Stages.VM_IMAGE_AVAILABLE,
             ohostedcons.Stages.BRIDGE_AVAILABLE,
+            ohostedcons.Stages.CONF_VOLUME_AVAILABLE,
         ),
         name=ohostedcons.Stages.SAVE_CONFIG,
     )
@@ -106,6 +107,12 @@ class Plugin(plugin.PluginBase):
             '@LOCKSPACE_IMAGE_UUID@': self.environment[
                 ohostedcons.StorageEnv.LOCKSPACE_IMAGE_UUID
             ],
+            '@CONF_VOLUME_UUID@': self.environment[
+                ohostedcons.StorageEnv.CONF_VOL_UUID
+            ],
+            '@CONF_IMAGE_UUID@': self.environment[
+                ohostedcons.StorageEnv.CONF_IMG_UUID
+            ],
             '@IQN@': '',
             '@PORTAL@': '',
             '@USER@': '',
@@ -140,6 +147,11 @@ class Plugin(plugin.PluginBase):
             template=ohostedcons.FileLocations.OVIRT_HOSTED_ENGINE_TEMPLATE,
             subst=subst
         )
+        self.environment[
+            ohostedcons.StorageEnv.HECONF_CONTENT
+        ] = content
+        #  TODO: deprecate the file system instance when the
+        #  agent will be ready
         with transaction.Transaction() as localtransaction:
             localtransaction.append(
                 filetransaction.FileTransaction(

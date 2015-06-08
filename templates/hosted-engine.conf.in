@@ -18,6 +18,8 @@ metadata_volume_UUID=@METADATA_VOLUME_UUID@
 metadata_image_UUID=@METADATA_IMAGE_UUID@
 lockspace_volume_UUID=@LOCKSPACE_VOLUME_UUID@
 lockspace_image_UUID=@LOCKSPACE_IMAGE_UUID@
+conf_volume_UUID=@CONF_VOLUME_UUID@
+conf_image_UUID=@CONF_IMAGE_UUID@
 
 # The following are used only for iSCSI storage
 iqn=@IQN@

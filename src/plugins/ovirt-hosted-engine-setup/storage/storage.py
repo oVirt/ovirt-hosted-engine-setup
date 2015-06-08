@@ -63,7 +63,6 @@ class Plugin(plugin.PluginBase):
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
         self.cli = None
-        self.waiter = None
         self.storageType = None
         self.protocol_version = None
         self.domain_exists = False
@@ -694,7 +693,7 @@ class Plugin(plugin.PluginBase):
         )
         if status['status']['code'] != 0:
             raise RuntimeError(status['status']['message'])
-        self.waiter.wait()
+        ohostedutil.task_wait(self.cli, self.logger)
         self.logger.debug(self.cli.getSpmStatus(spUUID))
         info = self.cli.getStoragePoolInfo(spUUID)
         self.logger.debug(info)
@@ -962,7 +961,6 @@ class Plugin(plugin.PluginBase):
         name=ohostedcons.Stages.STORAGE_AVAILABLE,
     )
     def _misc(self):
-        self.waiter = tasks.TaskWaiter(self.environment)
         self.cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         self._check_existing_pools()
         if self.storageType in (
@@ -1028,7 +1026,7 @@ class Plugin(plugin.PluginBase):
     )
     def _disconnect_pool(self):
         self.logger.info(_('Disconnecting Storage Pool'))
-        self.waiter.wait()
+        ohostedutil.task_wait(self.cli, self.logger)
         self._spmStop()
         self._storagePoolConnection(disconnect=True)
         self.logger.info(_('Start monitoring domain'))
