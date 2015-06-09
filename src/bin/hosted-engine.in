@@ -62,6 +62,13 @@ Usage: $0 [--help] <command> [<command-args>]
             Open the configured console using remote-viewer on localhost
         --set-maintenance --mode=<mode>
             Set maintenance status to the specified mode (global/local/none)
+        --reinitialize-lockspace
+            Make sure all hosted engine agents are down and reinitialize the
+            sanlock lockspaces.
+        --clean-metadata
+            Remove the metadata for the current host's agent from the global
+            status database. This makes all other hosts forget about this
+            host.
 
     For additional information about a specific command try:
         $@ <command> --help
@@ -372,6 +379,46 @@ return ;}
     fi
 }
 
+cmd_reinitialize_lockspace() {
+    [ "$1" == "--help" ] && { cat << __EOF__
+Usage: $0 reinitialize-lockspace [--force]
+    Reinitialize the sanlock lockspace file. This WIPES all locks.
+    Available only in properly deployed cluster in global maintenance mode
+    with all HA agents shut down.
+
+    --force  This option overrides the safety checks. Use at your own
+             risk DANGEROUS.
+__EOF__
+return ;}
+
+    if [ -r "${conf}" ] ; then
+        python -m ovirt_hosted_engine_setup.reinitialize_lockspace "$@"
+    else
+        echo "You must run deploy first"
+    fi
+}
+
+cmd_clean_metadata() {
+    [ "$1" == "--help" ] && { cat << __EOF__
+Usage: $0 clean_metadata [--force-cleanup] [--host-id=<id>]
+    Remove host's metadata from the global status database.
+    Available only in properly deployed cluster with properly stopped
+    agent.
+
+    --force-cleanup  This option overrides the safety checks. Use at your own
+                     risk DANGEROUS.
+
+    --host-id=<id>  Specify an explicit host id to clean
+__EOF__
+return ;}
+
+    if [ -r "${conf}" ] ; then
+        exec @datadir@/ovirt-hosted-engine-ha/ovirt-ha-agent --cleanup "$@"
+    else
+        echo "You must run deploy first"
+    fi
+}
+
 if [ -z "$1" ] ; then
     usage
 fi
@@ -397,6 +444,8 @@ case "${x}" in
     --start-pool) cmd_start_pool "$@" ;;
     --console) cmd_console "$@" ;;
     --set-maintenance) cmd_set_maintenance "$@" ;;
+    --reinitialize-lockspace) cmd_reinitialize_lockspace "$@" ;;
+    --clean-metadata) cmd_clean_metadata "$@" ;;
     --help)
         rc=0
         usage

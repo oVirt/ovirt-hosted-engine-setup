@@ -46,6 +46,10 @@ Manually connect the storage domain to the local VDSM instance.\&
 Start the storage pool manually.\&
 .IP "\fB\-\-set-maintenance \-\-mode=<mode>\fP"
 Set maintenance status to the specified mode (global/local/none).\&
+.IP "\fB\-\-clean_metadata [\-\-force\-cleanup] [\-\-host\-id=<id>]\fP"
+Remove host's metadata from the global status database.\&
+.IP "\fB\-\-reinitialize\-lockspace [\-\-force]\fP"
+Reinitialize the sanlock lockspace file. This WIPES all locks.\&
 
 .IP "For additional information about a specific command try:"
 hosted\-engine <command> --help\&
