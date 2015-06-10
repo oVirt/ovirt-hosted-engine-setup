@@ -330,7 +330,7 @@ class Plugin(plugin.PluginBase):
                 ).text
             )
             self.environment[
-                ohostedcons.VMEnv.VCPUS
+                ohostedcons.VMEnv.APPLIANCEVCPUS
             ] = str(num_of_sockets * cpu_per_socket)
             self.logger.debug('Configuring memory')
             unit = tree.find(

@@ -705,6 +705,8 @@ class VMEnv(object):
     def VCPUS(self):
         return 'OVEHOSTED_VM/vmVCpus'
 
+    APPLIANCEVCPUS = 'OVEHOSTED_VM/applianceVCpus'
+
     @ohostedattrs(
         answerfile=True,
         summary=True,

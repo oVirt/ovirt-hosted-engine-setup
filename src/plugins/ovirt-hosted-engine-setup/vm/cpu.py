@@ -61,6 +61,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VMEnv.VCPUS,
             None
         )
+        self.environment.setdefault(
+            ohostedcons.VMEnv.APPLIANCEVCPUS,
+            None
+        )
         # fixing values from answerfiles badly generated prior than 3.6
         if type(self.environment[ohostedcons.VMEnv.VCPUS]) == int:
             self.environment[
@@ -86,6 +90,15 @@ class Plugin(plugin.PluginBase):
         ] is None
         valid = False
         maxvcpus = int(self._getMaxVCpus())
+
+        default = ohostedcons.Defaults.DEFAULT_VM_VCPUS
+        default_msg = _('minimum requirement')
+        if self.environment[
+            ohostedcons.VMEnv.APPLIANCEVCPUS
+        ] is not None:
+            default = self.environment[ohostedcons.VMEnv.APPLIANCEVCPUS]
+            default_msg = _('appliance OVF value')
+
         while not valid:
             if interactive:
                 self.environment[
@@ -94,10 +107,10 @@ class Plugin(plugin.PluginBase):
                     name='ovehosted_vmenv_cpu',
                     note=_(
                         'Please specify the number of virtual CPUs for the VM '
-                        '[Defaults to minimum requirement: @DEFAULT@]: '
-                    ),
+                        '[Defaults to {default_msg}: @DEFAULT@]: '
+                    ).format(default_msg=default_msg),
                     prompt=True,
-                    default=ohostedcons.Defaults.DEFAULT_VM_VCPUS,
+                    default=default,
                 )
             try:
                 valid = True
