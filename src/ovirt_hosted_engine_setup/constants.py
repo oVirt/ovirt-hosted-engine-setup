@@ -128,6 +128,7 @@ class FileLocations(object):
     LIBEXECDIR = '/usr/libexec'
     SD_MOUNT_PARENT_DIR = '/rhev/data-center/mnt'
     OVIRT_HOSTED_ENGINE = 'ovirt-hosted-engine'
+    OVIRT_HOSTED_ENGINE_HA = 'ovirt-hosted-engine-ha'
     OVIRT_HOSTED_ENGINE_SETUP = 'ovirt-hosted-engine-setup'
     OVIRT_HOSTED_ENGINE_SETUP_LOGDIR = os.path.join(
         config.LOCALSTATEDIR,
@@ -142,6 +143,13 @@ class FileLocations(object):
         'vm.conf.in'
     )
     ENGINE_VM_CONF = os.path.join(
+        config.LOCALSTATEDIR,
+        'run',
+        OVIRT_HOSTED_ENGINE_HA,
+        'vm.conf'
+    )
+    # TODO: Only for upgrades, remove after 3.6
+    PREV_ENGINE_VM_CONF = os.path.join(
         config.SYSCONFDIR,
         OVIRT_HOSTED_ENGINE,
         'vm.conf'
@@ -284,7 +292,7 @@ class FileLocations(object):
     )
     ENGINE_HA_CONFDIR = os.path.join(
         SYSCONFDIR,
-        'ovirt-hosted-engine-ha'
+        OVIRT_HOSTED_ENGINE_HA
     )
     NOTIFY_CONF_FILE = os.path.join(  # TODO: Upgrades only, remove after 3.6
         ENGINE_HA_CONFDIR,
@@ -973,6 +981,8 @@ class Defaults(object):
     DEFAULT_STORAGE_DOMAIN_NAME = 'hosted_storage'
     DEFAULT_STORAGE_DATACENTER_NAME = 'hosted_datacenter'
     DEFAULT_VDSMD_SERVICE = 'vdsmd'
+    DEFAULT_SYSTEM_USER_VDSM = 'vdsm'
+    DEFAULT_SYSTEM_GROUP_KVM = 'kvm'
     DEFAULT_SANLOCK_SERVICE = 'sanlock'
     DEFAULT_LOCKSPACE_NAME = 'hosted-engine'
     DEFAULT_IMAGE_DESC = 'Hosted Engine Image'

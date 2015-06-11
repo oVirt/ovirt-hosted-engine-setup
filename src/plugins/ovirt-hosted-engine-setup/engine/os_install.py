@@ -83,6 +83,10 @@ class Plugin(plugin.PluginBase):
                     modifiedList=self.environment[
                         otopicons.CoreEnv.MODIFIED_FILES
                     ],
+                    mode=0o600,
+                    owner=ohostedcons.Defaults.DEFAULT_SYSTEM_USER_VDSM,
+                    group=ohostedcons.Defaults.DEFAULT_SYSTEM_GROUP_KVM,
+                    enforcePermissions=True,
                 ),
             )
 
