@@ -424,31 +424,6 @@ class Plugin(plugin.PluginBase):
         """
         Check that host id is not already in use
         """
-        if self.storageType in (
-            ohostedcons.VDSMConstants.ISCSI_DOMAIN,
-            ohostedcons.VDSMConstants.FC_DOMAIN,
-        ):
-            # For iSCSI/FC we need to explicitly call getStorageDomainStats
-            # to create/refresh the storage domain directory tree.
-            result = self.cli.getStorageDomainStats(
-                self.environment[
-                    ohostedcons.StorageEnv.SD_UUID
-                ],
-            )
-            self.logger.debug(
-                'getStorageDomainStats: {result}'.format(
-                    result=result,
-                )
-            )
-            if result['status']['code'] != 0:
-                raise RuntimeError(
-                    'Unable to get storage domain stats: {message}'.format(
-                        message=result['status']['message'],
-                    )
-                )
-
-        # Scan for metadata, lockspace and configuration image uuids
-        self._scan_images()
 
         if self.storageType in (
             ohostedcons.VDSMConstants.ISCSI_DOMAIN,
@@ -1265,6 +1240,33 @@ class Plugin(plugin.PluginBase):
         # This will be executed after specific plugin activated by domain
         # type finishes.
         self._getExistingDomain()
+
+        if self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]:
+            if self.storageType in (
+                ohostedcons.VDSMConstants.ISCSI_DOMAIN,
+                ohostedcons.VDSMConstants.FC_DOMAIN,
+            ):
+                # For iSCSI/FC we need to explicitly call getStorageDomainStats
+                # to create/refresh the storage domain directory tree.
+                result = self.cli.getStorageDomainStats(
+                    self.environment[
+                        ohostedcons.StorageEnv.SD_UUID
+                    ],
+                )
+                self.logger.debug(
+                    'getStorageDomainStats: {result}'.format(
+                        result=result,
+                    )
+                )
+                if result['status']['code'] != 0:
+                    raise RuntimeError(
+                        'Unable to get storage domain stats: {message}'.format(
+                            message=result['status']['message'],
+                        )
+                    )
+
+            # Scan for metadata, lockspace and configuration image uuids
+            self._scan_images()
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
