@@ -286,7 +286,7 @@ class FileLocations(object):
         SYSCONFDIR,
         'ovirt-hosted-engine-ha'
     )
-    NOTIFY_CONF_FILE = os.path.join(
+    NOTIFY_CONF_FILE = os.path.join(  # TODO: Upgrades only, remove after 3.6
         ENGINE_HA_CONFDIR,
         'broker.conf'
     )

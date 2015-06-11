@@ -75,8 +75,6 @@ class Plugin(plugin.PluginBase):
         self.environment[
             ohostedcons.StorageEnv.VM_CONF_CONTENT
         ] = content
-        #  TODO: deprecate the file system instance when the
-        #  agent will be ready
         with transaction.Transaction() as localtransaction:
             localtransaction.append(
                 filetransaction.FileTransaction(

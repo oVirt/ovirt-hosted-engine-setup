@@ -27,11 +27,8 @@ import configparser
 import gettext
 import re
 import StringIO
-import os
 
 
-from otopi import constants as otopicons
-from otopi import filetransaction
 from otopi import plugin
 from otopi import util
 
@@ -83,8 +80,6 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_INIT,
     )
     def _init(self):
-        self._conffile = ohostedcons.FileLocations.NOTIFY_CONF_FILE
-        self._enabled = os.path.exists(self._conffile)
         self.environment.setdefault(
             ohostedcons.NotificationsEnv.SMTP_SERVER,
             None
@@ -104,7 +99,9 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
-        condition=lambda self: self._enabled,
+        condition=lambda self: not self.environment[
+            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+        ],
     )
     def _customization(self):
         default_smtp_config = {
@@ -120,13 +117,7 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.NotificationsEnv.DEFAULT_DEST_EMAIL),
         }
         self._cfg = configparser.SafeConfigParser()
-        self._cfg.read(self._conffile)
-        if self._cfg.has_section('email'):
-            for name, value in dict(self._cfg.items('email')).items():
-                if name in default_smtp_config:
-                    default_smtp_config[name] = value
-        else:
-            self._cfg.add_section('email')
+        self._cfg.add_section('email')
 
         interactions = (
             {
@@ -215,7 +206,9 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
-        condition=lambda self: self._enabled,
+        condition=lambda self: not self.environment[
+            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+        ],
         name=ohostedcons.Stages.BROKER_CONF_AVAILABLE,
     )
     def _misc(self):
@@ -225,19 +218,6 @@ class Plugin(plugin.PluginBase):
             self.environment[
                 ohostedcons.StorageEnv.BROKER_CONF_CONTENT
             ] = f.getvalue()
-            #  TODO: deprecate the file system instance when the
-            #  broker will be ready
-            self.environment[otopicons.CoreEnv.MAIN_TRANSACTION].append(
-                filetransaction.FileTransaction(
-                    name=self._conffile,
-                    content=self.environment[
-                        ohostedcons.StorageEnv.BROKER_CONF_CONTENT
-                    ],
-                    modifiedList=self.environment[
-                        otopicons.CoreEnv.MODIFIED_FILES
-                    ],
-                )
-            )
         finally:
             f.close()
 
