@@ -45,7 +45,6 @@ Requires:       openssh-server
 Requires:       openssl
 Requires:       python
 Requires:       python-ethtool >= 0.6-3
-Requires:       python-paramiko
 Requires:       python-netaddr
 Requires:       sanlock >= 2.8
 Requires:       sanlock-python >= 2.8

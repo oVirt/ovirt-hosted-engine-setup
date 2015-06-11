@@ -1059,10 +1059,8 @@ class Confirms(object):
 @util.export
 @util.codegen
 class FirstHostEnv(object):
-    FQDN = 'OVEHOSTED_FIRST_HOST/fqdn'
-    ROOT_PASSWORD = 'OVEHOSTED_FIRST_HOST/rootPassword'
-    FETCH_ANSWER = 'OVEHOSTED_FIRST_HOST/fetchAnswer'
-    SSHD_PORT = 'OVEHOSTED_FIRST_HOST/sshdPort'
+    SKIP_SHARED_STORAGE_ANSWERF = 'OVEHOSTED_FIRST_HOST/skipSharedStorageAF'
     DEPLOY_WITH_HE_35_HOSTS = 'OVEHOSTED_FIRST_HOST/deployWithHE35Hosts'
+
 
 # vim: expandtab tabstop=4 shiftwidth=4
