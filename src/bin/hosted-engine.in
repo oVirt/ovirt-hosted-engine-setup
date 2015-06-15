@@ -21,6 +21,8 @@
 HOSTED_ENGINE_CONF='/etc/ovirt-hosted-engine/hosted-engine.conf'
 PKI_GUIDE_URL='https://fedoraproject.org/wiki/QA:Testcase_Virtualization_Manually_set_spice_listening_port_with_TLS_port_set'
 
+blankUUID='00000000-0000-0000-0000-000000000000'
+
 if [ -r "${HOSTED_ENGINE_CONF}" ] ; then
     source "${HOSTED_ENGINE_CONF}"
 fi
@@ -292,6 +294,11 @@ return ;}
             "${spUUID}" \
             connection="${storage},user=kvm,id=${connectionUUID},protocol_version=${protocol_version}"
     fi
+    echo "Preparing images"
+    ${VDSCOMMAND}  prepareImage "${blankUUID}" "${sdUUID}" "${vm_disk_id}"  "${vm_disk_vol_id}"
+    ${VDSCOMMAND}  prepareImage "${blankUUID}" "${sdUUID}" "${metadata_image_UUID}"  "${metadata_volume_UUID}"
+    ${VDSCOMMAND}  prepareImage "${blankUUID}" "${sdUUID}" "${lockspace_image_UUID}"  "${lockspace_volume_UUID}"
+    ${VDSCOMMAND}  prepareImage "${blankUUID}" "${sdUUID}" "${conf_image_UUID}"  "${conf_volume_UUID}"
 }
 
 cmd_start_pool() {

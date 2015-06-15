@@ -1,5 +1,6 @@
 fqdn=@FQDN@
 vm_disk_id=@VM_DISK_ID@
+vm_disk_vol_id=@VM_DISK_VOL_ID@
 vmid=@VM_UUID@
 storage=@SHARED_STORAGE@
 conf=@CONF_FILE@

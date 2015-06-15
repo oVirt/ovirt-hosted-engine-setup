@@ -56,7 +56,6 @@ class Plugin(plugin.PluginBase):
         name=ohostedcons.Stages.SAVE_CONFIG,
     )
     def _misc(self):
-        # TODO: what's an VM_DISK_ID and how can it change to another value?
         self.logger.info(_('Updating hosted-engine configuration'))
         subst = {
             '@FQDN@': self.environment[
@@ -64,6 +63,9 @@ class Plugin(plugin.PluginBase):
             ],
             '@VM_DISK_ID@': self.environment[
                 ohostedcons.StorageEnv.IMG_UUID
+            ],
+            '@VM_DISK_VOL_ID@': self.environment[
+                ohostedcons.StorageEnv.VOL_UUID
             ],
             '@SHARED_STORAGE@': self.environment[
                 ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
