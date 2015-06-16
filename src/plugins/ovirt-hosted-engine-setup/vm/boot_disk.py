@@ -50,6 +50,8 @@ def _(m):
     return gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
 
+# TODO: avoid the transaction or complete it
+# now there is just one element without any rollback action
 class ImageTransaction(transaction.TransactionElement):
     """Image transaction element."""
 
@@ -144,6 +146,7 @@ class ImageTransaction(transaction.TransactionElement):
                 raiseOnError=True
             )
         except RuntimeError as e:
+            self._parent.logger.debug('error uploading the image: ' + str(e))
             return (1, str(e))
         return (0, 'OK')
 

@@ -360,6 +360,14 @@ class Plugin(plugin.PluginBase):
             ohostedcons.CloudInit.ROOTPWD,
             None
         )
+        if self.environment[
+            ohostedcons.CloudInit.ROOTPWD
+        ]:
+            self.environment[
+                ohostedcons.CloudInit.ROOTPWD
+            ] = self.environment[
+                ohostedcons.CloudInit.ROOTPWD
+            ].strip()
         self.environment[otopicons.CoreEnv.LOG_FILTER_KEYS].append(
             ohostedcons.CloudInit.ROOTPWD
         )
@@ -402,7 +410,7 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         after=(
             ohostedcons.Stages.DIALOG_TITLES_S_VM,
-            ohostedcons.Stages.CONFIG_BOOT_DEVICE,
+            ohostedcons.Stages.CONFIG_OVF_IMPORT,
         ),
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_VM,
@@ -523,40 +531,6 @@ class Plugin(plugin.PluginBase):
                 default=_('Yes')
             ) == _('Yes').lower()
 
-        while self.environment[
-            ohostedcons.CloudInit.ROOTPWD
-        ] is None:
-            password = self.dialog.queryString(
-                name='CI_ROOT_PASSWORD',
-                note=_(
-                    "Enter root password that "
-                    'will be used for the engine appliance '
-                    '(leave it empty to skip): '
-                ),
-                prompt=True,
-                hidden=True,
-                default='',
-            )
-            if password:
-                password_check = self.dialog.queryString(
-                    name='CI_ROOT_PASSWORD',
-                    note=_(
-                        "Confirm appliance root password: "
-                    ),
-                    prompt=True,
-                    hidden=True,
-                )
-                if password == password_check:
-                    self.environment[
-                        ohostedcons.CloudInit.ROOTPWD
-                    ] = password
-                else:
-                    self.logger.error(_('Passwords do not match'))
-            else:
-                self.environment[
-                    ohostedcons.CloudInit.ROOTPWD
-                ] = False
-
         if (
             self.environment[
                 ohostedcons.CloudInit.INSTANCE_HOSTNAME
@@ -587,9 +561,6 @@ class Plugin(plugin.PluginBase):
 
         if (
             self.environment[
-                ohostedcons.CloudInit.ROOTPWD
-            ] or
-            self.environment[
                 ohostedcons.CloudInit.INSTANCE_HOSTNAME
             ] or
             self.environment[
@@ -606,6 +577,58 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.CloudInit.GENERATE_ISO
             ] = ohostedcons.Const.CLOUD_INIT_GENERATE
             self._enable = True
+
+        if self.environment[
+            ohostedcons.CloudInit.GENERATE_ISO
+        ] == ohostedcons.Const.CLOUD_INIT_GENERATE:
+            while self.environment[
+                ohostedcons.CloudInit.ROOTPWD
+            ] is None:
+                password = self.dialog.queryString(
+                    name='CI_ROOT_PASSWORD',
+                    note=_(
+                        "Enter root password that "
+                        'will be used for the engine appliance '
+                        '(leave it empty to skip): '
+                    ),
+                    prompt=True,
+                    hidden=True,
+                    default='',
+                ).strip()
+                if password:
+                    password_check = self.dialog.queryString(
+                        name='CI_ROOT_PASSWORD',
+                        note=_(
+                            "Confirm appliance root password: "
+                        ),
+                        prompt=True,
+                        hidden=True,
+                    )
+                    if password == password_check:
+                        self.environment[
+                            ohostedcons.CloudInit.ROOTPWD
+                        ] = password
+                    else:
+                        self.logger.error(_('Passwords do not match'))
+                else:
+                    self.environment[ohostedcons.CloudInit.ROOTPWD] = ''
+                    self.logger.info(_('Skipping appliance root password'))
+
+        if (
+            self.environment[
+                ohostedcons.CloudInit.GENERATE_ISO
+            ] != ohostedcons.Const.CLOUD_INIT_GENERATE or
+            not self.environment[
+                ohostedcons.CloudInit.ROOTPWD
+            ] or self.environment[
+                ohostedcons.CloudInit.ROOTPWD
+            ].strip() == ''
+        ):
+            self.logger.warning(_(
+                'The oVirt engine appliance is not configured with a '
+                'default password, please consider configuring it '
+                'via cloud-init'
+            ))
 
     # TODO: ask about synchronizing with the host timezone
 
