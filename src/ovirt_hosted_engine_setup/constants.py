@@ -314,6 +314,7 @@ class Const(object):
     HA_AGENT_SERVICE = 'ovirt-ha-agent'
     HA_BROCKER_SERVICE = 'ovirt-ha-broker'
     HOSTED_ENGINE_VM_NAME = 'HostedEngine'
+    CONF_IMAGE_DESC = 'HostedEngineConfigurationImage'
     # On block devices the VM image should be preallocated into the VG
     # The VG by itself introduces some overhead that we need to take care of
     # verifying  the image size before creating them
@@ -664,7 +665,6 @@ class StorageEnv(object):
     BROKER_CONF_CONTENT = 'OVEHOSTED_STORAGE/brokerConfContent'
     VM_CONF_CONTENT = 'OVEHOSTED_STORAGE/vmConfContent'
     CONF_IMAGE_SIZE_GB = 'OVEHOSTED_STORAGE/confImageSizeGB'
-    CONF_IMAGE_DESC = 'OVEHOSTED_STORAGE/confImageDesc'
 
     @ohostedattrs(
         answerfile=True,
@@ -988,7 +988,6 @@ class Defaults(object):
     DEFAULT_SANLOCK_SERVICE = 'sanlock'
     DEFAULT_LOCKSPACE_NAME = 'hosted-engine'
     DEFAULT_IMAGE_DESC = 'Hosted Engine Image'
-    DEFAULT_CONF_IMAGE_DESC = 'Hosted Engine Configuration Image'
     DEFAULT_IMAGE_SIZE_GB = 25  # based on minimum requirements.
     DEFAULT_MEM_SIZE_MB = 4096  # based on minimum requirements.
     DEFAULT_CONF_IMAGE_SIZE_GB = 1

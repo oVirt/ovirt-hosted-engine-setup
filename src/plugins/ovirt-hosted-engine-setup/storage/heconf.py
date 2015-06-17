@@ -66,10 +66,6 @@ class Plugin(plugin.PluginBase):
             str(uuid.uuid4())
         )
         self.environment.setdefault(
-            ohostedcons.StorageEnv.CONF_IMAGE_DESC,
-            ohostedcons.Defaults.DEFAULT_CONF_IMAGE_DESC
-        )
-        self.environment.setdefault(
             ohostedcons.StorageEnv.ANSWERFILE_CONTENT,
             None
         )
@@ -107,7 +103,7 @@ class Plugin(plugin.PluginBase):
             self.environment[ohostedcons.StorageEnv.CONF_VOL_UUID],
             diskType,
             self.environment[ohostedcons.StorageEnv.CONF_IMAGE_SIZE_GB],
-            self.environment[ohostedcons.StorageEnv.CONF_IMAGE_DESC],
+            ohostedcons.Const.CONF_IMAGE_DESC,
         )
         #  TODO: add this volume to the engine to prevent misuse
 
