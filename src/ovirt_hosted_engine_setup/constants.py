@@ -103,6 +103,7 @@ class VDSMConstants(object):
     NFS_DOMAIN = 1
     FC_DOMAIN = 2
     ISCSI_DOMAIN = 3
+    POSIXFS_DOMAIN = 6
     GLUSTERFS_DOMAIN = 7
     DATA_DOMAIN = 1
 
@@ -179,6 +180,11 @@ class FileLocations(object):
         config.SYSCONFDIR,
         OVIRT_HOSTED_ENGINE,
         'answers.conf'
+    )
+    OVIRT_HOSTED_ENGINE_LB_DIR = os.path.join(
+        config.LOCALSTATEDIR,
+        'lib',
+        OVIRT_HOSTED_ENGINE_SETUP,
     )
     OVIRT_HOSTED_ENGINE_ANSWERS_ARCHIVE_DIR = os.path.join(
         config.LOCALSTATEDIR,
@@ -499,6 +505,9 @@ class StorageEnv(object):
     )
     def SD_UUID(self):
         return 'OVEHOSTED_STORAGE/sdUUID'
+
+    FAKE_MASTER_SD_UUID = 'OVEHOSTED_STORAGE/fakeMasterSdUUID'
+    FAKE_MASTER_SD_CONNECTION_UUID = 'OVEHOSTED_STORAGE/fakeMasterSdConnUUID'
 
     @ohostedattrs(
         answerfile=True,
@@ -937,7 +946,7 @@ class Stages(object):
     STORAGE_AVAILABLE = 'ohosted.storage.available'
     VM_IMAGE_AVAILABLE = 'ohosted.vm.image.available'
     OVF_IMPORTED = 'ohosted.vm.ovf.imported'
-    STORAGE_POOL_DISCONNECTED = 'ohosted.storage.pool.disconnected'
+    STORAGE_POOL_DESTROYED = 'ohosted.storage.pool.destroyed'
     VM_CONFIGURED = 'ohosted.vm.state.configured'
     VM_RUNNING = 'ohosted.vm.state.running'
     BRIDGE_AVAILABLE = 'ohosted.network.bridge.available'

@@ -23,8 +23,10 @@ Local storage domain plugin.
 """
 
 import gettext
+import os
 import re
 import stat
+import tempfile
 import uuid
 
 
@@ -59,6 +61,8 @@ class Plugin(plugin.PluginBase):
         'and signs "-" and "_"). All other characters '
         'are not valid in the name.'
     )
+    VFSTYPE = 'ext3'
+    SIZE = '2G'
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
@@ -69,6 +73,109 @@ class Plugin(plugin.PluginBase):
         self.pool_exists = False
         self._connected = False
         self._monitoring = False
+        self._fake_SD_path = None
+        self._fake_file = None
+
+    def _attach_loopback_device(self):
+        if not self._fake_file:
+            self._fake_file = tempfile.mkstemp(
+                dir=ohostedcons.FileLocations.OVIRT_HOSTED_ENGINE_LB_DIR
+            )[1]
+        os.chown(
+            self._fake_file,
+            self.environment[ohostedcons.VDSMEnv.VDSM_UID],
+            self.environment[ohostedcons.VDSMEnv.KVM_GID],
+        )
+        self.execute(
+            args=(
+                self.command.get('truncate'),
+                '--size=%s' % self.SIZE,
+                self._fake_file
+            ),
+            raiseOnError=True
+        )
+        losetup = self.command.get('losetup')
+        rc, stdout, stderr = self.execute(
+            args=(
+                losetup,
+                '--find',
+                '--show',
+                '--sizelimit=%s' % self.SIZE,
+                self._fake_file,
+            ),
+            raiseOnError=True
+        )
+        if rc == 0:
+            for line in stdout:
+                self._fake_SD_path = line
+            if self._fake_SD_path[:9] != '/dev/loop':
+                raise RuntimeError(
+                    -("Invalid loopback device path name: '{path}'").format(
+                        path=self._fake_SD_path,
+                    )
+                )
+            self.logger.debug(
+                'Found a available loopback device on %s' % self._fake_SD_path
+            )
+        if not self._fake_SD_path:
+            raise RuntimeError(
+                _('Unable to find an available loopback device path ')
+            )
+        self.execute(
+            args=(
+                self.command.get('mkfs'),
+                '-t',
+                self.VFSTYPE,
+                self._fake_SD_path,
+            ),
+            raiseOnError=True
+        )
+        mntpoint = tempfile.mkdtemp(
+            dir=ohostedcons.FileLocations.OVIRT_HOSTED_ENGINE_LB_DIR
+        )
+        self.execute(
+            args=(
+                self.command.get('mount'),
+                self._fake_SD_path,
+                mntpoint
+            ),
+            raiseOnError=True
+        )
+        self.execute(
+            args=(
+                self.command.get('chown'),
+                '-R',
+                '{u}:{g}'.format(
+                    u=self.environment[ohostedcons.VDSMEnv.VDSM_UID],
+                    g=self.environment[ohostedcons.VDSMEnv.KVM_GID],
+                ),
+                mntpoint,
+            ),
+            raiseOnError=True
+        )
+        self.execute(
+            args=(
+                self.command.get('umount'),
+                mntpoint,
+            ),
+            raiseOnError=True
+        )
+        os.rmdir(mntpoint)
+
+    def _remove_loopback_device(self):
+        if self._fake_SD_path:
+            self.execute(
+                args=(
+                    self.command.get('losetup'),
+                    '--detach',
+                    self._fake_SD_path,
+                ),
+                raiseOnError=True
+            )
+            self._fake_SD_path = None
+        if self._fake_file:
+            os.unlink(self._fake_file)
+            self._fake_file = None
 
     def _re_deploying_host(self):
         interactive = self.environment[ohostedcons.CoreEnv.RE_DEPLOY] is None
@@ -173,6 +280,17 @@ class Plugin(plugin.PluginBase):
                         raise RuntimeError(
                             _('Invalid value for Host ID: must be integer')
                         )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_SETUP,
+    )
+    def _setup(self):
+        self.command.detect('truncate')
+        self.command.detect('mkfs')
+        self.command.detect('losetup')
+        self.command.detect('mount')
+        self.command.detect('umount')
+        self.command.detect('chown')
 
     @plugin.event(
         stage=plugin.Stages.STAGE_VALIDATION,
@@ -500,23 +618,55 @@ class Plugin(plugin.PluginBase):
                     ],
                 }
             ]
+        elif self.storageType in (
+                ohostedcons.VDSMConstants.FC_DOMAIN,
+        ):
+            conList = None
         else:
             raise RuntimeError(_('Invalid Storage Type'))
 
-        status = method(
-            self.storageType,
-            spUUID,
-            conList
-        )
-        self.logger.debug(status)
-        if status['status']['code'] != 0:
-            raise RuntimeError(status['status']['message'])
-        if not disconnect:
-            for con in status['statuslist']:
-                if con['status'] != 0:
-                    raise RuntimeError(
-                        _('Connection to storage server failed')
-                    )
+        if conList:
+            status = method(
+                self.storageType,
+                spUUID,
+                conList
+            )
+            self.logger.debug(status)
+            if status['status']['code'] != 0:
+                raise RuntimeError(status['status']['message'])
+            if not disconnect:
+                for con in status['statuslist']:
+                    if con['status'] != 0:
+                        raise RuntimeError(
+                            _('Connection to storage server failed')
+                        )
+
+        if self._fake_SD_path:
+            # We have to keep the loopback device mounted
+            # and use the real file path cause VDSM forcefully
+            # resolves it!
+            fakeSDconList = [{
+                'connection': self._fake_file,
+                'spec': self._fake_file,
+                'vfsType': self.VFSTYPE,
+                'id': self.environment[
+                    ohostedcons.StorageEnv.FAKE_MASTER_SD_CONNECTION_UUID
+                ],
+            }]
+            status = method(
+                ohostedcons.VDSMConstants.POSIXFS_DOMAIN,
+                spUUID,
+                fakeSDconList
+            )
+            self.logger.debug(status)
+            if status['status']['code'] != 0:
+                raise RuntimeError(status['status']['message'])
+            if not disconnect:
+                for con in status['statuslist']:
+                    if con['status'] != 0:
+                        raise RuntimeError(
+                            _('Connection to storage server failed')
+                        )
 
     def _createStorageDomain(self):
         self.logger.debug('createStorageDomain')
@@ -558,16 +708,49 @@ class Plugin(plugin.PluginBase):
             self.cli.getStorageDomainStats(sdUUID)
         )
 
+    def _createFakeStorageDomain(self):
+        self.logger.debug('createFakeStorageDomain')
+        storageType = ohostedcons.VDSMConstants.POSIXFS_DOMAIN
+        sdUUID = self.environment[ohostedcons.StorageEnv.FAKE_MASTER_SD_UUID]
+        domainName = 'FakeHostedEngineStorageDomain'
+        typeSpecificArgs = self._fake_file
+        domainType = ohostedcons.VDSMConstants.DATA_DOMAIN
+        version = 3
+        status = self.cli.createStorageDomain(
+            storageType,
+            sdUUID,
+            domainName,
+            typeSpecificArgs,
+            domainType,
+            version
+        )
+        if status['status']['code'] != 0:
+            raise RuntimeError(status['status']['message'])
+        self.logger.debug(self.cli.repoStats())
+        self.logger.debug(
+            self.cli.getStorageDomainStats(sdUUID)
+        )
+
+    def _destroyFakeStorageDomain(self):
+        self.logger.debug('_destroyFakeStorageDomain')
+        sdUUID = self.environment[ohostedcons.StorageEnv.FAKE_MASTER_SD_UUID]
+        status = self.cli.formatStorageDomain(sdUUID)
+        if status['status']['code'] != 0:
+            raise RuntimeError(status['status']['message'])
+
     def _createStoragePool(self):
         self.logger.debug('createStoragePool')
         poolType = -1
         spUUID = self.environment[ohostedcons.StorageEnv.SP_UUID]
         sdUUID = self.environment[ohostedcons.StorageEnv.SD_UUID]
+        fakeSdUUID = self.environment[
+            ohostedcons.StorageEnv.FAKE_MASTER_SD_UUID
+        ]
         poolName = self.environment[
             ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME
         ]
-        masterDom = sdUUID
-        domList = [sdUUID]
+        masterDom = fakeSdUUID
+        domList = [fakeSdUUID, sdUUID]
         mVer = 1
         self.logger.debug((
             'createStoragePool(args=['
@@ -598,6 +781,26 @@ class Plugin(plugin.PluginBase):
         self.logger.debug(status)
         if status['status']['code'] != 0:
             raise RuntimeError(status['status']['message'])
+        self.pool_exists = True
+
+    def _destroyStoragePool(self):
+        self.logger.debug('_destroyStoragePool')
+        spUUID = self.environment[ohostedcons.StorageEnv.SP_UUID]
+        ID = self.environment[ohostedcons.StorageEnv.HOST_ID]
+        scsi_key = spUUID
+        status = self.cli.destroyStoragePool(
+            spUUID,
+            ID,
+            scsi_key
+        )
+        self.logger.debug(status)
+        if status['status']['code'] != 0:
+            raise RuntimeError(status['status']['message'])
+        self.environment[
+            ohostedcons.StorageEnv.SP_UUID
+        ] = ohostedcons.Const.BLANK_UUID
+        self._connected = False
+        self.pool_exists = False
 
     def _startMonitoringDomain(self):
         self.logger.debug('_startMonitoringDomain')
@@ -625,9 +828,12 @@ class Plugin(plugin.PluginBase):
     def _storagePoolConnection(self, disconnect=False):
         spUUID = self.environment[ohostedcons.StorageEnv.SP_UUID]
         sdUUID = self.environment[ohostedcons.StorageEnv.SD_UUID]
+        fakeSdUUID = self.environment[
+            ohostedcons.StorageEnv.FAKE_MASTER_SD_UUID
+        ]
         ID = self.environment[ohostedcons.StorageEnv.HOST_ID]
         scsi_key = spUUID
-        master = sdUUID
+        master = fakeSdUUID
         master_ver = 1
         method = self.cli.connectStoragePool
         method_args = [
@@ -643,7 +849,7 @@ class Plugin(plugin.PluginBase):
             method_args += [
                 master,
                 master_ver,
-                {sdUUID: 'active'},
+                {fakeSdUUID: 'active', sdUUID: 'active'},
             ]
         self.logger.debug(debug_msg)
         status = method(*method_args)
@@ -690,13 +896,30 @@ class Plugin(plugin.PluginBase):
         if status['status']['code'] != 0:
             raise RuntimeError(status['status']['message'])
 
-    def _activateStorageDomain(self):
+    def _activateStorageDomain(self, sdUUID):
         self.logger.debug('activateStorageDomain')
-        sdUUID = self.environment[ohostedcons.StorageEnv.SD_UUID]
         spUUID = self.environment[ohostedcons.StorageEnv.SP_UUID]
         status = self.cli.activateStorageDomain(
             sdUUID,
             spUUID
+        )
+        if status['status']['code'] != 0:
+            raise RuntimeError(status['status']['message'])
+        ohostedutil.task_wait(self.cli, self.logger)
+        self.logger.debug(self.cli.getSpmStatus(spUUID))
+        info = self.cli.getStoragePoolInfo(spUUID)
+        self.logger.debug(info)
+        self.logger.debug(self.cli.repoStats())
+
+    def _detachStorageDomain(self, sdUUID, newMasterSdUUID):
+        self.logger.debug('detachStorageDomain')
+        spUUID = self.environment[ohostedcons.StorageEnv.SP_UUID]
+        master_ver = 1
+        status = self.cli.detachStorageDomain(
+            sdUUID,
+            spUUID,
+            newMasterSdUUID,
+            master_ver
         )
         if status['status']['code'] != 0:
             raise RuntimeError(status['status']['message'])
@@ -838,7 +1061,15 @@ class Plugin(plugin.PluginBase):
             str(uuid.uuid4())
         )
         self.environment.setdefault(
+            ohostedcons.StorageEnv.FAKE_MASTER_SD_CONNECTION_UUID,
+            str(uuid.uuid4())
+        )
+        self.environment.setdefault(
             ohostedcons.StorageEnv.SD_UUID,
+            str(uuid.uuid4())
+        )
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.FAKE_MASTER_SD_UUID,
             str(uuid.uuid4())
         )
         self.environment.setdefault(
@@ -969,60 +1200,30 @@ class Plugin(plugin.PluginBase):
     )
     def _misc(self):
         self.cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        self._attach_loopback_device()
+        self._storageServerConnection()
         self._check_existing_pools()
-        if self.storageType in (
-            ohostedcons.VDSMConstants.NFS_DOMAIN,
-            ohostedcons.VDSMConstants.GLUSTERFS_DOMAIN,
-        ):
-            # vdsmd has been restarted, we need to reconnect in any case.
-            self._storageServerConnection()
-            if self.domain_exists:
-                self.logger.info(_('Connected to Storage Domain'))
-            else:
-                self.logger.info(_('Creating Storage Domain'))
-                self._createStorageDomain()
-        elif self.storageType in (
-            ohostedcons.VDSMConstants.ISCSI_DOMAIN,
-        ):
-            devices = self.cli.getDeviceList(
-                self.storageType
-            )
-            self.logger.debug(devices)
-            if devices['status']['code'] != 0:
-                raise RuntimeError(devices['status']['message'])
-            iscsi_device = None
-            for device in devices['devList']:
-                for path in device['pathlist']:
-                    if path['iqn'] == self.environment[
-                        ohostedcons.StorageEnv.ISCSI_TARGET
-                    ]:
-                        iscsi_device = device
-                        break
-            if iscsi_device is None:
-                self.logger.info(_('Connecting Storage Domain'))
-                self._storageServerConnection()
-            if not self.domain_exists:
-                self.logger.info(_('Creating Storage Domain'))
-                self._createStorageDomain()
-        if self.storageType in (
-            ohostedcons.VDSMConstants.FC_DOMAIN,
-        ):
-            if not self.domain_exists:
-                self.logger.info(_('Creating Storage Domain'))
-                self._createStorageDomain()
-
+        if not self.domain_exists:
+            self.logger.info(_('Creating Storage Domain'))
+            self._createStorageDomain()
         if not self.pool_exists:
             self.logger.info(_('Creating Storage Pool'))
+            self._createFakeStorageDomain()
             self._createStoragePool()
         if not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]:
             self.logger.info(_('Connecting Storage Pool'))
             self._storagePoolConnection()
             self._spmStart()
-            self._activateStorageDomain()
+            self._activateStorageDomain(
+                self.environment[ohostedcons.StorageEnv.FAKE_MASTER_SD_UUID]
+            )
+            self._activateStorageDomain(
+                self.environment[ohostedcons.StorageEnv.SD_UUID]
+            )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
-        name=ohostedcons.Stages.STORAGE_POOL_DISCONNECTED,
+        name=ohostedcons.Stages.STORAGE_POOL_DESTROYED,
         after=(
             ohostedcons.Stages.VM_IMAGE_AVAILABLE,
             ohostedcons.Stages.OVF_IMPORTED,
@@ -1031,11 +1232,15 @@ class Plugin(plugin.PluginBase):
             ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
         ],
     )
-    def _disconnect_pool(self):
-        self.logger.info(_('Disconnecting Storage Pool'))
-        ohostedutil.task_wait(self.cli, self.logger)
-        self._spmStop()
-        self._storagePoolConnection(disconnect=True)
+    def _destroy_pool(self):
+        self._detachStorageDomain(
+            self.environment[ohostedcons.StorageEnv.SD_UUID],
+            self.environment[ohostedcons.StorageEnv.FAKE_MASTER_SD_UUID],
+        )
+        self.logger.info(_('Destroying Storage Pool'))
+        self._destroyStoragePool()
+        self._destroyFakeStorageDomain()
+        self._remove_loopback_device()
         self.logger.info(_('Start monitoring domain'))
         self._startMonitoringDomain()
         self._monitoring = True
@@ -1047,12 +1252,13 @@ class Plugin(plugin.PluginBase):
         ],
     )
     def _cleanup(self):
-        if self._connected:
+        if self.pool_exists:
             try:
-                self._spmStop()
+                self._destroyStoragePool()
+                self._destroyFakeStorageDomain()
+                self._remove_loopback_device()
             except RuntimeError:
                 self.logger.debug('Not SPM?', exc_info=True)
-            self._storagePoolConnection(disconnect=True)
         if self._monitoring:
             self._stopMonitoringDomain()
 

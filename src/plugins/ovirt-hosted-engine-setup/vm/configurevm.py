@@ -172,7 +172,7 @@ class Plugin(plugin.PluginBase):
         after=(
             ohostedcons.Stages.VM_IMAGE_AVAILABLE,
             ohostedcons.Stages.BRIDGE_AVAILABLE,
-            ohostedcons.Stages.STORAGE_POOL_DISCONNECTED,
+            ohostedcons.Stages.STORAGE_POOL_DESTROYED,
         ),
     )
     def _misc(self):
