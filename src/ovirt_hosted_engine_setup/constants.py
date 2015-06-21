@@ -346,6 +346,10 @@ class Const(object):
     VIRTIO_PORTS_PATH = '/dev/virtio-ports/'
     E_SETUP_SUCCESS_STRING = 'HE_APPLIANCE_ENGINE_SETUP_SUCCESS'
     E_SETUP_FAIL_STRING = 'HE_APPLIANCE_ENGINE_SETUP_FAIL'
+    # sync with engine table storage_server_connections
+    # (packaging/dbscripts/create_tables.sql)
+    MAX_STORAGE_USERNAME_LENGTH = 50
+    MAX_STORAGE_PASSWORD_LENGTH = 50
 
 
 @util.export

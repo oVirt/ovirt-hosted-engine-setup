@@ -33,6 +33,7 @@ from otopi import plugin
 from otopi import util
 
 
+from ovirt_engine_setup import dialog
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import domains as ohosteddomains
 
@@ -124,37 +125,60 @@ class Plugin(plugin.PluginBase):
         return port
 
     def _customize_user(self):
-        user = self.environment[ohostedcons.StorageEnv.ISCSI_USER]
-        if user is None:
-            self._interactive = True
-            user = self.dialog.queryString(
-                name='OVEHOSTED_STORAGE_ISCSI_USER',
-                note=_(
-                    'Please specify the iSCSI portal user: '
-                ),
-                prompt=True,
-                caseSensitive=True,
-                default='',
-            )
-        return user
+        return dialog.queryEnvKey(
+            dialog=self.dialog,
+            logger=self.logger,
+            env=self.environment,
+            key=ohostedcons.StorageEnv.ISCSI_USER,
+            note=_(
+                'Please specify the iSCSI portal user: '
+            ),
+            prompt=True,
+            hidden=False,
+            tests=(
+                {
+                    'test': lambda username: (
+                        '' if len(
+                            username
+                        ) <= ohostedcons.Const.MAX_STORAGE_USERNAME_LENGTH
+                        else _(
+                            'Username should not be longer than %i characters.'
+                        ) % ohostedcons.Const.MAX_STORAGE_USERNAME_LENGTH
+                    ),
+                },
+            ),
+            name='OVEHOSTED_STORAGE_ISCSI_USER',
+            default = '',
+            store = False,
+        )
 
     def _customize_password(self, user):
-        password = ''
-        if (
-            user and
-            self.environment[ohostedcons.StorageEnv.ISCSI_PASSWORD] is None
-        ):
-            self._interactive = True
-            password = self.dialog.queryString(
-                name='OVEHOSTED_STORAGE_ISCSI_PASSWORD',
-                note=_(
-                    'Please specify the iSCSI portal password: '
-                ),
-                prompt=True,
-                hidden=True,
-                default=''
-            )
-        return password
+        return '' if not user else dialog.queryEnvKey(
+            dialog=self.dialog,
+            logger=self.logger,
+            env=self.environment,
+            key=ohostedcons.StorageEnv.ISCSI_PASSWORD,
+            note=_(
+                'Please specify the iSCSI portal password: '
+            ),
+            prompt=True,
+            hidden=True,
+            tests=(
+                {
+                    'test': lambda password: (
+                        '' if len(
+                            password
+                        ) <= ohostedcons.Const.MAX_STORAGE_PASSWORD_LENGTH
+                        else _(
+                            'Password should not be longer than %i characters.'
+                        ) % ohostedcons.Const.MAX_STORAGE_PASSWORD_LENGTH
+                    ),
+                },
+            ),
+            name='OVEHOSTED_STORAGE_ISCSI_PASSWORD',
+            default = '',
+            store = False,
+        )
 
     def _customize_target(self, values, default):
         target = self.environment[ohostedcons.StorageEnv.ISCSI_TARGET]

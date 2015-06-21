@@ -43,6 +43,7 @@ Requires:       iptables
 Requires:       lsof
 Requires:       openssh-server
 Requires:       openssl
+Requires:       ovirt-engine-setup-base >= 3.6.0
 Requires:       python
 Requires:       python-ethtool >= 0.6-3
 Requires:       python-paramiko
