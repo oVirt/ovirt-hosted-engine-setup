@@ -126,6 +126,15 @@ class Plugin(plugin.PluginBase):
                         fqdn=fqdn,
                     )
                 )
+        if components[0] == 'localhost':
+            raise RuntimeError(
+                _(
+                    "'{fqdn}' could not be used as a valid FQDN "
+                    "cause it's not uniquely resolvable."
+                ).format(
+                    fqdn=fqdn,
+                )
+            )
 
     def _validateFQDNresolvability(self, fqdn):
         try:
