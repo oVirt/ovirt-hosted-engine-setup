@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2015 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -24,12 +24,14 @@
 from otopi import util
 
 
+from . import packages
 from . import vdsmenv
 from . import sshd
 
 
 @util.export
 def createPlugins(context):
+    packages.Plugin(context=context)
     vdsmenv.Plugin(context=context)
     sshd.Plugin(context=context)
 

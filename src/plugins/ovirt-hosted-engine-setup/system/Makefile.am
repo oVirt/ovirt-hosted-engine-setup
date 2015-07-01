@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt with a manager in a VM
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2015 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -26,6 +26,7 @@ MAINTAINERCLEANFILES = \
 mydir=$(ovirthostedengineplugindir)/ovirt-hosted-engine-setup/system
 dist_my_PYTHON = \
 	__init__.py \
+	packages.py \
 	vdsmenv.py \
 	sshd.py \
 	$(NULL)
