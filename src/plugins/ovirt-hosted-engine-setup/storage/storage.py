@@ -276,6 +276,7 @@ class Plugin(plugin.PluginBase):
             self._RE_NOT_ALPHANUMERIC.search(name)
         ):
             return False
+        return True
 
     def _removeNFSTrailingSlash(self, path):
         nfspath = path.split(":")
