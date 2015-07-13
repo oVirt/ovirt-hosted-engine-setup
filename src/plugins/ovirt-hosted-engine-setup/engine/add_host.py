@@ -25,6 +25,7 @@ Host adder plugin.
 import contextlib
 import gettext
 import os
+import selinux
 import socket
 import tempfile
 import time
@@ -138,17 +139,15 @@ class Plugin(plugin.PluginBase):
                 os.path.expanduser('~root'),
                 '.ssh'
             )
-            rc, stdout, stderr = self.execute(
-                (
-                    self.command.get('restorecon'),
-                    '-r',
-                    path
-                )
-            )
-            if rc != 0:
+            try:
+                selinux.restorecon(path, recursive=True)
+            except OSError as ex:
                 self.logger.error(
-                    _('Failed to refresh SELINUX context for {path}').format(
-                        path=path
+                    _(
+                        'Failed to refresh SELINUX context for {path}: {ex}'
+                    ).format(
+                        path=path,
+                        ex=ex.message,
                     )
                 )
 
@@ -407,8 +406,6 @@ class Plugin(plugin.PluginBase):
     )
     def _setup(self):
         self.command.detect('ip')
-        self.command.detect('selinuxenabled')
-        self.command.detect('restorecon')
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
@@ -492,16 +489,7 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_VALIDATION,
     )
     def _validation(self):
-        if self.command.get('selinuxenabled', optional=True) is None:
-            self._selinux_enabled = False
-        else:
-            rc, stdout, stderr = self.execute(
-                (
-                    self.command.get('selinuxenabled'),
-                ),
-                raiseOnError=False,
-            )
-            self._selinux_enabled = rc == 0
+        self._selinux_enabled = selinux.is_selinux_enabled()
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,

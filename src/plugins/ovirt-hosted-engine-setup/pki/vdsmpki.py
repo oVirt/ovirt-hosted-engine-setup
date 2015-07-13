@@ -26,6 +26,7 @@ import gettext
 import glob
 import os
 import re
+import selinux
 import shutil
 import tempfile
 
@@ -211,17 +212,15 @@ class Plugin(plugin.PluginBase):
                 ]
             )
         if self._selinux_enabled:
-            rc, stdout, stderr = self.execute(
-                (
-                    self.command.get('restorecon'),
-                    '-r',
-                    cert_dir
-                )
-            )
-            if rc != 0:
+            try:
+                selinux.restorecon(cert_dir, recursive=True)
+            except OSError as ex:
                 self.logger.error(
-                    _('Failed to refresh SELINUX context for {path}').format(
-                        path=cert_dir
+                    _(
+                        'Failed to refresh SELINUX context for {path}: {ex}'
+                    ).format(
+                        path=cert_dir,
+                        ex=ex.message,
                     )
                 )
 
@@ -251,8 +250,6 @@ class Plugin(plugin.PluginBase):
         # remove when we understand how to replace the openssl command
         # with m2crypto code
         self.command.detect('openssl')
-        self.command.detect('restorecon')
-        self.command.detect('selinuxenabled')
 
     @plugin.event(
         stage=plugin.Stages.STAGE_LATE_SETUP,
@@ -262,16 +259,7 @@ class Plugin(plugin.PluginBase):
         ),
     )
     def _late_setup(self):
-        if self.command.get('selinuxenabled', optional=True) is None:
-            self._selinux_enabled = False
-        else:
-            rc, stdout, stderr = self.execute(
-                (
-                    self.command.get('selinuxenabled'),
-                ),
-                raiseOnError=False,
-            )
-            self._selinux_enabled = (rc == 0)
+        self._selinux_enabled = selinux.is_selinux_enabled()
         if not os.path.exists(ohostedcons.FileLocations.VDSMCERT):
             self._generateVDSMcerts()
             self._copy_vdsm_pki()

@@ -41,6 +41,7 @@ BuildArch:      noarch
 Requires:       bind-utils
 Requires:       genisoimage
 Requires:       iptables
+Requires:       libselinux-python
 Requires:       lsof
 Requires:       openssh-server
 Requires:       openssl
@@ -89,7 +90,6 @@ Requires:       glusterfs-server >= 3.7.2
 Requires:       dmidecode
 Requires:       iproute
 Requires:       kexec-tools
-Requires:       libselinux-python
 Requires:       m2crypto
 Requires:       ovirt-vmconsole-host
 Requires:       qemu-kvm-tools

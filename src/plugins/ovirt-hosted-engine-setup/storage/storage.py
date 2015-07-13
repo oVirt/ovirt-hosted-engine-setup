@@ -25,6 +25,7 @@ Local storage domain plugin.
 import gettext
 import os
 import re
+import selinux
 import stat
 import tempfile
 import uuid
@@ -75,6 +76,7 @@ class Plugin(plugin.PluginBase):
         self._monitoring = False
         self._fake_SD_path = None
         self._fake_file = None
+        self._selinux_enabled = False
 
     def _attach_loopback_device(self):
         if not self._fake_file:
@@ -153,6 +155,9 @@ class Plugin(plugin.PluginBase):
             ),
             raiseOnError=True
         )
+        if self._selinux_enabled:
+            con = "system_u:object_r:virt_var_lib_t:s0"
+            selinux.chcon(path=mntpoint, context=con, recursive=True)
         self.execute(
             args=(
                 self.command.get('umount'),
@@ -1169,6 +1174,7 @@ class Plugin(plugin.PluginBase):
                 )
             )
         self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE] = domain_type
+        self._selinux_enabled = selinux.is_selinux_enabled()
         # Here the execution flow go to specific plugin activated by domain
         # type.
 
