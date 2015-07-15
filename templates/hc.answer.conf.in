@@ -1,0 +1,8 @@
+[environment:default]
+OVEHOSTED_STORAGE/glusterProvisioningEnabled=bool:True
+[environment:override]
+OVEHOSTED_STORAGE/domainType=str:glusterfs
+OVEHOSTED_STORAGE/glusterProvisioningEnabled=bool:True
+OVEHOSTED_VM/vmBoot=str:disk
+OVEHOSTED_VM/cloudInitISO=str:generate
+

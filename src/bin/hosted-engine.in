@@ -42,6 +42,9 @@ Usage: $0 [--help] <command> [<command-args>]
     The available commands are:
         --deploy [options]
             run ovirt-hosted-engine deployment
+        --deploy-hc [options]
+            run ovirt-hosted-engine deployment on Hyper Converged
+            GlusterFS storage. It will require two additional physical hosts
         --vm-start
             start VM on this host
         --vm-start-paused
@@ -116,6 +119,22 @@ __EOF__
 return ;}
 
     exec @datadir@/ovirt-hosted-engine-setup/scripts/ovirt-hosted-engine-setup "$@"
+}
+
+cmd_deploy_hc() {
+    [ "$1" == "--help" ] && { cat << __EOF__
+Usage: $0 --deploy-hc [args]
+    run ovirt-hosted-engine deployment on Hyper Converged
+    GlusterFS storage. It will require two additional physical hosts.
+
+    --config-append=<file>
+        Load extra configuration files.
+    --generate-answer=<file>
+        Generate answer file.
+__EOF__
+return ;}
+
+    exec @datadir@/ovirt-hosted-engine-setup/scripts/ovirt-hosted-engine-setup --deploy-hc "$@"
 }
 
 cmd_vm_start() {
@@ -445,6 +464,7 @@ cli_broker() {
     shift
     case "${x}" in
         --deploy) cmd_deploy "$@" ;;
+        --deploy-hc) cmd_deploy_hc "$@" ;;
         --vm-start) cmd_vm_start "$@" ;;
         --vm-start-paused) cmd_vm_start_paused "$@" ;;
         --vm-shutdown) cmd_vm_shutdown "$@" ;;

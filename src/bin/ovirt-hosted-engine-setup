@@ -39,6 +39,10 @@ __EOF__
 environment="OVESETUP_CORE/offlinePackager=bool:True"
 environment="${environment} PACKAGER/yumpackagerEnabled=bool:False"
 
+script="$(readlink -f "$0")"
+scriptdir="$(dirname "${script}")"
+templatedir=${scriptdir}/../templates
+
 while [ -n "$1" ]; do
 	x="$1"
 	v="${x#*=}"
@@ -49,6 +53,9 @@ while [ -n "$1" ]; do
 		;;
 		--config-append=*)
 			environment="${environment} APPEND:CORE/configFileAppend=str:${v}"
+		;;
+		--deploy-hc)
+			environment="${environment} APPEND:CORE/configFileAppend=str:${templatedir}/hc.answer.conf.in"
 		;;
 		--generate-answer=*)
 			environment="${environment} OVEHOSTED_CORE/userAnswerFile=str:${v}"
@@ -62,8 +69,6 @@ while [ -n "$1" ]; do
 	esac
 done
 
-script="$(readlink -f "$0")"
-scriptdir="$(dirname "${script}")"
 if [ ! -f "${scriptdir}/ovirt-hosted-engine-setup.env" ]; then
 	#FIXME: must be configured by configure.ac
 	scriptdir=/usr/share/ovirt-hosted-engine-setup/scripts

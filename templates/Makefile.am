@@ -24,6 +24,7 @@ MAINTAINERCLEANFILES = \
 templatesdir=$(ovirthostedenginetemplatedir)
 dist_templates_DATA = \
 	vm.conf.in \
+	hc.answer.conf.in \
 	hosted-engine.conf.in \
 	iptables.default.in \
 	$(NULL)

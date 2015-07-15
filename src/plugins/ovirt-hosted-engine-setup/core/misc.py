@@ -77,6 +77,13 @@ class Plugin(plugin.PluginBase):
         priority=plugin.Stages.PRIORITY_FIRST,
     )
     def _setup(self):
+        if self.environment[
+            ohostedcons.StorageEnv.GLUSTER_PROVISIONING_ENABLED
+        ]:
+            self.logger.info(
+                _('Deploying in HyperConverged way over GlusterFS')
+            )
+
         interactive = self.environment[
             ohostedcons.CoreEnv.DEPLOY_PROCEED
         ] is None
