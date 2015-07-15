@@ -1243,11 +1243,11 @@ class Plugin(plugin.PluginBase):
         if not self.domain_exists:
             self.logger.info(_('Creating Storage Domain'))
             self._createStorageDomain()
-        if not self.pool_exists:
-            self.logger.info(_('Creating Storage Pool'))
-            self._createFakeStorageDomain()
-            self._createStoragePool()
         if not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]:
+            if not self.pool_exists:
+                self.logger.info(_('Creating Storage Pool'))
+                self._createFakeStorageDomain()
+                self._createStoragePool()
             self.logger.info(_('Connecting Storage Pool'))
             self._storagePoolConnection()
             self._spmStart()
