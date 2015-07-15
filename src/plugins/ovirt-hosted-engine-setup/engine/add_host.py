@@ -692,7 +692,7 @@ class Plugin(plugin.PluginBase):
                 )
                 while not check_liveliness.manualSetupDispatcher(
                     self,
-                    True,
+                    check_liveliness.MSD_FURTHER_ACTIONS,
                     fqdn
                 ):
                     pass

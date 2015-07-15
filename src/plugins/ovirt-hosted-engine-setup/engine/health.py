@@ -85,7 +85,11 @@ class Plugin(
                     'in the VM.'
                 )
             )
-            while not check_liveliness.manualSetupDispatcher(self, True, fqdn):
+            while not check_liveliness.manualSetupDispatcher(
+                self,
+                check_liveliness.MSD_ENGINE_INSTALLED,
+                fqdn
+            ):
                 pass
 
         # automated engine setup execution on the appliance

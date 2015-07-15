@@ -34,55 +34,74 @@ def _(m):
     return gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
 
-def manualSetupDispatcher(base, os_installed=False, engine_fqdn=None):
+MSD_OS_INSTALLED = 0
+MSD_ENGINE_INSTALLED = 1
+MSD_FURTHER_ACTIONS = 2
+
+
+def manualSetupDispatcher(
+        base,
+        engine_vm_status=MSD_OS_INSTALLED,
+        engine_fqdn=None
+):
     '''
     :param base: Reference to caller.
-    :param os_installed: specifies state of installation.
+    :param engine_vm_level: specifies state of installation:
+            MSD_OS_INSTALLED - OS has been installed
+            MSD_ENGINE_INSTALLED - Engine has been installed
+            MSD_FURTHER_ACTIONS - Further actions have been performed on the VM
     :param engine_fqdn: When provided specifies engine hostname.
     :return: True if manual setup is ready.
     '''
     response = ''
-    if not os_installed:
-        response = base.dialog.queryString(
-            name='OVEHOSTED_INSTALLING_OS',
-            note=_(
-                '\n\nThe VM has been started.\n'
-                'To continue please install OS and shutdown or reboot the '
-                'VM.\n\n'
-                'Make a selection from the options below:\n'
-                '(1) Continue setup - OS installation is complete\n'
-                '(2) Power off and restart the VM\n'
-                '(3) Abort setup\n'
-                '(4) Destroy VM and abort setup\n'
-                '\n(@VALUES@)[@DEFAULT@]: '
-            ),
-            prompt=True,
-            validValues=(_('1'), _('2'), _('3'), _('4')),
-            default=_('1'),
-            caseSensitive=False
+    if engine_vm_status == MSD_OS_INSTALLED:
+        name = 'OVEHOSTED_INSTALLING_OS'
+        header = _(
+            'The VM has been started.\n'
+            'To continue please install OS and shutdown or reboot the VM.'
         )
+        additional_c1 = _('OS installation is complete')
+    elif engine_vm_status == MSD_ENGINE_INSTALLED:
+        name = 'OVEHOSTED_ENGINE_UP'
+        header = _(
+            'The VM has been rebooted.\n'
+            'To continue please install oVirt-Engine in the VM\n'
+            '(Follow http://www.ovirt.org/Quick_Start_Guide for more info).'
+        )
+        additional_c1 = _(
+            'oVirt-Engine installation is ready and ovirt-engine service is up'
+        )
+    elif engine_vm_status == MSD_FURTHER_ACTIONS:
+        name = 'OVEHOSTED_ENGINE_FA'
+        header = _('Please check Engine VM configuration.')
+        additional_c1 = _('Engine VM configuration has been fixed')
     else:
-        response = base.dialog.queryString(
-            name='OVEHOSTED_ENGINE_UP',
-            note=_(
-                '\n\nThe VM has been rebooted.\n'
-                'To continue please install oVirt-Engine in the VM \n(Follow '
-                'http://www.ovirt.org/Quick_Start_Guide for more info)\n\n'
-                'Make a selection from the options below:\n'
-                '(1) Continue setup - oVirt-Engine installation is ready and '
-                'ovirt-engine service is up\n'
-                '(2) Power off and restart the VM\n'
-                '(3) Abort setup\n'
-                '(4) Destroy VM and abort setup\n'
-                '\n(@VALUES@)[@DEFAULT@]: '
-            ),
-            prompt=True,
-            validValues=(_('1'), _('2'), _('3'), _('4')),
-            default=_('1'),
-            caseSensitive=False
+        raise ValueError(
+            'Invalid value for engine_vm_level ({value})'.format(
+                value=engine_vm_status
+            )
         )
+    response = base.dialog.queryString(
+        name=name,
+        note=_(
+            '\n\n{header}\n\n'
+            'Make a selection from the options below:\n'
+            '(1) Continue setup - {additional_c1}\n'
+            '(2) Power off and restart the VM\n'
+            '(3) Abort setup\n'
+            '(4) Destroy VM and abort setup\n'
+            '\n(@VALUES@)[@DEFAULT@]: '
+        ).format(
+            header=header,
+            additional_c1=additional_c1,
+        ),
+        prompt=True,
+        validValues=(_('1'), _('2'), _('3'), _('4')),
+        default=_('1'),
+        caseSensitive=False
+    )
     if response == _('1').lower():
-        if not os_installed:
+        if engine_vm_status == MSD_OS_INSTALLED:
             base.dialog.note(_(
                 '\nPlease reboot or shutdown the VM. \n\n'
                 'Verifying shutdown...\n'
@@ -104,9 +123,10 @@ def manualSetupDispatcher(base, os_installed=False, engine_fqdn=None):
                     'oVirt-Engine health status page is not yet reachable.\n'
                 ))
         else:
-            base.dialog.note(_(
-                'Invalid state - Os is installed but fqdn is not provided.\n'
-            ))
+            raise RuntimeError(
+                'Invalid state - '
+                'OS is installed but engine FQDN is not provided.'
+            )
     elif response == _('2').lower():
         base._destroy_vm()
         base._create_vm()

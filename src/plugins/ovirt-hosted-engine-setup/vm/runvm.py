@@ -148,7 +148,10 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
         self._create_vm()
         while not os_installed:
             try:
-                os_installed = check_liveliness.manualSetupDispatcher(self)
+                os_installed = check_liveliness.manualSetupDispatcher(
+                    self,
+                    check_liveliness.MSD_OS_INSTALLED,
+                )
             except socket.error as e:
                 self.logger.debug(
                     'Error talking with VDSM (%s), reconnecting.' % str(e),
