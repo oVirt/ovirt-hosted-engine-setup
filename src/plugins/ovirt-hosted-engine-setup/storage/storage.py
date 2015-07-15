@@ -367,6 +367,37 @@ class Plugin(plugin.PluginBase):
                 umask=stat.S_IRWXO
             ):
                 backend.connect()
+
+        # prepareImage to populate /var/run/vdsm/storage
+        for imgVolUUID in [
+            [
+                self.environment[ohostedcons.StorageEnv.IMG_UUID],
+                self.environment[ohostedcons.StorageEnv.VOL_UUID]
+            ],
+            [
+                self.environment[ohostedcons.StorageEnv.METADATA_IMAGE_UUID],
+                self.environment[ohostedcons.StorageEnv.METADATA_VOLUME_UUID]
+            ],
+            [
+                self.environment[ohostedcons.StorageEnv.LOCKSPACE_IMAGE_UUID],
+                self.environment[ohostedcons.StorageEnv.LOCKSPACE_VOLUME_UUID]
+            ],
+            [
+                self.environment[ohostedcons.StorageEnv.CONF_IMG_UUID],
+                self.environment[ohostedcons.StorageEnv.CONF_VOL_UUID]
+            ],
+        ]:
+            self.cli.prepareImage(
+                self.environment[
+                    ohostedcons.StorageEnv.SP_UUID
+                ],
+                self.environment[
+                    ohostedcons.StorageEnv.SD_UUID
+                ],
+                imgVolUUID[0],
+                imgVolUUID[1],
+            )
+
         all_host_stats = {}
         with ohostedutil.VirtUserContext(
             environment=self.environment,
