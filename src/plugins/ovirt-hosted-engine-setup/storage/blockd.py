@@ -33,7 +33,7 @@ from otopi import plugin
 from otopi import util
 
 
-from ovirt_engine_setup import dialog
+from ovirt_setup_lib import dialog
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import domains as ohosteddomains
 
