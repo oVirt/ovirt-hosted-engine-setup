@@ -30,6 +30,10 @@ fi
 rc=1
 
 usage() {
+    if [ -n "$1" ] ; then
+        cli_broker "$@" --help
+        exit $rc
+    fi
     cat << __EOF__
 Usage: $0 [--help] <command> [<command-args>]
     --help
@@ -101,7 +105,7 @@ __EOF__
 
 cmd_deploy() {
     [ "$1" == "--help" ] && { cat << __EOF__
-Usage: $0 deploy [args]
+Usage: $0 --deploy [args]
     Run ovirt-hosted-engine deployment.
 
     --config-append=<file>
@@ -116,7 +120,7 @@ return ;}
 
 cmd_vm_start() {
     [ "$1" == "--help" ] && { cat << __EOF__
-Usage: $0 vm-start
+Usage: $0 --vm-start
     Start the engine VM on this host.
     Available only after deployment has completed.
 __EOF__
@@ -153,7 +157,7 @@ __EOF__
 
 cmd_vm_start_paused() {
     [ "$1" == "--help" ] && { cat << __EOF__
-Usage: $0 vm-start-paused
+Usage: $0 --vm-start-paused
     Start the engine VM in paused state on this host.
     Available only after deployment has completed.
 __EOF__
@@ -173,7 +177,7 @@ return ;}
 
 cmd_vm_shutdown() {
     [ "$1" == "--help" ] && { cat << __EOF__
-Usage: $0 vm-shutdown
+Usage: $0 --vm-shutdown
     Gracefully shut down the engine VM on this host.
     Available only after deployment has completed.
 __EOF__
@@ -188,7 +192,7 @@ return ;}
 
 cmd_vm_poweroff() {
     [ "$1" == "--help" ] && { cat << __EOF__
-Usage: $0 vm-poweroff
+Usage: $0 --vm-poweroff
     Forcefully power off the engine VM on this host.
     Available only after deployment has completed.
 __EOF__
@@ -203,7 +207,7 @@ return ;}
 
 cmd_vm_status() {
     [ "$1" == "--help" ] && { cat << __EOF__
-Usage: $0 vm-status
+Usage: $0 --vm-status
     Report the status of the engine VM according to the HA agent.
     Available only after deployment has completed.
 __EOF__
@@ -218,7 +222,7 @@ return ;}
 
 cmd_add_console_password() {
     [ "$1" == "--help" ] && { cat << __EOF__
-Usage: $0 add-console-password [--password=<password>]
+Usage: $0 --add-console-password [--password=<password>]
     Create a temporary password for vnc/spice connection.
 
     If --password is given, the password will be set to the value provided.
@@ -247,7 +251,7 @@ return ;}
 
 cmd_check_liveliness() {
     [ "$1" == "--help" ] && { cat << __EOF__
-Usage: $0 check-liveliness
+Usage: $0 --check-liveliness
     Report status of the engine services by checking the liveliness page.
 __EOF__
 return ;}
@@ -257,7 +261,7 @@ return ;}
 
 cmd_connect_storage() {
     [ "$1" == "--help" ] && { cat << __EOF__
-Usage: $0 connect-storage
+Usage: $0 --connect-storage
     Connect the storage domain
 __EOF__
 return ;}
@@ -303,7 +307,7 @@ return ;}
 
 cmd_start_pool() {
     [ "$1" == "--help" ] && { cat << __EOF__
-Usage: $0 start-pool
+Usage: $0 --start-pool
     Start the storage pool manually
 __EOF__
 return ;}
@@ -332,7 +336,7 @@ return ;}
 
 cmd_console() {
     [ "$1" == "--help" ] && { cat << __EOF__
-Usage: $0 console
+Usage: $0 --console
     Open the configured console using remote-viewer on localhost
 __EOF__
 return ;}
@@ -358,7 +362,7 @@ return ;}
 
 cmd_set_maintenance() {
     [ "$1" == "--help" ] && { cat << __EOF__
-Usage: $0 set-maintenance --mode=<mode>
+Usage: $0 --set-maintenance --mode=<mode>
     Set maintenance status to the specified mode.  Valid values are:
     'global', 'local', and 'none'.
     Available only after deployment has completed.
@@ -388,7 +392,7 @@ return ;}
 
 cmd_reinitialize_lockspace() {
     [ "$1" == "--help" ] && { cat << __EOF__
-Usage: $0 reinitialize-lockspace [--force]
+Usage: $0 --reinitialize-lockspace [--force]
     Reinitialize the sanlock lockspace file. This WIPES all locks.
     Available only in properly deployed cluster in global maintenance mode
     with all HA agents shut down.
@@ -407,7 +411,7 @@ return ;}
 
 cmd_clean_metadata() {
     [ "$1" == "--help" ] && { cat << __EOF__
-Usage: $0 clean_metadata [--force-cleanup] [--host-id=<id>]
+Usage: $0 --clean_metadata [--force-cleanup] [--host-id=<id>]
     Remove host's metadata from the global status database.
     Available only in properly deployed cluster with properly stopped
     agent.
@@ -436,29 +440,34 @@ else
     VDSCOMMAND="vdsClient localhost"
 fi
 
-x="$1"
-shift
-case "${x}" in
-    --deploy) cmd_deploy "$@" ;;
-    --vm-start) cmd_vm_start "$@" ;;
-    --vm-start-paused) cmd_vm_start_paused "$@" ;;
-    --vm-shutdown) cmd_vm_shutdown "$@" ;;
-    --vm-poweroff) cmd_vm_poweroff "$@" ;;
-    --vm-status) cmd_vm_status "$@" ;;
-    --add-console-password) cmd_add_console_password "$@" ;;
-    --check-liveliness) cmd_check_liveliness "$@" ;;
-    --connect-storage) cmd_connect_storage "$@" ;;
-    --start-pool) cmd_start_pool "$@" ;;
-    --console) cmd_console "$@" ;;
-    --set-maintenance) cmd_set_maintenance "$@" ;;
-    --reinitialize-lockspace) cmd_reinitialize_lockspace "$@" ;;
-    --clean-metadata) cmd_clean_metadata "$@" ;;
-    --help)
-        rc=0
-        usage
-    ;;
-    *)
-        echo "Invalid option '${x}'" >&2
-        usage
-    ;;
-esac
+cli_broker() {
+    x="$1"
+    shift
+    case "${x}" in
+        --deploy) cmd_deploy "$@" ;;
+        --vm-start) cmd_vm_start "$@" ;;
+        --vm-start-paused) cmd_vm_start_paused "$@" ;;
+        --vm-shutdown) cmd_vm_shutdown "$@" ;;
+        --vm-poweroff) cmd_vm_poweroff "$@" ;;
+        --vm-status) cmd_vm_status "$@" ;;
+        --add-console-password) cmd_add_console_password "$@" ;;
+        --check-liveliness) cmd_check_liveliness "$@" ;;
+        --connect-storage) cmd_connect_storage "$@" ;;
+        --start-pool) cmd_start_pool "$@" ;;
+        --console) cmd_console "$@" ;;
+        --set-maintenance) cmd_set_maintenance "$@" ;;
+        --reinitialize-lockspace) cmd_reinitialize_lockspace "$@" ;;
+        --clean-metadata) cmd_clean_metadata "$@" ;;
+        --help)
+            rc=0
+            usage "$@"
+        ;;
+        *)
+            rc=1
+            echo "Invalid option '${x}'" >&2
+            usage
+        ;;
+    esac
+}
+
+cli_broker "$@"
