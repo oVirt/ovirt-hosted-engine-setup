@@ -26,6 +26,7 @@ import gettext
 import os
 import tempfile
 import time
+import xml.dom.minidom
 
 
 from otopi import plugin
@@ -160,31 +161,100 @@ class Plugin(plugin.PluginBase):
                 )
             )
 
-    def _check_replica_level(self, connection):
-        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+    def _check_volume_properties(self, connection):
         server, volume = connection.split(':')
         if volume[0] == '/':
             volume = volume[1:]
-        self.logger.debug('glusterVolumesList')
-        response = cli.glusterVolumesList(volume, server)
-        self.logger.debug(response)
-        if response['status']['code'] != 0:
-            self.logger.error(_('Failed to retrieve the Gluster Volume list'))
-            raise RuntimeError(response['status']['message'])
-        volumes = response['volumes']
-        if volume not in volumes:
+        glustercmd = self.command.get('gluster')
+        rc, stdout, stderr = self.execute(
+            args=(
+                glustercmd,
+                '--mode=script',
+                '--xml',
+                'volume',
+                'info',
+                volume,
+                '--remote-host=%s' % server,
+            ),
+            raiseOnError=True
+        )
+        if rc != 0:
+            self.logger.error(_('Failed to retrieve Gluster Volume info'))
+            raise RuntimeError(
+                'Failed to retrieve Gluster Volume info: ' + str(stdout)
+            )
+        self.logger.debug('Gluster Volume info XML output: ' + str(stdout))
+        dom = xml.dom.minidom.parseString(''.join(stdout))
+        cliOutput = dom.getElementsByTagName('cliOutput')[0]
+        opRet = (
+            cliOutput.getElementsByTagName('opRet')[0]
+        ).firstChild.nodeValue
+        opErrno = (
+            cliOutput.getElementsByTagName('opErrno')[0]
+        ).firstChild.nodeValue
+        opErrstrElement = cliOutput.getElementsByTagName('opErrstr')[0]
+        opErrstr = ' '.join(
+            t.nodeValue for t in opErrstrElement.childNodes
+            if t.nodeType == t.TEXT_NODE
+        )
+
+        if opRet != '0':
+            self.logger.error(_('Failed to retrieve Gluster Volume info'))
+            raise RuntimeError(
+                'Failed to retrieve Gluster Volume info '
+                '[{code}]: {error}'.format(
+                    code=opErrno,
+                    error=opErrstr,
+                )
+            )
+        volInfo = cliOutput.getElementsByTagName('volInfo')[0]
+        volumes = volInfo.getElementsByTagName('volumes')[0]
+        volCount = (
+            volumes.getElementsByTagName('count')[0]
+        ).firstChild.nodeValue
+        if volCount != '1':
             raise RuntimeError(
                 _('GlusterFS Volume {volume} does not exist!').format(
                     volume=volume,
                 )
             )
-        if str(volumes[volume]['replicaCount']) != '3':
+        volume = volumes.getElementsByTagName('volume')[0]
+        replicaCount = (
+            volume.getElementsByTagName('replicaCount')[0]
+        ).firstChild.nodeValue
+        if replicaCount != '3':
             raise RuntimeError(
                 _(
                     'GlusterFS Volume is not using replica 3'
                 )
             )
         self.logger.info(_('GlusterFS replica 3 Volume detected'))
+        host_list = []
+        for brickE in volume.getElementsByTagName('brick'):
+            host_list.append(
+                (brickE.getElementsByTagName('hostUuid')[0])
+                .firstChild.nodeValue
+            )
+        if len(set(host_list)) < 3:
+            self.logger.warning(_(
+                'Three distinct hosts are required for '
+                'safe and reliable operations'
+            ))
+        status = (
+            volume.getElementsByTagName('status')[0]
+        ).firstChild.nodeValue
+        statusStr = (
+            volume.getElementsByTagName('statusStr')[0]
+        ).firstChild.nodeValue
+        if status != '1':
+            raise RuntimeError(
+                _(
+                    "GlusterFS Volume is '{statusStr}', "
+                    "please ensure that it's started"
+                ).format(
+                    statusStr=statusStr,
+                )
+            )
 
     def _validateDomain(self, connection, domain_type, check_space):
         if self.environment[
@@ -201,7 +271,7 @@ class Plugin(plugin.PluginBase):
                     'of GlusterFS share cannot be reliable.'
                 )
             )
-            self._check_replica_level(connection)
+            self._check_volume_properties(connection)
         path = tempfile.mkdtemp()
         try:
             self._mount(path, connection, domain_type)
@@ -231,6 +301,7 @@ class Plugin(plugin.PluginBase):
         self.command.detect('sudo')
         self.command.detect('mount')
         self.command.detect('umount')
+        self.command.detect('gluster')
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
