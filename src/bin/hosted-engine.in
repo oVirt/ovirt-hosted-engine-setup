@@ -65,8 +65,6 @@ Usage: $0 [--help] <command> [<command-args>]
             Checks liveliness page of engine
         --connect-storage
             Connect the storage domain
-        --start-pool
-            Start the storage pool manually
         --console
             Open the configured console using remote-viewer on localhost
         --set-maintenance --mode=<mode>
@@ -324,35 +322,6 @@ return ;}
     ${VDSCOMMAND}  prepareImage "${blankUUID}" "${sdUUID}" "${conf_image_UUID}"  "${conf_volume_UUID}"
 }
 
-cmd_start_pool() {
-    [ "$1" == "--help" ] && { cat << __EOF__
-Usage: $0 --start-pool
-    Start the storage pool manually
-__EOF__
-return ;}
-
-    echo "Connecting Storage Pool"
-    ${VDSCOMMAND} connectStoragePool \
-        ${spUUID} \
-        ${host_id} \
-        ${spUUID} \
-        ${sdUUID} \
-        1
-    echo "Starting SPM"
-    ${VDSCOMMAND} spmStart \
-        ${spUUID} \
-        -1 \
-        -1 \
-        -1 \
-        false \
-        250 \
-        3
-    echo "Activating Storage Domain"
-    ${VDSCOMMAND} activateStorageDomain \
-        ${sdUUID} \
-        ${spUUID}
-}
-
 cmd_console() {
     [ "$1" == "--help" ] && { cat << __EOF__
 Usage: $0 --console
@@ -473,7 +442,6 @@ cli_broker() {
         --add-console-password) cmd_add_console_password "$@" ;;
         --check-liveliness) cmd_check_liveliness "$@" ;;
         --connect-storage) cmd_connect_storage "$@" ;;
-        --start-pool) cmd_start_pool "$@" ;;
         --console) cmd_console "$@" ;;
         --set-maintenance) cmd_set_maintenance "$@" ;;
         --reinitialize-lockspace) cmd_reinitialize_lockspace "$@" ;;
