@@ -54,6 +54,7 @@ class Plugin(plugin.PluginBase):
         realpath = os.path.realpath(filepath)
         file_stat = os.stat(realpath)
         readable = False
+        valid = False
         if stat.S_ISBLK(file_stat.st_mode):
             # Host device must be available to qemu user
             if (
@@ -72,6 +73,7 @@ class Plugin(plugin.PluginBase):
                 )
             ):
                 readable = True
+                valid = True
         else:
             # iso images may be on existing ISO domains and must be readable
             # by qemu user
@@ -90,7 +92,23 @@ class Plugin(plugin.PluginBase):
                 readable = True
             except RuntimeError:
                 self.logger.debug('read test failed')
-        return readable
+            try:
+                rc, stdout, stderr = self.execute(
+                    (
+                        self.command.get('file'),
+                        '-b',
+                        '-i',
+                        realpath,
+                    ),
+                    raiseOnError=True
+                )
+                if rc == 0:
+                    for line in stdout:
+                        if 'application/x-iso9660-image' in line:
+                            valid = True
+            except RuntimeError:
+                self.logger.debug('file type test failed')
+        return readable and valid
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
@@ -106,6 +124,7 @@ class Plugin(plugin.PluginBase):
     )
     def _setup(self):
         self.command.detect('sudo')
+        self.command.detect('file')
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
@@ -152,8 +171,9 @@ class Plugin(plugin.PluginBase):
             ):
                 raise RuntimeError(
                     _(
-                        'The specified {mode} media is not '
-                        'readable. Please ensure that {filepath} '
+                        'The specified {mode} media is not valid or '
+                        'not readable. '
+                        'Please ensure that {filepath} is valid and '
                         'could be read by qemu user or kvm group'
                     ).format(
                         mode=mode,
@@ -198,10 +218,10 @@ class Plugin(plugin.PluginBase):
                 if not valid:
                     self.logger.error(
                         _(
-                            'The specified installation media is not '
-                            'readable. Please ensure that {filepath} '
-                            'could be read by qemu user or kvm group '
-                            'or specify another installation media.'
+                            'The specified installation media is not valid or '
+                            'not readable. Please ensure that {filepath} is '
+                            'valid and could be read by qemu user or kvm '
+                            'group or specify another installation media.'
                         ).format(
                             filepath=self.environment[
                                 ohostedcons.VMEnv.CDROM
