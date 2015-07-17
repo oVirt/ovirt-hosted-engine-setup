@@ -197,7 +197,7 @@ class Plugin(plugin.PluginBase):
     def _init(self):
         self.environment.setdefault(
             ohostedcons.StorageEnv.GLUSTER_PROVISIONING_ENABLED,
-            None
+            False
         )
         self.environment.setdefault(
             ohostedcons.StorageEnv.GLUSTER_SHARE_NAME,
@@ -288,6 +288,17 @@ class Plugin(plugin.PluginBase):
             host=socket.gethostname(),
             share=self.environment[ohostedcons.StorageEnv.GLUSTER_SHARE_NAME],
         )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_VALIDATION,
+    )
+    def _validate(self):
+        if self.environment[
+            ohostedcons.StorageEnv.GLUSTER_PROVISIONING_ENABLED
+        ]:
+            raise RuntimeError(
+                _('HyperConverged deployment is currently unsupported ')
+            )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,

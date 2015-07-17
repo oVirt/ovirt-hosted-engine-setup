@@ -22,7 +22,7 @@
 %global         ovirt_hosted_engine_setup_templates %{_datadir}/%{name}/templates
 %global         ovirt_hosted_engine_setup_scripts %{_datadir}/%{name}/scripts
 %global         vdsmhooksdir %{_libexecdir}/vdsm/hooks
-%global         gluster_available 1
+%global         gluster_hc_available 0
 
 
 Summary:        oVirt Hosted Engine setup tool
@@ -80,7 +80,7 @@ Requires:       vdsm-cli >= 4.17.0-537
 Requires:       vdsm-python >= 4.17.0
 
 
-%if %{gluster_available}
+%if %{gluster_hc_available}
 Requires:       vdsm-gluster >= 4.17.0
 Requires:       glusterfs-server >= 3.7.2
 %endif
