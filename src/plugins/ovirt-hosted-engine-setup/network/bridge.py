@@ -23,10 +23,8 @@ bridge configuration plugin.
 """
 
 
-import errno
 import ethtool
 import gettext
-import os
 
 
 from otopi import util
@@ -95,52 +93,34 @@ class Plugin(plugin.PluginBase):
         ),
     )
     def _customization(self):
-        nics = ethtool.get_devices()
+        info = netinfo.NetInfo(
+            vds_info.capabilities(
+                self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+            )
+        )
+        interfaces = set(
+            info.nics.keys() +
+            info.bondings.keys() +
+            info.vlans.keys()
+        )
         validValues = []
         enslaved = set()
-        interfaces = set()
-        for nic in nics:
-            try:
-                flags = ethtool.get_flags(nic)
-                if flags & ethtool.IFF_LOOPBACK:
-                    self.logger.debug('Detected loopback device %s' % nic)
-                elif ethtool.get_module(nic) == 'bridge':
-                    self.logger.debug('Detected bridge device %s' % nic)
-                    if os.path.exists('/sys/class/net/%s/brif' % nic):
-                        slaves = os.listdir('/sys/class/net/%s/brif' % nic)
-                        self.logger.debug(
-                            'Detected slaves for device %s: %s' % (
-                                nic,
-                                ','.join(slaves)
-                            )
-                        )
-                        for iface in slaves:
-                            if iface in nics:
-                                enslaved.update([iface])
-                elif netinfo.isbonding(nic):
-                    slaves = netinfo.slaves(nic)
-                    if not slaves:
-                        self.logger.debug(
-                            'Detected bond device %s without slaves' % nic
-                        )
-                    else:
-                        self.logger.debug(
-                            'Detected slaves for device %s: %s' % (
-                                nic,
-                                ','.join(slaves)
-                            )
-                        )
-                        enslaved.update(slaves)
-                        interfaces.update([nic])
-                else:
-                    interfaces.update([nic])
-            except IOError as ioe:
-                if ioe.errno in (None, errno.EOPNOTSUPP):
-                    self.logger.debug('Detected unsupported device %s' % nic)
-                else:
-                    raise ioe
-        validValues = list(interfaces - enslaved)
-        self.logger.debug('Nics detected: %s' % ','.join(nics))
+        inv_bond = set()
+
+        for bridge in info.bridges.keys():
+            enslaved.update(set(info.bridges[bridge]['ports']))
+        for bond in info.bondings.keys():
+            slaves = set(info.bondings[bond]['slaves'])
+            if slaves:
+                enslaved.update(slaves)
+            else:
+                self.logger.debug(
+                    'Detected bond device %s without slaves' % bond
+                )
+                inv_bond.update(set([bond]))
+
+        validValues = list(interfaces - enslaved - inv_bond)
+        self.logger.debug('Nics detected: %s' % ','.join(interfaces))
         self.logger.debug('Nics enslaved: %s' % ','.join(enslaved))
         self.logger.debug('Nics valid: %s' % ','.join(validValues))
         if not validValues:
