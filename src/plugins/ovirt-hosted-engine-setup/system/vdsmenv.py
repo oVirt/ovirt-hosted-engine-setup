@@ -186,14 +186,40 @@ class Plugin(plugin.PluginBase):
             ],
             state=True,
         )
-        # We need to restart the daemon for reloading the configuration
-        for state in (False, True):
-            self.services.state(
-                name=self.environment[
-                    ohostedcons.VDSMEnv.VDSMD_SERVICE
-                ],
-                state=state,
+        # We need to reconfigure and restart for reloading the configuration
+        self.services.state(
+            name=self.environment[
+                ohostedcons.VDSMEnv.VDSMD_SERVICE
+            ],
+            state=False,
+        )
+        rc, _stdout, _stderr = self.execute(
+            (
+                self.command.get('vdsm-tool'),
+                'configure',
+                '--force',
+            ),
+            raiseOnError=False,
+        )
+        if rc != 0:
+            raise RuntimeError(
+                _(
+                    'Failed to reconfigure libvirt for VDSM'
+                )
             )
+        if not self.services.supportsDependency:
+            if self.services.exists('cgconfig'):
+                self.services.state('cgconfig', True)
+            if self.services.exists('messagebus'):
+                self.services.state('messagebus', True)
+            if self.services.exists('libvirtd'):
+                self.services.state('libvirtd', True)
+        self.services.state(
+            name=self.environment[
+                ohostedcons.VDSMEnv.VDSMD_SERVICE
+            ],
+            state=True,
+        )
         self._connect()
 
 
