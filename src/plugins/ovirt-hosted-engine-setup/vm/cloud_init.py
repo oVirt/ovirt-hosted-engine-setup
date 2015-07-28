@@ -656,8 +656,8 @@ class Plugin(plugin.PluginBase):
             ] = self.dialog.queryString(
                 name='CI_VM_ETC_HOST',
                 note=_(
-                    'Add a line for this host to /etc/hosts '
-                    'on the engine VM?\n'
+                    'Add lines for the appliance itself and for this host '
+                    'to /etc/hosts on the engine VM?\n'
                     'Note: ensuring that this host could resolve the '
                     'engine VM hostname is still up to you\n'
                     '(@VALUES@)[@DEFAULT@] '
@@ -719,6 +719,22 @@ class Plugin(plugin.PluginBase):
                     # TODO: manage the hostname in the environment
                     myfqdn=socket.gethostname(),
                 )
+                if self.environment[
+                    ohostedcons.CloudInit.VM_STATIC_CIDR
+                ] and self.environment[
+                    ohostedcons.CloudInit.INSTANCE_HOSTNAME
+                ]:
+                    ip = netaddr.IPNetwork(
+                        self.environment[ohostedcons.CloudInit.VM_STATIC_CIDR]
+                    )
+                    user_data += (
+                        ' - echo "{ip} {fqdn}" >> /etc/hosts\n'
+                    ).format(
+                        ip=ip.ip,
+                        fqdn=self.environment[
+                            ohostedcons.CloudInit.INSTANCE_HOSTNAME
+                        ],
+                    )
 
             # Due to a cloud-init bug
             # (https://bugs.launchpad.net/cloud-init/+bug/1225922)
