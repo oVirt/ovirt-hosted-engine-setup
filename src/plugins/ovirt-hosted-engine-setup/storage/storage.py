@@ -1112,6 +1112,12 @@ class Plugin(plugin.PluginBase):
             ohostedcons.StorageEnv.SP_UUID,
             str(uuid.uuid4())
         )
+        if self.environment[
+            ohostedcons.StorageEnv.SP_UUID
+        ] == ohostedcons.Const.BLANK_UUID:
+            self.environment[
+                ohostedcons.StorageEnv.SP_UUID
+            ] = str(uuid.uuid4())
         self.environment.setdefault(
             ohostedcons.StorageEnv.DOMAIN_TYPE,
             None
