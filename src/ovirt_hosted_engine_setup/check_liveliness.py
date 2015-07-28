@@ -23,6 +23,7 @@
 import contextlib
 import gettext
 import re
+import socket
 import urllib2
 
 
@@ -175,8 +176,8 @@ class LivelinessChecker(base.Base):
                             status=content,
                         )
                     )
-        except urllib2.URLError:
-            self.logger.error(_('Engine is still unreachable'))
+        except (urllib2.URLError, socket.timeout):
+            self.logger.info(_('Engine is still unreachable'))
         return isUp
 
 

@@ -152,7 +152,7 @@ class Plugin(
                     waitEngineUP = False
                 else:
                     cengineup += 1
-                    if cengineup >= 5:
+                    if cengineup >= 7:
                         self.logger.error(_('Engine is still not reachable'))
                         raise RuntimeError(_('Engine is still not reachable'))
                     self.logger.info(
