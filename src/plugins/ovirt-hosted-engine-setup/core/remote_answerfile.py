@@ -235,8 +235,7 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.DIALOG_TITLES_E_SYSTEM,
         ),
         condition=lambda self: (
-            self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] and
-            self.environment[otopicons.CoreEnv.CONFIG_FILE_APPEND] is None
+            self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
         ),
     )
     def _customization(self):
@@ -251,6 +250,17 @@ class Plugin(plugin.PluginBase):
             ohostedcons.FirstHostEnv.FETCH_ANSWER
         ] is None
         if interactive:
+            if self.environment[otopicons.CoreEnv.CONFIG_FILE_APPEND] is None:
+                additional = _(
+                    'If you do not want to download it '
+                    'automatically you can abort the setup answering no '
+                    'to the following question.\n'
+                )
+            else:
+                additional = _(
+                    'If the supplied answerfile is complete, answer no '
+                    'to the following question to continue just with that.\n'
+                )
             self.environment[
                 ohostedcons.FirstHostEnv.FETCH_ANSWER
             ] = self.dialog.queryString(
@@ -258,12 +268,10 @@ class Plugin(plugin.PluginBase):
                 note=_(
                     'The answer file may be fetched from the first host '
                     'using scp.\n'
-                    'If you do not want to download it '
-                    'automatically you can abort the setup answering no '
-                    'to the following question.\n'
+                    '{additional}'
                     'Do you want to scp the answer file from the first host? '
                     '(@VALUES@)[@DEFAULT@]: '
-                ),
+                ).format(additional=additional),
                 prompt=True,
                 validValues=(_('Yes'), _('No')),
                 caseSensitive=False,
@@ -271,17 +279,30 @@ class Plugin(plugin.PluginBase):
             ) == _('Yes').lower()
 
         if not self.environment[ohostedcons.FirstHostEnv.FETCH_ANSWER]:
-            raise RuntimeError(
-                _(
-                    'Cannot deploy Hosted Engine on additional hosts '
-                    'without access to the configuration used on '
-                    'the first host'
+            if self.environment[otopicons.CoreEnv.CONFIG_FILE_APPEND] is None:
+                raise RuntimeError(
+                    _(
+                        'Cannot deploy Hosted Engine on additional hosts '
+                        'without access to the configuration used on '
+                        'the first host'
+                    )
                 )
-            )
-
-        self._get_fqdn()
-        self._fetch_answer_file()
-        self._parse_answer_file()
+            else:
+                self.logger.info(
+                    _(
+                        "Setup will proceed assuming that '{answfile}' "
+                        "was correctly and completely generated "
+                        "on another HE host"
+                    ).format(
+                        answfile=self.environment[
+                            otopicons.CoreEnv.CONFIG_FILE_APPEND
+                        ]
+                    )
+                )
+        else:
+            self._get_fqdn()
+            self._fetch_answer_file()
+            self._parse_answer_file()
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLEANUP,
