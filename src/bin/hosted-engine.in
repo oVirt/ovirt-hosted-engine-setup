@@ -264,43 +264,14 @@ Usage: $0 --connect-storage
 __EOF__
 return ;}
 
-    protocol_version=''
-    if [ "${domainType}" == "nfs3" ] ; then
-        storageType=1
-        protocol_version=3
-    elif [ "${domainType}" == "nfs4" ] ; then
-        storageType=1
-        protocol_version=4
-    elif [ "${domainType}" == "glusterfs" ] ; then
-        storageType=7
-    elif [ "${domainType}" == "iscsi" ] ; then
-        storageType=3
+    if [ -r "${conf}" ] ; then
+        python -m ovirt_hosted_engine_setup.connect_storage_server "$@"
+        rc=$?
     else
-        echo "Storage type not supported: ${domainType}"
-        exit 1
+        echo "You must run deploy first"
+        rc=1
     fi
-    echo "Connecting Storage Server"
-    if [ "${domainType}" == "glusterfs" ] ; then
-            ${VDSCOMMAND} connectStorageServer \
-            "${storageType}" \
-            "${spUUID}" \
-            connection="${storage},user=kvm,id=${connectionUUID},tpgt=1,vfs_type=glusterfs"
-    elif [ "${domainType}" == "iscsi" ] ; then
-            ${VDSCOMMAND} connectStorageServer \
-            "${storageType}" \
-            "${spUUID}" \
-            connection="${storage},iqn=${iqn},portal=${portal},user=${user},password=${password},id=${connectionUUID},port=${port}"
-    else
-            ${VDSCOMMAND} connectStorageServer \
-            "${storageType}" \
-            "${spUUID}" \
-            connection="${storage},user=kvm,id=${connectionUUID},protocol_version=${protocol_version}"
-    fi
-    echo "Preparing images"
-    ${VDSCOMMAND}  prepareImage "${blankUUID}" "${sdUUID}" "${vm_disk_id}"  "${vm_disk_vol_id}"
-    ${VDSCOMMAND}  prepareImage "${blankUUID}" "${sdUUID}" "${metadata_image_UUID}"  "${metadata_volume_UUID}"
-    ${VDSCOMMAND}  prepareImage "${blankUUID}" "${sdUUID}" "${lockspace_image_UUID}"  "${lockspace_volume_UUID}"
-    ${VDSCOMMAND}  prepareImage "${blankUUID}" "${sdUUID}" "${conf_image_UUID}"  "${conf_volume_UUID}"
+    exit $rc
 }
 
 cmd_console() {
