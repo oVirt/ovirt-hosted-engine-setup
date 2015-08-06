@@ -18,8 +18,8 @@ dnl Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 dnl
 AC_PREREQ(2.60)
 
-define([VERSION_MAJOR], [1])
-define([VERSION_MINOR], [3])
+define([VERSION_MAJOR], [2])
+define([VERSION_MINOR], [0])
 define([VERSION_FIX], [0])
 define([VERSION_NUMBER], VERSION_MAJOR[.]VERSION_MINOR[.]VERSION_FIX)
 define([VERSION_RELEASE], [0.0])
