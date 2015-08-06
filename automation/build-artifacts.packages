@@ -1,0 +1,5 @@
+make
+autoconf
+gettext-devel
+automake
+yum-utils
