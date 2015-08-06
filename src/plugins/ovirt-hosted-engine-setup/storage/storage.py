@@ -326,10 +326,26 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VDSMConstants.ISCSI_DOMAIN,
             ohostedcons.VDSMConstants.FC_DOMAIN,
         ):
-            # For iSCSI we need to connect the pool for
-            # having /rhev populated.
-            self._storagePoolConnection()
-            # And we need also to connect metadata LVMs
+            # For iSCSI/FC we need to explicitly call getStorageDomainStats
+            # to create/refresh the storage domain directory tree.
+            result = self.cli.getStorageDomainStats(
+                self.environment[
+                    ohostedcons.StorageEnv.SD_UUID
+                ],
+            )
+            self.logger.debug(
+                'getStorageDomainStats: {result}'.format(
+                    result=result,
+                )
+            )
+            if result['status']['code'] != 0:
+                raise RuntimeError(
+                    'Unable to get storage domain stats: {message}'.format(
+                        message=result['status']['message'],
+                    )
+                )
+
+            # We need to connect metadata LVMs
             # Prepare the Backend interface
             # Get UUIDs of the storage
             lockspace = self.environment[
