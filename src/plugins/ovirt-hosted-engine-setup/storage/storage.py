@@ -226,6 +226,17 @@ class Plugin(plugin.PluginBase):
                     caseSensitive=False,
                     default=_('Yes')
                 ) == _('Yes').lower()
+        if self.environment[
+            ohostedcons.CoreEnv.ADDITIONAL_HOST_ENABLED
+        ] and not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]:
+            msg = _(
+                'Re-deploying the engine VM over a previously (partially) '
+                'deployed system is not supported. Please clean up the '
+                'storage device or select a different one and retry.'
+            )
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+
         if not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]:
             self.logger.info(_('Installing on first host'))
             self.environment[
