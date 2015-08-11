@@ -157,7 +157,9 @@ class VmOperations(object):
                 },
                 {
                     'device': 'console',
-                    'specParams': {},
+                    'specParams': {
+                        'enableSocket': 'true',
+                    },
                     'type': 'console',
                     'deviceId': self.environment[
                         ohostedcons.VMEnv.CONSOLE_UUID
@@ -339,10 +341,14 @@ class VmOperations(object):
                     'your preferred desktop environment.\n'
                     'If you cannot run graphical applications you can '
                     'connect to the graphic console from another host or '
-                    'connect to the console using the following command:\n'
-                    'virsh -c qemu+tls://{host}/system console HostedEngine'
+                    'connect to the serial console using the following '
+                    'command:\n'
+                    'socat UNIX-CONNECT:/var/run/ovirt-vmconsole-console/'
+                    '{vmuuid}.sock,user=ovirt-vmconsole '
+                    'STDIO,raw,echo=0,escape=1'
                 ).format(
-                    host=host
+                    host=host,
+                    vmuuid=self.environment[ohostedcons.VMEnv.VM_UUID],
                 )
             )
             self.dialog.note(
