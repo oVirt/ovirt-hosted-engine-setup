@@ -79,6 +79,7 @@ class Plugin(plugin.PluginBase):
         self._fake_SD_path = None
         self._fake_file = None
         self._selinux_enabled = False
+        self._pool_created_by_me = False
 
     def _attach_loopback_device(self):
         if not self._fake_file:
@@ -848,6 +849,7 @@ class Plugin(plugin.PluginBase):
         if status['status']['code'] != 0:
             raise RuntimeError(status['status']['message'])
         self.pool_exists = True
+        self._pool_created_by_me = True
 
     def _destroyStoragePool(self):
         self.logger.debug('_destroyStoragePool')
@@ -1340,7 +1342,7 @@ class Plugin(plugin.PluginBase):
         ],
     )
     def _cleanup(self):
-        if self.pool_exists:
+        if self.pool_exists and self._pool_created_by_me:
             try:
                 self._destroyStoragePool()
                 self._destroyFakeStorageDomain()
