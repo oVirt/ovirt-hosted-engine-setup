@@ -514,6 +514,15 @@ class Plugin(plugin.PluginBase):
         if self.environment[
             ohostedcons.CloudInit.EXECUTE_ESETUP
         ] and self.environment[
+            ohostedcons.EngineEnv.HOST_CLUSTER_NAME
+        ] is None:
+            self.environment[
+                ohostedcons.EngineEnv.HOST_CLUSTER_NAME
+            ] = 'Default'
+
+        if self.environment[
+            ohostedcons.CloudInit.EXECUTE_ESETUP
+        ] and self.environment[
             ohostedcons.VMEnv.AUTOMATE_VM_SHUTDOWN
         ] is None:
             self.environment[
