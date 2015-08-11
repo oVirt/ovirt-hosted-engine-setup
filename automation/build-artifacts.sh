@@ -12,8 +12,7 @@ autoreconf -ivf
 make dist
 yum-builddep ovirt-hosted-engine-setup.spec
 rpmbuild \
-    -D "_srcrpmdir $PWD/tmp.repos" \
-    -D "_topmdir $PWD/tmp.repos" \
+    -D "_topdir $PWD/tmp.repos" \
     -D "release_suffix ${SUFFIX}" \
     -ta ovirt-hosted-engine-setup-*.tar.gz
 
