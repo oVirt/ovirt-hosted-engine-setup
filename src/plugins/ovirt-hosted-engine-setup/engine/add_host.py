@@ -567,25 +567,6 @@ class Plugin(plugin.PluginBase):
             )
 
         try:
-            conn = vdscli.connect()
-            net_info = netinfo.NetInfo(vds_info.capabilities(conn))
-            bridge_port = self.environment[ohostedcons.NetworkEnv.BRIDGE_IF]
-            if bridge_port in net_info.vlans:
-                self.logger.debug(
-                    "Updating engine's management network to be vlanned"
-                )
-                vlan_id = net_info.vlans[bridge_port]['vlanid']
-                self.logger.debug(
-                    "Getting engine's management network via engine's APIs"
-                )
-                mgmt_network = engine_api.networks.get(
-                    name=self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME]
-                )
-                mgmt_network.set_vlan(
-                    self._ovirtsdk_xml.params.VLAN(id=vlan_id)
-                )
-                mgmt_network.update()
-
             cluster_name = self.environment[
                 ohostedcons.EngineEnv.HOST_CLUSTER_NAME
             ]
@@ -623,6 +604,27 @@ class Plugin(plugin.PluginBase):
                 self.environment[
                     ohostedcons.EngineEnv.HOST_CLUSTER_NAME
                 ] = cluster_name
+            cluster = engine_api.clusters.get(cluster_name)
+
+            conn = vdscli.connect()
+            net_info = netinfo.NetInfo(vds_info.capabilities(conn))
+            bridge_port = self.environment[ohostedcons.NetworkEnv.BRIDGE_IF]
+            if bridge_port in net_info.vlans:
+                self.logger.debug(
+                    "Updating engine's management network to be vlanned"
+                )
+                vlan_id = net_info.vlans[bridge_port]['vlanid']
+                self.logger.debug(
+                    "Getting engine's management network via engine's APIs"
+                )
+                mgmt_network = cluster.networks.get(
+                    name=self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME]
+                )
+                mgmt_network.set_vlan(
+                    self._ovirtsdk_xml.params.VLAN(id=vlan_id)
+                )
+                mgmt_network.update()
+
             self.logger.debug('Adding the host to the cluster')
             engine_api.hosts.add(
                 self._ovirtsdk_xml.params.Host(
@@ -634,7 +636,7 @@ class Plugin(plugin.PluginBase):
                     # TODO: Make it configurable like engine fqdn.
                     address=socket.gethostname(),
                     reboot_after_installation=False,
-                    cluster=engine_api.clusters.get(cluster_name),
+                    cluster=cluster,
                     ssh=self._ovirtsdk_xml.params.SSH(
                         authentication_method='publickey',
                         port=self.environment[
