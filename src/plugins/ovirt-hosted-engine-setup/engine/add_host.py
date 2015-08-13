@@ -576,28 +576,6 @@ class Plugin(plugin.PluginBase):
         added_to_cluster = False
         while not added_to_cluster:
             try:
-                conn = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-                net_info = netinfo.NetInfo(vds_info.capabilities(conn))
-                bridge_port = self.environment[
-                    ohostedcons.NetworkEnv.BRIDGE_IF
-                ]
-                if bridge_port in net_info.vlans:
-                    self.logger.debug(
-                        "Updating engine's management network to be vlanned"
-                    )
-                    vlan_id = net_info.vlans[bridge_port]['vlanid']
-                    self.logger.debug(
-                        "Getting engine's management network via engine's APIs"
-                    )
-                    mgmt_network = engine_api.networks.get(
-                        name=self.environment[
-                            ohostedcons.NetworkEnv.BRIDGE_NAME]
-                    )
-                    mgmt_network.set_vlan(
-                        self._ovirtsdk_xml.params.VLAN(id=vlan_id)
-                    )
-                    mgmt_network.update()
-
                 cluster_name = self.environment[
                     ohostedcons.EngineEnv.HOST_CLUSTER_NAME
                 ]
@@ -640,6 +618,29 @@ class Plugin(plugin.PluginBase):
                         ohostedcons.EngineEnv.HOST_CLUSTER_NAME
                     ] = cluster_name
                 cluster = engine_api.clusters.get(cluster_name)
+
+                conn = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+                net_info = netinfo.NetInfo(vds_info.capabilities(conn))
+                bridge_port = self.environment[
+                    ohostedcons.NetworkEnv.BRIDGE_IF
+                ]
+                if bridge_port in net_info.vlans:
+                    self.logger.debug(
+                        "Updating engine's management network to be vlanned"
+                    )
+                    vlan_id = net_info.vlans[bridge_port]['vlanid']
+                    self.logger.debug(
+                        "Getting engine's management network via engine's APIs"
+                    )
+                    mgmt_network = cluster.networks.get(
+                        name=self.environment[
+                            ohostedcons.NetworkEnv.BRIDGE_NAME]
+                    )
+                    mgmt_network.set_vlan(
+                        self._ovirtsdk_xml.params.VLAN(id=vlan_id)
+                    )
+                    mgmt_network.update()
+
                 # Configuring the cluster for Hyper Converged support if
                 # enabled
                 if self.environment[
