@@ -151,6 +151,11 @@ class Plugin(plugin.PluginBase):
         )
         try:
             self.logger.debug('Connecting to the Engine')
+            insecure = False
+            if self.environment[
+                ohostedcons.EngineEnv.INSECURE_SSL
+            ]:
+                insecure = True
             engine_api = ovirtsdk.api.API(
                 url='https://{fqdn}/ovirt-engine/api'.format(
                     fqdn=self.environment[
@@ -164,6 +169,7 @@ class Plugin(plugin.PluginBase):
                 ca_file=self.environment[
                     ohostedcons.EngineEnv.TEMPORARY_CERT_FILE
                 ],
+                insecure=insecure,
             )
             # check if the disk is already there
             known_disks = engine_api.disks.list()
