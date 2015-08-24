@@ -49,6 +49,8 @@ dist_ovirthostedenginelib_PYTHON = \
 	mixins.py \
 	appliance_esetup.py \
 	vds_info.py \
+	ohttpshandler.py \
+	pkissh.py \
 	$(NULL)
 
 nodist_ovirthostedenginelib_PYTHON = \

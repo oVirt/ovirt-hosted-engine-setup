@@ -233,6 +233,12 @@ class FileLocations(object):
         'CA',
         'cacert.pem'
     )
+    SYS_CUSTOMCA_CERT = os.path.join(
+        SYSCONFDIR,
+        'pki',
+        'CA',
+        'ovirtcustomcacert.pem'
+    )
     VDSMCERT = os.path.join(
         SYSCONFDIR,
         'pki',
@@ -467,6 +473,12 @@ class EngineEnv(object):
     TEMPORARY_CERT_FILE = 'OVEHOSTED_ENGINE/temporaryCertificate'
     PROMPT_NON_OPERATIONAL = 'OVEHOSTED_ENGINE/promptNonOperational'
     ENGINE_SETUP_TIMEOUT = 'OVEHOSTED_ENGINE/engineSetupTimeout'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def INSECURE_SSL(self):
+        return 'OVEHOSTED_ENGINE/insecureSSL'
 
 
 @util.export

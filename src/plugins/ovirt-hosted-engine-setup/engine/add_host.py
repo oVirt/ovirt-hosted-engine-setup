@@ -22,14 +22,12 @@
 Host adder plugin.
 """
 
-import contextlib
 import gettext
 import os
 import selinux
 import socket
 import tempfile
 import time
-import urllib2
 
 
 import ovirtsdk.api
@@ -50,6 +48,7 @@ from vdsm import netinfo
 from ovirt_hosted_engine_setup import check_liveliness
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import vds_info
+from ovirt_hosted_engine_setup import pkissh
 
 
 def _(m):
@@ -70,86 +69,6 @@ class Plugin(plugin.PluginBase):
         self._ovirtsdk_api = ovirtsdk.api
         self._ovirtsdk_xml = ovirtsdk.xml
         self._interactive_admin_pwd = True
-
-    def _getPKICert(self):
-        self.logger.debug('Acquiring ca.crt from the engine')
-        with contextlib.closing(
-            urllib2.urlopen(
-                'http://{fqdn}/ca.crt'.format(
-                    fqdn=self.environment[
-                        ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
-                    ]
-                )
-            )
-        ) as urlObj:
-            content = urlObj.read()
-            if content:
-                self.logger.debug(content)
-                fd, cert = tempfile.mkstemp(
-                    prefix='engine-ca',
-                    suffix='.crt',
-                )
-                self.environment[
-                    ohostedcons.EngineEnv.TEMPORARY_CERT_FILE
-                ] = cert
-                os.fchmod(fd, 0o600)
-                with os.fdopen(fd, 'w') as fileobj:
-                    fileobj.write(content)
-
-    def _getSSHkey(self):
-        self.logger.debug('Acquiring SSH key from the engine')
-        with contextlib.closing(
-            urllib2.urlopen(
-                'http://{fqdn}/engine.ssh.key.txt'.format(
-                    fqdn=self.environment[
-                        ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
-                    ]
-                )
-            )
-        ) as urlObj:
-            authorized_keys_line = urlObj.read()
-            if authorized_keys_line:
-                self.logger.debug(authorized_keys_line)
-                authorized_keys_file = os.path.join(
-                    os.path.expanduser('~root'),
-                    '.ssh',
-                    'authorized_keys'
-                )
-                content = []
-                if os.path.exists(authorized_keys_file):
-                    with open(authorized_keys_file, 'r') as f:
-                        content = f.read().splitlines()
-                if authorized_keys_line not in content:
-                    content.append(authorized_keys_line)
-                    with transaction.Transaction() as localtransaction:
-                        localtransaction.append(
-                            filetransaction.FileTransaction(
-                                name=authorized_keys_file,
-                                content=content,
-                                mode=0o600,
-                                owner='root',
-                                enforcePermissions=True,
-                                modifiedList=self.environment[
-                                    otopicons.CoreEnv.MODIFIED_FILES
-                                ],
-                            )
-                        )
-        if self._selinux_enabled:
-            path = os.path.join(
-                os.path.expanduser('~root'),
-                '.ssh'
-            )
-            try:
-                selinux.restorecon(path, recursive=True)
-            except OSError as ex:
-                self.logger.error(
-                    _(
-                        'Failed to refresh SELINUX context for {path}: {ex}'
-                    ).format(
-                        path=path,
-                        ex=ex.message,
-                    )
-                )
 
     def _wait_host_ready(self, engine_api, host):
         self.logger.info(_(
@@ -368,6 +287,147 @@ class Plugin(plugin.PluginBase):
             ))
         return cluster, cpu
 
+    def _getCA(self):
+        fqdn = self.environment[
+            ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+        ]
+        fd, cert = tempfile.mkstemp(
+            prefix='engine-ca',
+            suffix='.crt',
+        )
+        os.close(fd)
+        self.environment[
+            ohostedcons.EngineEnv.TEMPORARY_CERT_FILE
+        ] = cert
+        valid = False
+        interactive = True
+        if self.environment[
+            ohostedcons.EngineEnv.INSECURE_SSL
+        ]:
+            valid = True
+        elif self.environment[
+            ohostedcons.EngineEnv.INSECURE_SSL
+        ] is False:
+            interactive = False
+        pkihelper = pkissh.PKIHelper()
+
+        while not valid:
+            cafile = ohostedcons.FileLocations.SYS_CUSTOMCA_CERT
+            if not os.path.isfile(ohostedcons.FileLocations.SYS_CUSTOMCA_CERT):
+                cafile = None
+            try:
+                content = pkihelper.getPKICert(
+                    fqdn,
+                    cafile,
+                )
+            except RuntimeError as ex:
+                self.logger.error(
+                    _('Error acquiring CA cert').format(
+                        message=ex.message,
+                    )
+                )
+            else:
+                try:
+                    with open(cert, 'w') as fileobj:
+                        fileobj.write(content)
+                except EnvironmentError as ex:
+                        raise RuntimeError(
+                            'Unable to write cert file: ' + ex.message
+                        )
+                if pkihelper.validateCA(fqdn, cert):
+                    valid = True
+            if not valid:
+                if interactive:
+                    if cafile:
+                        catype = _('custom')
+                    else:
+                        catype = _('internal')
+                    insecure = self.dialog.queryString(
+                        name='SSL_VALIDATE_CA',
+                        note=_(
+                            'The REST API cert couldn\'t be trusted with the '
+                            '{catype} CA cert\n'
+                            'Would you like to continue in insecure mode '
+                            '(not recommended)?\n'
+                            'If not, please provide your CA cert at {path} '
+                            'before continuing\n'
+                            '(@VALUES@)[@DEFAULT@]? '
+                        ).format(
+                            catype=catype,
+                            path=ohostedcons.FileLocations.SYS_CUSTOMCA_CERT,
+                        ),
+                        prompt=True,
+                        validValues=(_('Yes'), _('No')),
+                        caseSensitive=False,
+                        default=_('No')
+                    ) == _('Yes').lower()
+                    if insecure:
+                        valid = True
+                        self.environment[
+                            ohostedcons.EngineEnv.INSECURE_SSL
+                        ] = True
+                        cert = self.environment[
+                            ohostedcons.EngineEnv.TEMPORARY_CERT_FILE
+                        ]
+                        if cert is not None and os.path.exists(cert):
+                            os.unlink(cert)
+                        self.environment[
+                            ohostedcons.EngineEnv.TEMPORARY_CERT_FILE
+                        ] = None
+                else:
+                    raise RuntimeError('Failed trusting the REST API cert')
+
+    def _getSSH(self):
+        pkihelper = pkissh.PKIHelper()
+        authorized_keys_line = pkihelper.getSSHkey(
+            fqdn=self.environment[
+                ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+            ],
+            ca_certs=self.environment[
+                ohostedcons.EngineEnv.TEMPORARY_CERT_FILE
+            ],
+        )
+
+        authorized_keys_file = os.path.join(
+            os.path.expanduser('~root'),
+            '.ssh',
+            'authorized_keys'
+        )
+
+        content = pkihelper.mergeAuthKeysFile(
+            authorized_keys_file, authorized_keys_line
+        )
+        with transaction.Transaction() as localtransaction:
+            localtransaction.append(
+                filetransaction.FileTransaction(
+                    name=authorized_keys_file,
+                    content=content,
+                    mode=0o600,
+                    owner='root',
+                    enforcePermissions=True,
+                    modifiedList=self.environment[
+                        otopicons.CoreEnv.MODIFIED_FILES
+                    ],
+                )
+            )
+
+        if self._selinux_enabled:
+            path = os.path.join(
+                os.path.expanduser('~root'),
+                '.ssh'
+            )
+            try:
+                selinux.restorecon(path, recursive=True)
+            except OSError as ex:
+                self.logger.error(
+                    _(
+                        'Failed to refresh SELINUX context for {path}: {ex}'
+                    ).format(
+                        path=path,
+                        ex=ex.message,
+                    )
+                )
+
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
     )
@@ -398,6 +458,10 @@ class Plugin(plugin.PluginBase):
         self.environment.setdefault(
             ohostedcons.EngineEnv.PROMPT_NON_OPERATIONAL,
             True
+        )
+        self.environment.setdefault(
+            ohostedcons.EngineEnv.INSECURE_SSL,
+            None
         )
         self._selinux_enabled = False
 
@@ -500,8 +564,8 @@ class Plugin(plugin.PluginBase):
     )
     def _closeup(self):
         # TODO: refactor into shorter and simpler functions
-        self._getPKICert()
-        self._getSSHkey()
+        self._getCA()
+        self._getSSH()
         cluster_name = None
         default_cluster_name = 'Default'
         valid = False
@@ -511,6 +575,11 @@ class Plugin(plugin.PluginBase):
         while not valid:
             try:
                 self.logger.info(_('Connecting to the Engine'))
+                insecure = False
+                if self.environment[
+                    ohostedcons.EngineEnv.INSECURE_SSL
+                ]:
+                    insecure = True
                 engine_api = self._ovirtsdk_api.API(
                     url='https://{fqdn}/ovirt-engine/api'.format(
                         fqdn=fqdn,
@@ -522,8 +591,8 @@ class Plugin(plugin.PluginBase):
                     ca_file=self.environment[
                         ohostedcons.EngineEnv.TEMPORARY_CERT_FILE
                     ],
+                    insecure=insecure,
                 )
-                # trigger first access
                 engine_api.clusters.list()
                 valid = True
             except ovirtsdk.infrastructure.errors.RequestError as e:
