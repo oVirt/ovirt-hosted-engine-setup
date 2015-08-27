@@ -152,13 +152,13 @@ class Plugin(
                     waitEngineUP = False
                 else:
                     cengineup += 1
-                    if cengineup >= 7:
+                    if cengineup >= 20:
                         self.logger.error(_('Engine is still not reachable'))
                         raise RuntimeError(_('Engine is still not reachable'))
                     self.logger.info(
                         _('Engine is still not reachable, waiting...')
                     )
-                    time.sleep(10)
+                    time.sleep(15)
 
 
 # vim: expandtab tabstop=4 shiftwidth=4
