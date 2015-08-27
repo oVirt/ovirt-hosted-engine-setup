@@ -127,6 +127,16 @@ class Plugin(plugin.PluginBase):
                         )
                     )
                     valid = False
+                    if not interactive:
+                        raise RuntimeError(
+                            _(
+                                'Not enough free space, '
+                                'about {estimate} GiB are available'
+                            ).format(
+                                estimate=estimate_gb
+                            )
+                        )
+
                 if valid and int(
                     self.environment[ohostedcons.StorageEnv.IMAGE_SIZE_GB]
                 ) < ohostedcons.Defaults.DEFAULT_IMAGE_SIZE_GB:
