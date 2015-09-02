@@ -730,7 +730,6 @@ class Plugin(plugin.PluginBase):
                         # with vdsm-generated pki. See bz 1178535.
                         # TODO: Make it configurable like engine fqdn.
                         address=socket.gethostname(),
-                        reboot_after_installation=False,
                         cluster=cluster,
                         ssh=self._ovirtsdk_xml.params.Ssh(
                             authentication_method='publickey',
