@@ -38,6 +38,24 @@ def capabilities(conn):
     return result['info']
 
 
+def _evaluateDefaultRoute(attrs, cfg):
+    defroute = None
+    cfgdefroute = cfg.get('DEFROUTE')
+    if cfgdefroute:
+        if cfgdefroute.lower().strip('" ') == 'yes':
+            defroute = True
+        elif cfgdefroute.lower().strip('" ') == 'no':
+            defroute = False
+
+    if (
+        defroute or
+        (attrs.get('bootproto') == 'dhcp' and defroute is not False) or
+        attrs.get('gateway')
+    ):
+        return True
+    return False
+
+
 def network(caps, device):
     """Returns a dictionary that describes the network of the device"""
     info = netinfo.NetInfo(caps)
@@ -74,6 +92,7 @@ def network(caps, device):
             attrs['gateway'] = gateway
         elif 'GATEWAY' in port_info['cfg']:
             attrs['gateway'] = port_info['cfg']['GATEWAY']
+    attrs['defaultRoute'] = _evaluateDefaultRoute(attrs, port_info['cfg'])
     return attrs
 
 
