@@ -31,9 +31,9 @@ from otopi import plugin
 from otopi import util
 
 
+from ovirt_hosted_engine_ha.lib import heconflib
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import domains as ohosteddomains
-from ovirt_hosted_engine_setup import util as ohostedutil
 
 
 def _(m):
@@ -241,7 +241,7 @@ class Plugin(plugin.PluginBase):
 
         diskType = 2
 
-        ohostedutil.create_prepare_image(
+        heconflib.create_and_prepare_image(
             self.logger,
             cli,
             volFormat,

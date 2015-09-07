@@ -36,13 +36,14 @@ from otopi import plugin
 from otopi import util
 
 
+from ovirt_hosted_engine_ha.client import client
+from ovirt_hosted_engine_ha.lib import heconflib
+from ovirt_hosted_engine_ha.lib import storage_backends
+
+
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import tasks
 from ovirt_hosted_engine_setup import util as ohostedutil
-
-
-from ovirt_hosted_engine_ha.client import client
-from ovirt_hosted_engine_ha.lib import storage_backends
 
 
 def _(m):
@@ -952,7 +953,7 @@ class Plugin(plugin.PluginBase):
         )
         if status['status']['code'] != 0:
             raise RuntimeError(status['status']['message'])
-        ohostedutil.task_wait(self.cli, self.logger)
+        heconflib.task_wait(self.cli, self.logger)
         self.logger.debug(self.cli.getSpmStatus(spUUID))
         info = self.cli.getStoragePoolInfo(spUUID)
         self.logger.debug(info)
@@ -970,7 +971,7 @@ class Plugin(plugin.PluginBase):
         )
         if status['status']['code'] != 0:
             raise RuntimeError(status['status']['message'])
-        ohostedutil.task_wait(self.cli, self.logger)
+        heconflib.task_wait(self.cli, self.logger)
         self.logger.debug(self.cli.getSpmStatus(spUUID))
         info = self.cli.getStoragePoolInfo(spUUID)
         self.logger.debug(info)

@@ -30,9 +30,8 @@ from otopi import plugin
 from otopi import util
 
 
+from ovirt_hosted_engine_ha.lib import heconflib
 from ovirt_hosted_engine_setup import constants as ohostedcons
-from ovirt_hosted_engine_setup import util as ohostedutil
-from ovirt_hosted_engine_setup import heconflib
 
 
 def _(m):
@@ -92,7 +91,7 @@ class Plugin(plugin.PluginBase):
     )
     def _misc_create_volume(self):
         diskType = 2
-        ohostedutil.create_prepare_image(
+        heconflib.create_and_prepare_image(
             self.logger,
             self.environment[ohostedcons.VDSMEnv.VDS_CLI],
             ohostedcons.VolumeFormat.RAW_FORMAT,
@@ -124,7 +123,7 @@ class Plugin(plugin.PluginBase):
             'on the shared storage domain'
         ))
 
-        dest = ohostedutil.get_volume_path(
+        dest = heconflib.get_volume_path(
             self.environment[
                 ohostedcons.StorageEnv.DOMAIN_TYPE
             ],

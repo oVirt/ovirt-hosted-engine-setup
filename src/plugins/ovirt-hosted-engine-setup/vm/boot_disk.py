@@ -40,10 +40,10 @@ from otopi import transaction
 from otopi import util
 
 
+from ovirt_hosted_engine_ha.lib import heconflib
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import domains as ohosteddomains
 from ovirt_hosted_engine_setup.ovf import ovfenvelope
-from ovirt_hosted_engine_setup import util as ohostedutil
 
 
 def _(m):
@@ -70,7 +70,7 @@ class ImageTransaction(transaction.TransactionElement):
         """
         Return path of the volume file inside the domain
         """
-        return ohostedutil.get_volume_path(
+        return heconflib.get_volume_path(
             self._parent.environment[
                 ohostedcons.StorageEnv.DOMAIN_TYPE
             ],
