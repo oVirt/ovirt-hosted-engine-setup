@@ -83,6 +83,9 @@ class Plugin(plugin.PluginBase):
         after=(
             ohostedcons.Stages.VDSM_LIBVIRT_CONFIGURED,
         ),
+        condition=lambda self: self.environment[
+            ohostedcons.StorageEnv.GLUSTER_PROVISIONING_ENABLED
+        ],
     )
     def _late_setup(self):
         cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
