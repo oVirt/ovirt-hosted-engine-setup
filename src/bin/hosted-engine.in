@@ -29,6 +29,19 @@ fi
 
 rc=1
 
+exit_not_deployed() {
+    echo "You must run deploy first"
+    exit 1
+}
+
+check_vm_conf() {
+    if [ ! -r "${conf}" ] ; then
+        echo "Unable to read vm.conf, please check ovirt-ha-agent logs"
+        exit 1
+    fi
+}
+
+
 usage() {
     if [ -n "$1" ] ; then
         cli_broker "$@" --help
@@ -125,31 +138,29 @@ __EOF__
 return ;}
 
     # TODO: Check first the sanlock status, and if allows:
-    if [ -r "${conf}" ] ; then
-        if [ -n "${vmid}" ] ; then
-            local down=
-            local status=
-            listoutput=$(${VDSCOMMAND} list vms:"${vmid}")
-            while read param eq value; do
-                if [ "${param}" = 'Status' ]; then
-                    status="${value}"
-                    [ "${status}" = "Down" ] && down=1
-                fi
-            done << __EOF__
+    if [ -n "${vmid}" ] ; then
+        check_vm_conf
+        local down=
+        local status=
+        listoutput=$(${VDSCOMMAND} list vms:"${vmid}")
+        while read param eq value; do
+            if [ "${param}" = 'Status' ]; then
+                status="${value}"
+                [ "${status}" = "Down" ] && down=1
+            fi
+        done << __EOF__
 ${listoutput}
 __EOF__
-            if [ -n "${down}" ]; then
-                echo "VM exists and is down, destroying it"
-                ${VDSCOMMAND} destroy "${vmid}"
-            elif [ -n "${status}" ]; then
-                echo "VM exists and its status is ${status}"
-                exit 1
-            fi
-
+        if [ -n "${down}" ]; then
+            echo "VM exists and is down, destroying it"
+            ${VDSCOMMAND} destroy "${vmid}"
+        elif [ -n "${status}" ]; then
+            echo "VM exists and its status is ${status}"
+            exit 1
         fi
         ${VDSCOMMAND} create "${conf}"
     else
-        echo "You must run deploy first"
+        exit_not_deployed
     fi
 }
 
@@ -162,14 +173,15 @@ __EOF__
 return ;}
 
     # TODO: Check first the sanlock status, and if allows:
-    if [ -r "${conf}" ] ; then
+    if [ -n "${vmid}" ] ; then
+        check_vm_conf
         temp_conf="$(mktemp)"
         cp "${conf}" "${temp_conf}"
         echo "launchPaused=true">>"${temp_conf}"
         ${VDSCOMMAND} create "${temp_conf}"
         rm -f "${temp_conf}"
     else
-        echo "You must run deploy first"
+        exit_not_deployed
     fi
 }
 
@@ -184,7 +196,7 @@ return ;}
     if [ -n "${vmid}" ] ; then
         ${VDSCOMMAND} shutdown "${vmid}" 120 "VM is shutting down!"
     else
-        echo "You must run deploy first"
+        exit_not_deployed
     fi
 }
 
@@ -199,7 +211,7 @@ return ;}
     if [ -n "${vmid}" ] ; then
         ${VDSCOMMAND} destroy "${vmid}"
     else
-        echo "You must run deploy first"
+        exit_not_deployed
     fi
 }
 
@@ -211,10 +223,11 @@ Usage: $0 --vm-status
 __EOF__
 return ;}
 
-    if [ -r "${conf}" ] ; then
+    if [ -n "${vmid}" ] ; then
+        check_vm_conf
         python -m ovirt_hosted_engine_setup.vm_status
     else
-        echo "You must run deploy first"
+        exit_not_deployed
     fi
 }
 
@@ -232,8 +245,7 @@ __EOF__
 return ;}
 
     if [ -z "${vmid}" ] ; then
-        echo "You must run deploy first"
-        return
+        exit_not_deployed
     fi
 
     if [[ "$1" == --password=* ]]; then
@@ -264,11 +276,11 @@ Usage: $0 --connect-storage
 __EOF__
 return ;}
 
-    if [ -r "${conf}" ] ; then
+    if [ -n "${vmid}" ] ; then
         python -m ovirt_hosted_engine_setup.connect_storage_server "$@"
         rc=$?
     else
-        echo "You must run deploy first"
+        exit_not_deployed
         rc=1
     fi
     exit $rc
@@ -323,10 +335,10 @@ return ;}
         exit 1
     fi
 
-    if [ -r "${conf}" ] ; then
+    if [ -n "${vmid}" ] ; then
         python -m ovirt_hosted_engine_setup.set_maintenance "${mode}"
     else
-        echo "You must run deploy first"
+        exit_not_deployed
     fi
 }
 
@@ -342,10 +354,10 @@ Usage: $0 --reinitialize-lockspace [--force]
 __EOF__
 return ;}
 
-    if [ -r "${conf}" ] ; then
+    if [ -n "${vmid}" ] ; then
         python -m ovirt_hosted_engine_setup.reinitialize_lockspace "$@"
     else
-        echo "You must run deploy first"
+        exit_not_deployed
     fi
 }
 
@@ -363,10 +375,11 @@ Usage: $0 --clean_metadata [--force-cleanup] [--host-id=<id>]
 __EOF__
 return ;}
 
-    if [ -r "${conf}" ] ; then
+    if [ -n "${vmid}" ] ; then
+        check_vm_conf
         exec @datadir@/ovirt-hosted-engine-ha/ovirt-ha-agent --cleanup "$@"
     else
-        echo "You must run deploy first"
+        exit_not_deployed
     fi
 }
 
