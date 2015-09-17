@@ -24,6 +24,7 @@ engine health status handler plugin.
 
 
 import gettext
+import math
 import time
 
 
@@ -54,6 +55,15 @@ class Plugin(
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
         self._socket = None
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_INIT,
+    )
+    def _init(self):
+        self.environment.setdefault(
+            ohostedcons.EngineEnv.ENGINE_SETUP_TIMEOUT,
+            ohostedcons.Defaults.DEFAULT_ENGINE_SETUP_TIMEOUT
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
@@ -107,7 +117,14 @@ class Plugin(
             self._appliance_connect(spath)
             completed = False
             TIMEOUT = 5
-            NTIMEOUT = 60
+            nTimeout5 = int(math.ceil(
+                float(
+                    self.environment[
+                        ohostedcons.EngineEnv.ENGINE_SETUP_TIMEOUT
+                    ]
+                ) / TIMEOUT
+            ))
+
             self.logger.info(_('Running engine-setup on the appliance'))
             rtimeouts = 0
             while not completed:
@@ -118,7 +135,7 @@ class Plugin(
                     rtimeouts += 1
                 else:
                     rtimeouts = 0
-                if rtimeouts >= NTIMEOUT:
+                if rtimeouts >= nTimeout5:
                     self.logger.error(
                         'Engine setup got stuck on the appliance'
                     )
@@ -127,7 +144,7 @@ class Plugin(
                             'Engine setup is stalled on the appliance '
                             'since {since} seconds ago.\n'
                             'Please check its log on the appliance.\n'
-                        ).format(since=TIMEOUT*NTIMEOUT)
+                        ).format(since=TIMEOUT*nTimeout5)
                     )
                 if ohostedcons.Const.E_SETUP_SUCCESS_STRING in line:
                     completed = True
@@ -139,7 +156,7 @@ class Plugin(
                         _(
                             'Engine setup failed on the appliance\n'
                             'Please check its log on the appliance.\n'
-                        ).format(since=TIMEOUT*NTIMEOUT)
+                        ).format(since=TIMEOUT*nTimeout5)
                     )
                 # TODO: prefer machine dialog for more robust interaction
             self.logger.debug('Engine-setup successfully completed ')

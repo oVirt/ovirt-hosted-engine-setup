@@ -466,6 +466,7 @@ class EngineEnv(object):
 
     TEMPORARY_CERT_FILE = 'OVEHOSTED_ENGINE/temporaryCertificate'
     PROMPT_NON_OPERATIONAL = 'OVEHOSTED_ENGINE/promptNonOperational'
+    ENGINE_SETUP_TIMEOUT = 'OVEHOSTED_ENGINE/engineSetupTimeout'
 
 
 @util.export
@@ -1019,6 +1020,7 @@ class Defaults(object):
     DEAFULT_RHEL_EMULATED_MACHINE = 'rhel6.5.0'
     DEFAULT_ISCSI_PORT = 3260
     DEFAULT_IMAGE_ALIAS = 'hosted_engine'
+    DEFAULT_ENGINE_SETUP_TIMEOUT = 600
 
 
 @util.export
