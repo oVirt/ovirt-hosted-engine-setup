@@ -87,6 +87,7 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_CLOSEUP,
         after=(
             ohostedcons.Stages.VDSCLI_RECONNECTED,
+            ohostedcons.Stages.CONF_IMAGE_AVAILABLE,
         ),
         name=ohostedcons.Stages.HA_START,
     )

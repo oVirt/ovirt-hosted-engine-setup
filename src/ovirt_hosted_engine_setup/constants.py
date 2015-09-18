@@ -951,6 +951,7 @@ class Stages(object):
     VDSMD_LATE_SETUP_READY = 'ohosted.vdsm.late_setup_ready'
     SANLOCK_INITIALIZED = 'ohosted.sanlock.initialized'
     STORAGE_AVAILABLE = 'ohosted.storage.available'
+    IMAGES_REPREPARED = 'ohosted.storage.imagesreprepared'
     VM_IMAGE_AVAILABLE = 'ohosted.vm.image.available'
     OVF_IMPORTED = 'ohosted.vm.ovf.imported'
     STORAGE_POOL_DESTROYED = 'ohosted.storage.pool.destroyed'

@@ -111,6 +111,7 @@ class Plugin(plugin.PluginBase):
         after=(
             ohostedcons.Stages.ANSWER_FILE_AVAILABLE,
             ohostedcons.Stages.OS_INSTALLED,
+            ohostedcons.Stages.IMAGES_REPREPARED,
         ),
         condition=lambda self: not self.environment[
             ohostedcons.CoreEnv.IS_ADDITIONAL_HOST

@@ -38,6 +38,7 @@ from otopi import util
 
 from ovirt_hosted_engine_ha.client import client
 from ovirt_hosted_engine_ha.lib import heconflib
+from ovirt_hosted_engine_ha.lib import image
 from ovirt_hosted_engine_ha.lib import storage_backends
 
 
@@ -1301,6 +1302,21 @@ class Plugin(plugin.PluginBase):
         self.logger.info(_('Start monitoring domain'))
         self._startMonitoringDomain()
         self._monitoring = True
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CLOSEUP,
+        condition=lambda self: not self.environment[
+            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+        ],
+        name=ohostedcons.Stages.IMAGES_REPREPARED,
+        after=(
+            ohostedcons.Stages.VDSCLI_RECONNECTED,
+        ),
+    )
+    def _closeup_reprepare_images(self):
+        self.logger.debug(_("Preparing again HE images"))
+        img = image.Image()
+        img.prepare_images()
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLEANUP,
