@@ -204,6 +204,13 @@ class Plugin(plugin.PluginBase):
                 self.environment[item['envkey']]
             )
 
+        self._cfg.add_section('notify')
+        self._cfg.set(
+            'notify',
+            'state_transition',
+            ohostedcons.Defaults.DEFAULT_STATE_TRANS_NOTIFICATION,
+        )
+
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
         condition=lambda self: not self.environment[
