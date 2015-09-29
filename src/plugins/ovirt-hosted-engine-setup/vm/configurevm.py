@@ -137,6 +137,9 @@ class Plugin(plugin.PluginBase):
                     ] = self.dialog.queryString(
                         name='OVEHOSTED_VMENV_BOOT',
                         note=_(
+                            'Booting from cdrom on RHEL7 is ISO image based'
+                            ' only, as cdrom passthrough is disabled (BZ760'
+                            '885)\n'
                             'Please specify the device to boot the VM from '
                             '(choose disk for the oVirt engine appliance)\n'
                             '(@VALUES@) [@DEFAULT@]: '
