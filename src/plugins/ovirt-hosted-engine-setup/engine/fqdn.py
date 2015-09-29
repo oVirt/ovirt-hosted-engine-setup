@@ -47,7 +47,7 @@ class Plugin(plugin.PluginBase):
         flags=re.VERBOSE,
         pattern=r"""
             ^
-            [\w\.\-\_]+
+            [A-Za-z0-9\.\-]+
             \w+
             $
         """
