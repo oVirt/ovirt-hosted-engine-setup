@@ -53,7 +53,7 @@ Requires:       sanlock >= 2.8
 Requires:       sanlock-python >= 2.8
 Requires:       sudo
 Requires:       virt-viewer
-BuildRequires:  gettext
+BuildRequires:  gettext >= 0.18.2
 BuildRequires:  python2-devel
 
 %if 0%{?fedora}
