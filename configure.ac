@@ -41,6 +41,14 @@ AC_CONFIG_AUX_DIR([.])
 AC_CONFIG_SRCDIR([src/ovirt_hosted_engine_setup/__init__.py])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([1.9 tar-pax])
+
+dnl Fallback definition for gettext.m4 older than 0.19.6.
+m4_ifndef([AM_GNU_GETTEXT_REQUIRE_VERSION], [m4_define([AM_GNU_GETTEXT_REQUIRE_VERSION])], [])
+dnl Prefer the latest infrastructure, given it is newer than 0.18.2.
+AM_GNU_GETTEXT_REQUIRE_VERSION([0.18.2])
+
+dnl This will be ignored if the installed autopoint supports
+dnl AM_GNU_GETTEXT_REQUIRE_VERSION.
 AM_GNU_GETTEXT_VERSION([0.18.2])
 AM_PO_SUBDIRS
 
