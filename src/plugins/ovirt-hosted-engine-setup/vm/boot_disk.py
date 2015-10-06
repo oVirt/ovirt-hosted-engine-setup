@@ -354,6 +354,9 @@ class Plugin(plugin.PluginBase):
                 '/2/CIM_ResourceAllocationSettingData'
                 '}VirtualQuantity'
             ).text
+            self.environment[
+                ohostedcons.VMEnv.APPLIANCEMEM
+            ] = self._ovf_mem_size_mb
         except Exception as e:
             self.logger.debug(
                 'Error parsing OVF file',
@@ -547,26 +550,6 @@ class Plugin(plugin.PluginBase):
                             ]
                         )
                     )
-
-        if self.environment[
-            ohostedcons.VMEnv.MEM_SIZE_MB
-        ] is None:
-            if interactive:
-                self.environment[
-                    ohostedcons.VMEnv.MEM_SIZE_MB
-                ] = self.dialog.queryString(
-                    name='ovehosted_vmenv_mem_ovf',
-                    note=_(
-                        'Please specify the memory size of the appliance '
-                        'in MB [Defaults to OVF value: @DEFAULT@]: '
-                    ),
-                    prompt=True,
-                    default=self._ovf_mem_size_mb,
-                )
-            else:
-                self.environment[
-                    ohostedcons.VMEnv.MEM_SIZE_MB
-                ] = self._ovf_mem_size_mb
 
         valid = False
         checker = ohosteddomains.DomainChecker()
