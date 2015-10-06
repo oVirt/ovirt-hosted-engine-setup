@@ -734,6 +734,8 @@ class VMEnv(object):
 
     APPLIANCEVCPUS = 'OVEHOSTED_VM/applianceVCpus'
 
+    APPLIANCEMEM = 'OVEHOSTED_VM/applianceMem'
+
     @ohostedattrs(
         answerfile=True,
         summary=True,
@@ -1018,7 +1020,7 @@ class Defaults(object):
     DEFAULT_LOCKSPACE_NAME = 'hosted-engine'
     DEFAULT_IMAGE_DESC = 'Hosted Engine Image'
     DEFAULT_IMAGE_SIZE_GB = 25  # based on minimum requirements.
-    DEFAULT_MEM_SIZE_MB = 4096  # based on minimum requirements.
+    MINIMAL_MEM_SIZE_MB = 4096  # based on minimum requirements.
     DEFAULT_CONF_IMAGE_SIZE_GB = 1
     DEFAULT_BOOT = 'disk'  # boot device - drive C or cdrom or pxe
     DEFAULT_CDROM = '/dev/null'
