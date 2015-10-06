@@ -345,7 +345,12 @@ class VmOperations(object):
                     'command:\n'
                     'socat UNIX-CONNECT:/var/run/ovirt-vmconsole-console/'
                     '{vmuuid}.sock,user=ovirt-vmconsole '
-                    'STDIO,raw,echo=0,escape=1'
+                    'STDIO,raw,echo=0,escape=1\n'
+                    'Please ensure that your Guest OS is properly configured '
+                    'to support serial console according to your distro '
+                    'documentation.\n'
+                    'Follow http://www.ovirt.org/Serial_Console_Setup#I_need_'
+                    'to_access_the_console_the_old_way for more info.\n'
                 ).format(
                     host=host,
                     vmuuid=self.environment[ohostedcons.VMEnv.VM_UUID],
