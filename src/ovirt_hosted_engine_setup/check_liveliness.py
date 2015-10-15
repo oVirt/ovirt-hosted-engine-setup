@@ -55,6 +55,11 @@ def manualSetupDispatcher(
     :return: True if manual setup is ready.
     '''
     response = ''
+    validValues = (_('1'), _('2'), _('3'), _('4'))
+    additional_c2 = _(
+        '(3) Power off and restart the VM\n'
+        '(4) Destroy VM and abort setup\n'
+    )
     if engine_vm_status == MSD_OS_INSTALLED:
         name = 'OVEHOSTED_INSTALLING_OS'
         header = _(
@@ -76,6 +81,8 @@ def manualSetupDispatcher(
         name = 'OVEHOSTED_ENGINE_FA'
         header = _('Please check Engine VM configuration.')
         additional_c1 = _('Engine VM configuration has been fixed')
+        additional_c2 = ''
+        validValues = (_('1'), _('2'),)
     else:
         raise ValueError(
             'Invalid value for engine_vm_level ({value})'.format(
@@ -88,16 +95,16 @@ def manualSetupDispatcher(
             '\n\n{header}\n\n'
             'Make a selection from the options below:\n'
             '(1) Continue setup - {additional_c1}\n'
-            '(2) Power off and restart the VM\n'
-            '(3) Abort setup\n'
-            '(4) Destroy VM and abort setup\n'
+            '(2) Abort setup\n'
+            '{additional_c2}'
             '\n(@VALUES@)[@DEFAULT@]: '
         ).format(
             header=header,
             additional_c1=additional_c1,
+            additional_c2=additional_c2,
         ),
         prompt=True,
-        validValues=(_('1'), _('2'), _('3'), _('4')),
+        validValues=validValues,
         default=_('1'),
         caseSensitive=False
     )
@@ -129,10 +136,10 @@ def manualSetupDispatcher(
                 'OS is installed but engine FQDN is not provided.'
             )
     elif response == _('2').lower():
+        raise RuntimeError('Setup aborted by user')
+    elif response == _('3').lower():
         base._destroy_vm()
         base._create_vm()
-    elif response == _('3').lower():
-        raise RuntimeError('Setup aborted by user')
     elif response == _('4').lower():
         base._destroy_vm()
         raise RuntimeError(
