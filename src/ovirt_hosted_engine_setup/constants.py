@@ -542,14 +542,6 @@ class StorageEnv(object):
     @ohostedattrs(
         answerfile=True,
         summary=True,
-        description=_('Image alias'),
-    )
-    def IMG_ALIAS(self):
-        return 'OVEHOSTED_STORAGE/imgAlias'
-
-    @ohostedattrs(
-        answerfile=True,
-        summary=True,
         description=_('Storage type'),
     )
     def STORAGE_TYPE(self):
@@ -1034,7 +1026,6 @@ class Defaults(object):
     DEFAULT_EMULATED_MACHINE = 'pc'
     DEAFULT_RHEL_EMULATED_MACHINE = 'rhel6.5.0'
     DEFAULT_ISCSI_PORT = 3260
-    DEFAULT_IMAGE_ALIAS = 'hosted_engine'
     DEFAULT_ENGINE_SETUP_TIMEOUT = 600
     DEFAULT_STATE_TRANS_NOTIFICATION = 'maintenance|start|stop|migrate|up|down'
 
