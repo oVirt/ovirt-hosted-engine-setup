@@ -28,7 +28,6 @@ dist_my_PYTHON = \
 	__init__.py \
 	fqdn.py \
 	health.py \
-	add_disk.py \
 	add_host.py \
 	os_install.py \
 	$(NULL)

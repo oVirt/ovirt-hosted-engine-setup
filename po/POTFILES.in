@@ -22,7 +22,6 @@
 ./src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py
 ./src/plugins/ovirt-hosted-engine-setup/core/shell.py
 ./src/plugins/ovirt-hosted-engine-setup/core/titles.py
-./src/plugins/ovirt-hosted-engine-setup/engine/add_disk.py
 ./src/plugins/ovirt-hosted-engine-setup/engine/add_host.py
 ./src/plugins/ovirt-hosted-engine-setup/engine/fqdn.py
 ./src/plugins/ovirt-hosted-engine-setup/engine/health.py
