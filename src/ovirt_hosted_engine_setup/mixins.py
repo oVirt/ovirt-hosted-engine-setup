@@ -40,10 +40,10 @@ class VmOperations(object):
     Hosted engine VM manipulation features for otopi Plugin objects
     """
 
-    POWER_MAX_TRIES = 10
-    POWER_DELAY = 1
-    TICKET_MAX_TRIES = 10
-    TICKET_DELAY = 1
+    POWER_MAX_TRIES = 20
+    POWER_DELAY = 3
+    TICKET_MAX_TRIES = 20
+    TICKET_DELAY = 3
     POWEROFF_CHECK_INTERVALL = 1
 
     def _generateTempVncPassword(self):
