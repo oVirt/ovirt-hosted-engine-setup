@@ -112,8 +112,9 @@ make %{?_smp_mflags}
 %install
 rm -rf "%{buildroot}"
 make %{?_smp_mflags} install DESTDIR="%{buildroot}"
+%find_lang %{name}
 
-%files
+%files -f %{name}.lang
 %license COPYING
 %doc README
 %dir %{_sysconfdir}/ovirt-hosted-engine-setup.env.d
