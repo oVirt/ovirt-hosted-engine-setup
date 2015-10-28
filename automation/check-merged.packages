@@ -3,3 +3,5 @@ autoconf
 gettext-devel
 automake
 ovirt-engine-sdk-python
+python-pep8
+pyflakes
