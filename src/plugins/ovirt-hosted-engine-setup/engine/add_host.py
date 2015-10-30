@@ -706,7 +706,7 @@ class Plugin(plugin.PluginBase):
                             ohostedcons.NetworkEnv.BRIDGE_NAME]
                     )
                     mgmt_network.set_vlan(
-                        self._ovirtsdk_xml.params.VLAN(id=vlan_id)
+                        self._ovirtsdk_xml.params.Vlan(id=vlan_id)
                     )
                     mgmt_network.update()
 
@@ -732,7 +732,7 @@ class Plugin(plugin.PluginBase):
                         address=socket.gethostname(),
                         reboot_after_installation=False,
                         cluster=cluster,
-                        ssh=self._ovirtsdk_xml.params.SSH(
+                        ssh=self._ovirtsdk_xml.params.Ssh(
                             authentication_method='publickey',
                             port=self.environment[
                                 ohostedcons.NetworkEnv.SSHD_PORT
