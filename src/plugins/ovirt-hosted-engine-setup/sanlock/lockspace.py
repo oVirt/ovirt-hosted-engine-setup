@@ -153,6 +153,7 @@ class Plugin(plugin.PluginBase):
             dom_type=dom_type,
             **activate_devices
         )
+        backend.set_external_logger(self.logger)
 
         # Compute the size needed to store metadata for all hosts
         # and for the global cluster state
