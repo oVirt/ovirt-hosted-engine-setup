@@ -391,6 +391,7 @@ class Plugin(plugin.PluginBase):
                 ],
                 **activate_devices
             )
+            backend.set_external_logger(self.logger)
             with ohostedutil.VirtUserContext(
                 self.environment,
                 # umask 007
