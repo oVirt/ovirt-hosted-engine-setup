@@ -273,22 +273,29 @@ class Plugin(plugin.PluginBase):
                         ohostedcons.StorageEnv.HOST_ID
                     ]
                 try:
-                    # ensure it's an int and not the FIRST_HOST_ID.
-                    if int(host_id) == ohostedcons.Const.FIRST_HOST_ID:
-                        valid = False
-                        if interactive:
-                            self.logger.error(
-                                _('Cannot use the same ID used by first host')
-                            )
-                        else:
-                            raise RuntimeError(
-                                _('Cannot use the same ID used by first host')
-                            )
-                    else:
-                        valid = True
+                    valid = True
+                    self.environment[
+                        ohostedcons.StorageEnv.HOST_ID
+                    ] = int(host_id)
+                    if (
                         self.environment[
                             ohostedcons.StorageEnv.HOST_ID
-                        ] = int(host_id)
+                        ] > ohostedcons.Const.MAX_HOST_ID or
+                        self.environment[
+                            ohostedcons.StorageEnv.HOST_ID
+                        ] < ohostedcons.Const.FIRST_HOST_ID
+                    ):
+                        valid = False
+                        msg = _(
+                            'Invalid value for Host ID: must be in {min}-{max}'
+                        ).format(
+                            min=ohostedcons.Const.FIRST_HOST_ID,
+                            max=ohostedcons.Const.MAX_HOST_ID,
+                        )
+                        if interactive:
+                            self.logger.error(msg)
+                        else:
+                            raise RuntimeError(msg)
                 except ValueError:
                     valid = False
                     if interactive:
