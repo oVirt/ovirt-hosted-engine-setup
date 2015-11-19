@@ -53,6 +53,7 @@ dist_ovirthostedenginelib_PYTHON = \
 	__init__.py \
 	check_liveliness.py \
 	connect_storage_server.py \
+	disconnect_storage_server.py \
 	constants.py \
 	domains.py \
 	engineapi.py \

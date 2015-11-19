@@ -78,6 +78,8 @@ Usage: $0 [--help] <command> [<command-args>]
             Checks liveliness page of engine
         --connect-storage
             Connect the storage domain
+        --disconnect-storage
+            Disconnect any connected storage domains
         --console
             Open the configured console using virsh on localhost
         --set-maintenance --mode=<mode>
@@ -347,6 +349,23 @@ return ;}
     exit $rc
 }
 
+cmd_disconnect_storage() {
+    [ "$1" == "--help" ] && { cat << __EOF__
+Usage: $0 --disconnect-storage
+    Disconnect the storage domain
+__EOF__
+return ;}
+
+    if [ -n "${vmid}" ] ; then
+        python -m ovirt_hosted_engine_setup.disconnect_storage_server "$@"
+        rc=$?
+    else
+        exit_not_deployed
+        rc=1
+    fi
+    exit $rc
+}
+
 cmd_console() {
     [ "$1" == "--help" ] && { cat << __EOF__
 Usage: $0 --console
@@ -518,6 +537,7 @@ cli_broker() {
         --check-liveliness) cmd_check_liveliness "$@" ;;
         --check-deployed) cmd_check_deployed "$@" ;;
         --connect-storage) cmd_connect_storage "$@" ;;
+        --disconnect-storage) cmd_disconnect_storage "$@" ;;
         --console) cmd_console "$@" ;;
         --set-maintenance) cmd_set_maintenance "$@" ;;
         --set-shared-config) cmd_set_shared_config "$@" ;;
