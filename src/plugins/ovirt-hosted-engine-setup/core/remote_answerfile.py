@@ -64,7 +64,8 @@ class Plugin(plugin.PluginBase):
                 ] = self.dialog.queryString(
                     name='OVEHOSTED_NET_FIRST_HOST_FQDN',
                     note=_(
-                        'Please provide the FQDN or IP of the first host: '
+                        'Please provide the FQDN or IP of an active '
+                        'HE host: '
                     ),
                     prompt=True,
                     caseSensitive=True,
@@ -156,7 +157,7 @@ class Plugin(plugin.PluginBase):
                         _(
                             'Cannot deploy Hosted Engine on additional host: '
                             'unable to fetch the configuration used '
-                            'on first host'
+                            'on other hosts'
                         )
                     )
             except (paramiko.SSHException, socket.gaierror) as e:
@@ -172,7 +173,7 @@ class Plugin(plugin.PluginBase):
                         _(
                             'Cannot deploy Hosted Engine on additional host: '
                             'unable to fetch the configuration used '
-                            'on first host'
+                            'on other hosts'
                         )
                     )
             finally:
@@ -267,10 +268,10 @@ class Plugin(plugin.PluginBase):
             ] = self.dialog.queryString(
                 name='OVEHOSTED_CORE_FETCH_ANSWER',
                 note=_(
-                    'The answer file may be fetched from the first host '
+                    'The answer file may be fetched from an active HE host '
                     'using scp.\n'
                     '{additional}'
-                    'Do you want to scp the answer file from the first host? '
+                    'Do you want to scp the answer file from another HE host? '
                     '(@VALUES@)[@DEFAULT@]: '
                 ).format(additional=additional),
                 prompt=True,
@@ -285,7 +286,7 @@ class Plugin(plugin.PluginBase):
                     _(
                         'Cannot deploy Hosted Engine on additional hosts '
                         'without access to the configuration used on '
-                        'the first host'
+                        'other hosts'
                     )
                 )
             else:
