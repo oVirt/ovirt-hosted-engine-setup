@@ -45,7 +45,8 @@ def _(m):
 class Plugin(plugin.PluginBase):
     """VDSM misc plugin."""
 
-    MAX_RETRY = 10
+    MAX_RETRY = 120
+    DELAY = 1
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
@@ -64,10 +65,16 @@ class Plugin(plugin.PluginBase):
                     vdsmReady = True
                 else:
                     self.logger.info(_('Waiting for VDSM hardware info'))
-                    time.sleep(1)
+                    time.sleep(self.DELAY)
             except socket.error:
                 self.logger.info(_('Waiting for VDSM hardware info'))
-                time.sleep(1)
+                time.sleep(self.DELAY)
+        if not vdsmReady:
+            raise RuntimeError(
+                _(
+                    'VDSM did not start within {timeout} seconds'
+                ).format(timeout=self.MAX_RETRY*self.DELAY)
+            )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT
