@@ -41,6 +41,7 @@ from otopi import util
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import util as ohostedutil
+from ovirt_setup_lib import hostname as osetuphostname
 
 
 def _(m):
@@ -405,6 +406,7 @@ class Plugin(plugin.PluginBase):
     )
     def _setup(self):
         self.command.detect('genisoimage')
+        self._hostname_helper = osetuphostname.Hostname(plugin=self)
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
@@ -473,9 +475,11 @@ class Plugin(plugin.PluginBase):
             if self.environment[
                 ohostedcons.CloudInit.GENERATE_ISO
             ] == ohostedcons.Const.CLOUD_INIT_GENERATE:
-                instancehname = self.dialog.queryString(
-                    name='CI_INSTANCE_HOSTNAME',
-                    note=_(
+                instancehname = self._hostname_helper.getHostname(
+                    envkey=None,
+                    whichhost='CI_INSTANCE_HOSTNAME',
+                    supply_default=False,
+                    prompttext=_(
                         'Please provide the FQDN you would like to use for '
                         'the engine appliance.\n'
                         'Note: This will be the FQDN of the engine VM '
@@ -484,8 +488,18 @@ class Plugin(plugin.PluginBase):
                         'existing machine.\n'
                         'Engine VM FQDN: (leave it empty to skip): '
                     ),
-                    prompt=True,
-                    default='',
+                    dialog_name='CI_INSTANCE_HOSTNAME',
+                    validate_syntax=True,
+                    system=True,
+                    dns=False,
+                    local_non_loopback=False,
+                    reverse_dns=False,
+                    not_local=True,
+                    not_local_text=_(
+                        'Please input the hostname for the engine VM, '
+                        'not for this host.'
+                    ),
+                    allow_empty=True,
                 )
                 if instancehname:
                     self.environment[
