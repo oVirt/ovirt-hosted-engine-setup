@@ -37,6 +37,7 @@ from vdsm.network.netinfo.cache import CachingNetInfo
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import vds_info
+from ovirt_setup_lib import hostname as osetuphostname
 
 
 def _(m):
@@ -86,6 +87,7 @@ class Plugin(plugin.PluginBase):
                 )
             )
             self._enabled = False
+        self._hostname_helper = osetuphostname.Hostname(plugin=self)
 
     @plugin.event(
         stage=plugin.Stages.STAGE_PROGRAMS,
@@ -335,9 +337,25 @@ class Plugin(plugin.PluginBase):
         ],
     )
     def _get_hostname_additional_hosts(self):
-        self.environment[
-            ohostedcons.NetworkEnv.HOST_NAME
-        ] = socket.getfqdn()
+        self._hostname_helper.getHostname(
+            envkey=ohostedcons.NetworkEnv.HOST_NAME,
+            whichhost='HE_ADDITIONAL',
+            supply_default=True,
+            prompttext=_(
+                'Please provide the fully qualified domain name of this '
+                'host.\n Note: The engine VM and all the other hosts '
+                'should be able to correctly resolve it.\nHost FQDN: '
+            ),
+            validate_syntax=True,
+            system=True,
+            dns=True,
+            local_non_loopback=True,
+            reverse_dns=self.environment[
+                ohostedcons.NetworkEnv.FQDN_REVERSE_VALIDATION
+            ],
+            not_local=False,
+            allow_empty=False,
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
