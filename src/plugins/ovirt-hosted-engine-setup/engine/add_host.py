@@ -305,6 +305,11 @@ class Plugin(plugin.PluginBase):
             ohostedcons.EngineEnv.INSECURE_SSL
         ]:
             valid = True
+            if cert is not None and os.path.exists(cert):
+                os.unlink(cert)
+            self.environment[
+                ohostedcons.EngineEnv.TEMPORARY_CERT_FILE
+            ] = None
         elif self.environment[
             ohostedcons.EngineEnv.INSECURE_SSL
         ] is False:
