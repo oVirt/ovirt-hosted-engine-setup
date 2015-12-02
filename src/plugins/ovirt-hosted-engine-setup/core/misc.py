@@ -161,18 +161,24 @@ class Plugin(plugin.PluginBase):
         self.logger.debug('Finished persisting file configuration')
 
     @plugin.event(
-        stage=plugin.Stages.STAGE_CLOSEUP,
+        stage=plugin.Stages.STAGE_TERMINATE,
         priority=plugin.Stages.PRIORITY_LAST,
-        after=(
-            ohostedcons.Stages.NODE_FILES_PERSIST_E,
-        ),
     )
-    def _closeup(self):
-        self.dialog.note(
-            text=_(
-                'Hosted Engine successfully set up'
-            ),
-        )
+    def _terminate(self):
+        if self.environment[otopicons.BaseEnv.ERROR]:
+            self.logger.error(_(
+                'Hosted Engine deployment failed: this system is not reliable,'
+                ' please check the issue, fix and redeploy'
+            ))
+            self.dialog.note(
+                text=_('Log file is located at {path}').format(
+                    path=self.environment[
+                        otopicons.CoreEnv.LOG_FILE_NAME
+                    ],
+                ),
+            )
+        else:
+            self.logger.info(_('Hosted Engine successfully set up'))
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

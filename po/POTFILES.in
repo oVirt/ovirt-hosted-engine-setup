@@ -28,7 +28,6 @@
 ./src/plugins/ovirt-hosted-engine-setup/ha/__init__.py
 ./src/plugins/ovirt-hosted-engine-setup/libvirt/configureqemu.py
 ./src/plugins/ovirt-hosted-engine-setup/libvirt/__init__.py
-./src/plugins/ovirt-hosted-engine-setup/libvirt/workarounds.py
 ./src/plugins/ovirt-hosted-engine-setup/network/bridge.py
 ./src/plugins/ovirt-hosted-engine-setup/network/firewall_manager.py
 ./src/plugins/ovirt-hosted-engine-setup/network/firewall.py
