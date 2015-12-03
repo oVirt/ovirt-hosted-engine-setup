@@ -45,6 +45,7 @@ from otopi import util
 from vdsm import netinfo
 
 
+from ovirt_host_deploy import constants as ohdcons
 from ovirt_hosted_engine_setup import check_liveliness
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import vds_info
@@ -69,6 +70,7 @@ class Plugin(plugin.PluginBase):
         self._ovirtsdk_api = ovirtsdk.api
         self._ovirtsdk_xml = ovirtsdk.xml
         self._interactive_admin_pwd = True
+        self._host_deploy_conf = None
 
     def _wait_host_ready(self, engine_api, host):
         self.logger.info(_(
@@ -433,6 +435,44 @@ class Plugin(plugin.PluginBase):
                     )
                 )
 
+    def _disableHostDeployPackager(self):
+        try:
+            fd, self._host_deploy_conf = tempfile.mkstemp(
+                prefix='70-hosted-engine-setup-',
+                suffix='.conf',
+                dir=ohostedcons.FileLocations.OVIRT_HOST_DEPLOY_CONF,
+                text=True,
+            )
+            self.logger.debug(
+                'Writing host-deploy configuration to {fname}'.format(
+                    fname=self._host_deploy_conf,
+                )
+            )
+            hdfile = os.fdopen(fd, 'w')
+            try:
+                hdfile.write(
+                    '[{section}]\n'.format(
+                        section=otopicons.Const.CONFIG_SECTION_INIT,
+                    )
+                )
+                hdfile.write(
+                    '{key}={type}:{value}\n'.format(
+                        key=ohdcons.CoreEnv.OFFLINE_PACKAGER,
+                        type=otopicons.Types.BOOLEAN,
+                        value=str(True),
+                    )
+                )
+            finally:
+                hdfile.close()
+        except EnvironmentError as ex:
+            raise RuntimeError(
+                _(
+                    'Unable to write host-deploy configuration file: {msg}'
+                ).format(
+                    msg=ex.message,
+                )
+            )
+
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
     )
@@ -571,6 +611,7 @@ class Plugin(plugin.PluginBase):
         # TODO: refactor into shorter and simpler functions
         self._getCA()
         self._getSSH()
+        self._disableHostDeployPackager()
         cluster_name = None
         default_cluster_name = 'Default'
         valid = False
@@ -825,8 +866,32 @@ class Plugin(plugin.PluginBase):
     )
     def _cleanup(self):
         cert = self.environment[ohostedcons.EngineEnv.TEMPORARY_CERT_FILE]
-        if cert is not None and os.path.exists(cert):
-            os.unlink(cert)
-
+        try:
+            if cert is not None and os.path.exists(cert):
+                os.unlink(cert)
+        except EnvironmentError as ex:
+            self.log.error(
+                _(
+                    'Unable to cleanup temporary CA cert file: {msg}'
+                ).format(
+                    msg=ex.message,
+                )
+            )
+        try:
+            if self._host_deploy_conf is not None and os.path.exists(
+                    self._host_deploy_conf
+            ):
+                os.unlink(self._host_deploy_conf)
+        except EnvironmentError as ex:
+            self.log.error(
+                _(
+                    'Unable to cleanup temporary file: {msg} - '
+                    'Please check and eventually manually cleanup {fnames} '
+                    'otherwise future upgrade could be affected.'
+                ).format(
+                    msg=ex.message,
+                    fname=self._host_deploy_conf,
+                )
+            )
 
 # vim: expandtab tabstop=4 shiftwidth=4
