@@ -901,7 +901,10 @@ class Plugin(plugin.PluginBase):
         ]
         ID = self.environment[ohostedcons.StorageEnv.HOST_ID]
         scsi_key = spUUID
-        master = fakeSdUUID
+        if self._fake_SD_path is not None:
+            master = fakeSdUUID
+        else:
+            master = sdUUID
         master_ver = 1
         method = self.cli.connectStoragePool
         method_args = [
