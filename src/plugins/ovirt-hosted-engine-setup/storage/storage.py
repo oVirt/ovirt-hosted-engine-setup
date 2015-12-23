@@ -506,12 +506,6 @@ class Plugin(plugin.PluginBase):
                             ohostedcons.StorageEnv.SP_UUID
                         ] = spUUID
                 self._handleHostId()
-                if self.pool_exists:
-                    pool_info = self._getStoragePoolInfo(spUUID)
-                    if pool_info:
-                        self.environment[
-                            ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME
-                        ] = pool_info['name']
         elif self.storageType in (
             ohostedcons.VDSMConstants.NFS_DOMAIN,
             ohostedcons.VDSMConstants.GLUSTERFS_DOMAIN,
@@ -556,12 +550,6 @@ class Plugin(plugin.PluginBase):
                         self.environment[
                             ohostedcons.StorageEnv.SP_UUID
                         ] = spUUID
-                        self._storagePoolConnection()
-                        pool_info = self._getStoragePoolInfo(spUUID)
-                        if pool_info:
-                            self.environment[
-                                ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME
-                            ] = pool_info['name']
                     break
 
         if not self.domain_exists:
