@@ -124,6 +124,7 @@ class Plugin(plugin.PluginBase):
                 device,
             ),
         )
+        address = None
         for line in stdout:
             addressmatch = self._INET_ADDRESS_RE.match(line)
             if addressmatch is not None:
