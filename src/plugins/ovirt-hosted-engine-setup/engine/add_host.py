@@ -735,7 +735,7 @@ class Plugin(plugin.PluginBase):
                 cluster = engine_api.clusters.get(cluster_name)
 
                 conn = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-                net_info = netinfo.NetInfo(vds_info.capabilities(conn))
+                net_info = netinfo.CachingNetInfo(vds_info.capabilities(conn))
                 bridge_port = self.environment[
                     ohostedcons.NetworkEnv.BRIDGE_IF
                 ]

@@ -96,7 +96,7 @@ class Plugin(plugin.PluginBase):
         ),
     )
     def _customization(self):
-        info = netinfo.NetInfo(
+        info = netinfo.CachingNetInfo(
             vds_info.capabilities(
                 self.environment[ohostedcons.VDSMEnv.VDS_CLI]
             )

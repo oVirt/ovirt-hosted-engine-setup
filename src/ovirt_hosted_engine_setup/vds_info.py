@@ -58,7 +58,7 @@ def _evaluateDefaultRoute(attrs, cfg):
 
 def network(caps, device):
     """Returns a dictionary that describes the network of the device"""
-    info = netinfo.NetInfo(caps)
+    info = netinfo.CachingNetInfo(caps)
     attrs = {}
     if device in info.vlans:
         port_info = info.vlans[device]
