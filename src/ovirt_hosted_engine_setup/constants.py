@@ -1033,6 +1033,7 @@ class Defaults(object):
     DEFAULT_ISCSI_PORT = 3260
     DEFAULT_ENGINE_SETUP_TIMEOUT = 600
     DEFAULT_STATE_TRANS_NOTIFICATION = 'maintenance|start|stop|migrate|up|down'
+    DEFAULT_TEMPDIR = '/var/tmp'
 
 
 @util.export
