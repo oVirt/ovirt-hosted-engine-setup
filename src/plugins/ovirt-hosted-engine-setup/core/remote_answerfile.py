@@ -110,9 +110,12 @@ class Plugin(plugin.PluginBase):
         interactive = (
             self.environment[ohostedcons.FirstHostEnv.ROOT_PASSWORD] is None
         )
-        while self.environment[ohostedcons.FirstHostEnv.ROOT_PASSWORD] is None:
+        password_correct = False
+        while not password_correct:
             if interactive:
-                password = self.dialog.queryString(
+                self.environment[
+                    ohostedcons.FirstHostEnv.ROOT_PASSWORD
+                ] = self.dialog.queryString(
                     name='HOST_FIRST_HOST_ROOT_PASSWORD',
                     note=_(
                         "Enter 'root' user password for host {fqdn}: "
@@ -130,10 +133,13 @@ class Plugin(plugin.PluginBase):
                         self.environment[ohostedcons.FirstHostEnv.SSHD_PORT],
                     )
                 )
-                transport.connect(username='root', password=password)
-                self.environment[
-                    ohostedcons.FirstHostEnv.ROOT_PASSWORD
-                ] = password
+                transport.connect(
+                    username='root',
+                    password=self.environment[
+                        ohostedcons.FirstHostEnv.ROOT_PASSWORD
+                    ]
+                )
+                password_correct = True
                 try:
                     fd, self._tmp_ans = tempfile.mkstemp(
                         dir=self.environment[ohostedcons.CoreEnv.TEMPDIR],
