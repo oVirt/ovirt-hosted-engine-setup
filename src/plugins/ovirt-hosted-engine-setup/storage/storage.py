@@ -803,6 +803,17 @@ class Plugin(plugin.PluginBase):
     def _createStoragePool(self):
         self.logger.debug('createStoragePool')
         poolType = -1
+        if self.environment[
+            ohostedcons.StorageEnv.SP_UUID
+        ] == ohostedcons.Const.BLANK_UUID:
+            self.environment[
+                ohostedcons.StorageEnv.SP_UUID
+            ] = str(uuid.uuid4())
+            self.logger.debug(
+                'spUUID was blank, using a random valid UUID: {uuid}'.format(
+                    uuid=self.environment[ohostedcons.StorageEnv.SP_UUID],
+                )
+            )
         spUUID = self.environment[ohostedcons.StorageEnv.SP_UUID]
         sdUUID = self.environment[ohostedcons.StorageEnv.SD_UUID]
         fakeSdUUID = self.environment[
@@ -1142,12 +1153,6 @@ class Plugin(plugin.PluginBase):
             ohostedcons.StorageEnv.SP_UUID,
             str(uuid.uuid4())
         )
-        if self.environment[
-            ohostedcons.StorageEnv.SP_UUID
-        ] == ohostedcons.Const.BLANK_UUID:
-            self.environment[
-                ohostedcons.StorageEnv.SP_UUID
-            ] = str(uuid.uuid4())
         self.environment.setdefault(
             ohostedcons.StorageEnv.DOMAIN_TYPE,
             None
