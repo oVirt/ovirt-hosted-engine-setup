@@ -88,7 +88,7 @@ class Plugin(plugin.PluginBase):
                 note=_(
                     'Continuing will configure this host for serving as '
                     'hypervisor and create a VM where you have to install '
-                    'oVirt Engine afterwards.\n'
+                    'the management console afterwards.\n'
                     'Are you sure you want to continue? '
                     '(@VALUES@)[@DEFAULT@]: '
                 ),
