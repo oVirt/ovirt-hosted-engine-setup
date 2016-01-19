@@ -31,7 +31,7 @@ Version:        @PACKAGE_RPM_VERSION@
 Release:        @PACKAGE_RPM_RELEASE@%{?release_suffix}%{?dist}
 License:        LGPLv2+
 URL:            http://www.ovirt.org
-Source0:        http://resources.ovirt.org/pub/ovirt-3.6-snapshot/src/%{name}/%{name}-%{package_version}.tar.gz
+Source0:        http://resources.ovirt.org/pub/ovirt-3.6/src/%{name}/%{name}-%{package_version}.tar.gz
 Group:          Applications/System
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -71,13 +71,13 @@ Requires:       ovirt-hosted-engine-ha >= 1.3.3.7
 Requires:       %{engine}-sdk-python >= 3.6.2.0
 Requires:       ovirt-setup-lib >= 1.0.1
 Requires:       glusterfs-cli >= 3.7.2
-Requires:       vdsm >= 4.17.17
-Requires:       vdsm-cli >= 4.17.17
-Requires:       vdsm-python >= 4.17.17
+Requires:       vdsm >= 4.17.18
+Requires:       vdsm-cli >= 4.17.18
+Requires:       vdsm-python >= 4.17.18
 
 
 %if %{gluster_hc_available}
-Requires:       vdsm-gluster >= 4.17.17
+Requires:       vdsm-gluster >= 4.17.18
 Requires:       glusterfs-server >= 3.7.2
 %endif
 
@@ -130,6 +130,9 @@ make %{?_smp_mflags} install DESTDIR="%{buildroot}"
 %{vdsmhooksdir}/before_vm_start/
 
 %changelog
+* Tue Jan 19 2016 Sandro Bonazzola <sbonazzo@redhat.com> - 1.3.2.3-1
+- 1.3.2.3-1
+
 * Tue Jan 12 2016 Sandro Bonazzola <sbonazzo@redhat.com> - 1.3.2.3-0.0.master
 - 1.3.2.3-0.0.master
 
