@@ -421,7 +421,7 @@ class Plugin(plugin.PluginBase):
         )
         self.environment.setdefault(
             ohostedcons.CoreEnv.TEMPDIR,
-            ohostedcons.Defaults.DEFAULT_TEMPDIR
+            os.getenv('TMPDIR', ohostedcons.Defaults.DEFAULT_TEMPDIR)
         )
 
     @plugin.event(
