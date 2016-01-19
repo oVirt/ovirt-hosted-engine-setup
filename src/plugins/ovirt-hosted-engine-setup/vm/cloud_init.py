@@ -851,6 +851,13 @@ class Plugin(plugin.PluginBase):
                 fail_string=ohostedcons.Const.E_SETUP_FAIL_STRING,
             )
 
+        if 'runcmd:\n' not in user_data:
+            user_data += 'runcmd:\n'
+        user_data += (
+            ' - systemctl mask cloud-init-local\n'
+            ' - systemctl mask cloud-init\n'
+        )
+
         f = open(f_user_data, 'w')
         f.write(user_data)
         f.close()
