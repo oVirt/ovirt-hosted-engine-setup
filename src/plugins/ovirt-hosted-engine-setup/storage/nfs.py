@@ -260,17 +260,6 @@ class Plugin(plugin.PluginBase):
         if self.environment[
             ohostedcons.StorageEnv.DOMAIN_TYPE
         ] == ohostedcons.DomainTypes.GLUSTERFS:
-            # FIXME: mount.glusterfs exit with code 0 also on failure
-            # without any stderr content.
-            # https://bugzilla.redhat.com/show_bug.cgi?id=1128165
-            # https://bugzilla.redhat.com/show_bug.cgi?id=1173513
-            # https://bugzilla.redhat.com/show_bug.cgi?id=1173515
-            self.logger.warning(
-                _(
-                    'Due to several bugs in mount.glusterfs the validation '
-                    'of GlusterFS share cannot be reliable.'
-                )
-            )
             self._check_volume_properties(connection)
         path = tempfile.mkdtemp()
         try:
