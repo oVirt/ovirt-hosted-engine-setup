@@ -354,9 +354,17 @@ class Plugin(plugin.PluginBase):
                 '/2/CIM_ResourceAllocationSettingData'
                 '}VirtualQuantity'
             ).text
-            self.environment[
-                ohostedcons.VMEnv.APPLIANCEMEM
-            ] = self._ovf_mem_size_mb
+            try:
+                # ensure that appliance memory is stored as integer
+                self.environment[
+                    ohostedcons.VMEnv.APPLIANCEMEM
+                ] = int(self._ovf_mem_size_mb)
+            except ValueError:
+                self.logger.warning(_('Failed to read appliance memory'))
+                self.environment[
+                    ohostedcons.VMEnv.APPLIANCEMEM
+                ] = None
+
         except Exception as e:
             self.logger.debug(
                 'Error parsing OVF file',
