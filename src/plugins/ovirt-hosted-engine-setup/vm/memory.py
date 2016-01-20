@@ -194,5 +194,11 @@ class Plugin(plugin.PluginBase):
             store=True,
         )
 
+        # ensure that value is stored as integer. _check_memory_is_int
+        # already ensured that value is a valid integer before.
+        self.environment[ohostedcons.VMEnv.MEM_SIZE_MB] = int(
+            self.environment[ohostedcons.VMEnv.MEM_SIZE_MB]
+        )
+
 
 # vim: expandtab tabstop=4 shiftwidth=4
