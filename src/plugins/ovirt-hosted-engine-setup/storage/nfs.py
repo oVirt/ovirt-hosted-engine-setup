@@ -256,6 +256,45 @@ class Plugin(plugin.PluginBase):
                 )
             )
 
+    def _fix_path_syntax(self):
+        path = self.environment[
+            ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
+        ]
+        if (
+            path and
+            len(path) > 2 and
+            path[-1] == '/' and
+            path[-2] == ':'
+        ):
+            raise RuntimeError(
+                _(
+                    "'server:/' is not an acceptable export path, "
+                    "please use at least one subdirectory"
+                )
+            )
+        path = os.path.normpath(
+            self.environment[
+                ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
+            ]
+        )
+        if path != self.environment[
+            ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
+        ]:
+            self.logger.warning(
+                _(
+                    "Fixing path syntax: "
+                    "replacing '{original}' with '{fixed}'"
+                ).format(
+                    original=self.environment[
+                        ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
+                    ],
+                    fixed=path,
+                )
+            )
+            self.environment[
+                ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
+            ] = path
+
     def _validateDomain(self, connection, domain_type, check_space):
         if self.environment[
             ohostedcons.StorageEnv.DOMAIN_TYPE
@@ -340,6 +379,7 @@ class Plugin(plugin.PluginBase):
                     caseSensitive=True,
                 )
             try:
+                self._fix_path_syntax()
                 self._validateDomain(
                     connection=self.environment[
                         ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
