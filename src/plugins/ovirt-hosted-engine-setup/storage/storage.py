@@ -1026,97 +1026,6 @@ class Plugin(plugin.PluginBase):
                 _('Cannot setup Hosted Engine with connected storage pools')
             )
 
-    def _customizeStorageDomainName(self):
-        interactive = self.environment[
-            ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
-        ] is None
-        while not self._validName(
-            self.environment[
-                ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
-            ]
-        ):
-            self.environment[
-                ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
-            ] = self.dialog.queryString(
-                name='OVEHOSTED_STORAGE_DOMAIN_NAME',
-                note=_(
-                    'Please provide storage domain name. '
-                    '[@DEFAULT@]: '
-                ),
-                prompt=True,
-                caseSensitive=True,
-                default=ohostedcons.Defaults.DEFAULT_STORAGE_DOMAIN_NAME,
-            )
-            if not self._validName(
-                self.environment[
-                    ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
-                ]
-            ):
-                if interactive:
-                    self.dialog.note(
-                        text=_(
-                            'Storage domain name cannot be empty. '
-                            '{notvalid}'
-                        ).format(
-                            notvalid=self._NOT_VALID_NAME_MSG
-                        )
-                    )
-                else:
-                    raise RuntimeError(
-                        _(
-                            'Storage domain name cannot be empty. '
-                            '{notvalid}'
-                        ).format(
-                            notvalid=self._NOT_VALID_NAME_MSG
-                        )
-                    )
-
-    def _customizeStorageDatacenterName(self):
-        interactive = self.environment[
-            ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME
-        ] is None
-        while not self._validName(
-            self.environment[
-                ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME
-            ]
-        ):
-            self.environment[
-                ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME
-            ] = self.dialog.queryString(
-                name='OVEHOSTED_STORAGE_DATACENTER_NAME',
-                note=_(
-                    'Local storage datacenter name is an internal name\n'
-                    'and currently will not be shown in engine\'s admin UI.\n'
-                    'Please enter local datacenter name [@DEFAULT@]: '
-                ),
-                prompt=True,
-                caseSensitive=True,
-                default=ohostedcons.Defaults.DEFAULT_STORAGE_DATACENTER_NAME,
-            )
-            if not self._validName(
-                self.environment[
-                    ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME
-                ]
-            ):
-                if interactive:
-                    self.dialog.note(
-                        text=_(
-                            'Data center name cannot be empty. '
-                            '{notvalid}'
-                        ).format(
-                            notvalid=self._NOT_VALID_NAME_MSG
-                        )
-                    )
-                else:
-                    raise RuntimeError(
-                        _(
-                            'Data center name cannot be empty. '
-                            '{notvalid}'
-                        ).format(
-                            notvalid=self._NOT_VALID_NAME_MSG
-                        )
-                    )
-
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
     )
@@ -1127,11 +1036,11 @@ class Plugin(plugin.PluginBase):
         )
         self.environment.setdefault(
             ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME,
-            None
+            ohostedcons.Defaults.DEFAULT_STORAGE_DOMAIN_NAME
         )
         self.environment.setdefault(
             ohostedcons.StorageEnv.STORAGE_DATACENTER_NAME,
-            None
+            ohostedcons.Defaults.DEFAULT_STORAGE_DATACENTER_NAME
         )
         self.environment.setdefault(
             ohostedcons.StorageEnv.CONNECTION_UUID,
@@ -1266,8 +1175,6 @@ class Plugin(plugin.PluginBase):
         # This will be executed after specific plugin activated by domain
         # type finishes.
         self._getExistingDomain()
-        self._customizeStorageDomainName()
-        self._customizeStorageDatacenterName()
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
