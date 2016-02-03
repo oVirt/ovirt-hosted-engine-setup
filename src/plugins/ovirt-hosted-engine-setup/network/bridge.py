@@ -180,6 +180,71 @@ class Plugin(plugin.PluginBase):
             )
 
     @plugin.event(
+        stage=plugin.Stages.STAGE_CUSTOMIZATION,
+        condition=lambda self: (
+            not self._enabled and
+            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
+        ),
+        after=(
+            ohostedcons.Stages.DIALOG_TITLES_S_NETWORK,
+        ),
+        before=(
+            ohostedcons.Stages.DIALOG_TITLES_E_NETWORK,
+        ),
+    )
+    def _get_existing_bridge_interface(self):
+        info = netinfo.CachingNetInfo(
+            vds_info.capabilities(
+                self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+            )
+        )
+        cfgif = []
+        for e in info.nics.keys():
+            if 'cfg' in info.nics[e]:
+                cfgif.append((e, info.nics[e]['cfg']))
+        for e in info.bondings.keys():
+            if 'cfg' in info.bondings[e]:
+                cfgif.append((e, info.bondings[e]['cfg']))
+        for e in info.vlans.keys():
+            if 'cfg' in info.vlans[e]:
+                cfgif.append((e, info.vlans[e]['cfg']))
+        bridge_ifs = [
+            e[0] for e in cfgif
+            if 'BRIDGE' in e[1] and
+            e[1]['BRIDGE'] == self.environment[
+                ohostedcons.NetworkEnv.BRIDGE_NAME
+            ]
+            ]
+        if len(bridge_ifs) > 1:
+            self.logger.warning(
+                _(
+                    'Unable to uniquely detect the interface where Bridge '
+                    '{bridge} has been created on, {bridge_ifs} appear to be '
+                    'valid alternatives'
+                ).format(
+                    bridge=self.environment[
+                        ohostedcons.NetworkEnv.BRIDGE_NAME
+                    ],
+                    bridge_ifs=bridge_ifs,
+                )
+            )
+        elif len(bridge_ifs) < 1:
+            self.logger.warning(
+                _(
+                    'Unable to detect the interface where Bridge '
+                    '{bridge} has been created on'
+                ).format(
+                    bridge=self.environment[
+                        ohostedcons.NetworkEnv.BRIDGE_NAME
+                    ],
+                )
+            )
+        else:
+            self.environment[
+                ohostedcons.NetworkEnv.BRIDGE_IF
+            ] = bridge_ifs[0]
+
+    @plugin.event(
         stage=plugin.Stages.STAGE_VALIDATION
     )
     def _get_hostname_from_bridge_if(self):
@@ -244,7 +309,12 @@ class Plugin(plugin.PluginBase):
                 self.environment[ohostedcons.NetworkEnv.BRIDGE_IF]
             )
         }
-        _setupNetworks(conn, networks, {}, {'connectivityCheck': False})
+        bonds = {}
+        options = {'connectivityCheck': False}
+        self.logger.debug('networks: {networks}'.format(networks=networks))
+        self.logger.debug('bonds: {bonds}'.format(bonds=bonds))
+        self.logger.debug('options: {options}'.format(options=options))
+        _setupNetworks(conn, networks, bonds, options)
         _setSafeNetworkConfig(conn)
 
     @plugin.event(

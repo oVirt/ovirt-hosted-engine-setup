@@ -288,6 +288,41 @@ class Plugin(plugin.PluginBase):
             ))
         return cluster, cpu
 
+    def _wait_network_vlan_ready(self, engine_api, network_id, vlan_id):
+        tries = self.VDSM_RETRIES
+        updated = False
+        while not updated and tries > 0:
+            tries -= 1
+            mgmt_network = engine_api.networks.get(
+                id=network_id
+            )
+
+            svlanid = None
+            vlan = mgmt_network.get_vlan()
+            if vlan is None:
+                self.logger.debug(
+                    'network {network} network.__dict__ {ndict}'.format(
+                        network=mgmt_network,
+                        ndict=mgmt_network.__dict__,
+                    )
+                )
+            else:
+                svlanid = vlan.get_id()
+                self.logger.debug('vlan_id: {id}'.format(id=svlanid))
+
+            if svlanid == vlan_id:
+                updated = True
+            else:
+                time.sleep(self.VDSM_DELAY)
+
+        if not updated:
+            self.logger.error(_(
+                'Timed out while waiting for configuring management network '
+                'vlan ID. Please check the engine logs.'
+            ))
+            return False
+        return True
+
     def _getCA(self):
         fqdn = self.environment[
             ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
@@ -746,14 +781,23 @@ class Plugin(plugin.PluginBase):
                     self.logger.debug(
                         "Getting engine's management network via engine's APIs"
                     )
-                    mgmt_network = cluster.networks.get(
+                    cluster_mgmt_network = cluster.networks.get(
                         name=self.environment[
                             ohostedcons.NetworkEnv.BRIDGE_NAME]
+                    )
+                    mgmt_network_id = cluster_mgmt_network.get_id()
+                    mgmt_network = engine_api.networks.get(
+                        id=mgmt_network_id
                     )
                     mgmt_network.set_vlan(
                         self._ovirtsdk_xml.params.Vlan(id=vlan_id)
                     )
                     mgmt_network.update()
+                    self._wait_network_vlan_ready(
+                        engine_api,
+                        mgmt_network_id,
+                        vlan_id
+                    )
 
                 # Configuring the cluster for Hyper Converged support if
                 # enabled
@@ -762,6 +806,7 @@ class Plugin(plugin.PluginBase):
                 ]:
                     cluster.set_gluster_service(True)
                     cluster.update()
+                    # TODO: check if this is async too
                     cluster = engine_api.clusters.get(cluster_name)
 
                 self.logger.debug('Adding the host to the cluster')
