@@ -410,6 +410,13 @@ class NetworkEnv(object):
         return 'OVEHOSTED_NETWORK/bridgeIf'
 
     @ohostedattrs(
+        summary=True,
+        description=_('Host address'),
+    )
+    def HOST_NAME(self):
+        return 'OVEHOSTED_NETWORK/host_name'
+
+    @ohostedattrs(
         answerfile=True,
         summary=True,
         description=_('Engine FQDN'),

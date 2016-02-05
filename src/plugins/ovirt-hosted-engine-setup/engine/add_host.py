@@ -25,7 +25,6 @@ Host adder plugin.
 import gettext
 import os
 import selinux
-import socket
 import tempfile
 import time
 
@@ -819,8 +818,9 @@ class Plugin(plugin.PluginBase):
                         ],
                         # Note that the below is required for compatibility
                         # with vdsm-generated pki. See bz 1178535.
-                        # TODO: Make it configurable like engine fqdn.
-                        address=socket.gethostname(),
+                        address=self.environment[
+                            ohostedcons.NetworkEnv.HOST_NAME
+                        ],
                         reboot_after_installation=False,
                         cluster=cluster,
                         ssh=self._ovirtsdk_xml.params.SSH(
