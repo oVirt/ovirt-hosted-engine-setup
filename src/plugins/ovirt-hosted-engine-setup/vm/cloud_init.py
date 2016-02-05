@@ -30,7 +30,6 @@ import os
 import pwd
 import re
 import shutil
-import socket
 import tempfile
 
 
@@ -740,8 +739,9 @@ class Plugin(plugin.PluginBase):
                     ' - echo "{myip} {myfqdn}" >> /etc/hosts\n'
                 ).format(
                     myip=self._getMyIPAddress().ip,
-                    # TODO: manage the hostname in the environment
-                    myfqdn=socket.gethostname(),
+                    myfqdn=self.environment[
+                        ohostedcons.NetworkEnv.HOST_NAME
+                    ],
                 )
                 if self.environment[
                     ohostedcons.CloudInit.VM_STATIC_CIDR

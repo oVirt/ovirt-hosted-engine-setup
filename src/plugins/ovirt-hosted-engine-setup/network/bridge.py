@@ -25,6 +25,7 @@ bridge configuration plugin.
 
 import ethtool
 import gettext
+import socket
 
 
 from otopi import util
@@ -177,6 +178,50 @@ class Plugin(plugin.PluginBase):
                 default=default,
                 validValues=validValues,
             )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_VALIDATION
+    )
+    def _get_hostname_from_bridge_if(self):
+        info = vds_info.network(
+            vds_info.capabilities(
+                self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+            ),
+            self.environment[
+                ohostedcons.NetworkEnv.BRIDGE_IF
+            ],
+        )
+        self.logger.debug('Network info: {info}'.format(info=info))
+        if 'ipaddr' not in info:
+            raise RuntimeError(_('Cannot acquire nic/bond/vlan address'))
+        ipaddr = info['ipaddr']
+        hostname, aliaslist, ipaddrlist = socket.gethostbyaddr(ipaddr)
+        self.logger.debug(
+            "hostname: '{h}', aliaslist: '{a}', ipaddrlist: '{i}'".format(
+                h=hostname,
+                a=aliaslist,
+                i=ipaddrlist,
+            )
+        )
+        if len(ipaddrlist) > 1:
+            other_ip = set(ipaddrlist) - set([ipaddr])
+            raise RuntimeError(_(
+                "hostname '{h}' doesn't uniquely match the interface "
+                "'{i}' selected for the management bridge; "
+                "it matches also interface with IP {o}. "
+                "Please make sure that the hostname got from "
+                "the interface for the management network resolves "
+                "only there."
+            ).format(
+                h=hostname,
+                i=self.environment[
+                    ohostedcons.NetworkEnv.BRIDGE_IF
+                ],
+                o=other_ip,
+            ))
+        self.environment[
+            ohostedcons.NetworkEnv.HOST_NAME
+        ] = hostname
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
