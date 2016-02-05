@@ -83,6 +83,20 @@ class Plugin(plugin.PluginBase):
             self._enabled = False
 
     @plugin.event(
+        stage=plugin.Stages.STAGE_PROGRAMS
+    )
+    def _check_NM(self):
+        nmstatus = self.services.status('NetworkManager')
+        self.logger.debug('NetworkManager: {status}'.format(
+            status=nmstatus,
+        ))
+        if nmstatus:
+            raise RuntimeError(_(
+                'hosted-engine cannot be deployed while NetworkManager is '
+                'running, please stop and disable it before proceeding'
+            ))
+
+    @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         condition=lambda self: (
             self._enabled and
