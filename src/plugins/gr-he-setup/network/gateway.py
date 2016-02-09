@@ -53,7 +53,7 @@ class Plugin(plugin.PluginBase):
         self._enabled = True
 
     def _get_default_gw(self):
-        gateway = None
+        gateway = ''
         with open('/proc/net/route', 'r') as f:
             lines = f.read().splitlines()
             for line in lines:
