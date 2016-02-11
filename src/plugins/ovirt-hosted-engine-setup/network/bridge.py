@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2015 Red Hat, Inc.
+# Copyright (C) 2013-2016 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -245,10 +245,13 @@ class Plugin(plugin.PluginBase):
             ] = bridge_ifs[0]
 
     @plugin.event(
-        stage=plugin.Stages.STAGE_VALIDATION
+        stage=plugin.Stages.STAGE_VALIDATION,
+        condition=lambda self: not self.environment[
+            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+        ],
     )
     def _get_hostname_from_bridge_if(self):
-        info = vds_info.network(
+        configuration, status = vds_info.network(
             vds_info.capabilities(
                 self.environment[ohostedcons.VDSMEnv.VDS_CLI]
             ),
@@ -256,10 +259,10 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.NetworkEnv.BRIDGE_IF
             ],
         )
-        self.logger.debug('Network info: {info}'.format(info=info))
-        if 'ipaddr' not in info:
+        self.logger.debug('Network info: {info}'.format(info=status))
+        if 'ipaddr' not in status:
             raise RuntimeError(_('Cannot acquire nic/bond/vlan address'))
-        ipaddr = info['ipaddr']
+        ipaddr = status['ipaddr']
         hostname, aliaslist, ipaddrlist = socket.gethostbyaddr(ipaddr)
         self.logger.debug(
             "hostname: '{h}', aliaslist: '{a}', ipaddrlist: '{i}'".format(
@@ -289,6 +292,17 @@ class Plugin(plugin.PluginBase):
         ] = hostname
 
     @plugin.event(
+        stage=plugin.Stages.STAGE_VALIDATION,
+        condition=lambda self: self.environment[
+            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+        ],
+    )
+    def _get_hostname_additional_hosts(self):
+        self.environment[
+            ohostedcons.NetworkEnv.HOST_NAME
+        ] = socket.getfqdn()
+
+    @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
         name=ohostedcons.Stages.BRIDGE_AVAILABLE,
         condition=lambda self: (
@@ -302,12 +316,13 @@ class Plugin(plugin.PluginBase):
     def _misc(self):
         self.logger.info(_('Configuring the management bridge'))
         conn = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        nconf, nstatus = vds_info.network(
+            vds_info.capabilities(conn),
+            self.environment[ohostedcons.NetworkEnv.BRIDGE_IF]
+        )
         networks = {
             self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME]:
-            vds_info.network(
-                vds_info.capabilities(conn),
-                self.environment[ohostedcons.NetworkEnv.BRIDGE_IF]
-            )
+            nconf
         }
         bonds = {}
         options = {'connectivityCheck': False}
