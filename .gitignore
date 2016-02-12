@@ -31,3 +31,4 @@ src/vdsm_hooks/50_hostedengine
 *.iml
 *.idea
 intl
+m4/extern-inline.m4
