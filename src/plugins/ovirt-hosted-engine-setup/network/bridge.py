@@ -251,18 +251,49 @@ class Plugin(plugin.PluginBase):
         ],
     )
     def _get_hostname_from_bridge_if(self):
-        configuration, status = vds_info.network(
-            vds_info.capabilities(
-                self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-            ),
-            self.environment[
-                ohostedcons.NetworkEnv.BRIDGE_IF
-            ],
-        )
-        self.logger.debug('Network info: {info}'.format(info=status))
-        if 'ipaddr' not in status:
-            raise RuntimeError(_('Cannot acquire nic/bond/vlan address'))
-        ipaddr = status['ipaddr']
+        ipaddr = None
+        if self._enabled:
+            # acquiring interface address
+            configuration, status = vds_info.network(
+                vds_info.capabilities(
+                    self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+                ),
+                self.environment[
+                    ohostedcons.NetworkEnv.BRIDGE_IF
+                ],
+            )
+            self.logger.debug('Network info: {info}'.format(info=status))
+            if 'ipaddr' not in status:
+                raise RuntimeError(_('Cannot acquire nic/bond/vlan address'))
+            ipaddr = status['ipaddr']
+        else:
+            # acquiring bridge address
+            cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+            caps = cli.getVdsCapabilities()
+            self.logger.debug(caps)
+            if caps['status']['code'] != 0:
+                raise RuntimeError(
+                    _('Failed getting VDSM capabilities: {msg}').format(
+                        msg=caps['status']['message'],
+                    )
+                )
+            if 'info' in caps:
+                info = caps['info']
+                if 'networks' in info:
+                    networks = info['networks']
+                    if self.environment[
+                        ohostedcons.NetworkEnv.BRIDGE_NAME
+                    ] in networks:
+                        bridge = networks[
+                            self.environment[
+                                ohostedcons.NetworkEnv.BRIDGE_NAME
+                            ]
+                        ]
+                        if 'addr' in bridge:
+                            ipaddr = bridge['addr']
+            if not ipaddr:
+                raise RuntimeError(_('Cannot acquire bridge address'))
+
         hostname, aliaslist, ipaddrlist = socket.gethostbyaddr(ipaddr)
         self.logger.debug(
             "hostname: '{h}', aliaslist: '{a}', ipaddrlist: '{i}'".format(
