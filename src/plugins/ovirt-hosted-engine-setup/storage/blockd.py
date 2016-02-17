@@ -148,8 +148,8 @@ class Plugin(plugin.PluginBase):
                 },
             ),
             name='OVEHOSTED_STORAGE_ISCSI_USER',
-            default = '',
-            store = False,
+            default='',
+            store=False,
         )
 
     def _customize_password(self, user):
@@ -176,8 +176,8 @@ class Plugin(plugin.PluginBase):
                 },
             ),
             name='OVEHOSTED_STORAGE_ISCSI_PASSWORD',
-            default = '',
-            store = False,
+            default='',
+            store=False,
         )
 
     def _customize_target(self, values, default):
