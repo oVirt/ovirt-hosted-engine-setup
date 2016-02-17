@@ -118,24 +118,21 @@ class Plugin(plugin.PluginBase):
                 if estimate_gb is not None and int(
                     self.environment[ohostedcons.StorageEnv.IMAGE_SIZE_GB]
                 ) > estimate_gb:
-                    self.logger.warning(
-                        _(
-                            'Not enough free space, '
-                            'about {estimate} GiB are available'
-                        ).format(
-                            estimate=estimate_gb
-                        )
+                    msg = _(
+                        'Not enough free space, '
+                        'about {estimate} GiB will be available '
+                        'within the storage domain '
+                        '(required {required} GiB)'
+                    ).format(
+                        estimate=estimate_gb,
+                        required=self.environment[
+                            ohostedcons.StorageEnv.IMAGE_SIZE_GB
+                        ],
                     )
+                    self.logger.warning(msg)
                     valid = False
                     if not interactive:
-                        raise RuntimeError(
-                            _(
-                                'Not enough free space, '
-                                'about {estimate} GiB are available'
-                            ).format(
-                                estimate=estimate_gb
-                            )
-                        )
+                        raise RuntimeError(msg)
 
                 if valid and int(
                     self.environment[ohostedcons.StorageEnv.IMAGE_SIZE_GB]
