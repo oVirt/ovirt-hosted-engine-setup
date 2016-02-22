@@ -854,8 +854,13 @@ class Plugin(plugin.PluginBase):
         if 'runcmd:\n' not in user_data:
             user_data += 'runcmd:\n'
         user_data += (
-            ' - systemctl mask cloud-init-local\n'
-            ' - systemctl mask cloud-init\n'
+            ' - systemctl mask cloud-init-local || '
+            ' chkconfig cloud-init-local off\n'
+            ' - systemctl mask cloud-init || ('
+            ' chkconfig cloud-init off &&'
+            ' chkconfig cloud-config off &&'
+            ' chkconfig cloud-final off'
+            ' )\n'
         )
 
         f = open(f_user_data, 'w')
