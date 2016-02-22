@@ -752,17 +752,18 @@ class Plugin(plugin.PluginBase):
                         default_cluster_name if default_cluster_name in
                         cluster_l else cluster_l[0]
                     )
-                    cluster_name = self.dialog.queryString(
-                        name='cluster_name',
-                        note=_(
-                            'Enter the name of the cluster to which '
-                            'you want to add the host (@VALUES@) '
-                            '[@DEFAULT@]: '
-                        ),
-                        prompt=True,
-                        default=cluster_name,
-                        validValues=cluster_l,
-                    )
+                    if len(cluster_l) > 1:
+                        cluster_name = self.dialog.queryString(
+                            name='cluster_name',
+                            note=_(
+                                'Enter the name of the cluster to which '
+                                'you want to add the host (@VALUES@) '
+                                '[@DEFAULT@]: '
+                            ),
+                            prompt=True,
+                            default=cluster_name,
+                            validValues=cluster_l,
+                        )
                     self.environment[
                         ohostedcons.EngineEnv.HOST_CLUSTER_NAME
                     ] = cluster_name
