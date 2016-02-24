@@ -425,7 +425,7 @@ class Plugin(plugin.PluginBase):
                 self.environment[ohostedcons.StorageEnv.CONF_VOL_UUID]
             ],
         ]:
-            self.cli.prepareImage(
+            result = self.cli.prepareImage(
                 self.environment[
                     ohostedcons.StorageEnv.SP_UUID
                 ],
@@ -435,6 +435,13 @@ class Plugin(plugin.PluginBase):
                 imgVolUUID[0],
                 imgVolUUID[1],
             )
+            self.logger.debug(result)
+            if result['status']['code'] != 0:
+                raise RuntimeError(
+                    'Unable to prepare image: {message}'.format(
+                        message=result['status']['message'],
+                    )
+                )
 
         all_host_stats = {}
         with ohostedutil.VirtUserContext(
@@ -509,9 +516,19 @@ class Plugin(plugin.PluginBase):
                     if pool_list:
                         self.pool_exists = True
                         spUUID = pool_list[0]
-                        self.environment[
+                        if self.environment[
                             ohostedcons.StorageEnv.SP_UUID
-                        ] = spUUID
+                        ] != ohostedcons.Const.BLANK_UUID:
+                            self.environment[
+                                ohostedcons.StorageEnv.SP_UUID
+                            ] = spUUID
+                        else:
+                            self.logger.debug(
+                                'hosted-engine storage domain is attached to '
+                                'storage pool {sp}: the engine already '
+                                'imported it. Honoring BLANK_UUID from the '
+                                'answerfile'
+                            )
                 self._handleHostId()
         elif self.storageType in (
             ohostedcons.VDSMConstants.NFS_DOMAIN,
@@ -554,9 +571,19 @@ class Plugin(plugin.PluginBase):
                     if pool_list:
                         self.pool_exists = True
                         spUUID = pool_list[0]
-                        self.environment[
+                        if self.environment[
                             ohostedcons.StorageEnv.SP_UUID
-                        ] = spUUID
+                        ] != ohostedcons.Const.BLANK_UUID:
+                            self.environment[
+                                ohostedcons.StorageEnv.SP_UUID
+                            ] = spUUID
+                        else:
+                            self.logger.debug(
+                                'hosted-engine storage domain is attached to '
+                                'storage pool {sp}: the engine already '
+                                'imported it. Honoring BLANK_UUID from the '
+                                'answerfile'
+                            )
                     break
 
         if not self.domain_exists:
