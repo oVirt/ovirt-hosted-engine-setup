@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2015 Red Hat, Inc.
+# Copyright (C) 2013-2016 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -36,6 +36,7 @@ from otopi import util
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
+from ovirt_setup_lib import dialog
 
 
 def _(m):
@@ -51,6 +52,13 @@ class Plugin(plugin.PluginBase):
         self._config = configparser.ConfigParser()
         self._config.optionxform = str
         self._tmp_ans = None
+
+    def _check_he35_from_answerfile(self):
+        if self.environment[
+            ohostedcons.StorageEnv.CONF_IMG_UUID
+        ] is None:
+            return True
+        return False
 
     def _get_fqdn(self):
         fqdn_interactive = self.environment[
@@ -225,6 +233,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.FirstHostEnv.SSHD_PORT,
             ohostedcons.Defaults.DEFAULT_SSHD_PORT
         )
+        self.environment.setdefault(
+            ohostedcons.FirstHostEnv.DEPLOY_WITH_HE_35_HOSTS,
+            None
+        )
 
     @plugin.event(
         name=ohostedcons.Stages.REQUIRE_ANSWER_FILE,
@@ -305,6 +317,55 @@ class Plugin(plugin.PluginBase):
             self._get_fqdn()
             self._fetch_answer_file()
             self._parse_answer_file()
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_VALIDATION,
+        condition=lambda self: (
+            self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
+        ),
+    )
+    def _validation(self):
+        # Prevent directly deploying an HE host from 3.6 if the answerfile of
+        # the first host is at 3.5 since in that case the configuration volume
+        # is not on the shared storage and we are not going to create it.
+
+        he_answerfile_from_35 = self._check_he35_from_answerfile()
+
+        if self.environment[
+            ohostedcons.FirstHostEnv.DEPLOY_WITH_HE_35_HOSTS
+        ] is None and he_answerfile_from_35:
+            self.dialog.note(
+                text=_(
+                    'It seems like your existing HE infrastructure was '
+                    'deployed with version 3.5 (or before) and never upgraded '
+                    'to current release.\n'
+                    'Mixing hosts with HE from 3.5 (or before) and current '
+                    'release is not supported.\n'
+                    'Please upgrade the existing HE hosts to current release '
+                    'before adding this host.\n'
+                    'Please check the log file for more details.\n'
+                ),
+            )
+            self.environment[
+                ohostedcons.FirstHostEnv.DEPLOY_WITH_HE_35_HOSTS
+            ] = dialog.queryBoolean(
+                dialog=self.dialog,
+                name='OVEHOSTED_PREVENT_MIXING_HE_35_CURRENT',
+                note=_(
+                    'Replying "No" will abort Setup.\n'
+                    'Continue? '
+                    '(@VALUES@) [@DEFAULT@]: '
+                ),
+                prompt=True,
+                default=False,
+            )
+
+        if not self.environment[
+            ohostedcons.FirstHostEnv.DEPLOY_WITH_HE_35_HOSTS
+        ] and he_answerfile_from_35:
+            raise RuntimeError(
+                _('other hosted-engine host is still at version 3.5')
+            )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLEANUP,
