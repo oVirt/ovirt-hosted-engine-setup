@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2015 Red Hat, Inc.
+# Copyright (C) 2015-2016 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -58,11 +58,11 @@ class Plugin(plugin.PluginBase):
         )
         self.environment.setdefault(
             ohostedcons.StorageEnv.CONF_IMG_UUID,
-            str(uuid.uuid4())
+            None
         )
         self.environment.setdefault(
             ohostedcons.StorageEnv.CONF_VOL_UUID,
-            str(uuid.uuid4())
+            None
         )
         self.environment.setdefault(
             ohostedcons.StorageEnv.ANSWERFILE_CONTENT,
@@ -91,6 +91,14 @@ class Plugin(plugin.PluginBase):
     )
     def _misc_create_volume(self):
         diskType = 2
+        if self.environment[ohostedcons.StorageEnv.CONF_IMG_UUID] is None:
+            self.environment[
+                ohostedcons.StorageEnv.CONF_IMG_UUID
+            ] = str(uuid.uuid4())
+        if self.environment[ohostedcons.StorageEnv.CONF_VOL_UUID] is None:
+            self.environment[
+                ohostedcons.StorageEnv.CONF_VOL_UUID
+            ] = str(uuid.uuid4())
         heconflib.create_and_prepare_image(
             self.logger,
             self.environment[ohostedcons.VDSMEnv.VDS_CLI],

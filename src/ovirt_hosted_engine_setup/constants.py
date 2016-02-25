@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2015 Red Hat, Inc.
+# Copyright (C) 2013-2016 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -1061,6 +1061,6 @@ class FirstHostEnv(object):
     ROOT_PASSWORD = 'OVEHOSTED_FIRST_HOST/rootPassword'
     FETCH_ANSWER = 'OVEHOSTED_FIRST_HOST/fetchAnswer'
     SSHD_PORT = 'OVEHOSTED_FIRST_HOST/sshdPort'
-
+    DEPLOY_WITH_HE_35_HOSTS = 'OVEHOSTED_FIRST_HOST/deployWithHE35Hosts'
 
 # vim: expandtab tabstop=4 shiftwidth=4
