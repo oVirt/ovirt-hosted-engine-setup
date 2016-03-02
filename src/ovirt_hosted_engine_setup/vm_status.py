@@ -81,8 +81,10 @@ class VmStatus(object):
             )
             cluster_stats = {}
 
+        glb_msg = ''
         if cluster_stats.get(client.HAClient.GlobalMdFlags.MAINTENANCE, False):
-            print _('\n\n!! Cluster is in GLOBAL MAINTENANCE mode !!\n')
+            glb_msg = _('\n\n!! Cluster is in GLOBAL MAINTENANCE mode !!\n')
+            print(glb_msg)
 
         for host_id, host_stats in all_host_stats.items():
             print _('\n\n--== Host {host_id} status ==--\n').format(
@@ -109,6 +111,9 @@ class VmStatus(object):
                     print '\t{value}'.format(
                         value=line
                     )
+        # Print again so it's easier to notice
+        if glb_msg:
+            print(glb_msg)
         return all_host_stats
 
 
