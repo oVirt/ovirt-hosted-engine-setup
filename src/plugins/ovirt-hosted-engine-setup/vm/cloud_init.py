@@ -219,7 +219,7 @@ class Plugin(plugin.PluginBase):
                 static = self.dialog.queryString(
                     name='CI_VM_STATIC_NETWORKING',
                     note=_(
-                        'How should the engine VM network should '
+                        'How should the engine VM network '
                         'be configured '
                         '(@VALUES@)[@DEFAULT@]? '
                     ),
