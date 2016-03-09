@@ -67,7 +67,7 @@ Requires:       qemu-img-rhev
 Requires:       otopi >= 1.4.0
 Requires:       ovirt-host-deploy >= 1.5.0
 Requires:       ovirt-hosted-engine-ha >= 2.0.0
-Requires:       ovirt-engine-sdk-python >= 4.0.0.0
+Requires:       ovirt-engine-sdk-python >= 3.6.3.0
 Requires:       ovirt-setup-lib >= 1.0.1
 Requires:       glusterfs-cli >= 3.7.3
 Requires:       vdsm >= 4.17.999-449
