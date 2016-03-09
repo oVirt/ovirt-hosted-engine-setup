@@ -32,7 +32,7 @@ from otopi import util
 from otopi import plugin
 
 
-from vdsm import netinfo
+from vdsm.netinfo.cache import CachingNetInfo
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
@@ -111,7 +111,7 @@ class Plugin(plugin.PluginBase):
         ),
     )
     def _customization(self):
-        info = netinfo.CachingNetInfo(
+        info = CachingNetInfo(
             vds_info.capabilities(
                 self.environment[ohostedcons.VDSMEnv.VDS_CLI]
             )
@@ -193,7 +193,7 @@ class Plugin(plugin.PluginBase):
         ),
     )
     def _get_existing_bridge_interface(self):
-        info = netinfo.CachingNetInfo(
+        info = CachingNetInfo(
             vds_info.capabilities(
                 self.environment[ohostedcons.VDSMEnv.VDS_CLI]
             )

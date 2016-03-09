@@ -23,7 +23,7 @@ vds utilities
 """
 
 
-from vdsm import netinfo
+from vdsm.netinfo.cache import CachingNetInfo
 
 
 def capabilities(conn):
@@ -66,7 +66,7 @@ def network(caps, device):
             Status is the current network status (for instance it includes
             the IP address also if the interfaces got its address by DHCP)
     """
-    info = netinfo.CachingNetInfo(caps)
+    info = CachingNetInfo(caps)
     configuration = {}
     status = {}
     if device in info.vlans:

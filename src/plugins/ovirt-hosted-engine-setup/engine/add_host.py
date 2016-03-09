@@ -41,7 +41,7 @@ from otopi import transaction
 from otopi import util
 
 
-from vdsm import netinfo
+from vdsm.netinfo.cache import CachingNetInfo
 
 
 from ovirt_host_deploy import constants as ohdcons
@@ -769,7 +769,7 @@ class Plugin(plugin.PluginBase):
                 cluster = engine_api.clusters.get(cluster_name)
 
                 conn = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-                net_info = netinfo.CachingNetInfo(vds_info.capabilities(conn))
+                net_info = CachingNetInfo(vds_info.capabilities(conn))
                 bridge_port = self.environment[
                     ohostedcons.NetworkEnv.BRIDGE_IF
                 ]
