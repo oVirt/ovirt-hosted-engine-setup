@@ -320,6 +320,7 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_VALIDATION,
+        after=(ohostedcons.Stages.EXISTING_CONF_VOLUME_DETECTED,),
         condition=lambda self: (
             self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
         ),

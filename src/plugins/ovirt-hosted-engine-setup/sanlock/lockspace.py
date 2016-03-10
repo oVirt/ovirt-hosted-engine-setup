@@ -82,38 +82,6 @@ class Plugin(plugin.PluginBase):
         )
 
     @plugin.event(
-        stage=plugin.Stages.STAGE_VALIDATION,
-        condition=lambda self: (
-            self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] and
-            self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE] not in (
-                ohostedcons.DomainTypes.NFS3,
-                ohostedcons.DomainTypes.NFS4,
-            )
-        ),
-        name=ohostedcons.Stages.LOCKSPACE_VALID,
-    )
-    def _validation(self):
-        """
-        On additional hosts, check that answer file provided UUIDs for
-        metadata and lockspace.
-        On first host they will be provided at MISC stage when creating
-        them.
-        """
-        if None in (
-            self.environment[ohostedcons.StorageEnv.METADATA_VOLUME_UUID],
-            self.environment[ohostedcons.StorageEnv.METADATA_IMAGE_UUID],
-            self.environment[ohostedcons.StorageEnv.LOCKSPACE_VOLUME_UUID],
-            self.environment[ohostedcons.StorageEnv.LOCKSPACE_IMAGE_UUID],
-        ):
-            raise RuntimeError(
-                _(
-                    'Answer file lacks lockspace UUIDs, please use an '
-                    'answer file generated from the same version you '
-                    'are using on this additional host'
-                )
-            )
-
-    @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
         name=ohostedcons.Stages.SANLOCK_INITIALIZED,
         condition=lambda self: not self.environment[
