@@ -134,6 +134,9 @@ cmd_vm_start() {
 Usage: $0 --vm-start
     Start the engine VM on this host.
     Available only after deployment has completed.
+
+    --vm-conf=<file>
+        Load an alternative vm.conf file as a recovery action.
 __EOF__
 return ;}
 
@@ -158,7 +161,12 @@ __EOF__
             echo "VM exists and its status is ${status}"
             exit 1
         fi
-        ${VDSCOMMAND} create "${conf}"
+        if [[ "$1" == --vm-conf=* ]]; then
+            vmconf="${1#*--vm-conf=}"
+        else
+            vmconf="${conf}"
+        fi
+        ${VDSCOMMAND} create "${vmconf}"
     else
         exit_not_deployed
     fi
