@@ -791,7 +791,7 @@ class Plugin(plugin.PluginBase):
                         id=mgmt_network_id
                     )
                     mgmt_network.set_vlan(
-                        self._ovirtsdk_xml.params.Vlan(id=vlan_id)
+                        self._ovirtsdk_xml.params.VLAN(id=vlan_id)
                     )
                     mgmt_network.update()
                     self._wait_network_vlan_ready(
@@ -823,7 +823,7 @@ class Plugin(plugin.PluginBase):
                             ohostedcons.NetworkEnv.HOST_NAME
                         ],
                         cluster=cluster,
-                        ssh=self._ovirtsdk_xml.params.Ssh(
+                        ssh=self._ovirtsdk_xml.params.SSH(
                             authentication_method='publickey',
                             port=self.environment[
                                 ohostedcons.NetworkEnv.SSHD_PORT
