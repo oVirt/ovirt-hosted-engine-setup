@@ -594,8 +594,7 @@ class Plugin(plugin.PluginBase):
             password = self.dialog.queryString(
                 name='ENGINE_ADMIN_PASSWORD',
                 note=_(
-                    "Enter 'admin@internal' user password that "
-                    'will be used for accessing the Administrator Portal: '
+                    "Enter engine admin password: "
                 ),
                 prompt=True,
                 hidden=True,
@@ -609,7 +608,7 @@ class Plugin(plugin.PluginBase):
                     password_check = self.dialog.queryString(
                         name='ENGINE_ADMIN_PASSWORD',
                         note=_(
-                            "Confirm 'admin@internal' user password: "
+                            "Confirm engine admin password: "
                         ),
                         prompt=True,
                         hidden=True,
@@ -690,9 +689,7 @@ class Plugin(plugin.PluginBase):
                         ] = self.dialog.queryString(
                             name='ENGINE_ADMIN_PASSWORD',
                             note=_(
-                                'Enter ''admin@internal'' user password that '
-                                'will be used for accessing '
-                                'the Administrator Portal: '
+                                'Enter engine admin password: '
                             ),
                             prompt=True,
                             hidden=True,
