@@ -883,7 +883,7 @@ class Plugin(plugin.PluginBase):
                     cluster_name
                 )
                 self.logger.debug(cpu.__dict__)
-                cpu.set_type(
+                cpu.set_id(
                     self.environment[ohostedcons.VDSMEnv.ENGINE_CPU]
                 )
                 cluster.set_cpu(cpu)
