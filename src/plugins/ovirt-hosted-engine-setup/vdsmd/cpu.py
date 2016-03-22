@@ -46,19 +46,64 @@ class Plugin(plugin.PluginBase):
     cpu check plugin.
     """
 
-    # CPU list from ovirt-engine: git grep ServerCPUList | grep 3.5
+    # CPU list from ovirt-engine: git grep ServerCPUList | grep 3.6
     CPU_FAMILIES = (
-        {'model': 'model_Haswell', 'name': 'Intel Haswell Family'},
-        {'model': 'model_SandyBridge', 'name': 'Intel SandyBridge Family'},
-        {'model': 'model_Westmere', 'name': 'Intel Westmere Family'},
-        {'model': 'model_Nehalem', 'name': 'Intel Nehalem Family'},
-        {'model': 'model_Penryn', 'name': 'Intel Penryn Family'},
-        {'model': 'model_Conroe', 'name': 'Intel Conroe Family'},
-        {'model': 'model_Opteron_G5', 'name': 'AMD Opteron G5'},
-        {'model': 'model_Opteron_G4', 'name': 'AMD Opteron G4'},
-        {'model': 'model_Opteron_G3', 'name': 'AMD Opteron G3'},
-        {'model': 'model_Opteron_G2', 'name': 'AMD Opteron G2'},
-        {'model': 'model_Opteron_G1', 'name': 'AMD Opteron G1'},
+        {
+            'model': 'model_Broadwell',
+            'name': 'Intel Broadwell Family'
+        },
+        {
+            'model': 'model_Broadwell-noTSX',
+            'name': 'Intel Broadwell-noTSX Family'
+        },
+        {
+            'model': 'model_Haswell',
+            'name': 'Intel Haswell Family'
+        },
+        {
+            'model': 'model_Haswell-noTSX',
+            'name': 'Intel Haswell-noTSX Family'
+        },
+        {
+            'model': 'model_SandyBridge',
+            'name': 'Intel SandyBridge Family'
+        },
+        {
+            'model': 'model_Westmere',
+            'name': 'Intel Westmere Family'
+        },
+        {
+            'model': 'model_Nehalem',
+            'name': 'Intel Nehalem Family'
+        },
+        {
+            'model': 'model_Penryn',
+            'name': 'Intel Penryn Family'
+        },
+        {
+            'model': 'model_Conroe',
+            'name': 'Intel Conroe Family'
+        },
+        {
+            'model': 'model_Opteron_G5',
+            'name': 'AMD Opteron G5'
+        },
+        {
+            'model': 'model_Opteron_G4',
+            'name': 'AMD Opteron G4'
+        },
+        {
+            'model': 'model_Opteron_G3',
+            'name': 'AMD Opteron G3'
+        },
+        {
+            'model': 'model_Opteron_G2',
+            'name': 'AMD Opteron G2'
+        },
+        {
+            'model': 'model_Opteron_G1',
+            'name': 'AMD Opteron G1'
+        },
     )
 
     def __init__(self, context):
