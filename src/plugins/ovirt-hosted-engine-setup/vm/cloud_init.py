@@ -452,7 +452,7 @@ class Plugin(plugin.PluginBase):
                     name='CLOUD_INIT_GENERATE',
                     note=_(
                         'Would you like to generate on-fly a cloud-init '
-                        'no-cloud ISO image\n'
+                        'ISO image (of no-cloud type)\n'
                         'or do you have an existing one '
                         '(@VALUES@)[@DEFAULT@]? '
                     ),
