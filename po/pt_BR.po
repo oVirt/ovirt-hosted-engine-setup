@@ -2366,10 +2366,10 @@ msgstr ""
 
 #: src/plugins/ovirt-hosted-engine-setup/vm/cloud_init.py:454
 msgid ""
-"Would you like to generate on-fly a cloud-init no-cloud ISO image\n"
+"Would you like to generate on-fly a cloud-init ISO image (of no-cloud type)\n"
 "or do you have an existing one (@VALUES@)[@DEFAULT@]? "
 msgstr ""
-"Gostaria de gerar uma imagem ISO on-fly cloud-init no-cloud\n"
+"Gostaria de gerar uma imagem ISO on-fly cloud-init (de no-cloud tipo)\n"
 "ou você já tem uma existente (@VALUES@)[@DEFAULT@]? "
 
 #: src/plugins/ovirt-hosted-engine-setup/vm/cloud_init.py:460
