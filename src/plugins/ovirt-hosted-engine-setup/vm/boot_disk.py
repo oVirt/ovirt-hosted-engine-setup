@@ -103,11 +103,20 @@ class ImageTransaction(transaction.TransactionElement):
 
         cli = self._parent.environment[ohostedcons.VDSMEnv.VDS_CLI]
         size = cli.getVolumeSize(
-            self._parent.environment[ohostedcons.StorageEnv.SD_UUID],
-            self._parent.environment[ohostedcons.StorageEnv.SP_UUID],
-            self._parent.environment[ohostedcons.StorageEnv.IMG_UUID],
-            self._parent.environment[ohostedcons.StorageEnv.VOL_UUID]
+            volumeID=self._parent.environment[
+                ohostedcons.StorageEnv.VOL_UUID
+            ],
+            storagepoolID=self._parent.environment[
+                ohostedcons.StorageEnv.SP_UUID
+            ],
+            storagedomainID=self._parent.environment[
+                ohostedcons.StorageEnv.SD_UUID
+            ],
+            imageID=self._parent.environment[
+                ohostedcons.StorageEnv.IMG_UUID
+            ],
         )
+
         if size['status']['code']:
             raise RuntimeError(size['status']['message'])
         destination_size = int(size['apparentsize'])

@@ -26,16 +26,14 @@ VM configuration plugin.
 import gettext
 import socket
 
-
 from otopi import constants as otopicons
 from otopi import plugin
 from otopi import util
-from vdsm import vdscli
 
-
-from ovirt_hosted_engine_setup import check_liveliness
 from ovirt_hosted_engine_setup import constants as ohostedcons
+from ovirt_hosted_engine_setup import check_liveliness
 from ovirt_hosted_engine_setup import mixins
+from ovirt_hosted_engine_ha.lib import util as ohautil
 
 
 def _(m):
@@ -157,10 +155,12 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
                     'Error talking with VDSM (%s), reconnecting.' % str(e),
                     exc_info=True
                 )
-                cli = vdscli.connect(
-                    timeout=ohostedcons.Const.VDSCLI_SSL_TIMEOUT
+                self.environment[
+                    ohostedcons.VDSMEnv.VDS_CLI
+                ] = ohautil.connect_vdsm_json_rpc(
+                    logger=self.logger,
+                    timeout=ohostedcons.Const.VDSCLI_SSL_TIMEOUT,
                 )
-                self.environment[ohostedcons.VDSMEnv.VDS_CLI] = cli
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
@@ -193,10 +193,12 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
                     'Error talking with VDSM (%s), reconnecting.' % str(e),
                     exc_info=True
                 )
-                cli = vdscli.connect(
-                    timeout=ohostedcons.Const.VDSCLI_SSL_TIMEOUT
+                self.environment[
+                    ohostedcons.VDSMEnv.VDS_CLI
+                ] = ohautil.connect_vdsm_json_rpc(
+                    logger=self.logger,
+                    timeout=ohostedcons.Const.VDSCLI_SSL_TIMEOUT,
                 )
-                self.environment[ohostedcons.VDSMEnv.VDS_CLI] = cli
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

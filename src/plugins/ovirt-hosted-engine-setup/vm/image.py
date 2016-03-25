@@ -206,7 +206,7 @@ class Plugin(plugin.PluginBase):
             self.logger.debug(vginfo)
             if vginfo['status']['code'] != 0:
                 raise RuntimeError(vginfo['status']['message'])
-            vgfree = int(vginfo['info']['vgfree'])
+            vgfree = int(vginfo['vgfree'])
             available_gb = vgfree / pow(2, 30)
             required_size = int(self.environment[
                 ohostedcons.StorageEnv.IMAGE_SIZE_GB

@@ -52,7 +52,7 @@ class Plugin(plugin.PluginBase):
         stats = cli.getVdsStats()
         if stats['status']['code'] != 0:
             raise RuntimeError(stats['status']['message'])
-        return max(0, int(stats['info']['memAvailable']))
+        return max(0, int(stats['memAvailable']))
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,

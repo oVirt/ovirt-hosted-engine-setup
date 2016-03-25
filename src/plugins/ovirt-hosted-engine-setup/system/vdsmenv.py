@@ -23,18 +23,12 @@
 import gettext
 import grp
 import pwd
-import socket
-import time
-
 
 from otopi import plugin
 from otopi import util
 
-
-from vdsm import vdscli
-
-
 from ovirt_hosted_engine_setup import constants as ohostedcons
+from ovirt_hosted_engine_ha.lib import util as ohautil
 
 
 def _(m):
@@ -45,36 +39,8 @@ def _(m):
 class Plugin(plugin.PluginBase):
     """VDSM misc plugin."""
 
-    MAX_RETRY = 120
-    DELAY = 1
-
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
-
-    def _connect(self):
-        cli = vdscli.connect(timeout=ohostedcons.Const.VDSCLI_SSL_TIMEOUT)
-        self.environment[ohostedcons.VDSMEnv.VDS_CLI] = cli
-        vdsmReady = False
-        retry = 0
-        while not vdsmReady and retry < self.MAX_RETRY:
-            retry += 1
-            try:
-                hwinfo = cli.getVdsHardwareInfo()
-                self.logger.debug(str(hwinfo))
-                if hwinfo['status']['code'] == 0:
-                    vdsmReady = True
-                else:
-                    self.logger.info(_('Waiting for VDSM hardware info'))
-                    time.sleep(self.DELAY)
-            except socket.error:
-                self.logger.info(_('Waiting for VDSM hardware info'))
-                time.sleep(self.DELAY)
-        if not vdsmReady:
-            raise RuntimeError(
-                _(
-                    'VDSM did not start within {timeout} seconds'
-                ).format(timeout=self.MAX_RETRY*self.DELAY)
-            )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT
@@ -144,7 +110,12 @@ class Plugin(plugin.PluginBase):
                 ],
                 state=True
             )
-        self._connect()
+        self.environment[
+            ohostedcons.VDSMEnv.VDS_CLI
+        ] = ohautil.connect_vdsm_json_rpc(
+            logger=self.logger,
+            timeout=ohostedcons.Const.VDSCLI_SSL_TIMEOUT,
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
@@ -202,7 +173,12 @@ class Plugin(plugin.PluginBase):
             ],
             state=True,
         )
-        self._connect()
+        self.environment[
+            ohostedcons.VDSMEnv.VDS_CLI
+        ] = ohautil.connect_vdsm_json_rpc(
+            logger=self.logger,
+            timeout=ohostedcons.Const.VDSCLI_SSL_TIMEOUT,
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
@@ -214,6 +190,11 @@ class Plugin(plugin.PluginBase):
     def _closeup(self):
         # We need to reconnect cause host-deploy
         # restarted vdsm adding the host
-        self._connect()
+        self.environment[
+            ohostedcons.VDSMEnv.VDS_CLI
+        ] = ohautil.connect_vdsm_json_rpc(
+            logger=self.logger,
+            timeout=ohostedcons.Const.VDSCLI_SSL_TIMEOUT,
+        )
 
 # vim: expandtab tabstop=4 shiftwidth=4

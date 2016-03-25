@@ -59,7 +59,7 @@ class VMDownWaiter(base.Base):
             message = response['status']['message']
             self.logger.debug(message)
             if code == 0:
-                stats = response['statsList'][0]
+                stats = response['items'][0]
                 down = (stats['status'] == 'Down')
             elif code == 1:
                 # Assuming VM destroyed
@@ -94,7 +94,7 @@ class DomainMonitorWaiter(base.Base):
                 self.logger.debug(response['status']['message'])
                 raise RuntimeError(_('Error acquiring VDS status'))
             try:
-                domains = response['info']['storageDomains']
+                domains = response['storageDomains']
                 acquired = domains[sdUUID]['acquired']
             except KeyError:
                 self.logger.debug(

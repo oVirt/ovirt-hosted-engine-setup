@@ -94,15 +94,15 @@ class Plugin(plugin.PluginBase):
     def _late_setup(self):
         cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         response = cli.list()
-        if response['status']['code'] == 0:
-            self.logger.debug(response['vmList'])
-            if response['vmList']:
+        self.logger.debug(response)
+        if response['status']['code'] == 0 and 'items' in response:
+            if 'items' in response and response['items']:
                 self.logger.error(
                     _(
                         'The following VMs has been found: '
                         '{vms}'
                     ).format(
-                        vms=', '.join(x['vmId'] for x in response['vmList'])
+                        vms=', '.join(response['items'])
                     )
                 )
                 raise RuntimeError(

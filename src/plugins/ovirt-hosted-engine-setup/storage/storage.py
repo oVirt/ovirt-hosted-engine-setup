@@ -542,7 +542,7 @@ class Plugin(plugin.PluginBase):
                 ] = True
                 self.environment[
                     ohostedcons.StorageEnv.SD_UUID
-                ] = vginfo['info']['name']
+                ] = vginfo['name']
                 domain_info = self._getStorageDomainInfo(
                     self.environment[
                         ohostedcons.StorageEnv.SD_UUID
@@ -656,7 +656,7 @@ class Plugin(plugin.PluginBase):
         domains = []
         response = self.cli.getStorageDomainsList(spUUID)
         self.logger.debug(response)
-        if response['status']['code'] == 0:
+        if response['status']['code'] == 0 and 'domlist' in response:
             for entry in response['domlist']:
                 domains.append(entry)
         return domains
@@ -754,15 +754,15 @@ class Plugin(plugin.PluginBase):
 
         if conList:
             status = method(
-                self.storageType,
                 spUUID,
+                self.storageType,
                 conList
             )
             self.logger.debug(status)
             if status['status']['code'] != 0:
                 raise RuntimeError(status['status']['message'])
             if not disconnect:
-                for con in status['statuslist']:
+                for con in status['items']:
                     if con['status'] != 0:
                         raise RuntimeError(
                             _('Connection to storage server failed')
@@ -781,15 +781,15 @@ class Plugin(plugin.PluginBase):
                 ],
             }]
             status = method(
-                ohostedcons.VDSMConstants.POSIXFS_DOMAIN,
                 spUUID,
+                ohostedcons.VDSMConstants.POSIXFS_DOMAIN,
                 fakeSDconList
             )
             self.logger.debug(status)
             if status['status']['code'] != 0:
                 raise RuntimeError(status['status']['message'])
             if not disconnect:
-                for con in status['statuslist']:
+                for con in status['items']:
                     if con['status'] != 0:
                         raise RuntimeError(
                             _('Connection to storage server failed')
@@ -821,10 +821,10 @@ class Plugin(plugin.PluginBase):
         domainType = ohostedcons.VDSMConstants.DATA_DOMAIN
         version = 3
         status = self.cli.createStorageDomain(
-            self.storageType,
             sdUUID,
-            domainName,
+            self.storageType,
             typeSpecificArgs,
+            domainName,
             domainType,
             version
         )
@@ -844,10 +844,10 @@ class Plugin(plugin.PluginBase):
         domainType = ohostedcons.VDSMConstants.DATA_DOMAIN
         version = 3
         status = self.cli.createStorageDomain(
-            storageType,
             sdUUID,
-            domainName,
+            storageType,
             typeSpecificArgs,
+            domainName,
             domainType,
             version
         )
@@ -860,14 +860,17 @@ class Plugin(plugin.PluginBase):
 
     def _destroyFakeStorageDomain(self):
         self.logger.debug('_destroyFakeStorageDomain')
-        sdUUID = self.environment[ohostedcons.StorageEnv.FAKE_MASTER_SD_UUID]
-        status = self.cli.formatStorageDomain(sdUUID)
+        status = self.cli.formatStorageDomain(
+            storagedomainID=self.environment[
+                ohostedcons.StorageEnv.FAKE_MASTER_SD_UUID
+            ],
+            autoDetach=True,
+        )
         if status['status']['code'] != 0:
-            raise RuntimeError(status['status']['message'])
+                raise RuntimeError(status['status']['message'])
 
     def _createStoragePool(self):
         self.logger.debug('createStoragePool')
-        poolType = -1
         if self.environment[
             ohostedcons.StorageEnv.SP_UUID
         ] == ohostedcons.Const.BLANK_UUID:
@@ -892,29 +895,33 @@ class Plugin(plugin.PluginBase):
         mVer = 1
         self.logger.debug((
             'createStoragePool(args=['
-            'poolType={poolType},'
-            'spUUID={spUUID},'
-            'poolName={poolName},'
-            'masterDom={masterDom},'
-            'domList={domList},'
-            'mVer={mVer}'
+            'storagepoolID={spUUID}, '
+            'name={poolName}, '
+            'masterSdUUID={masterDom}, '
+            'masterVersion={mVer}, '
+            'domainList={domList}, '
+            'lockRenewalIntervalSec=None, '
+            'leaseTimeSec=None, '
+            'ioOpTimeoutSec=None, '
+            'leaseRetries=None'
             '])'
         ).format(
-            poolType=poolType,
             spUUID=spUUID,
             poolName=poolName,
             masterDom=masterDom,
-            domList=domList,
             mVer=mVer,
+            domList=domList,
         ))
-
         status = self.cli.createStoragePool(
-            poolType,
-            spUUID,
-            poolName,
-            masterDom,
-            domList,
-            mVer
+            storagepoolID=spUUID,
+            name=poolName,
+            masterSdUUID=masterDom,
+            masterVersion=mVer,
+            domainList=domList,
+            lockRenewalIntervalSec=None,
+            leaseTimeSec=None,
+            ioOpTimeoutSec=None,
+            leaseRetries=None,
         )
         self.logger.debug(status)
         if status['status']['code'] != 0:
@@ -1011,18 +1018,16 @@ class Plugin(plugin.PluginBase):
         spUUID = self.environment[ohostedcons.StorageEnv.SP_UUID]
         prevID = -1
         prevLVER = -1
-        recoveryMode = -1
-        scsiFencing = 'false'
+        scsiFencing = False
         maxHostID = ohostedcons.Const.MAX_HOST_ID
         version = 3
         status = self.cli.spmStart(
-            spUUID,
-            prevID,
-            prevLVER,
-            recoveryMode,
-            scsiFencing,
-            maxHostID,
-            version
+            storagepoolID=spUUID,
+            prevID=prevID,
+            prevLver=prevLVER,
+            enableScsiFencing=scsiFencing,
+            maxHostID=maxHostID,
+            domVersion=version,
         )
         self.logger.debug(status)
         if status['status']['code'] != 0:
@@ -1078,7 +1083,7 @@ class Plugin(plugin.PluginBase):
         self.logger.debug(pools)
         if pools['status']['code'] != 0:
             raise RuntimeError(pools['status']['message'])
-        if pools['poollist']:
+        if 'poollist' in pools and pools['poollist']:
             self.logger.error(
                 _(
                     'The following storage pool has been found connected: '

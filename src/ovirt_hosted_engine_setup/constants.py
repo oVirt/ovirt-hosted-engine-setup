@@ -1034,7 +1034,7 @@ class Defaults(object):
     DEFAULT_BRIDGE_NAME = 'ovirtmgmt'
     DEFAULT_PKI_SUBJECT = '/C=EN/L=Test/O=Test/CN=Test'
     DEFAULT_CA_SUBJECT = '/C=EN/L=Test/O=Test/CN=TestCA'  # must be != above
-    DEFAULT_VM_PASSWD_VALIDITY_SECS = "10800"  # 3 hours to for engine install
+    DEFAULT_VM_PASSWD_VALIDITY_SECS = 10800  # 3 hours to for engine install
     DEFAULT_VM_VCPUS = 2  # based on minimum requirements.
     DEFAULT_SSHD_PORT = 22
     DEFAULT_EMULATED_MACHINE = 'pc'

@@ -30,12 +30,12 @@ def capabilities(conn):
     """Returns a dictionary with the host capabilities"""
     result = conn.getVdsCapabilities()
     code, message = result['status']['code'], result['status']['message']
-    if code != 0 or 'info' not in result:
+    if code != 0 or 'software_version' not in result:
         raise RuntimeError(
             'Failed to get vds capabilities. Error code: '
             '"%s" message: "%s"' % (code, message)
         )
-    return result['info']
+    return result
 
 
 def _evaluateDefaultRoute(attrs, cfg):

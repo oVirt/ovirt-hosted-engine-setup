@@ -114,9 +114,9 @@ class Plugin(plugin.PluginBase):
         caps = cli.getVdsCapabilities()
         if caps['status']['code'] != 0:
             raise RuntimeError(caps['status']['message'])
-        cpuModel = caps['info']['cpuModel']
+        cpuModel = caps['cpuModel']
         cpuCompatibles = [
-            x for x in caps['info']['cpuFlags'].split(',')
+            x for x in caps['cpuFlags'].split(',')
             if x.startswith('model_')
         ]
         ret = (

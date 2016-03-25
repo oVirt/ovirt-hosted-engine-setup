@@ -51,7 +51,7 @@ class Plugin(plugin.PluginBase):
         caps = cli.getVdsCapabilities()
         if caps['status']['code'] != 0:
             raise RuntimeError(caps['status']['message'])
-        return caps['info']['cpuCores']
+        return caps['cpuCores']
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,

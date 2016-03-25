@@ -148,8 +148,8 @@ class Plugin(plugin.PluginBase):
                 },
             ),
             name='OVEHOSTED_STORAGE_ISCSI_USER',
-            default = '',
-            store = False,
+            default='',
+            store=False,
         )
 
     def _customize_password(self, user):
@@ -176,8 +176,8 @@ class Plugin(plugin.PluginBase):
                 },
             ),
             name='OVEHOSTED_STORAGE_ISCSI_PASSWORD',
-            default = '',
-            store = False,
+            default='',
+            store=False,
         )
 
     def _customize_target(self, values, default):
@@ -302,28 +302,41 @@ class Plugin(plugin.PluginBase):
 
     def _create_vg(self, forceVG=False):
         return self.cli.createVG(
-            self.environment[ohostedcons.StorageEnv.SD_UUID],
-            [
+            name=self.environment[ohostedcons.StorageEnv.SD_UUID],
+            devlist=[
                 self.environment[
                     ohostedcons.StorageEnv.LUN_ID
                 ],
             ],
-            forceVG,
+            force=forceVG,
         )
 
     def _iscsi_discovery(self, address, port, user, password):
         targets = self.cli.discoverSendTargets(
-            {
-                'connection': address,
-                'port': port,
-                'user': user,
-                'password': password,
-            }
+            host=address,
+            port=port,
+            user=user,
+            password=password,
         )
         self.logger.debug(targets)
         if targets['status']['code'] != 0:
             raise RuntimeError(targets['status']['message'])
-        return targets['targets']
+        full_target_template = (
+            '^(?P<portal_hostname>[\w\d\-\.]+):(?P<portal_port>\d+),'
+            '(?P<tgpt>\d+) (?P<iqn>[\w\d\-\.:]+)$'
+        )
+        full_target_template_re = re.compile(full_target_template)
+        found = []
+        for t in targets['items']:
+            m = full_target_template_re.match(t)
+            mg = m.groupdict()
+            if (
+                mg['portal_hostname'] == address and
+                mg['portal_port'] == port
+            ):
+                found.append(mg)
+        self.logger.debug('found: {f}'.format(f=found))
+        return found
 
     def _iscsi_get_lun_list(self, ip, port, user, password, iqn):
         retry = self._MAXRETRY
@@ -335,11 +348,12 @@ class Plugin(plugin.PluginBase):
             self.logger.debug(devices)
             if devices['status']['code'] != 0:
                 raise RuntimeError(devices['status']['message'])
-            for device in devices['devList']:
-                for path in device['pathlist']:
-                    if path['iqn'] == iqn:
-                        if device not in iscsi_lun_list:
-                            iscsi_lun_list.append(device)
+            if 'items' in devices:
+                for device in devices['items']:
+                    for path in device['pathlist']:
+                        if path['iqn'] == iqn:
+                            if device not in iscsi_lun_list:
+                                iscsi_lun_list.append(device)
             if iscsi_lun_list:
                 break
 
@@ -352,12 +366,13 @@ class Plugin(plugin.PluginBase):
             )
             self.logger.info('Connecting to the storage server')
             res = self.cli.connectStorageServer(
-                ohostedcons.VDSMConstants.ISCSI_DOMAIN,
-                ohostedcons.Const.BLANK_UUID,
-                [
+                storagepoolID=ohostedcons.Const.BLANK_UUID,
+                domainType=ohostedcons.VDSMConstants.ISCSI_DOMAIN,
+                connectionParams=[
                     {
                         'connection': ip,
                         'iqn': iqn,
+                        # FIXME!
                         'portal': '0',
                         'user': user,
                         'password': password,
@@ -367,7 +382,7 @@ class Plugin(plugin.PluginBase):
                 ]
             )
             if res['status']['code'] != 0:
-                raise RuntimeError(devices['status']['message'])
+                raise RuntimeError(res['status']['message'])
             retry -= 1
             time.sleep(self._RETRY_DELAY)
         else:
@@ -563,12 +578,13 @@ class Plugin(plugin.PluginBase):
                 self.environment[otopicons.CoreEnv.LOG_FILTER].append(password)
                 # Validating access
                 try:
-                    valid_targets = self._iscsi_discovery(
+                    valid_targets_dict = self._iscsi_discovery(
                         address,
                         port,
                         user,
                         password,
                     )
+                    valid_targets = [x['iqn'] for x in valid_targets_dict]
                     valid_access = True
                 except RuntimeError as e:
                     self.logger.debug('exception', exc_info=True)
@@ -624,6 +640,7 @@ class Plugin(plugin.PluginBase):
         ),
     )
     def _misc(self):
+        self.cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         if self.environment[ohostedcons.StorageEnv.VG_UUID] is None:
             # If we don't have a volume group we must create it
             forceVG = False
@@ -666,7 +683,7 @@ class Plugin(plugin.PluginBase):
                     raise RuntimeError(dom['status']['message'])
             self.environment[
                 ohostedcons.StorageEnv.VG_UUID
-            ] = dom['uuid']
+            ] = dom['status']['message']
 
         vginfo = self.cli.getVGInfo(
             self.environment[ohostedcons.StorageEnv.VG_UUID]
@@ -679,7 +696,7 @@ class Plugin(plugin.PluginBase):
             self.environment[ohostedcons.StorageEnv.ISCSI_PORTAL] is None
         ):
             try:
-                for pv in vginfo['info']['pvlist']:
+                for pv in vginfo['pvlist']:
                     for path in pv['pathlist']:
                         if path['iqn'] == self.environment[
                             ohostedcons.StorageEnv.ISCSI_TARGET

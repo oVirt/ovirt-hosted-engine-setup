@@ -92,8 +92,8 @@ class Plugin(plugin.PluginBase):
             raise RuntimeError(caps['status']['message'])
         if (
             'GLUSTER_BRICK_MANAGEMENT'
-            not in caps['info']['additionalFeatures'] or
-            'glusterfs-server' not in caps['info']['packages2']
+            not in caps['additionalFeatures'] or
+            'glusterfs-server' not in caps['packages2']
         ):
             self.logger.warning(
                 _(
@@ -108,8 +108,8 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VDSMEnv.GLUSTER_MINIMUM_VERSION
         ]
         currentversion = '%s-%s' % (
-            caps['info']['packages2']['glusterfs-server']['version'],
-            caps['info']['packages2']['glusterfs-server']['release'],
+            caps['packages2']['glusterfs-server']['version'],
+            caps['packages2']['glusterfs-server']['release'],
         )
         if minversion is not None:
             # this version object does not handle the '-' as rpm...

@@ -277,20 +277,19 @@ class Plugin(plugin.PluginBase):
                         msg=caps['status']['message'],
                     )
                 )
-            if 'info' in caps:
-                info = caps['info']
-                if 'networks' in info:
-                    networks = info['networks']
-                    if self.environment[
-                        ohostedcons.NetworkEnv.BRIDGE_NAME
-                    ] in networks:
-                        bridge = networks[
-                            self.environment[
-                                ohostedcons.NetworkEnv.BRIDGE_NAME
-                            ]
+
+            if 'networks' in caps:
+                networks = caps['networks']
+                if self.environment[
+                    ohostedcons.NetworkEnv.BRIDGE_NAME
+                ] in networks:
+                    bridge = networks[
+                        self.environment[
+                            ohostedcons.NetworkEnv.BRIDGE_NAME
                         ]
-                        if 'addr' in bridge:
-                            ipaddr = bridge['addr']
+                    ]
+                    if 'addr' in bridge:
+                        ipaddr = bridge['addr']
             if not ipaddr:
                 raise RuntimeError(_('Cannot acquire bridge address'))
 

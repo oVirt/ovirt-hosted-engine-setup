@@ -67,7 +67,7 @@ class VmOperations(object):
             if stats['status']['code'] != 0:
                 self.logger.error(stats['status']['message'])
             else:
-                statsList = stats['statsList'][0]
+                statsList = stats['items'][0]
                 displaySecurePort = statsList.get(
                     'displaySecurePort', displaySecurePort
                 )
@@ -271,7 +271,7 @@ class VmOperations(object):
             if stats['status']['code'] != 0:
                 raise RuntimeError(stats['status']['message'])
             else:
-                statsList = stats['statsList'][0]
+                statsList = stats['items'][0]
                 if statsList['status'] in ('Powering up', 'Up'):
                     powering = True
                 elif statsList['status'] == 'Down':
@@ -291,11 +291,13 @@ class VmOperations(object):
         while not password_set and tries > 0:
             tries -= 1
             status = cli.setVmTicket(
-                self.environment[ohostedcons.VMEnv.VM_UUID],
-                self.environment[ohostedcons.VMEnv.VM_PASSWD],
-                self.environment[
+                vmID=self.environment[ohostedcons.VMEnv.VM_UUID],
+                password=self.environment[ohostedcons.VMEnv.VM_PASSWD],
+                ttl=self.environment[
                     ohostedcons.VMEnv.VM_PASSWD_VALIDITY_SECS
                 ],
+                existingConnAction='keep',
+                params={},
             )
             self.logger.debug(status)
             if status['status']['code'] == 0:

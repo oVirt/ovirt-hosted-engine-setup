@@ -25,17 +25,15 @@ GlusterFS storage provisioning plugin.
 import gettext
 import socket
 
-
 from otopi import constants as otopicons
 from otopi import filetransaction
 from otopi import plugin
 from otopi import transaction
 from otopi import util
-from vdsm import vdscli
-
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import domains as ohosteddomains
+from ovirt_hosted_engine_ha.lib import util as ohautil
 
 
 def _(m):
@@ -86,7 +84,10 @@ class Plugin(plugin.PluginBase):
         Set parameters as suggested by Gluster Storage Domain Reference
         @see: http://www.ovirt.org/Gluster_Storage_Domain_Reference
         """
-        cli = vdscli.connect()
+        cli = ohautil.connect_vdsm_json_rpc(
+            logger=self.logger,
+            timeout=ohostedcons.Const.VDSCLI_SSL_TIMEOUT,
+        )
         share = self.environment[ohostedcons.StorageEnv.GLUSTER_SHARE_NAME]
         brick = self.environment[ohostedcons.StorageEnv.GLUSTER_BRICK]
         self.logger.debug('glusterVolumesList')
