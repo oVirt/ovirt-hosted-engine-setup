@@ -52,6 +52,7 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.VM_IMAGE_AVAILABLE,
             ohostedcons.Stages.BRIDGE_AVAILABLE,
             ohostedcons.Stages.CONF_VOLUME_AVAILABLE,
+            ohostedcons.Stages.VM_CONFIGURED,
         ),
         name=ohostedcons.Stages.SAVE_CONFIG,
     )

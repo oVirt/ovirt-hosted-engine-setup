@@ -986,6 +986,8 @@ class Stages(object):
         'ohosted.network.firewallmanager.available'
     NET_FIREWALL_MANAGER_PROCESS_TEMPLATES = \
         'ohosted.network.firewallmanager.templates.available'
+    NET_FIREWALL_FIRST_STAGE_CONFIGURED = \
+        'ohosted.network.firewallmanager.fsconfigured'
     VDSMD_CONF_LOADED = 'ohosted.vdsm.conf.loaded'
     HOST_ADDED = 'ohosted.engine.host.added'
     VDSCLI_RECONNECTED = 'ohosted.engine.vdscli.reconnected'

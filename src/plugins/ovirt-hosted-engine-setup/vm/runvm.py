@@ -135,15 +135,15 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
         name=ohostedcons.Stages.VM_RUNNING,
-        priority=plugin.Stages.PRIORITY_LOW,
+        after=(
+            ohostedcons.Stages.NET_FIREWALL_FIRST_STAGE_CONFIGURED,
+        ),
         condition=lambda self: (
             self.environment[ohostedcons.VMEnv.BOOT] != 'disk' and
             not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
         ),
     )
     def _boot_from_install_media(self):
-        # Need to be done after firewall closeup for allowing the user to
-        # connect from remote.
         os_installed = False
         self._create_vm()
         while not os_installed:

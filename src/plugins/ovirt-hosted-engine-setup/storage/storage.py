@@ -1184,7 +1184,6 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         name=ohostedcons.Stages.CONFIG_STORAGE_EARLY,
-        priority=plugin.Stages.PRIORITY_FIRST,
         after=(
             ohostedcons.Stages.DIALOG_TITLES_S_STORAGE,
         ),
@@ -1194,11 +1193,6 @@ class Plugin(plugin.PluginBase):
         ),
     )
     def _early_customization(self):
-        self.dialog.note(
-            _(
-                'During customization use CTRL-D to abort.'
-            )
-        )
         self.cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         self._check_existing_pools()
         domain_type = self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE]
@@ -1252,7 +1246,6 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         name=ohostedcons.Stages.CONFIG_STORAGE_LATE,
-        priority=plugin.Stages.PRIORITY_FIRST,
         after=(
             ohostedcons.Stages.CONFIG_STORAGE_NFS,
             ohostedcons.Stages.CONFIG_STORAGE_BLOCKD,

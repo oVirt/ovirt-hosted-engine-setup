@@ -99,6 +99,12 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
+        after=(
+            ohostedcons.Stages.DIALOG_TITLES_S_ENGINE,
+        ),
+        before=(
+            ohostedcons.Stages.DIALOG_TITLES_E_ENGINE,
+        ),
         condition=lambda self: not self.environment[
             ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
         ],

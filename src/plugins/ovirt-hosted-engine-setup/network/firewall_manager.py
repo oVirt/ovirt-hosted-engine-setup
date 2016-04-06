@@ -259,7 +259,7 @@ class Plugin(plugin.PluginBase):
             ] is None and
             not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
         ),
-
+        name=ohostedcons.Stages.NET_FIREWALL_FIRST_STAGE_CONFIGURED,
     )
     def _closeup(self):
         self.dialog.note(

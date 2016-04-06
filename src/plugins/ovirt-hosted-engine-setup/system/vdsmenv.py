@@ -151,7 +151,6 @@ class Plugin(plugin.PluginBase):
         name=ohostedcons.Stages.VDSMD_START,
         after=(
             ohostedcons.Stages.LIBVIRT_CONFIGURED,
-            ohostedcons.Stages.VDSMD_PKI,
             ohostedcons.Stages.VDSMD_CONFIGURED,
         ),
     )

@@ -47,9 +47,9 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_BOOT,
+        priority=plugin.Stages.PRIORITY_HIGH,
         before=(
             otopicons.Stages.CORE_LOG_INIT,
-            otopicons.Stages.CORE_CONFIG_INIT,
         ),
     )
     def _preinit(self):
@@ -77,6 +77,11 @@ class Plugin(plugin.PluginBase):
         priority=plugin.Stages.PRIORITY_FIRST,
     )
     def _setup(self):
+        self.dialog.note(
+            _(
+                'During customization use CTRL-D to abort.'
+            )
+        )
         interactive = self.environment[
             ohostedcons.CoreEnv.DEPLOY_PROCEED
         ] is None
