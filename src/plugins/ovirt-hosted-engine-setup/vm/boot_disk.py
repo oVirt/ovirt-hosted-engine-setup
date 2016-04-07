@@ -577,14 +577,17 @@ class Plugin(plugin.PluginBase):
                 )
                 self.logger.debug(e)
                 valid = False
+                errorMessage = _(
+                    'Not enough space in the temporary directory [{tmpdir}]'
+                ).format(
+                    tmpdir=self.environment[
+                        ohostedcons.CoreEnv.TEMPDIR
+                    ],
+                )
                 if not interactive:
-                    raise RuntimeError(
-                        _('Not enough space in the temporary directory')
-                    )
+                    raise RuntimeError(errorMessage)
                 else:
-                    self.logger.error(
-                        _('Not enough space in the temporary directory')
-                    )
+                    self.logger.error(errorMessage)
                     self.environment[
                         ohostedcons.CoreEnv.TEMPDIR
                     ] = self.dialog.queryString(
