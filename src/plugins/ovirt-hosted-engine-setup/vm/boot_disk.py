@@ -235,7 +235,7 @@ class Plugin(plugin.PluginBase):
                        for k in keys
                        }
                 app.update(
-                    {'index': str(len(appliances)+1)}
+                    {'index': str(len(appliances) + 1)}
                 )
                 appliances.append(app)
             else:
@@ -462,7 +462,7 @@ class Plugin(plugin.PluginBase):
         if interactive:
             appliances = self._detect_appliances()
             if appliances:
-                directlyOVA = str(len(appliances)+1)
+                directlyOVA = str(len(appliances) + 1)
                 app_list = ''
                 for entry in appliances:
                     app_list += _(
@@ -504,15 +504,15 @@ class Plugin(plugin.PluginBase):
                         caseSensitive=True,
                         default='1',
                         validValues=[
-                            str(i+1) for i in range(len(appliances)+1)
+                            str(i + 1) for i in range(len(appliances) + 1)
                         ],
                     )
                     if sapp != directlyOVA:
-                        ova_path = appliances[int(sapp)-1]['path']
+                        ova_path = appliances[int(sapp) - 1]['path']
                         self.logger.info(_('Verifying its sha1sum'))
                         if (
                             self._file_hash(ova_path) !=
-                            appliances[int(sapp)-1]['sha1sum']
+                            appliances[int(sapp) - 1]['sha1sum']
                         ):
                             self.logger.error(
                                 _(
