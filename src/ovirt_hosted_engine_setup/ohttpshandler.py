@@ -63,13 +63,18 @@ class OVHTTPSHandler(base.Base):
             from urllib.request import build_opener
 
         if getattr(ssl, 'create_default_context', None):
-            # new in python 3.4/2.7.9
-            context = ssl.create_default_context()
+            # new in python 3.4/2.7.9 (backported by Redhat to 2.7.5)
+            # TODO: calling context = ssl.create_default_context()
+            # will load by default also the system defined CA certs which
+            # in general is a good idea but oVirt python SDK will instead
+            # ignore them so, until rhbz#1326386 will get fixed, it's better
+            # to ignore them also here for coherency reasons.
             if ca_certs:
-                context.load_verify_locations(cafile=ca_certs)
+                context = ssl.create_default_context(cafile=ca_certs)
                 context.verify_mode = ssl.CERT_REQUIRED
                 context.check_hostname = ssl.match_hostname
             else:
+                context = ssl.create_default_context()
                 context.check_hostname = None
                 context.verify_mode = ssl.CERT_NONE
 
