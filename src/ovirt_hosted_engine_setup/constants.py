@@ -393,6 +393,7 @@ class CoreEnv(object):
     def CONFIRM_SETTINGS(self):
         return 'OVEHOSTED_CORE/confirmSettings'
 
+    SKIP_TTY_CHECK = 'OVEHOSTED_CORE/skipTTYCheck'
     RE_DEPLOY = 'OVEHOSTED_CORE/additionalHostReDeployment'
     NODE_SETUP = 'OVEHOSTED_CORE/nodeSetup'
 

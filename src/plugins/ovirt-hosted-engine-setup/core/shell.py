@@ -52,20 +52,28 @@ class Plugin(plugin.PluginBase):
     )
     def _setup(self):
         self.environment.setdefault(
+            ohostedcons.CoreEnv.SKIP_TTY_CHECK,
+            False
+        )
+        self.environment.setdefault(
             ohostedcons.CoreEnv.SCREEN_PROCEED,
             None
         )
         ssh_connected = not os.getenv('SSH_CLIENT') is None
-        if ssh_connected and os.getenv('TERM') is None:
-            self.logger.error(
-                _(
-                    'It has been detected that this program is executed '
-                    'through an SSH connection without pseudo-tty '
-                    'allocation.\n'
-                    'Please run again ssh adding -t option\n'
+        skip_tty_check = self.environment[
+            ohostedcons.CoreEnv.SKIP_TTY_CHECK
+        ]
+        if not skip_tty_check:
+            if ssh_connected and os.getenv('TERM') is None:
+                self.logger.error(
+                    _(
+                        'It has been detected that this program is executed '
+                        'through an SSH connection without pseudo-tty '
+                        'allocation.\n'
+                        'Please run again ssh adding -t option\n'
+                    )
                 )
-            )
-            raise context.Abort('Aborted due to missing requirement')
+                raise context.Abort('Aborted due to missing requirement')
         screen_used = os.getenv('TERM') == 'screen'
         if ssh_connected and not screen_used:
             interactive = self.environment[
