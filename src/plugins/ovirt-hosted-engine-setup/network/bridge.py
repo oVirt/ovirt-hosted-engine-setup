@@ -65,6 +65,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.NetworkEnv.BRIDGE_NAME,
             ohostedcons.Defaults.DEFAULT_BRIDGE_NAME
         )
+        self.environment.setdefault(
+            ohostedcons.NetworkEnv.REFUSE_DEPLOYING_WITH_NM,
+            True
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -84,7 +88,10 @@ class Plugin(plugin.PluginBase):
             self._enabled = False
 
     @plugin.event(
-        stage=plugin.Stages.STAGE_PROGRAMS
+        stage=plugin.Stages.STAGE_PROGRAMS,
+        condition=lambda self: self.environment[
+            ohostedcons.NetworkEnv.REFUSE_DEPLOYING_WITH_NM
+        ]
     )
     def _check_NM(self):
         nmstatus = self.services.status('NetworkManager')
