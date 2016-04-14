@@ -469,7 +469,7 @@ class Plugin(plugin.PluginBase):
                     )
                 )
 
-    def _disableHostDeployPackager(self):
+    def _configureHostDeploy(self):
         try:
             fd, self._host_deploy_conf = tempfile.mkstemp(
                 prefix='70-hosted-engine-setup-',
@@ -496,6 +496,16 @@ class Plugin(plugin.PluginBase):
                         value=str(True),
                     )
                 )
+                if not self.environment[
+                    ohostedcons.NetworkEnv.REFUSE_DEPLOYING_WITH_NM
+                ]:
+                    hdfile.write(
+                        '{key}={type}:{value}\n'.format(
+                            key=ohdcons.VdsmEnv.DISABLE_NETWORKMANAGER,
+                            type=otopicons.Types.BOOLEAN,
+                            value=str(False),
+                        )
+                    )
             finally:
                 hdfile.close()
         except EnvironmentError as ex:
@@ -644,7 +654,7 @@ class Plugin(plugin.PluginBase):
         # TODO: refactor into shorter and simpler functions
         self._getCA()
         self._getSSH()
-        self._disableHostDeployPackager()
+        self._configureHostDeploy()
         cluster_name = None
         default_cluster_name = 'Default'
         valid = False

@@ -464,6 +464,7 @@ class NetworkEnv(object):
         return 'OVEHOSTED_NETWORK/sshdPort'
 
     PROMPT_REQUIRED_NETWORKS = 'OVEHOSTED_NETWORK/promptRequiredNetworks'
+    REFUSE_DEPLOYING_WITH_NM = 'OVEHOSTED_NETWORK/refuseDeployingWithNM'
 
 
 @util.export
