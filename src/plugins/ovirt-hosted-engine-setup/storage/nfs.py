@@ -345,10 +345,7 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.DomainTypes.GLUSTERFS,
                 ohostedcons.DomainTypes.NFS3,
                 ohostedcons.DomainTypes.NFS4,
-            ) and
-            not self.environment[
-                ohostedcons.StorageEnv.GLUSTER_PROVISIONING_ENABLED
-            ]
+            )
         ),
     )
     def _customization(self):
@@ -450,10 +447,7 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.DomainTypes.GLUSTERFS,
                 ohostedcons.DomainTypes.NFS3,
                 ohostedcons.DomainTypes.NFS4,
-            ) and
-            not self.environment[
-                ohostedcons.StorageEnv.GLUSTER_PROVISIONING_ENABLED
-            ]
+            )
         ),
     )
     def _late_customization(self):

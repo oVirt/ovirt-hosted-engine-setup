@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: devel@ovirt.org\n"
-"POT-Creation-Date: 2016-02-28 18:06-0300\n"
+"POT-Creation-Date: 2016-04-22 08:05+0200\n"
 "PO-Revision-Date: 2016-02-29 21:08-0300\n"
 "Last-Translator:Wesley Morais de Oliveira \n"
 "Language-Team: \n"
@@ -29,7 +29,7 @@ msgstr ""
 #: src/plugins/ovirt-hosted-engine-setup/core/misc.py:38
 #: src/plugins/ovirt-hosted-engine-setup/core/offlinepackager.py:34
 #: src/plugins/ovirt-hosted-engine-setup/core/preview.py:35
-#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:42
+#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:40
 #: src/plugins/ovirt-hosted-engine-setup/core/shell.py:38
 #: src/plugins/ovirt-hosted-engine-setup/core/titles.py:37
 #: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:55
@@ -40,14 +40,13 @@ msgstr ""
 #: src/plugins/ovirt-hosted-engine-setup/ha/ha_services.py:39
 #: src/plugins/ovirt-hosted-engine-setup/libvirt/configureqemu.py:42
 #: src/plugins/ovirt-hosted-engine-setup/network/bridge.py:43
-#: src/plugins/ovirt-hosted-engine-setup/network/firewall.py:36
 #: src/plugins/ovirt-hosted-engine-setup/network/firewall_manager.py:42
+#: src/plugins/ovirt-hosted-engine-setup/network/firewall.py:36
 #: src/plugins/ovirt-hosted-engine-setup/network/gateway.py:40
 #: src/plugins/ovirt-hosted-engine-setup/network/iptables.py:36
 #: src/plugins/ovirt-hosted-engine-setup/pki/vdsmpki.py:43
 #: src/plugins/ovirt-hosted-engine-setup/sanlock/lockspace.py:43
 #: src/plugins/ovirt-hosted-engine-setup/storage/blockd.py:42
-#: src/plugins/ovirt-hosted-engine-setup/storage/glusterfs.py:42
 #: src/plugins/ovirt-hosted-engine-setup/storage/heconf.py:38
 #: src/plugins/ovirt-hosted-engine-setup/storage/nfs.py:41
 #: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:51
@@ -62,8 +61,8 @@ msgstr ""
 #: src/plugins/ovirt-hosted-engine-setup/vm/configurevm.py:42
 #: src/plugins/ovirt-hosted-engine-setup/vm/cpu.py:37
 #: src/plugins/ovirt-hosted-engine-setup/vm/image.py:40
-#: src/plugins/ovirt-hosted-engine-setup/vm/mac.py:38
 #: src/plugins/ovirt-hosted-engine-setup/vm/machine.py:38
+#: src/plugins/ovirt-hosted-engine-setup/vm/mac.py:38
 #: src/plugins/ovirt-hosted-engine-setup/vm/memory.py:38
 #: src/plugins/ovirt-hosted-engine-setup/vm/runvm.py:42
 msgid "ovirt-hosted-engine-setup"
@@ -225,124 +224,112 @@ msgstr "Hosted Engine está ativo!"
 msgid "Hosted Engine is up!"
 msgstr "Hosted Engine está ativo!"
 
-#: src/ovirt_hosted_engine_setup/constants.py:407
+#: src/ovirt_hosted_engine_setup/constants.py:401
 msgid "Bridge interface"
 msgstr "Interface Bridge"
 
-#: src/ovirt_hosted_engine_setup/constants.py:414
+#: src/ovirt_hosted_engine_setup/constants.py:408
 msgid "Host address"
 msgstr "Endereço do Host"
 
-#: src/ovirt_hosted_engine_setup/constants.py:422
+#: src/ovirt_hosted_engine_setup/constants.py:416
 msgid "Engine FQDN"
 msgstr "FQDN do Engine"
 
-#: src/ovirt_hosted_engine_setup/constants.py:431
+#: src/ovirt_hosted_engine_setup/constants.py:425
 msgid "Bridge name"
 msgstr "Nome da Bridge"
 
-#: src/ovirt_hosted_engine_setup/constants.py:439
+#: src/ovirt_hosted_engine_setup/constants.py:433
 msgid "Firewall manager"
 msgstr "Gerenciador de Firewall"
 
-#: src/ovirt_hosted_engine_setup/constants.py:447
+#: src/ovirt_hosted_engine_setup/constants.py:441
 msgid "Gateway address"
 msgstr "Endereço do Gateway"
 
-#: src/ovirt_hosted_engine_setup/constants.py:457
+#: src/ovirt_hosted_engine_setup/constants.py:451
 msgid "SSH daemon port"
 msgstr "Porta do daemon SSH"
 
-#: src/ovirt_hosted_engine_setup/constants.py:474
+#: src/ovirt_hosted_engine_setup/constants.py:468
 msgid "Host name for web application"
 msgstr "Nome do Host para aplicação web"
 
-#: src/ovirt_hosted_engine_setup/constants.py:502
+#: src/ovirt_hosted_engine_setup/constants.py:496
 #: src/ovirt_hosted_engine_setup/vm_status.py:47
 msgid "Host ID"
 msgstr "ID do Host"
 
-#: src/ovirt_hosted_engine_setup/constants.py:510
+#: src/ovirt_hosted_engine_setup/constants.py:504
 msgid "Storage connection"
 msgstr "Conexão ao armazenamento"
 
-#: src/ovirt_hosted_engine_setup/constants.py:557
+#: src/ovirt_hosted_engine_setup/constants.py:551
 msgid "Storage type"
 msgstr "Tipo de armazenamento"
 
-#: src/ovirt_hosted_engine_setup/constants.py:579
+#: src/ovirt_hosted_engine_setup/constants.py:573
 msgid "Image size GB"
 msgstr "Tamanho da Imagem em GB"
 
-#: src/ovirt_hosted_engine_setup/constants.py:595
-msgid "GlusterFS Brick Provisioning"
-msgstr "Provisionamento GlusterFS Brick"
-
-#: src/ovirt_hosted_engine_setup/constants.py:603
-msgid "GlusterFS Brick"
-msgstr "GlusterFS Brick"
-
-#: src/ovirt_hosted_engine_setup/constants.py:611
-msgid "GlusterFS Share Name"
-msgstr "Nome do GlusterFS compartilhado"
-
-#: src/ovirt_hosted_engine_setup/constants.py:619
+#: src/ovirt_hosted_engine_setup/constants.py:589
 msgid "iSCSI Portal IP Address"
 msgstr "Endereço IP do Portal iSCSI"
 
-#: src/ovirt_hosted_engine_setup/constants.py:627
+#: src/ovirt_hosted_engine_setup/constants.py:597
 msgid "iSCSI Portal port"
 msgstr "Porta do Portal iSCSI"
 
-#: src/ovirt_hosted_engine_setup/constants.py:635
+#: src/ovirt_hosted_engine_setup/constants.py:605
 msgid "iSCSI Portal"
 msgstr "Portal iSCSI"
 
-#: src/ovirt_hosted_engine_setup/constants.py:643
+#: src/ovirt_hosted_engine_setup/constants.py:613
 msgid "iSCSI Portal user"
 msgstr "Usuário do Portal iSCSI"
 
-#: src/ovirt_hosted_engine_setup/constants.py:651
+#: src/ovirt_hosted_engine_setup/constants.py:621
 msgid "iSCSI Target Name"
 msgstr "Nome do alvo iSCSI"
 
-#: src/ovirt_hosted_engine_setup/constants.py:659
+#: src/ovirt_hosted_engine_setup/constants.py:629
 msgid "LUN ID"
 msgstr "LUN ID"
 
-#: src/ovirt_hosted_engine_setup/constants.py:726
+#: src/ovirt_hosted_engine_setup/constants.py:696
 msgid "Memory size MB"
 msgstr "Tamanho da memória em MB"
 
-#: src/ovirt_hosted_engine_setup/constants.py:734
+#: src/ovirt_hosted_engine_setup/constants.py:704
 msgid "Number of CPUs"
 msgstr "Número de CPUs"
 
-#: src/ovirt_hosted_engine_setup/constants.py:746
+#: src/ovirt_hosted_engine_setup/constants.py:716
 msgid "MAC address"
 msgstr "Endereço MAC"
 
-#: src/ovirt_hosted_engine_setup/constants.py:760
+#: src/ovirt_hosted_engine_setup/constants.py:730
 msgid "Boot type"
 msgstr "Tipo de Boot"
 
-#: src/ovirt_hosted_engine_setup/constants.py:768
+#: src/ovirt_hosted_engine_setup/constants.py:738
 msgid "ISO image (cdrom boot/cloud-init)"
 msgstr "Imagem ISO (cdrom boot/cloud-init)"
 
-#: src/ovirt_hosted_engine_setup/constants.py:794
+#: src/ovirt_hosted_engine_setup/constants.py:764
 msgid "OVF archive (for disk boot)"
 msgstr "Arquivo OVF (para o disco de boot)"
 
-#: src/ovirt_hosted_engine_setup/constants.py:806
+#: src/ovirt_hosted_engine_setup/constants.py:776
 msgid "Console type"
 msgstr "Tipo de console"
 
-#: src/ovirt_hosted_engine_setup/constants.py:814
+#: src/ovirt_hosted_engine_setup/constants.py:784
 msgid "Restart engine VM after engine-setup"
 msgstr "Reiniciar a VM do engine e depois executar engine-setup"
 
-#: src/ovirt_hosted_engine_setup/constants.py:900
+#: src/ovirt_hosted_engine_setup/constants.py:870
 msgid "CPU Type"
 msgstr "Tipo de CPU"
 
@@ -481,53 +468,6 @@ msgstr ""
 "Você pode então definir uma senha temporária usando o comando:\n"
 "hosted-engine --add-console-password"
 
-#: src/ovirt_hosted_engine_setup/ohttpshandler.py:33
-#: src/ovirt_hosted_engine_setup/pkissh.py:39
-msgid "ovirt-setup-lib"
-msgstr "ovirt-setup-lib"
-
-#: src/ovirt_hosted_engine_setup/ohttpshandler.py:109
-msgid "No CN in peer certificate"
-msgstr "Nenhum certificado CN em pares"
-
-#: src/ovirt_hosted_engine_setup/ohttpshandler.py:115
-#, python-brace-format
-msgid "Invalid host '{host}' expected '{expected}'"
-msgstr "Host inválido '{host}' esperado '{expected}'"
-
-#: src/ovirt_hosted_engine_setup/pkissh.py:90
-#, python-brace-format
-msgid "Unable to read CA cert from {fname}"
-msgstr "Não é possível ler o certificado CA de {fname}"
-
-#: src/ovirt_hosted_engine_setup/pkissh.py:104
-msgid "Unable to acquire CA cert"
-msgstr "Não é possível adquirir o certificado CA"
-
-#: src/ovirt_hosted_engine_setup/pkissh.py:108
-msgid ""
-"The following CA certificate is going to be used, please immediately "
-"interrupt if not correct:"
-msgstr ""
-"O seguinte certificado CA vai ser usado, por favor interromper imediatamente "
-"se não estiver correto:"
-
-#: src/ovirt_hosted_engine_setup/pkissh.py:113
-#, python-brace-format
-msgid ""
-"Issuer: {issuer}, Subject: {subject}, Fingerprint (SHA-1): {fingerprint}"
-msgstr ""
-"Emitente: {issuer}, Assunto: {subject}, Fingerprint (SHA-1): {fingerprint}"
-
-#: src/ovirt_hosted_engine_setup/pkissh.py:124
-#, python-brace-format
-msgid "The CA certificate is not valid: {ex}"
-msgstr "O certificado CA não é válido: {ex}"
-
-#: src/ovirt_hosted_engine_setup/pkissh.py:162
-msgid "Unable to fetch SSH pub key"
-msgstr "Incapaz de buscar a chave pública SSH"
-
 #: src/ovirt_hosted_engine_setup/set_maintenance.py:49
 #, python-brace-format
 msgid "Invalid maintenance mode: {0}\n"
@@ -597,7 +537,7 @@ msgstr "Manutenção local"
 msgid "{0}\n"
 msgstr "{0}\n"
 
-#: src/ovirt_hosted_engine_setup/vm_status.py:85
+#: src/ovirt_hosted_engine_setup/vm_status.py:86
 msgid ""
 "\n"
 "\n"
@@ -607,7 +547,7 @@ msgstr ""
 "\n"
 "!! Cluster está em modo MANUTENÇÃO GLOBAL !!\n"
 
-#: src/ovirt_hosted_engine_setup/vm_status.py:88
+#: src/ovirt_hosted_engine_setup/vm_status.py:90
 #, python-brace-format
 msgid ""
 "\n"
@@ -618,18 +558,18 @@ msgstr ""
 "\n"
 "--== Host {host_id} status ==--\n"
 
-#: src/ovirt_hosted_engine_setup/vm_status.py:94
-#: src/ovirt_hosted_engine_setup/vm_status.py:99
+#: src/ovirt_hosted_engine_setup/vm_status.py:96
+#: src/ovirt_hosted_engine_setup/vm_status.py:101
 #: src/plugins/ovirt-hosted-engine-setup/core/preview.py:71
 #, python-brace-format
 msgid "{key:35}: {value}"
 msgstr "{key:35}: {value}"
 
-#: src/ovirt_hosted_engine_setup/vm_status.py:96
+#: src/ovirt_hosted_engine_setup/vm_status.py:98
 msgid "unknown stale-data"
 msgstr "dado obsoleto desconhecido"
 
-#: src/ovirt_hosted_engine_setup/vm_status.py:105
+#: src/ovirt_hosted_engine_setup/vm_status.py:107
 #, python-brace-format
 msgid "{key:35}:"
 msgstr "{key:35}:"
@@ -639,11 +579,15 @@ msgstr "{key:35}:"
 msgid "Generating answer file '{name}'"
 msgstr "Gerando arquivo resposta '{name}'"
 
-#: src/plugins/ovirt-hosted-engine-setup/core/conf.py:59
+#: src/plugins/ovirt-hosted-engine-setup/core/conf.py:60
 msgid "Updating hosted-engine configuration"
 msgstr "Atualizando configuração do hosted-engine"
 
-#: src/plugins/ovirt-hosted-engine-setup/core/misc.py:89
+#: src/plugins/ovirt-hosted-engine-setup/core/misc.py:82
+msgid "During customization use CTRL-D to abort."
+msgstr "Durante a personalização use CTRL-D para abortar."
+
+#: src/plugins/ovirt-hosted-engine-setup/core/misc.py:94
 msgid ""
 "Continuing will configure this host for serving as hypervisor and create a "
 "VM where you have to install the engine afterwards.\n"
@@ -653,15 +597,12 @@ msgstr ""
 "máquina virtual onde você tem que instalar o engine depois.\n"
 "Você tem certeza que quer continuar? (@VALUES@)[@DEFAULT@]: "
 
-#: src/plugins/ovirt-hosted-engine-setup/core/misc.py:96
-#: src/plugins/ovirt-hosted-engine-setup/core/misc.py:98
-#: src/plugins/ovirt-hosted-engine-setup/core/misc.py:99
+#: src/plugins/ovirt-hosted-engine-setup/core/misc.py:101
+#: src/plugins/ovirt-hosted-engine-setup/core/misc.py:103
+#: src/plugins/ovirt-hosted-engine-setup/core/misc.py:104
 #: src/plugins/ovirt-hosted-engine-setup/core/preview.py:93
 #: src/plugins/ovirt-hosted-engine-setup/core/preview.py:95
 #: src/plugins/ovirt-hosted-engine-setup/core/preview.py:96
-#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:284
-#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:286
-#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:287
 #: src/plugins/ovirt-hosted-engine-setup/core/shell.py:91
 #: src/plugins/ovirt-hosted-engine-setup/core/shell.py:94
 #: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:401
@@ -669,8 +610,6 @@ msgstr ""
 #: src/plugins/ovirt-hosted-engine-setup/network/firewall_manager.py:175
 #: src/plugins/ovirt-hosted-engine-setup/network/firewall_manager.py:177
 #: src/plugins/ovirt-hosted-engine-setup/network/firewall_manager.py:179
-#: src/plugins/ovirt-hosted-engine-setup/storage/glusterfs.py:243
-#: src/plugins/ovirt-hosted-engine-setup/storage/glusterfs.py:246
 #: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:202
 #: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:204
 #: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:205
@@ -690,21 +629,18 @@ msgstr ""
 #: src/plugins/ovirt-hosted-engine-setup/vm/cloud_init.py:692
 #: src/plugins/ovirt-hosted-engine-setup/vm/cpu.py:135
 #: src/plugins/ovirt-hosted-engine-setup/vm/cpu.py:138
+#: src/plugins/ovirt-hosted-engine-setup/vm/image.py:155
 #: src/plugins/ovirt-hosted-engine-setup/vm/image.py:158
-#: src/plugins/ovirt-hosted-engine-setup/vm/image.py:161
 msgid "Yes"
 msgstr "Sim"
 
-#: src/plugins/ovirt-hosted-engine-setup/core/misc.py:96
+#: src/plugins/ovirt-hosted-engine-setup/core/misc.py:101
 #: src/plugins/ovirt-hosted-engine-setup/core/preview.py:93
-#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:284
 #: src/plugins/ovirt-hosted-engine-setup/core/shell.py:91
 #: src/plugins/ovirt-hosted-engine-setup/core/shell.py:93
 #: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:401
 #: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:403
 #: src/plugins/ovirt-hosted-engine-setup/network/firewall_manager.py:175
-#: src/plugins/ovirt-hosted-engine-setup/storage/glusterfs.py:243
-#: src/plugins/ovirt-hosted-engine-setup/storage/glusterfs.py:245
 #: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:202
 #: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:228
 #: src/plugins/ovirt-hosted-engine-setup/vm/cloud_init.py:447
@@ -714,12 +650,12 @@ msgstr "Sim"
 #: src/plugins/ovirt-hosted-engine-setup/vm/cloud_init.py:691
 #: src/plugins/ovirt-hosted-engine-setup/vm/cpu.py:135
 #: src/plugins/ovirt-hosted-engine-setup/vm/cpu.py:137
-#: src/plugins/ovirt-hosted-engine-setup/vm/image.py:158
-#: src/plugins/ovirt-hosted-engine-setup/vm/image.py:160
+#: src/plugins/ovirt-hosted-engine-setup/vm/image.py:155
+#: src/plugins/ovirt-hosted-engine-setup/vm/image.py:157
 msgid "No"
 msgstr "Não"
 
-#: src/plugins/ovirt-hosted-engine-setup/core/misc.py:170
+#: src/plugins/ovirt-hosted-engine-setup/core/misc.py:175
 msgid ""
 "Hosted Engine deployment failed: this system is not reliable, please check "
 "the issue, fix and redeploy"
@@ -727,12 +663,12 @@ msgstr ""
 "Implantação do Hosted Engine falhou: este sistema não é confiável, por favor "
 "verificar o problema, corrigir e reimplantar"
 
-#: src/plugins/ovirt-hosted-engine-setup/core/misc.py:174
+#: src/plugins/ovirt-hosted-engine-setup/core/misc.py:179
 #, python-brace-format
 msgid "Log file is located at {path}"
 msgstr "Arquivo log está localizado em {path}"
 
-#: src/plugins/ovirt-hosted-engine-setup/core/misc.py:181
+#: src/plugins/ovirt-hosted-engine-setup/core/misc.py:186
 msgid "Hosted Engine successfully set up"
 msgstr "Hosted Engine configurado com sucesso"
 
@@ -758,45 +694,19 @@ msgstr ""
 msgid "Configuration was rejected by user"
 msgstr "Configuração foi rejeitada pelo usuário"
 
-#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:67
-msgid "Please provide the FQDN or IP of an active HE host: "
-msgstr "Por favor forneça o FQDN ou IP de um host HE ativo: "
-
-#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:84
-#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:95
-#, python-brace-format
-msgid "Unable to connect to {fqdn}. Error: {error}"
-msgstr "Incapaz de conectar ao {fqdn}. Erro: {error}"
-
-#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:121
-#, python-brace-format
-msgid "Enter 'root' user password for host {fqdn}: "
-msgstr "Entre com a senha do usuário 'root' para o host {fqdn}: "
-
-#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:157
-#, python-brace-format
-msgid "Invalid password for host {fqdn}"
-msgstr "Senha inválida para o host {fqdn}"
-
-#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:164
-#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:180
-msgid ""
-"Cannot deploy Hosted Engine on additional host: unable to fetch the "
-"configuration used on other hosts"
+#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:72
+#, fuzzy
+msgid "Unable to get the answer file from the shared storage"
 msgstr ""
-"Não posso implantar o Hosted Engine em host adicional: incapaz de buscar a "
-"configuração usada em outros hosts"
+"Por favor note que o suporte à Replica 3 é necessário para o armazenamento "
+"compartilhado."
 
-#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:172
-#, python-brace-format
-msgid "Unable to connect to {fqdn}. Error:{error}"
-msgstr "Incapaz de conectar ao {fqdn}. Erro:{error}"
-
-#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:188
-msgid "Answer file successfully downloaded"
+#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:85
+#, fuzzy
+msgid "Answer file successfully loaded"
 msgstr "Arquivo de resposta baixado com sucesso"
 
-#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:201
+#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:99
 #, python-brace-format
 msgid ""
 "Cannot parse configuration file key {key} at section {section}: {exception}"
@@ -804,7 +714,7 @@ msgstr ""
 "Não posso analisar a chave do arquivo de configuração {key} na seção "
 "{section}: {exception}"
 
-#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:252
+#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:139
 msgid ""
 "A configuration file must be supplied to deploy Hosted Engine on an "
 "additional host."
@@ -812,35 +722,7 @@ msgstr ""
 "Um arquivo de configuração deve ser fornecido para implantar o Hosted Engine "
 "em um host adicional."
 
-#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:263
-msgid ""
-"If you do not want to download it automatically you can abort the setup "
-"answering no to the following question.\n"
-msgstr ""
-"Se você não quiser baixá-lo automaticamente, você pode abortar o setup "
-"respondendo não à seguinte pergunta.\n"
-
-#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:269
-msgid ""
-"If the supplied answerfile is complete, answer no to the following question "
-"to continue just with that.\n"
-msgstr ""
-"Se o arquivo de resposta fornecido está completo, responda não à seguinte "
-"pergunta para continuar apenas com isso.\n"
-
-#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:277
-#, python-brace-format
-msgid ""
-"The answer file may be fetched from an active HE host using scp.\n"
-"{additional}Do you want to scp the answer file from another HE host? "
-"(@VALUES@)[@DEFAULT@]: "
-msgstr ""
-"O arquivo de resposta pode ser obtido a partir de um host HE ativo usando "
-"scp.\n"
-"{additional}Você quer scp o arquivo de resposta de outro host HE? (@VALUES@)"
-"[@DEFAULT@]: "
-
-#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:293
+#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:150
 msgid ""
 "Cannot deploy Hosted Engine on additional hosts without access to the "
 "configuration used on other hosts"
@@ -848,7 +730,7 @@ msgstr ""
 "Não posso implantar o Hosted Engine em hosts adicionais sem acesso à "
 "configuração usada em outros hosts"
 
-#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:301
+#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:158
 #, python-brace-format
 msgid ""
 "Setup will proceed assuming that '{answfile}' was correctly and completely "
@@ -856,6 +738,30 @@ msgid ""
 msgstr ""
 "Setup irá continuar assumindo que '{answfile}' foi correta e completamente "
 "gerado em outro host HE"
+
+#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:189
+msgid ""
+"It seems like your existing HE infrastructure was deployed with version 3.5 "
+"(or before) and never upgraded to current release.\n"
+"Mixing hosts with HE from 3.5 (or before) and current release is not "
+"supported.\n"
+"Please upgrade the existing HE hosts to current release before adding this "
+"host.\n"
+"Please check the log file for more details.\n"
+msgstr ""
+
+#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:205
+#, fuzzy
+msgid ""
+"Replying \"No\" will abort Setup.\n"
+"Continue? (@VALUES@) [@DEFAULT@]: "
+msgstr ""
+"Tentar verificar o status do host novamente ou ignorar isto e continuar "
+"(@VALUES@)[@DEFAULT@]? "
+
+#: src/plugins/ovirt-hosted-engine-setup/core/remote_answerfile.py:217
+msgid "other hosted-engine host is still at version 3.5"
+msgstr ""
 
 #: src/plugins/ovirt-hosted-engine-setup/core/shell.py:62
 msgid ""
@@ -1102,35 +1008,33 @@ msgid "Empty host name not allowed"
 msgstr "Nome do host vazio não é permitido"
 
 #: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:597
-msgid ""
-"Enter 'admin@internal' user password that will be used for accessing the "
-"Administrator Portal: "
+#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:692
+msgid "Enter engine admin password: "
 msgstr ""
-"Digite a senha do usuário 'admin@internal' que será usado para acessar o "
-"Portal do Administrador: "
 
-#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:612
-msgid "Confirm 'admin@internal' user password: "
-msgstr "Confirme a senha do usuário 'admin@internal': "
+#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:611
+#, fuzzy
+msgid "Confirm engine admin password: "
+msgstr "Confirmar senha de root da appliance: "
 
-#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:622
+#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:621
 #: src/plugins/ovirt-hosted-engine-setup/vm/cloud_init.py:635
 msgid "Passwords do not match"
 msgstr "Senhas não coincidem"
 
-#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:625
+#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:624
 msgid "Please specify a password"
 msgstr "Por favor especifique uma senha"
 
-#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:628
+#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:627
 msgid "Empty password not allowed for user admin"
 msgstr "Senha vazia não é permitida para o usuário admin"
 
-#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:657
+#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:656
 msgid "Connecting to the Engine"
 msgstr "Conectando à appliance do engine-setup"
 
-#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:683
+#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:682
 msgid ""
 "The engine API didnt accepted the administrator password you provided\n"
 "Please enter it again to retry."
@@ -1138,20 +1042,12 @@ msgstr ""
 "A API do engine não aceitou a senha de administrador que você forneceu\n"
 "Por favor entre-a para tentar novamente."
 
-#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:693
-msgid ""
-"Enter admin@internal user password that will be used for accessing the "
-"Administrator Portal: "
-msgstr ""
-"Digite a senha do usuário 'admin@internal' que será usado para acessar o "
-"Portal do Administrador: "
-
-#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:703
+#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:700
 msgid "The engine API didnt accepted the administrator password you provided\n"
 msgstr ""
 "A API do engine não aceitou a senha de administrador que você forneceu\n"
 
-#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:710
+#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:707
 #, python-brace-format
 msgid ""
 "Cannot connect to engine APIs on {fqdn}:\n"
@@ -1160,17 +1056,17 @@ msgstr ""
 "Não posso conectar às APIs do engine em {fqdn}:\n"
 "{details}\n"
 
-#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:719
+#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:716
 #, python-brace-format
 msgid "Cannot connect to engine APIs on {fqdn}"
 msgstr "Não posso conectar às APIs do engine em {fqdn}"
 
-#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:741
+#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:738
 #, python-brace-format
 msgid "Specified cluster does not exist: {cluster}"
 msgstr "Cluster especificado não existe: {cluster}"
 
-#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:758
+#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:756
 msgid ""
 "Enter the name of the cluster to which you want to add the host (@VALUES@) "
 "[@DEFAULT@]: "
@@ -1178,7 +1074,7 @@ msgstr ""
 "Digite o nome do cluster ao qual você deseja adicionar o host (@VALUES@) "
 "[@DEFAULT@]: "
 
-#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:846
+#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:834
 #, python-brace-format
 msgid ""
 "Cannot automatically add the host to cluster {cluster}:\n"
@@ -1187,12 +1083,12 @@ msgstr ""
 "Não posso adicionar o host automaticamente ao cluster {cluster}:\n"
 "{details}\n"
 
-#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:869
+#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:857
 #, python-brace-format
 msgid "Unable to add {host} to the manager"
 msgstr "Incapaz de adicionar {host} ao gerente"
 
-#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:899
+#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:887
 #, python-brace-format
 msgid ""
 "Cannot automatically set CPU level of cluster {cluster}:\n"
@@ -1201,12 +1097,12 @@ msgstr ""
 "Não posso definir automaticamente o nível de CPU do cluster {cluster}:\n"
 "{details}\n"
 
-#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:919
+#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:907
 #, python-brace-format
 msgid "Unable to cleanup temporary CA cert file: {msg}"
 msgstr "Incapaz de limpar o arquivo cert CA temporário: {msg}"
 
-#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:932
+#: src/plugins/ovirt-hosted-engine-setup/engine/add_host.py:920
 #, python-brace-format
 msgid ""
 "Unable to cleanup temporary file: {msg} - Please check and eventually "
@@ -1285,7 +1181,7 @@ msgstr "Engine ainda não está acessível"
 msgid "Engine is still not reachable, waiting..."
 msgstr "Engine ainda não está acessível, aguardando..."
 
-#: src/plugins/ovirt-hosted-engine-setup/ha/ha_notifications.py:127
+#: src/plugins/ovirt-hosted-engine-setup/ha/ha_notifications.py:133
 msgid ""
 "Please provide the name of the SMTP server through which we will send "
 "notifications [@DEFAULT@]: "
@@ -1293,11 +1189,11 @@ msgstr ""
 "Por favor forneça o nome do servidor SMTP através do qual enviaremos "
 "notificações [@DEFAULT@]: "
 
-#: src/plugins/ovirt-hosted-engine-setup/ha/ha_notifications.py:136
+#: src/plugins/ovirt-hosted-engine-setup/ha/ha_notifications.py:142
 msgid "Please provide the TCP port number of the SMTP server [@DEFAULT@]: "
 msgstr "Por favor forneça o número da porta TCP do servidor SMTP [@DEFAULT@]: "
 
-#: src/plugins/ovirt-hosted-engine-setup/ha/ha_notifications.py:145
+#: src/plugins/ovirt-hosted-engine-setup/ha/ha_notifications.py:151
 msgid ""
 "Please provide the email address from which notifications will be sent "
 "[@DEFAULT@]: "
@@ -1305,7 +1201,7 @@ msgstr ""
 "Por favor forneça o endereço de email por onde as notificações serão "
 "enviadas [@DEFAULT@]: "
 
-#: src/plugins/ovirt-hosted-engine-setup/ha/ha_notifications.py:156
+#: src/plugins/ovirt-hosted-engine-setup/ha/ha_notifications.py:162
 msgid ""
 "Please provide a comma-separated list of email addresses which will get "
 "notifications [@DEFAULT@]: "
@@ -1313,11 +1209,11 @@ msgstr ""
 "Por favor forneça uma lista separada por vírgulas de endereços de e-mail que "
 "irá receber notificações [@DEFAULT@]: "
 
-#: src/plugins/ovirt-hosted-engine-setup/ha/ha_notifications.py:191
+#: src/plugins/ovirt-hosted-engine-setup/ha/ha_notifications.py:197
 msgid "Invalid input, please try again"
 msgstr "Entrada inválida, por favor tente novamente"
 
-#: src/plugins/ovirt-hosted-engine-setup/ha/ha_notifications.py:196
+#: src/plugins/ovirt-hosted-engine-setup/ha/ha_notifications.py:202
 #, python-brace-format
 msgid "Invalid input for environment value {key}"
 msgstr "Entrada inválida para o valor ambiente {key}"
@@ -1507,16 +1403,7 @@ msgstr "Erro ao analisar certificado libvirt"
 msgid "Generating libvirt-spice certificates"
 msgstr "Gerando certificado libvirt-spice"
 
-#: src/plugins/ovirt-hosted-engine-setup/sanlock/lockspace.py:110
-msgid ""
-"Answer file lacks lockspace UUIDs, please use an answer file generated from "
-"the same version you are using on this additional host"
-msgstr ""
-"Arquivo de resposta carece de UUIDs lockspace, utilize um arquivo de "
-"resposta gerado a partir da mesma versão que você está usando neste host "
-"adicional"
-
-#: src/plugins/ovirt-hosted-engine-setup/sanlock/lockspace.py:132
+#: src/plugins/ovirt-hosted-engine-setup/sanlock/lockspace.py:100
 msgid "Verifying sanlock lockspace initialization"
 msgstr "Verificando a inicialização do sanlock lockspace"
 
@@ -1660,77 +1547,7 @@ msgstr "Erro ao criar grupo de volume: {message}"
 msgid "Cannot detect iSCSI portal"
 msgstr "Não posso detectar o portal iSCSI"
 
-#: src/plugins/ovirt-hosted-engine-setup/storage/glusterfs.py:96
-#: src/plugins/ovirt-hosted-engine-setup/storage/glusterfs.py:159
-#: src/plugins/ovirt-hosted-engine-setup/storage/glusterfs.py:191
-msgid "Failed to retrieve the Gluster Volume list"
-msgstr "Falha ao receber lista de volumes Gluster"
-
-#: src/plugins/ovirt-hosted-engine-setup/storage/glusterfs.py:100
-msgid "GlusterFS Volume already exists"
-msgstr "Volume GlusterFS já existe"
-
-#: src/plugins/ovirt-hosted-engine-setup/storage/glusterfs.py:106
-msgid "GlusterFS Volume has been found with different bricks list"
-msgstr "Volume GlusterFS foi encontrado com diferentes listas de bricks"
-
-#: src/plugins/ovirt-hosted-engine-setup/storage/glusterfs.py:111
-msgid "Creating GlusterFS Volume"
-msgstr "Criando Volume GlusterFS"
-
-#: src/plugins/ovirt-hosted-engine-setup/storage/glusterfs.py:127
-msgid "Failed to create the Gluster Volume"
-msgstr "Falha ao criar o volume Gluster"
-
-#: src/plugins/ovirt-hosted-engine-setup/storage/glusterfs.py:149
-#, python-brace-format
-msgid "Failed to set {option} on the Gluster Volume"
-msgstr "Falha ao definir {option} no Volume Gluster"
-
-#: src/plugins/ovirt-hosted-engine-setup/storage/glusterfs.py:166
-msgid "Failed to retrieve the Gluster Tasks List"
-msgstr "Falha ao receber lista de tarefas Gluster"
-
-#: src/plugins/ovirt-hosted-engine-setup/storage/glusterfs.py:176
-msgid "Failed to start the Gluster Volume"
-msgstr "Falha ao iniciar volume Gluster"
-
-#: src/plugins/ovirt-hosted-engine-setup/storage/glusterfs.py:181
-#, python-brace-format
-msgid "GlusterFS Volume found in an unknown state: {state}"
-msgstr "Volume GlusterFS encontrado em um estado desconhecido: {state}"
-
-#: src/plugins/ovirt-hosted-engine-setup/storage/glusterfs.py:237
-msgid ""
-"Do you want to configure this host for providing GlusterFS storage (will "
-"start with no replica requires to grow to replica 3 later)? (@VALUES@)"
-"[@DEFAULT@]: "
-msgstr ""
-"Você deseja configurar este host para fornecer armazenamento GlusterFS (vai "
-"começar sem nenhuma réplica e requer 3 réplicas para crescer)? (@VALUES@)"
-"[@DEFAULT@]: "
-
-#: src/plugins/ovirt-hosted-engine-setup/storage/glusterfs.py:268
-msgid "Please provide a path to be used for the brick on this host:"
-msgstr "Por favor forneça um caminho a ser usado para o brick neste host:"
-
-#: src/plugins/ovirt-hosted-engine-setup/storage/glusterfs.py:283
-msgid "The specified brick must be on this host"
-msgstr "O brick especificado precisa ser neste host"
-
-#: src/plugins/ovirt-hosted-engine-setup/storage/glusterfs.py:300
-msgid "HyperConverged deployment is currently unsupported "
-msgstr "Implantação do HyperConverged não é suportada atualmente "
-
-#: src/plugins/ovirt-hosted-engine-setup/storage/glusterfs.py:323
-msgid "Starting GlusterFS services"
-msgstr "Iniciando serviços GlusterFS"
-
-#: src/plugins/ovirt-hosted-engine-setup/storage/glusterfs.py:340
-msgid "Enabling GlusterFS services"
-msgstr "Habilitando serviços GlusterFS"
-
-#: src/plugins/ovirt-hosted-engine-setup/storage/heconf.py:123
+#: src/plugins/ovirt-hosted-engine-setup/storage/heconf.py:131
 msgid "Saving hosted-engine configuration on the shared storage domain"
 msgstr ""
 "Salvando a configuração do hosted-engine no domínio do armazenamento "
@@ -1799,13 +1616,13 @@ msgstr "Corrigindo sintaxe de caminho: substituindo '{original}' com '{fixed}'"
 msgid "Cannot unmount {path}"
 msgstr "Não posso desmontar {path}"
 
-#: src/plugins/ovirt-hosted-engine-setup/storage/nfs.py:360
+#: src/plugins/ovirt-hosted-engine-setup/storage/nfs.py:357
 msgid "Please note that Replica 3 support is required for the shared storage."
 msgstr ""
 "Por favor note que o suporte à Replica 3 é necessário para o armazenamento "
 "compartilhado."
 
-#: src/plugins/ovirt-hosted-engine-setup/storage/nfs.py:375
+#: src/plugins/ovirt-hosted-engine-setup/storage/nfs.py:372
 msgid ""
 "Please specify the full shared storage connection path to use (example: "
 "host:/path): "
@@ -1813,14 +1630,14 @@ msgstr ""
 "Por favor especifique um caminho de conexão de armazenamento compartilhado "
 "completo para usar (exemplo: host:/path): "
 
-#: src/plugins/ovirt-hosted-engine-setup/storage/nfs.py:398
+#: src/plugins/ovirt-hosted-engine-setup/storage/nfs.py:395
 #, python-brace-format
 msgid "Cannot access storage connection {connection}: {error}"
 msgstr "Não posso acessar a conexão de armazenamento {connection}: {error}"
 
-#: src/plugins/ovirt-hosted-engine-setup/storage/nfs.py:419
-#: src/plugins/ovirt-hosted-engine-setup/storage/nfs.py:429
-#: src/plugins/ovirt-hosted-engine-setup/storage/nfs.py:483
+#: src/plugins/ovirt-hosted-engine-setup/storage/nfs.py:416
+#: src/plugins/ovirt-hosted-engine-setup/storage/nfs.py:426
+#: src/plugins/ovirt-hosted-engine-setup/storage/nfs.py:477
 #, python-brace-format
 msgid ""
 "Storage domain for self hosted engine is too small: you should have at least "
@@ -1890,12 +1707,12 @@ msgstr "Valor inválido para ID do host: deve estar em {min}-{max}"
 msgid "Invalid value for Host ID: must be integer"
 msgstr "Valor inválido para ID do host: precisa ser inteiro"
 
-#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:470
+#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:508
 msgid "Invalid value for Host ID: already used"
 msgstr "Valor inválido para o ID do Host: já utilizado"
 
-#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:607
-#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:963
+#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:641
+#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:997
 #, python-brace-format
 msgid ""
 "Dirty Storage Domain: {message}\n"
@@ -1904,64 +1721,60 @@ msgstr ""
 "Domínio de armazenamento sujo: {message}\n"
 "Por favor limpe o dispositivo de armazenamento e tente novamente"
 
-#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:715
-#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:782
+#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:749
+#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:816
 msgid "Invalid Storage Type"
 msgstr "Tipo de Armazenamento inválido"
 
-#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:730
-#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:757
+#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:764
+#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:791
 msgid "Connection to storage server failed"
 msgstr "Conexão ao servidor de armazenamento falhou"
 
-#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:1046
+#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:1080
 #, python-brace-format
 msgid "The following storage pool has been found connected: {pools}"
 msgstr "O seguinte conjunto de armazenamento foi encontrado ligado: {pools}"
 
-#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:1053
+#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:1087
 msgid "Cannot setup Hosted Engine with connected storage pools"
 msgstr ""
 "Setup não pode configurar o Hosted Engine com pools de armazenamento "
 "conectados"
 
-#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:1136
-msgid "During customization use CTRL-D to abort."
-msgstr "Durante a personalização use CTRL-D para abortar."
-
-#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:1146
+#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:1174
 msgid ""
 "Please specify the storage you would like to use (@VALUES@)[@DEFAULT@]: "
 msgstr ""
 "Por favor especifique o armazenamento que você gostaria de usar (@VALUES@)"
 "[@DEFAULT@]: "
 
-#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:1177
+#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:1205
 #, python-brace-format
 msgid "Invalid domain type: \"{dtype}\""
 msgstr "Tipo de Domínio inválido: \"{dtype}\""
 
-#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:1219
+#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:1273
 msgid "Creating Storage Domain"
 msgstr "Criando Domínio de Armazenamento"
 
-#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:1223
+#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:1277
 msgid "Creating Storage Pool"
 msgstr "Criando Pool de Armazenamento"
 
-#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:1226
+#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:1280
 msgid "Connecting Storage Pool"
 msgstr "Conectando Pool de Armazenamento"
 
-#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:1252
+#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:1306
 msgid "Destroying Storage Pool"
 msgstr "Destruindo Pool de Armazenamento"
 
-#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:1256
+#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:1310
 msgid "Start monitoring domain"
 msgstr "Iniciar monitoramento de Domínio"
 
-#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:1271
+#: src/plugins/ovirt-hosted-engine-setup/storage/storage.py:1325
 msgid "Preparing again HE images"
 msgstr "Preparando novamente imagens HE"
 
@@ -1976,15 +1789,7 @@ msgstr ""
 "{minversion} e reinicie o serviço vdsmd, a fim de obter o suporte para "
 "configuração do Hyper Converged."
 
-#: src/plugins/ovirt-hosted-engine-setup/system/packages.py:64
-msgid ""
-"Cannot support GlusterFS provisioning without required GlusterFS "
-"dependencies."
-msgstr ""
-"Não posso oferecer suporte ao provisionamento GlusterFS sem as dependências "
-"do GlusterFS necessárias."
-
-#: src/plugins/ovirt-hosted-engine-setup/system/packages.py:100
+#: src/plugins/ovirt-hosted-engine-setup/system/packages.py:88
 msgid ""
 "Cannot locate gluster packages, Hyper Converged setup support will be "
 "disabled."
@@ -1992,14 +1797,14 @@ msgstr ""
 "Não posso localizar os pacotes gluster, a configuração para o suporte do "
 "Hyper Converged será desabilitada."
 
-#: src/plugins/ovirt-hosted-engine-setup/system/packages.py:122
+#: src/plugins/ovirt-hosted-engine-setup/system/packages.py:110
 #, python-brace-format
 msgid "glusterfs-server package is too old, need {minimum} found {version}"
 msgstr ""
 "pacote glusterfs-server é muito antigo, necessário {minimum} encontrado "
 "{version}"
 
-#: src/plugins/ovirt-hosted-engine-setup/system/sshd.py:76
+#: src/plugins/ovirt-hosted-engine-setup/system/sshd.py:75
 msgid "sshd service is required"
 msgstr "serviço sshd é necessário"
 
@@ -2014,28 +1819,28 @@ msgid "VDSM did not start within {timeout} seconds"
 msgstr "VDSM não iniciou dentro de {timeout} segundos"
 
 #: src/plugins/ovirt-hosted-engine-setup/system/vdsmenv.py:131
-#: src/plugins/ovirt-hosted-engine-setup/system/vdsmenv.py:190
+#: src/plugins/ovirt-hosted-engine-setup/system/vdsmenv.py:189
 msgid "Failed to reconfigure libvirt for VDSM"
 msgstr "Falha ao reconfigurar o libvirt para VDSM"
 
-#: src/plugins/ovirt-hosted-engine-setup/system/vdsmenv.py:160
+#: src/plugins/ovirt-hosted-engine-setup/system/vdsmenv.py:159
 #, python-brace-format
 msgid "Starting {service}"
 msgstr "Iniciando {service}"
 
-#: src/plugins/ovirt-hosted-engine-setup/vdsmd/cpu.py:105
+#: src/plugins/ovirt-hosted-engine-setup/vdsmd/cpu.py:150
 msgid "Hardware does not support virtualization"
 msgstr "Hardware não suporta virtualização"
 
-#: src/plugins/ovirt-hosted-engine-setup/vdsmd/cpu.py:108
+#: src/plugins/ovirt-hosted-engine-setup/vdsmd/cpu.py:153
 msgid "Hardware supports virtualization"
 msgstr "Hardware suporta virtualização"
 
-#: src/plugins/ovirt-hosted-engine-setup/vdsmd/cpu.py:111
+#: src/plugins/ovirt-hosted-engine-setup/vdsmd/cpu.py:156
 msgid "Cannot detect if hardware supports virtualization"
 msgstr "Não posso detectar se o hardware suporta virtualização"
 
-#: src/plugins/ovirt-hosted-engine-setup/vdsmd/cpu.py:129
+#: src/plugins/ovirt-hosted-engine-setup/vdsmd/cpu.py:174
 msgid ""
 "Hardware virtualization support is not available:\n"
 "please check BIOS settings and turn on NX support if available"
@@ -2044,7 +1849,7 @@ msgstr ""
 "por favor verifique as configurações da BIOS e ative o suporte NX se "
 "disponível"
 
-#: src/plugins/ovirt-hosted-engine-setup/vdsmd/cpu.py:160
+#: src/plugins/ovirt-hosted-engine-setup/vdsmd/cpu.py:205
 #, python-brace-format
 msgid ""
 "The following CPU types are supported by this host:\n"
@@ -2053,12 +1858,12 @@ msgstr ""
 "Os seguintes tipos de CPU são suportados por este host:\n"
 "{types_list}"
 
-#: src/plugins/ovirt-hosted-engine-setup/vdsmd/cpu.py:179
+#: src/plugins/ovirt-hosted-engine-setup/vdsmd/cpu.py:224
 msgid "Please specify the CPU type to be used by the VM [@DEFAULT@]: "
 msgstr "Por favor especifique o tipo de CPU a ser usado pela VM [@DEFAULT@]: "
 
-#: src/plugins/ovirt-hosted-engine-setup/vdsmd/cpu.py:190
-#: src/plugins/ovirt-hosted-engine-setup/vdsmd/cpu.py:198
+#: src/plugins/ovirt-hosted-engine-setup/vdsmd/cpu.py:235
+#: src/plugins/ovirt-hosted-engine-setup/vdsmd/cpu.py:243
 #, python-brace-format
 msgid "Invalid CPU type specified: {cpu_type}"
 msgstr "Tipo de CPU especificado inválido: {cpu_type}"
@@ -2257,12 +2062,12 @@ msgstr ""
 "O arquivo OVF especificado não é legível. Certifique-se de que {filepath} "
 "pode ser lido"
 
-#: src/plugins/ovirt-hosted-engine-setup/vm/boot_disk.py:582
-#: src/plugins/ovirt-hosted-engine-setup/vm/boot_disk.py:586
-msgid "Not enough space in the temporary directory"
+#: src/plugins/ovirt-hosted-engine-setup/vm/boot_disk.py:581
+#, fuzzy, python-brace-format
+msgid "Not enough space in the temporary directory [{tmpdir}]"
 msgstr "Não há espaço suficiente no diretório temporário"
 
-#: src/plugins/ovirt-hosted-engine-setup/vm/boot_disk.py:593
+#: src/plugins/ovirt-hosted-engine-setup/vm/boot_disk.py:596
 #, python-brace-format
 msgid ""
 "Please specify path to a temporary directory with at least {size} GB "
@@ -2311,8 +2116,7 @@ msgstr ""
 "automática da VM.\n"
 
 #: src/plugins/ovirt-hosted-engine-setup/vm/cloud_init.py:222
-msgid ""
-"How should the engine VM network be configured (@VALUES@)[@DEFAULT@]? "
+msgid "How should the engine VM network be configured (@VALUES@)[@DEFAULT@]? "
 msgstr ""
 "Como a rede na VM do engine deve ser configurada (@VALUES@)[@DEFAULT@]? "
 
@@ -2547,28 +2351,29 @@ msgstr ""
 "Por favor especifique o tamanho do disco da VM em GB [Padrão para o "
 "requisito mínimo é: @DEFAULT@]: "
 
-#: src/plugins/ovirt-hosted-engine-setup/vm/image.py:123
-#: src/plugins/ovirt-hosted-engine-setup/vm/image.py:133
-#, python-brace-format
-msgid "Not enough free space, about {estimate} GiB are available"
+#: src/plugins/ovirt-hosted-engine-setup/vm/image.py:122
+#, fuzzy, python-brace-format
+msgid ""
+"Not enough free space, about {estimate} GiB will be available within the "
+"storage domain (required {required} GiB)"
 msgstr ""
 "Não há espaço livre suficiente, cerca de {estimate} GiB estão disponíveis"
 
-#: src/plugins/ovirt-hosted-engine-setup/vm/image.py:144
+#: src/plugins/ovirt-hosted-engine-setup/vm/image.py:141
 msgid "Minimum requirements for disk size not met"
 msgstr "Os requisitos mínimos para o tamanho do disco não cumprem"
 
-#: src/plugins/ovirt-hosted-engine-setup/vm/image.py:154
+#: src/plugins/ovirt-hosted-engine-setup/vm/image.py:151
 msgid "Continue with specified disk size? (@VALUES@)[@DEFAULT@]: "
 msgstr "Continuar com o tamanho do disco especificado? (@VALUES@)[@DEFAULT@]: "
 
-#: src/plugins/ovirt-hosted-engine-setup/vm/image.py:168
-#: src/plugins/ovirt-hosted-engine-setup/vm/image.py:176
+#: src/plugins/ovirt-hosted-engine-setup/vm/image.py:165
+#: src/plugins/ovirt-hosted-engine-setup/vm/image.py:173
 #, python-brace-format
 msgid "Invalid disk size specified: {size}"
 msgstr "Tamanho do disco especificado inválido: {size}"
 
-#: src/plugins/ovirt-hosted-engine-setup/vm/image.py:222
+#: src/plugins/ovirt-hosted-engine-setup/vm/image.py:219
 #, python-brace-format
 msgid ""
 "Error: the VG on block device has capacity of only {available_gb} GiB while "
@@ -2577,7 +2382,7 @@ msgstr ""
 "Erro: o VG no dispositivo bloco tem capacidade de apenas {available_gb} GiB "
 "enquanto {required_size} GiB é necessário para a imagem"
 
-#: src/plugins/ovirt-hosted-engine-setup/vm/image.py:231
+#: src/plugins/ovirt-hosted-engine-setup/vm/image.py:228
 msgid "Creating VM Image"
 msgstr "Criando imagem da VM"
 
@@ -2652,3 +2457,174 @@ msgstr ""
 #: src/plugins/ovirt-hosted-engine-setup/vm/runvm.py:132
 msgid "Unsuppored console type provided."
 msgstr "Tipo de console fornecido não suportado."
+
+#~ msgid "GlusterFS Brick Provisioning"
+#~ msgstr "Provisionamento GlusterFS Brick"
+
+#~ msgid "GlusterFS Brick"
+#~ msgstr "GlusterFS Brick"
+
+#~ msgid "GlusterFS Share Name"
+#~ msgstr "Nome do GlusterFS compartilhado"
+
+#~ msgid "ovirt-setup-lib"
+#~ msgstr "ovirt-setup-lib"
+
+#~ msgid "No CN in peer certificate"
+#~ msgstr "Nenhum certificado CN em pares"
+
+#~ msgid "Invalid host '{host}' expected '{expected}'"
+#~ msgstr "Host inválido '{host}' esperado '{expected}'"
+
+#~ msgid "Unable to read CA cert from {fname}"
+#~ msgstr "Não é possível ler o certificado CA de {fname}"
+
+#~ msgid "Unable to acquire CA cert"
+#~ msgstr "Não é possível adquirir o certificado CA"
+
+#~ msgid ""
+#~ "The following CA certificate is going to be used, please immediately "
+#~ "interrupt if not correct:"
+#~ msgstr ""
+#~ "O seguinte certificado CA vai ser usado, por favor interromper "
+#~ "imediatamente se não estiver correto:"
+
+#~ msgid ""
+#~ "Issuer: {issuer}, Subject: {subject}, Fingerprint (SHA-1): {fingerprint}"
+#~ msgstr ""
+#~ "Emitente: {issuer}, Assunto: {subject}, Fingerprint (SHA-1): {fingerprint}"
+
+#~ msgid "The CA certificate is not valid: {ex}"
+#~ msgstr "O certificado CA não é válido: {ex}"
+
+#~ msgid "Unable to fetch SSH pub key"
+#~ msgstr "Incapaz de buscar a chave pública SSH"
+
+#~ msgid "Please provide the FQDN or IP of an active HE host: "
+#~ msgstr "Por favor forneça o FQDN ou IP de um host HE ativo: "
+
+#~ msgid "Unable to connect to {fqdn}. Error: {error}"
+#~ msgstr "Incapaz de conectar ao {fqdn}. Erro: {error}"
+
+#~ msgid "Enter 'root' user password for host {fqdn}: "
+#~ msgstr "Entre com a senha do usuário 'root' para o host {fqdn}: "
+
+#~ msgid "Invalid password for host {fqdn}"
+#~ msgstr "Senha inválida para o host {fqdn}"
+
+#~ msgid ""
+#~ "Cannot deploy Hosted Engine on additional host: unable to fetch the "
+#~ "configuration used on other hosts"
+#~ msgstr ""
+#~ "Não posso implantar o Hosted Engine em host adicional: incapaz de buscar "
+#~ "a configuração usada em outros hosts"
+
+#~ msgid "Unable to connect to {fqdn}. Error:{error}"
+#~ msgstr "Incapaz de conectar ao {fqdn}. Erro:{error}"
+
+#~ msgid ""
+#~ "If you do not want to download it automatically you can abort the setup "
+#~ "answering no to the following question.\n"
+#~ msgstr ""
+#~ "Se você não quiser baixá-lo automaticamente, você pode abortar o setup "
+#~ "respondendo não à seguinte pergunta.\n"
+
+#~ msgid ""
+#~ "If the supplied answerfile is complete, answer no to the following "
+#~ "question to continue just with that.\n"
+#~ msgstr ""
+#~ "Se o arquivo de resposta fornecido está completo, responda não à seguinte "
+#~ "pergunta para continuar apenas com isso.\n"
+
+#~ msgid ""
+#~ "The answer file may be fetched from an active HE host using scp.\n"
+#~ "{additional}Do you want to scp the answer file from another HE host? "
+#~ "(@VALUES@)[@DEFAULT@]: "
+#~ msgstr ""
+#~ "O arquivo de resposta pode ser obtido a partir de um host HE ativo usando "
+#~ "scp.\n"
+#~ "{additional}Você quer scp o arquivo de resposta de outro host HE? "
+#~ "(@VALUES@)[@DEFAULT@]: "
+
+#~ msgid ""
+#~ "Enter 'admin@internal' user password that will be used for accessing the "
+#~ "Administrator Portal: "
+#~ msgstr ""
+#~ "Digite a senha do usuário 'admin@internal' que será usado para acessar o "
+#~ "Portal do Administrador: "
+
+#~ msgid "Confirm 'admin@internal' user password: "
+#~ msgstr "Confirme a senha do usuário 'admin@internal': "
+
+#~ msgid ""
+#~ "Enter admin@internal user password that will be used for accessing the "
+#~ "Administrator Portal: "
+#~ msgstr ""
+#~ "Digite a senha do usuário 'admin@internal' que será usado para acessar o "
+#~ "Portal do Administrador: "
+
+#~ msgid ""
+#~ "Answer file lacks lockspace UUIDs, please use an answer file generated "
+#~ "from the same version you are using on this additional host"
+#~ msgstr ""
+#~ "Arquivo de resposta carece de UUIDs lockspace, utilize um arquivo de "
+#~ "resposta gerado a partir da mesma versão que você está usando neste host "
+#~ "adicional"
+
+#~ msgid "Failed to retrieve the Gluster Volume list"
+#~ msgstr "Falha ao receber lista de volumes Gluster"
+
+#~ msgid "GlusterFS Volume already exists"
+#~ msgstr "Volume GlusterFS já existe"
+
+#~ msgid "GlusterFS Volume has been found with different bricks list"
+#~ msgstr "Volume GlusterFS foi encontrado com diferentes listas de bricks"
+
+#~ msgid "Creating GlusterFS Volume"
+#~ msgstr "Criando Volume GlusterFS"
+
+#~ msgid "Failed to create the Gluster Volume"
+#~ msgstr "Falha ao criar o volume Gluster"
+
+#~ msgid "Failed to set {option} on the Gluster Volume"
+#~ msgstr "Falha ao definir {option} no Volume Gluster"
+
+#~ msgid "Failed to retrieve the Gluster Tasks List"
+#~ msgstr "Falha ao receber lista de tarefas Gluster"
+
+#~ msgid "Failed to start the Gluster Volume"
+#~ msgstr "Falha ao iniciar volume Gluster"
+
+#~ msgid "GlusterFS Volume found in an unknown state: {state}"
+#~ msgstr "Volume GlusterFS encontrado em um estado desconhecido: {state}"
+
+#~ msgid ""
+#~ "Do you want to configure this host for providing GlusterFS storage (will "
+#~ "start with no replica requires to grow to replica 3 later)? (@VALUES@)"
+#~ "[@DEFAULT@]: "
+#~ msgstr ""
+#~ "Você deseja configurar este host para fornecer armazenamento GlusterFS "
+#~ "(vai começar sem nenhuma réplica e requer 3 réplicas para crescer)? "
+#~ "(@VALUES@)[@DEFAULT@]: "
+
+#~ msgid "Please provide a path to be used for the brick on this host:"
+#~ msgstr "Por favor forneça um caminho a ser usado para o brick neste host:"
+
+#~ msgid "The specified brick must be on this host"
+#~ msgstr "O brick especificado precisa ser neste host"
+
+#~ msgid "HyperConverged deployment is currently unsupported "
+#~ msgstr "Implantação do HyperConverged não é suportada atualmente "
+
+#~ msgid "Starting GlusterFS services"
+#~ msgstr "Iniciando serviços GlusterFS"
+
+#~ msgid "Enabling GlusterFS services"
+#~ msgstr "Habilitando serviços GlusterFS"
+
+#~ msgid ""
+#~ "Cannot support GlusterFS provisioning without required GlusterFS "
+#~ "dependencies."
+#~ msgstr ""
+#~ "Não posso oferecer suporte ao provisionamento GlusterFS sem as "
+#~ "dependências do GlusterFS necessárias."

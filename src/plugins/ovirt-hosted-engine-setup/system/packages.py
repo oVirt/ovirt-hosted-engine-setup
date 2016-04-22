@@ -56,18 +56,6 @@ class Plugin(plugin.PluginBase):
                 ]
             )
         )
-        if self.environment[
-            ohostedcons.StorageEnv.GLUSTER_PROVISIONING_ENABLED
-        ]:
-            raise RuntimeError(
-                _(
-                    'Cannot support GlusterFS provisioning without '
-                    'required GlusterFS dependencies.'
-                )
-            )
-        self.environment[
-            ohostedcons.StorageEnv.GLUSTER_PROVISIONING_ENABLED
-        ] = False
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,

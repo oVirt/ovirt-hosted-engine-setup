@@ -25,7 +25,6 @@ MAINTAINERCLEANFILES = \
 
 mydir=$(ovirthostedengineplugindir)/ovirt-hosted-engine-setup/storage
 dist_my_PYTHON = \
-	glusterfs.py \
 	__init__.py \
 	blockd.py \
 	heconf.py \

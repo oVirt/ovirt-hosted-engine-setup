@@ -21,7 +21,6 @@
 %global         ovirt_hosted_engine_setup_templates %{_datadir}/%{name}/templates
 %global         ovirt_hosted_engine_setup_scripts %{_datadir}/%{name}/scripts
 %global         vdsmhooksdir %{_libexecdir}/vdsm/hooks
-%global         gluster_hc_available 0
 
 
 Summary:        oVirt Hosted Engine setup tool
@@ -72,12 +71,6 @@ Requires:       glusterfs-cli >= 3.7.3
 Requires:       vdsm >= 4.17.999-449
 Requires:       vdsm-cli >= 4.17.999-449
 Requires:       vdsm-python >= 4.17.999-449
-
-
-%if %{gluster_hc_available}
-Requires:       vdsm-gluster >= 4.17.8
-Requires:       glusterfs-server >= 3.7.3
-%endif
 
 
 # Dependencies that will be required by ovirt-host-deploy

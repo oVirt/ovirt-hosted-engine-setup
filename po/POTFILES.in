@@ -43,7 +43,6 @@
 ./src/plugins/ovirt-hosted-engine-setup/sanlock/__init__.py
 ./src/plugins/ovirt-hosted-engine-setup/sanlock/lockspace.py
 ./src/plugins/ovirt-hosted-engine-setup/storage/blockd.py
-./src/plugins/ovirt-hosted-engine-setup/storage/glusterfs.py
 ./src/plugins/ovirt-hosted-engine-setup/storage/heconf.py
 ./src/plugins/ovirt-hosted-engine-setup/storage/__init__.py
 ./src/plugins/ovirt-hosted-engine-setup/storage/nfs.py

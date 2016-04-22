@@ -797,16 +797,6 @@ class Plugin(plugin.PluginBase):
                         vlan_id
                     )
 
-                # Configuring the cluster for Hyper Converged support if
-                # enabled
-                if self.environment[
-                    ohostedcons.StorageEnv.GLUSTER_PROVISIONING_ENABLED
-                ]:
-                    cluster.set_gluster_service(True)
-                    cluster.update()
-                    # TODO: check if this is async too
-                    cluster = engine_api.clusters.get(cluster_name)
-
                 self.logger.debug('Adding the host to the cluster')
 
                 engine_api.hosts.add(
