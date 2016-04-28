@@ -63,8 +63,9 @@ Usage: $0 [--help] <command> [<command-args>]
             gracefully shutdown the VM on this host
         --vm-poweroff
             forcefully poweroff the VM on this host
-        --vm-status
-            VM status according to the HA agent
+        --vm-status [--json]
+            VM status according to the HA agent. If --json is given, the
+            output will be in machine-readable (JSON) format
         --add-console-password [--password=<password>]
             Create a temporary password for vnc/spice connection.  If
             --password is given, the password will be set to the value
@@ -244,15 +245,18 @@ return ;}
 
 cmd_vm_status() {
     [ "$1" == "--help" ] && { cat << __EOF__
-Usage: $0 --vm-status
+Usage: $0 --vm-status [--json]
     Report the status of the engine VM according to the HA agent.
     Available only after deployment has completed.
+
+    If --json is given, the output will be in machine-readable (JSON) format
+
 __EOF__
 return ;}
 
     if [ -n "${vmid}" ] ; then
         check_vm_conf
-        python -m ovirt_hosted_engine_setup.vm_status
+        python -m ovirt_hosted_engine_setup.vm_status $1
     else
         exit_not_deployed
     fi

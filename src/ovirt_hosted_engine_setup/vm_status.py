@@ -22,6 +22,7 @@
 
 
 import gettext
+import json
 import socket
 import sys
 
@@ -51,20 +52,34 @@ class VmStatus(object):
         'maintenance': _('Local maintenance')
     }
 
-    def __init__(self):
+    def __init__(self, with_json=False):
         super(VmStatus, self).__init__()
+        self.with_json = with_json
+
+    def log_error(self, error):
+        if self.with_json:
+            print(
+                json.loads(
+                    '{{"exception": "{0}"}}'.format(
+                        error.strip()
+                    )
+                )
+            )
+        else:
+            sys.stderr.write(error)
 
     def _get_all_host_stats(self):
         ha_cli = client.HAClient()
         try:
             all_host_stats = ha_cli.get_all_host_stats()
         except (socket.error, BrokerConnectionError) as e:
-            sys.stderr.write(
-                _('{0}\n'.format(str(e)))
+            self.log_error(
+                _(
+                    '{0}\nCannot connect to the HA daemon, '
+                    'please check the logs.\n'
+                    ).format(str(e))
             )
-            sys.stderr.write(
-                _('Cannot connect to the HA daemon, please check the logs.\n')
-            )
+
             # there is no reason to continue if we can't connect to the daemon
             return
         return all_host_stats
@@ -79,7 +94,7 @@ class VmStatus(object):
             # This is not an error.
             cluster_stats = {}
         except (socket.error, AttributeError, IndexError):
-            sys.stderr.write(
+            self.log_error(
                 _('Cannot connect to the HA daemon, please check the logs.\n')
             )
             cluster_stats = {}
@@ -88,6 +103,15 @@ class VmStatus(object):
     def print_status(self):
         all_host_stats = self._get_all_host_stats()
         cluster_stats = self._get_cluster_stats()
+
+        if self.with_json:
+            for host_id, host_stats in all_host_stats.items():
+                all_host_stats[host_id]['engine-status'] = json.loads(
+                    all_host_stats[host_id]['engine-status']
+                )
+            print(json.dumps(all_host_stats))
+            return all_host_stats
+
         glb_msg = ''
         if cluster_stats.get(client.HAClient.GlobalMdFlags.MAINTENANCE, False):
             glb_msg = _('\n\n!! Cluster is in GLOBAL MAINTENANCE mode !!\n')
@@ -142,7 +166,7 @@ class VmStatus(object):
 
 
 if __name__ == "__main__":
-    status_checker = VmStatus()
+    status_checker = VmStatus(with_json=any(['--json' in sys.argv]))
     if not status_checker.print_status():
         sys.exit(1)
 
