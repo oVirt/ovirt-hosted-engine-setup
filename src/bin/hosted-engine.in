@@ -71,6 +71,8 @@ Usage: $0 [--help] <command> [<command-args>]
             provided.  Otherwise, if it is set,  the environment variable
             OVIRT_HOSTED_ENGINE_CONSOLE_PASSWORD will be used.  As a last
             resort, the password will be read interactively.
+        --check-deployed
+            Check whether the hosted engine has been deployed already
         --check-liveliness
             Checks liveliness page of engine
         --connect-storage
@@ -267,6 +269,21 @@ return ;}
     ${VDSCOMMAND} setVmTicket "${vmid}" "${pass}" 120
 }
 
+cmd_check_deployed() {
+    [ "$1" == "--help" ] && { cat << __EOF__
+Usage: $0 --check-deployed
+    Report whether the engine has been deployed.
+__EOF__
+return ;}
+    if [ -n "${vmid}" ] ; then
+        rc=0
+    else
+        echo "The hosted engine has not been deployed"
+        rc=1
+    fi
+    exit $rc
+}
+
 cmd_check_liveliness() {
     [ "$1" == "--help" ] && { cat << __EOF__
 Usage: $0 --check-liveliness
@@ -413,6 +430,7 @@ cli_broker() {
         --vm-status) cmd_vm_status "$@" ;;
         --add-console-password) cmd_add_console_password "$@" ;;
         --check-liveliness) cmd_check_liveliness "$@" ;;
+        --check-deployed) cmd_check_deployed "$@" ;;
         --connect-storage) cmd_connect_storage "$@" ;;
         --console) cmd_console "$@" ;;
         --set-maintenance) cmd_set_maintenance "$@" ;;
