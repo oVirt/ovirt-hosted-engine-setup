@@ -553,14 +553,6 @@ class StorageEnv(object):
 
     @ohostedattrs(
         answerfile=True,
-        summary=True,
-        description=_('Storage type'),
-    )
-    def STORAGE_TYPE(self):
-        return 'OVEHOSTED_STORAGE/storageType'
-
-    @ohostedattrs(
-        answerfile=True,
     )
     def VOL_UUID(self):
         return 'OVEHOSTED_STORAGE/volUUID'
@@ -585,6 +577,8 @@ class StorageEnv(object):
 
     @ohostedattrs(
         answerfile=True,
+        summary=True,
+        description=_('Storage Domain type'),
     )
     def DOMAIN_TYPE(self):
         return 'OVEHOSTED_STORAGE/domainType'

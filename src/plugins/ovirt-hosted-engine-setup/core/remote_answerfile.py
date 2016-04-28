@@ -61,7 +61,7 @@ class Plugin(plugin.PluginBase):
         self.logger.debug('_fetch_answer_file')
 
         source = heconflib.get_volume_path(
-            self.environment[ohostedcons.StorageEnv.STORAGE_TYPE],
+            self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE],
             self.environment[ohostedcons.StorageEnv.SD_UUID],
             self.environment[ohostedcons.StorageEnv.CONF_IMG_UUID],
             self.environment[ohostedcons.StorageEnv.CONF_VOL_UUID],
