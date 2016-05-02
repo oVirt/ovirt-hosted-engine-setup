@@ -170,7 +170,7 @@ class Plugin(plugin.PluginBase):
             name='ovehosted_vmenv_mem',
             note=_(
                 'Please specify the memory size of the VM in MB '
-                '[Defaults to {default_msg}: @DEFAULT@]: '
+                '(Defaults to {default_msg}): [@DEFAULT@]: '
             ).format(
                 default_msg=default_msg,
             ),

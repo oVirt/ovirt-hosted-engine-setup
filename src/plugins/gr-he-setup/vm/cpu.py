@@ -107,7 +107,7 @@ class Plugin(plugin.PluginBase):
                     name='ovehosted_vmenv_cpu',
                     note=_(
                         'Please specify the number of virtual CPUs for the VM '
-                        '[Defaults to {default_msg}: @DEFAULT@]: '
+                        '(Defaults to {default_msg}): [@DEFAULT@]: '
                     ).format(default_msg=default_msg),
                     prompt=True,
                     default=default,

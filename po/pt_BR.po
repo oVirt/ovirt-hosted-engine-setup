@@ -2333,11 +2333,11 @@ msgstr "valor da OVF da appliance"
 #: src/plugins/gr-he-setup/vm/cpu.py:109
 #, python-brace-format
 msgid ""
-"Please specify the number of virtual CPUs for the VM [Defaults to "
-"{default_msg}: @DEFAULT@]: "
+"Please specify the number of virtual CPUs for the VM (Defaults to "
+"{default_msg}): [@DEFAULT@]: "
 msgstr ""
-"Por favor especifique o número de CPUs virtuais para a VM [Padrão "
-"para{default_msg}: @DEFAULT@]: "
+"Por favor especifique o número de CPUs virtuais para a VM (Padrão "
+"para{default_msg}): [@DEFAULT@]: "
 
 #: src/plugins/gr-he-setup/vm/cpu.py:121
 msgid "Minimum requirements for CPUs not met"
@@ -2363,11 +2363,11 @@ msgstr "Número de cpu especificado inválido: {vcpu}"
 
 #: src/plugins/gr-he-setup/vm/image.py:110
 msgid ""
-"Please specify the disk size of the VM in GB [Defaults to minimum "
-"requirement: @DEFAULT@]: "
+"Please specify the disk size of the VM in GB (Defaults to minimum "
+"requirement): [@DEFAULT@]: "
 msgstr ""
-"Por favor especifique o tamanho do disco da VM em GB [Padrão para o "
-"requisito mínimo é: @DEFAULT@]: "
+"Por favor especifique o tamanho do disco da VM em GB (Padrão para o "
+"requisito mínimo é): [@DEFAULT@]: "
 
 #: src/plugins/gr-he-setup/vm/image.py:122
 #, fuzzy, python-brace-format
@@ -2453,11 +2453,11 @@ msgstr ""
 #: src/plugins/gr-he-setup/vm/memory.py:172
 #, python-brace-format
 msgid ""
-"Please specify the memory size of the VM in MB [Defaults to {default_msg}: "
-"@DEFAULT@]: "
+"Please specify the memory size of the VM in MB (Defaults to {default_msg}): "
+"[@DEFAULT@]: "
 msgstr ""
-"Por favor especifique o tamanho da memória da VM em MB [Padrões para "
-"{default_msg}: @DEFAULT@]: "
+"Por favor especifique o tamanho da memória da VM em MB (Padrões para "
+"{default_msg}): [@DEFAULT@]: "
 
 #: src/plugins/gr-he-setup/vm/memory.py:188
 msgid "Continue with specified memory size?"

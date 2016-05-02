@@ -108,7 +108,7 @@ class Plugin(plugin.PluginBase):
                     name='ovehosted_vmenv_mem',
                     note=_(
                         'Please specify the disk size of the VM in GB '
-                        '[Defaults to minimum requirement: @DEFAULT@]: '
+                        '(Defaults to minimum requirement): [@DEFAULT@]: '
                     ),
                     prompt=True,
                     default=ohostedcons.Defaults.DEFAULT_IMAGE_SIZE_GB,
