@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2015 Red Hat, Inc.
+# Copyright (C) 2013-2016 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -29,6 +29,7 @@ import glob
 import hashlib
 from io import StringIO
 import json
+import guestfs
 import os
 import shutil
 import tarfile
@@ -55,12 +56,13 @@ def _(m):
 class ImageTransaction(transaction.TransactionElement):
     """Image transaction element."""
 
-    def __init__(self, parent, tar, src, dst):
+    def __init__(self, parent, tar, src, dst, backup_src):
         super(ImageTransaction, self).__init__()
         self._parent = parent
         self._tar = tar
         self._src = src
         self._dst = dst
+        self._backup_src = backup_src
         self._prepared = False
 
     def __str__(self):
@@ -159,6 +161,33 @@ class ImageTransaction(transaction.TransactionElement):
             return (1, str(e))
         return (0, 'OK')
 
+    def _injectBackup(self):
+        try:
+            destination = self._get_volume_path()
+        except RuntimeError as e:
+            return (1, str(e))
+        # TODO: what on errors?
+        g = guestfs.GuestFS(python_return_dict=True)
+        g.set_backend('direct')
+        g.add_drive_opts(filename=destination, format='raw', readonly=0)
+        self.logger.debug(
+            'disk added from {path}'.format(path=destination)
+        )
+        g.launch()
+        self._parent.logger.debug('guestfs launched')
+        g.mount('/dev/sda1', '/')
+        self._parent.logger.debug('disk mounted')
+        g.upload(
+            self._backup_src,
+            os.path.join('/root/', os.path.basename(self._backup_src))
+        )
+        self._parent.logger.debug('backup file uploaded')
+        g.umount('/')
+        self._parent.logger.debug('disk unmounted')
+        g.shutdown()
+        g.close()
+        return (0, 'OK')
+
     def prepare(self):
         self._parent.logger.info(
             _(
@@ -203,6 +232,10 @@ class ImageTransaction(transaction.TransactionElement):
         status, message = self._uploadVolume()
         if status != 0:
             raise RuntimeError(message)
+        if self._backup_src:
+            self._parent.logger.info(_('Injecting engine backup'))
+            self._injectBackup()
+            self._parent.logger.info(_('Backup successfully injected'))
         self._parent.logger.info(_('Image successfully imported from OVF'))
 
 
@@ -440,6 +473,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.CoreEnv.TEMPDIR,
             os.getenv('TMPDIR', ohostedcons.Defaults.DEFAULT_TEMPDIR)
         )
+        self.environment.setdefault(
+            ohostedcons.Upgrade.BACKUP_FILE,
+            None,
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -639,6 +676,9 @@ class Plugin(plugin.PluginBase):
                     tar=self.environment[ohostedcons.VMEnv.OVF],
                     src=self._source_image,
                     dst=self._image_path,
+                    backup_src=self.environment[
+                        ohostedcons.Upgrade.BACKUP_FILE
+                    ],
                 )
             )
 

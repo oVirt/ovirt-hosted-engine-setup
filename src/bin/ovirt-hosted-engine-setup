@@ -31,6 +31,8 @@ Usage: $0
 		Load extra configuration files.
 	--generate-answer=file
 		Generate answer file.
+	--upgrade-appliance
+		Upgrade the engine-appliance
 
 __EOF__
 	exit 1
@@ -38,6 +40,8 @@ __EOF__
 
 environment="OVESETUP_CORE/offlinePackager=bool:True"
 environment="${environment} PACKAGER/yumpackagerEnabled=bool:False"
+
+plugingroups="ovirt-hosted-engine-common:ovirt-hosted-engine-setup"
 
 while [ -n "$1" ]; do
 	x="$1"
@@ -56,6 +60,9 @@ while [ -n "$1" ]; do
 		--help)
 			usage
 		;;
+		--upgrade-appliance)
+ 			plugingroups="ovirt-hosted-engine-common:ovirt-hosted-engine-upgrade-appliance"
+		;;
 		*)
 			die "Invalid option '${x}'"
 		;;
@@ -69,5 +76,5 @@ if [ ! -f "${scriptdir}/ovirt-hosted-engine-setup.env" ]; then
 	scriptdir=/usr/share/ovirt-hosted-engine-setup/scripts
 fi
 . "${scriptdir}/ovirt-hosted-engine-setup.env"
-baseenv="APPEND:BASE/pluginPath=str:${scriptdir}/../plugins APPEND:BASE/pluginGroups=str:ovirt-hosted-engine-setup"
+baseenv="APPEND:BASE/pluginPath=str:${scriptdir}/../plugins APPEND:BASE/pluginGroups=str:${plugingroups}"
 exec "${otopidir}/otopi" "${baseenv} ${environment} ${otopienv}"

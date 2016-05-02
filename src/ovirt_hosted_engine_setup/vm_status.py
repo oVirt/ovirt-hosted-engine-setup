@@ -54,7 +54,7 @@ class VmStatus(object):
     def __init__(self):
         super(VmStatus, self).__init__()
 
-    def print_status(self):
+    def _get_all_host_stats(self):
         ha_cli = client.HAClient()
         try:
             all_host_stats = ha_cli.get_all_host_stats()
@@ -67,7 +67,10 @@ class VmStatus(object):
             )
             # there is no reason to continue if we can't connect to the daemon
             return
+        return all_host_stats
 
+    def _get_cluster_stats(self):
+        ha_cli = client.HAClient()
         try:
             cluster_stats = ha_cli.get_all_stats(client.HAClient.
                                                  StatModes.GLOBAL)[0]
@@ -80,7 +83,11 @@ class VmStatus(object):
                 _('Cannot connect to the HA daemon, please check the logs.\n')
             )
             cluster_stats = {}
+        return cluster_stats
 
+    def print_status(self):
+        all_host_stats = self._get_all_host_stats()
+        cluster_stats = self._get_cluster_stats()
         glb_msg = ''
         if cluster_stats.get(client.HAClient.GlobalMdFlags.MAINTENANCE, False):
             glb_msg = _('\n\n!! Cluster is in GLOBAL MAINTENANCE mode !!\n')
@@ -115,6 +122,25 @@ class VmStatus(object):
         if glb_msg:
             print(glb_msg)
         return all_host_stats
+
+    def get_status(self):
+        status = {}
+        cluster_stats = self._get_cluster_stats()
+        status['global_maintenance'] = cluster_stats.get(
+            client.HAClient.GlobalMdFlags.MAINTENANCE,
+            False
+        )
+        status['all_host_stats'] = {}
+        for host_id, host_stats in self._get_all_host_stats().items():
+            status['all_host_stats'][host_id] = host_stats
+        status['engine_vm_up'] = False
+        status['engine_vm_host'] = None
+        for id, host in status['all_host_stats'].iteritems():
+            if 'engine-status' in host and 'live-data' in host:
+                if '"vm": "up"' in host['engine-status'] and host['live-data']:
+                    status['engine_vm_up'] = True
+                    status['engine_vm_host'] = host['hostname']
+        return status
 
 
 if __name__ == "__main__":

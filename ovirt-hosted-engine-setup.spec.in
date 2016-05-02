@@ -45,6 +45,7 @@ Requires:       openssl
 Requires:       python
 Requires:       python-ethtool >= 0.6-3
 Requires:       python-netaddr
+Requires:       python-libguestfs
 Requires:       sanlock >= 2.8
 Requires:       sanlock-python >= 2.8
 Requires:       sudo
@@ -72,6 +73,8 @@ Requires:       vdsm >= 4.17.999-1046
 Requires:       vdsm-cli >= 4.17.999-1046
 Requires:       vdsm-python >= 4.17.999-1046
 
+Conflicts:      ovirt-engine-appliance < 4.0
+Conflicts:      ovirt-engine-appliance >= 4.1
 
 # Dependencies that will be required by ovirt-host-deploy
 # avoiding to have them installed in the middle of the setup

@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2016 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -22,5 +22,7 @@ MAINTAINERCLEANFILES = \
 	$(NULL)
 
 SUBDIRS = \
+	ovirt-hosted-engine-common \
 	ovirt-hosted-engine-setup \
+	ovirt-hosted-engine-upgrade-appliance \
 	$(NULL)

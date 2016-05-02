@@ -21,8 +21,6 @@
 """VDSM misc plugin."""
 
 import gettext
-import grp
-import pwd
 
 from otopi import plugin
 from otopi import util
@@ -41,27 +39,6 @@ class Plugin(plugin.PluginBase):
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_INIT
-    )
-    def _init(self):
-        self.environment.setdefault(
-            ohostedcons.VDSMEnv.VDSMD_SERVICE,
-            ohostedcons.Defaults.DEFAULT_VDSMD_SERVICE
-        )
-        self.environment.setdefault(
-            ohostedcons.VDSMEnv.VDSM_UID,
-            pwd.getpwnam('vdsm').pw_uid
-        )
-        self.environment.setdefault(
-            ohostedcons.VDSMEnv.KVM_GID,
-            grp.getgrnam('kvm').gr_gid
-        )
-        self.environment.setdefault(
-            ohostedcons.VDSMEnv.VDS_CLI,
-            None
-        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,

@@ -84,32 +84,6 @@ class Plugin(plugin.PluginBase):
         )
 
     @plugin.event(
-        stage=plugin.Stages.STAGE_LATE_SETUP,
-        after=(
-            ohostedcons.Stages.VDSMD_CONF_LOADED,
-            ohostedcons.Stages.VDSM_LIBVIRT_CONFIGURED,
-        ),
-        name=ohostedcons.Stages.VDSMD_LATE_SETUP_READY,
-    )
-    def _late_setup(self):
-        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        response = cli.list()
-        self.logger.debug(response)
-        if response['status']['code'] == 0 and 'items' in response:
-            if 'items' in response and response['items']:
-                self.logger.error(
-                    _(
-                        'The following VMs has been found: '
-                        '{vms}'
-                    ).format(
-                        vms=', '.join(response['items'])
-                    )
-                )
-                raise RuntimeError(
-                    _('Cannot setup Hosted Engine with other VMs running')
-                )
-
-    @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         name=ohostedcons.Stages.CONFIG_BOOT_DEVICE,
         after=(

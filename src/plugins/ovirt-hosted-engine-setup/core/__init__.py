@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2016 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -20,16 +20,12 @@
 
 """hosted engine core plugin."""
 
-
 from otopi import util
 
-
-from . import misc
-from . import conf
 from . import answerfile
-from . import offlinepackager
+from . import conf
+from . import misc
 from . import preview
-from . import remote_answerfile
 from . import shell
 from . import titles
 
@@ -39,9 +35,7 @@ def createPlugins(context):
     misc.Plugin(context=context)
     conf.Plugin(context=context)
     answerfile.Plugin(context=context)
-    offlinepackager.Plugin(context=context)
     preview.Plugin(context=context)
-    remote_answerfile.Plugin(context=context)
     shell.Plugin(context=context)
     titles.Plugin(context=context)
 

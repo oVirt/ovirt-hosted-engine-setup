@@ -55,29 +55,6 @@ class Plugin(plugin.PluginBase):
         self.config.optionxform = str
 
     @plugin.event(
-        stage=plugin.Stages.STAGE_INIT
-    )
-    def _init(self):
-        self.environment.setdefault(
-            ohostedcons.VDSMEnv.USE_SSL,
-            True
-        )
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_LATE_SETUP,
-        name=ohostedcons.Stages.VDSMD_CONF_LOADED,
-    )
-    def _late_setup(self):
-        if self.config.read(ohostedcons.FileLocations.VDSM_CONF):
-            if (
-                self.config.has_section('vars') and
-                self.config.has_option('vars', 'ssl')
-            ):
-                self.environment[
-                    ohostedcons.VDSMEnv.USE_SSL
-                ] = self.config.getboolean('vars', 'ssl')
-
-    @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
         name=ohostedcons.Stages.VDSMD_CONFIGURED,
     )

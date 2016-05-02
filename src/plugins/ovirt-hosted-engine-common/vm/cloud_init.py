@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2015 Red Hat, Inc.
+# Copyright (C) 2015-2016 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -407,6 +407,7 @@ class Plugin(plugin.PluginBase):
     def _setup(self):
         self.command.detect('genisoimage')
         self._hostname_helper = osetuphostname.Hostname(plugin=self)
+        self.command.detect('ping')
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
@@ -812,11 +813,45 @@ class Plugin(plugin.PluginBase):
                     ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
                 ].split('.', 1)[1]
 
+            engine_restore = ''
+            adminPwd = (
+                '     OVESETUP_CONFIG/adminPassword=str:{password}\n'
+            ).format(
+                password=self.environment[
+                    ohostedcons.EngineEnv.ADMIN_PASSWORD
+                ],
+            )
+            if self.environment[
+                ohostedcons.CoreEnv.UPGRADING_APPLIANCE
+            ]:
+                engine_restore = (
+                    ' - engine-backup --mode=restore --file={backup_file}'
+                    ' --log=engine_restore.log --restore-permissions'
+                    ' --provision-db'
+                    ' 1>{port}'
+                    ' 2>&1\n'
+                    ' - if [ $? -eq 0 ];'
+                    ' then echo "{success_string}" >{port};'
+                    ' else echo "{fail_string}" >{port};'
+                    ' fi\n'
+                ).format(
+                    backup_file=self.environment[
+                        ohostedcons.Upgrade.BACKUP_FILE
+                    ],
+                    port=(
+                        ohostedcons.Const.VIRTIO_PORTS_PATH +
+                        ohostedcons.Const.OVIRT_HE_CHANNEL_NAME
+                    ),
+                    success_string=ohostedcons.Const.E_RESTORE_SUCCESS_STRING,
+                    fail_string=ohostedcons.Const.E_RESTORE_FAIL_STRING,
+                )
+                adminPwd = ''
+
             user_data += (
                 'write_files:\n'
                 ' - content: |\n'
                 '     [environment:default]\n'
-                '     OVESETUP_CONFIG/adminPassword=str:{password}\n'
+                '{adminPwd}'
                 '     OVESETUP_CONFIG/fqdn=str:{fqdn}\n'
                 '     OVESETUP_PKI/organization=str:{org}\n'
                 '     DIALOG/autoAcceptDefault=bool:True\n'
@@ -824,6 +859,7 @@ class Plugin(plugin.PluginBase):
                 '   owner: root:root\n'
                 '   permissions: \'0640\'\n'
                 'runcmd:\n'
+                '{engine_restore}'
                 ' - /usr/bin/engine-setup --offline'
                 ' --config-append={applianceanswers}'
                 ' --config-append={heanswers}'
@@ -839,9 +875,7 @@ class Plugin(plugin.PluginBase):
                     ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
                 ],
                 org=org,
-                password=self.environment[
-                    ohostedcons.EngineEnv.ADMIN_PASSWORD
-                ],
+                adminPwd=adminPwd,
                 applianceanswers=ohostedcons.Const.CLOUD_INIT_APPLIANCEANSWERS,
                 heanswers=ohostedcons.Const.CLOUD_INIT_HEANSWERS,
                 port=(
@@ -850,6 +884,7 @@ class Plugin(plugin.PluginBase):
                 ),
                 success_string=ohostedcons.Const.E_SETUP_SUCCESS_STRING,
                 fail_string=ohostedcons.Const.E_SETUP_FAIL_STRING,
+                engine_restore=engine_restore,
             )
 
         if 'runcmd:\n' not in user_data:

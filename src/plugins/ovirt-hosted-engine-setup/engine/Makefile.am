@@ -27,7 +27,6 @@ mydir=$(ovirthostedengineplugindir)/ovirt-hosted-engine-setup/engine
 dist_my_PYTHON = \
 	__init__.py \
 	fqdn.py \
-	health.py \
 	add_host.py \
 	os_install.py \
 	$(NULL)

@@ -352,6 +352,8 @@ class Const(object):
     VIRTIO_PORTS_PATH = '/dev/virtio-ports/'
     E_SETUP_SUCCESS_STRING = 'HE_APPLIANCE_ENGINE_SETUP_SUCCESS'
     E_SETUP_FAIL_STRING = 'HE_APPLIANCE_ENGINE_SETUP_FAIL'
+    E_RESTORE_SUCCESS_STRING = 'HE_APPLIANCE_ENGINE_RESTORE_SUCCESS'
+    E_RESTORE_FAIL_STRING = 'HE_APPLIANCE_ENGINE_RESTORE_FAIL'
     # sync with engine table storage_server_connections
     # (packaging/dbscripts/create_tables.sql)
     MAX_STORAGE_USERNAME_LENGTH = 50
@@ -367,6 +369,7 @@ class CoreEnv(object):
     REQUIREMENTS_CHECK_ENABLED = 'OVEHOSTED_CORE/checkRequirements'
     ADDITIONAL_HOST_ENABLED = 'OVEHOSTED_CORE/additionalHostEnabled'
     IS_ADDITIONAL_HOST = 'OVEHOSTED_CORE/isAdditionalHost'
+    UPGRADING_APPLIANCE = 'OVEHOSTED_CORE/upgradingAppliance'
     TEMPDIR = 'OVEHOSTED_CORE/tempDir'
 
     @ohostedattrs(
@@ -374,6 +377,12 @@ class CoreEnv(object):
     )
     def DEPLOY_PROCEED(self):
         return 'OVEHOSTED_CORE/deployProceed'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def UPGRADE_PROCEED(self):
+        return 'OVEHOSTED_CORE/upgradeProceed'
 
     @ohostedattrs(
         answerfile=True,
@@ -925,6 +934,7 @@ class Stages(object):
     CONFIG_CLOUD_INIT_OPTIONS = 'ohosted.boot.configuration.cloud_init_options'
     CONFIG_CLOUD_INIT_VM_NETWORKING = \
         'ohosted.boot.configuration.cloud_init_vm_networking'
+    CONFIG_BACKUP_FILE = 'ohosted.configuration.backupfile'
     REQUIRE_ANSWER_FILE = 'ohosted.core.require.answerfile'
     CONFIG_OVF_IMPORT = 'ohosted.configuration.ovf'
     VDSMD_START = 'ohosted.vdsm.started'
@@ -936,9 +946,11 @@ class Stages(object):
     IMAGES_REPREPARED = 'ohosted.storage.imagesreprepared'
     VM_IMAGE_AVAILABLE = 'ohosted.vm.image.available'
     OVF_IMPORTED = 'ohosted.vm.ovf.imported'
+    BACKUP_INJECTED = 'ohosted.vm.backup.injected'
     STORAGE_POOL_DESTROYED = 'ohosted.storage.pool.destroyed'
     VM_CONFIGURED = 'ohosted.vm.state.configured'
     VM_RUNNING = 'ohosted.vm.state.running'
+    VM_SHUTDOWN = 'ohosted.vm.state.shutdown'
     BRIDGE_AVAILABLE = 'ohosted.network.bridge.available'
     LIBVIRT_CONFIGURED = 'ohosted.libvirt.configured'
     SAVE_CONFIG = 'ohosted.save.config'
@@ -964,6 +976,8 @@ class Stages(object):
     BROKER_CONF_AVAILABLE = 'ohosted.notifications.broker.conf.available'
     ANSWER_FILE_AVAILABLE = 'ohosted.notifications.answerfile.available'
     CONF_IMAGE_AVAILABLE = 'ohosted.notifications.confimage.available'
+    UPGRADED_APPLIANCE_RUNNING = 'ohosted.vm.state.upgraded.appliance.running'
+    CHECK_MAINTENANCE_MODE = 'ohosted.core.check.maintenance.mode'
 
     DIALOG_TITLES_S_VM = 'ohosted.dialog.titles.vm.start'
     DIALOG_TITLES_E_VM = 'ohosted.dialog.titles.vm.end'
@@ -1012,6 +1026,7 @@ class Defaults(object):
 @util.codegen
 class Confirms(object):
     DEPLOY_PROCEED = 'DEPLOY_PROCEED'
+    UPGRADE_PROCEED = 'UPGRADE_PROCEED'
     CPU_PROCEED = 'CPU_PROCEED'
     DISK_PROCEED = 'DISK_PROCEED'
     MEMORY_PROCEED = 'MEMORY_PROCEED'
@@ -1024,6 +1039,12 @@ class Confirms(object):
 class FirstHostEnv(object):
     SKIP_SHARED_STORAGE_ANSWERF = 'OVEHOSTED_FIRST_HOST/skipSharedStorageAF'
     DEPLOY_WITH_HE_35_HOSTS = 'OVEHOSTED_FIRST_HOST/deployWithHE35Hosts'
+
+
+@util.export
+@util.codegen
+class Upgrade(object):
+    BACKUP_FILE = 'OVEHOSTED_UPGRADE/backupFileName'
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

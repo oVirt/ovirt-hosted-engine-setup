@@ -1,6 +1,6 @@
 #
-# ovirt-hosted-engine-setup -- ovirt with a manager in a VM
-# Copyright (C) 2013 Red Hat, Inc.
+# ovirt-hosted-engine-setup -- ovirt hosted engine setup
+# Copyright (C) 2016 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,29 +17,21 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
-include $(top_srcdir)/build/python.inc
 
-MAINTAINERCLEANFILES = \
-	$(srcdir)/Makefile.in \
-	$(NULL)
+"""hosted engine common plugin."""
 
-mydir=$(ovirthostedengineplugindir)/ovirt-hosted-engine-setup/vm
-dist_my_PYTHON = \
-	__init__.py \
-	boot_cdrom.py \
-	cpu.py \
-	configurevm.py \
-	image.py \
-	mac.py \
-	machine.py \
-	memory.py \
-	runvm.py \
-	$(NULL)
+from otopi import util
 
-clean-local: \
-	python-clean \
-	$(NULL)
+from . import boot_disk
+from . import cloud_init
+from . import misc
 
-all-local: \
-	python-syntax-check \
-	$(NULL)
+
+@util.export
+def createPlugins(context):
+    boot_disk.Plugin(context=context)
+    cloud_init.Plugin(context=context)
+    misc.Plugin(context=context)
+
+
+# vim: expandtab tabstop=4 shiftwidth=4

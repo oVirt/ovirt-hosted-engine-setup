@@ -29,9 +29,7 @@ dist_my_PYTHON = \
 	misc.py \
 	conf.py \
 	answerfile.py \
-	offlinepackager.py \
 	preview.py \
-	remote_answerfile.py \
 	shell.py \
 	titles.py \
 	$(NULL)

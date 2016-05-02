@@ -118,6 +118,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.FirstHostEnv.DEPLOY_WITH_HE_35_HOSTS,
             None
         )
+        self.environment.setdefault(
+            ohostedcons.CoreEnv.UPGRADING_APPLIANCE,
+            False
+        )
 
     @plugin.event(
         name=ohostedcons.Stages.REQUIRE_ANSWER_FILE,
@@ -130,16 +134,18 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.DIALOG_TITLES_E_SYSTEM,
         ),
         condition=lambda self: (
-            self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
+            self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] or
+            self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE]
         ),
     )
     def _customization(self):
-        self.logger.warning(
-            _(
-                'A configuration file must be supplied to deploy '
-                'Hosted Engine on an additional host.'
+        if self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]:
+            self.logger.warning(
+                _(
+                    'A configuration file must be supplied to deploy '
+                    'Hosted Engine on an additional host.'
+                )
             )
-        )
 
         if self.environment[
             ohostedcons.FirstHostEnv.SKIP_SHARED_STORAGE_ANSWERF
@@ -165,13 +171,18 @@ class Plugin(plugin.PluginBase):
                     )
                 )
         else:
+            _ovf = self.environment[ohostedcons.VMEnv.OVF]
             self._fetch_answer_file()
             self._parse_answer_file()
+            if self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE]:
+                self.environment[ohostedcons.VMEnv.OVF] = _ovf
+                self.environment[ohostedcons.VMEnv.CDROM] = None
 
     @plugin.event(
         stage=plugin.Stages.STAGE_VALIDATION,
         condition=lambda self: (
-            self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
+            self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] or
+            self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE]
         ),
     )
     def _validation(self):

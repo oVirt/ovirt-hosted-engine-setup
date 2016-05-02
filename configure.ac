@@ -100,10 +100,14 @@ AC_CONFIG_FILES([
 	src/ovirt_hosted_engine_setup/Makefile
 	src/ovirt_hosted_engine_setup/ovf/Makefile
 	src/plugins/Makefile
+	src/plugins/ovirt-hosted-engine-common/Makefile
+	src/plugins/ovirt-hosted-engine-common/core/Makefile
+	src/plugins/ovirt-hosted-engine-common/engine/Makefile
+	src/plugins/ovirt-hosted-engine-common/vm/Makefile
 	src/plugins/ovirt-hosted-engine-setup/Makefile
 	src/plugins/ovirt-hosted-engine-setup/core/Makefile
 	src/plugins/ovirt-hosted-engine-setup/ha/Makefile
-        src/plugins/ovirt-hosted-engine-setup/network/Makefile
+	src/plugins/ovirt-hosted-engine-setup/network/Makefile
 	src/plugins/ovirt-hosted-engine-setup/pki/Makefile
 	src/plugins/ovirt-hosted-engine-setup/sanlock/Makefile
 	src/plugins/ovirt-hosted-engine-setup/storage/Makefile
@@ -112,6 +116,9 @@ AC_CONFIG_FILES([
 	src/plugins/ovirt-hosted-engine-setup/libvirt/Makefile
 	src/plugins/ovirt-hosted-engine-setup/vdsmd/Makefile
 	src/plugins/ovirt-hosted-engine-setup/engine/Makefile
+	src/plugins/ovirt-hosted-engine-upgrade-appliance/Makefile
+	src/plugins/ovirt-hosted-engine-upgrade-appliance/core/Makefile
+	src/plugins/ovirt-hosted-engine-upgrade-appliance/vm/Makefile
 	src/vdsm_hooks/Makefile
 	templates/Makefile
 	tests/Makefile

@@ -32,7 +32,6 @@ from otopi import util
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
-from ovirt_hosted_engine_setup import tasks
 
 
 def _(m):
@@ -86,47 +85,11 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
         after=(
-            ohostedcons.Stages.VDSCLI_RECONNECTED,
-            ohostedcons.Stages.CONF_IMAGE_AVAILABLE,
+            ohostedcons.Stages.VM_SHUTDOWN,
         ),
         name=ohostedcons.Stages.HA_START,
     )
     def _closeup(self):
-        # shutdown the vm if this is first host.
-        if not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]:
-
-            if self.environment[
-                ohostedcons.VMEnv.AUTOMATE_VM_SHUTDOWN
-            ]:
-                self.logger.info(_('Shutting down the engine VM'))
-                cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-                res = cli.shutdown(self.environment[ohostedcons.VMEnv.VM_UUID])
-                self.logger.debug(res)
-            else:
-                self.dialog.note(
-                    _(
-                        'Please shutdown the VM allowing the system '
-                        'to launch it as a monitored service.\n'
-                        'The system will wait until the VM is down.'
-                    )
-                )
-            waiter = tasks.VMDownWaiter(self.environment)
-            if not waiter.wait():
-                # The VM is down but not destroyed
-                status = self.environment[
-                    ohostedcons.VDSMEnv.VDS_CLI
-                ].destroy(
-                    self.environment[ohostedcons.VMEnv.VM_UUID]
-                )
-                self.logger.debug(status)
-                if status['status']['code'] != 0:
-                    self.logger.error(
-                        _(
-                            'Cannot destroy the Hosted Engine VM: ' +
-                            status['status']['message']
-                        )
-                    )
-                    raise RuntimeError(status['status']['message'])
         self.logger.info(_('Enabling and starting HA services'))
         for service in (
             ohostedcons.Const.HA_AGENT_SERVICE,

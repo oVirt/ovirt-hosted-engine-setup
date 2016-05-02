@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2015 Red Hat, Inc.
+# Copyright (C) 2013-2016 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -69,6 +69,7 @@ class Plugin(
         stage=plugin.Stages.STAGE_CLOSEUP,
         after=(
             ohostedcons.Stages.INSTALLED_VM_RUNNING,
+            ohostedcons.Stages.UPGRADED_APPLIANCE_RUNNING,
         ),
         name=ohostedcons.Stages.ENGINE_ALIVE,
         condition=lambda self: (
@@ -146,7 +147,22 @@ class Plugin(
                             'Please check its log on the appliance.\n'
                         ).format(since=TIMEOUT*nTimeout5)
                     )
-                if ohostedcons.Const.E_SETUP_SUCCESS_STRING in line:
+                if ohostedcons.Const.E_RESTORE_SUCCESS_STRING in line:
+                    self.logger.info(
+                        'Engine backup successfully restored'
+                    )
+                elif ohostedcons.Const.E_RESTORE_FAIL_STRING in line:
+                    self.logger.error(
+                        'Engine backup restore failed on the appliance'
+                    )
+                    raise RuntimeError(
+                        _(
+                            'engine-backup failed restoring the engine backup '
+                            'on the appliance\n'
+                            'Please check its log on the appliance.\n'
+                        ).format(since=TIMEOUT*nTimeout5)
+                    )
+                elif ohostedcons.Const.E_SETUP_SUCCESS_STRING in line:
                     completed = True
                 elif ohostedcons.Const.E_SETUP_FAIL_STRING in line:
                     self.logger.error(

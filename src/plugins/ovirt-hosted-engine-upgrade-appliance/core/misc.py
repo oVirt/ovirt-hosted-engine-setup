@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2016 Red Hat, Inc.
+# Copyright (C) 2016 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -30,6 +30,8 @@ from otopi import plugin
 from otopi import util
 
 
+from ovirt_hosted_engine_ha.env import config
+from ovirt_hosted_engine_ha.lib import util as ohautil
 from ovirt_hosted_engine_setup import constants as ohostedcons
 
 
@@ -45,6 +47,33 @@ class Plugin(plugin.PluginBase):
         super(Plugin, self).__init__(context=context)
 
     @plugin.event(
+        stage=plugin.Stages.STAGE_INIT,
+    )
+    def _init(self):
+        self._config = config.Config(logger=self.logger)
+        # TODO: catch error if not configured and properly raise
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.DOMAIN_TYPE,
+            self._config.get(config.ENGINE, config.STORAGE),
+        )
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.SD_UUID,
+            self._config.get(config.ENGINE, config.SD_UUID),
+        )
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.CONF_IMG_UUID,
+            self._config.get(config.ENGINE, config.CONF_IMAGE_UUID),
+        )
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.CONF_VOL_UUID,
+            self._config.get(config.ENGINE, config.CONF_VOLUME_UUID),
+        )
+        self.environment.setdefault(
+            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST,
+            False,
+        )
+
+    @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
         priority=plugin.Stages.PRIORITY_FIRST,
     )
@@ -55,17 +84,29 @@ class Plugin(plugin.PluginBase):
             )
         )
         interactive = self.environment[
-            ohostedcons.CoreEnv.DEPLOY_PROCEED
+            ohostedcons.CoreEnv.UPGRADE_PROCEED
         ] is None
         if interactive:
             self.environment[
-                ohostedcons.CoreEnv.DEPLOY_PROCEED
+                ohostedcons.CoreEnv.UPGRADE_PROCEED
             ] = self.dialog.queryString(
-                name=ohostedcons.Confirms.DEPLOY_PROCEED,
+                name=ohostedcons.Confirms.UPGRADE_PROCEED,
                 note=_(
-                    'Continuing will configure this host for serving as '
-                    'hypervisor and create a VM where you have to install '
-                    'the engine afterwards.\n'
+                    'Continuing will upgrade the engine VM running on one '
+                    'of the hosts of this cluster deploying and configuring '
+                    'a new appliance.\n'
+                    'If your engine VM is already based on el7 you can also '
+                    'simply upgrade the engine there.\n'
+                    'Your engine VM will be replaced, before proceeding '
+                    'you need to take a backup of the engine with '
+                    'engine-backup running this command on the engine VM:\n'
+                    ' engine-backup --mode=backup --scope=all '
+                    '--file=engine_backup.tar.gz --log=engine_backup.log\n'
+                    'Then you have to copy the backup archive to this host '
+                    'and shutdown the engine VM before starting this '
+                    'upgrade procedure.\n'
+                    'Everything else in the engine VM will be lost being '
+                    'it be replaced by the new appliance.\n'
                     'Are you sure you want to continue? '
                     '(@VALUES@)[@DEFAULT@]: '
                 ),
@@ -74,8 +115,19 @@ class Plugin(plugin.PluginBase):
                 caseSensitive=False,
                 default=_('Yes')
             ) == _('Yes').lower()
-        if not self.environment[ohostedcons.CoreEnv.DEPLOY_PROCEED]:
+        if not self.environment[ohostedcons.CoreEnv.UPGRADE_PROCEED]:
             raise otopicontext.Abort('Aborted by user')
+
+        self.environment[
+            ohostedcons.CoreEnv.UPGRADING_APPLIANCE
+        ] = True
+
+        self.environment[
+            ohostedcons.VDSMEnv.VDS_CLI
+        ] = ohautil.connect_vdsm_json_rpc(
+            logger=self.logger,
+            timeout=ohostedcons.Const.VDSCLI_SSL_TIMEOUT,
+        )
 
         self.environment.setdefault(
             ohostedcons.CoreEnv.REQUIREMENTS_CHECK_ENABLED,
@@ -96,8 +148,8 @@ class Plugin(plugin.PluginBase):
     def _terminate(self):
         if self.environment[otopicons.BaseEnv.ERROR]:
             self.logger.error(_(
-                'Hosted Engine deployment failed: this system is not reliable,'
-                ' please check the issue, fix and redeploy'
+                'Hosted Engine upgrade failed: this system is not reliable,'
+                ' please check the issue, fix and try again'
             ))
             self.dialog.note(
                 text=_('Log file is located at {path}').format(
@@ -107,7 +159,11 @@ class Plugin(plugin.PluginBase):
                 ),
             )
         else:
-            self.logger.info(_('Hosted Engine successfully set up'))
+            self.logger.info(_('Hosted Engine successfully upgraded'))
+            self.logger.info(_(
+                'Please exit global maintenance mode to '
+                'restart the new engine VM.'
+            ))
 
 
 # vim: expandtab tabstop=4 shiftwidth=4
