@@ -819,6 +819,7 @@ class Plugin(plugin.PluginBase):
                 '     OVESETUP_CONFIG/adminPassword=str:{password}\n'
                 '     OVESETUP_CONFIG/fqdn=str:{fqdn}\n'
                 '     OVESETUP_PKI/organization=str:{org}\n'
+                '     DIALOG/autoAcceptDefault=bool:True\n'
                 '   path: {heanswers}\n'
                 '   owner: root:root\n'
                 '   permissions: \'0640\'\n'
