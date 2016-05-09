@@ -32,7 +32,7 @@ from otopi import util
 from otopi import plugin
 
 
-from vdsm.netinfo.cache import CachingNetInfo
+from vdsm.network.netinfo.cache import CachingNetInfo
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons

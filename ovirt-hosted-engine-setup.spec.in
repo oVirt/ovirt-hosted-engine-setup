@@ -68,9 +68,9 @@ Requires:       ovirt-hosted-engine-ha >= 2.0.0
 Requires:       ovirt-engine-sdk-python >= 3.6.3.0
 Requires:       ovirt-setup-lib >= 1.0.1
 Requires:       glusterfs-cli >= 3.7.3
-Requires:       vdsm >= 4.17.999-449
-Requires:       vdsm-cli >= 4.17.999-449
-Requires:       vdsm-python >= 4.17.999-449
+Requires:       vdsm >= 4.17.999-1046
+Requires:       vdsm-cli >= 4.17.999-1046
+Requires:       vdsm-python >= 4.17.999-1046
 
 
 # Dependencies that will be required by ovirt-host-deploy

@@ -41,7 +41,7 @@ from otopi import transaction
 from otopi import util
 
 
-from vdsm.netinfo.cache import CachingNetInfo
+from vdsm.network.netinfo.cache import CachingNetInfo
 
 
 from ovirt_host_deploy import constants as ohdcons

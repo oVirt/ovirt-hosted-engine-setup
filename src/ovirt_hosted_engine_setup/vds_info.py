@@ -23,7 +23,7 @@ vds utilities
 """
 
 
-from vdsm.netinfo.cache import CachingNetInfo
+from vdsm.network.netinfo.cache import CachingNetInfo
 
 
 def capabilities(conn):
