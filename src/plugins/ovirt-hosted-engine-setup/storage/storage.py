@@ -652,8 +652,8 @@ class Plugin(plugin.PluginBase):
         domains = []
         response = self.cli.getStorageDomainsList(spUUID)
         self.logger.debug(response)
-        if response['status']['code'] == 0 and 'domlist' in response:
-            for entry in response['domlist']:
+        if response['status']['code'] == 0 and 'items' in response:
+            for entry in response['items']:
                 domains.append(entry)
         return domains
 
@@ -671,8 +671,9 @@ class Plugin(plugin.PluginBase):
         response = self.cli.getStorageDomainInfo(sdUUID)
         self.logger.debug(response)
         if response['status']['code'] == 0:
-            for key, respinfo in response['info'].iteritems():
-                info[key] = respinfo
+            for key, respinfo in response.iteritems():
+                if key is not 'status':
+                    info[key] = respinfo
         return info
 
     def _getStoragePoolInfo(self, spUUID):
@@ -681,8 +682,9 @@ class Plugin(plugin.PluginBase):
         response = self.cli.getStoragePoolInfo(spUUID)
         self.logger.debug(response)
         if response['status']['code'] == 0:
-            for key in response['info'].keys():
-                info[key] = response['info'][key]
+            for key, respinfo in response.iteritems():
+                if key is not 'status':
+                    info[key] = respinfo
         return info
 
     def _storageServerConnection(self, disconnect=False):
