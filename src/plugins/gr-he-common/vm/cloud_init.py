@@ -850,11 +850,12 @@ class Plugin(plugin.PluginBase):
             user_data += (
                 'write_files:\n'
                 ' - content: |\n'
+                '     [environment:init]\n'
+                '     DIALOG/autoAcceptDefault=bool:True\n'
                 '     [environment:default]\n'
                 '{adminPwd}'
                 '     OVESETUP_CONFIG/fqdn=str:{fqdn}\n'
                 '     OVESETUP_PKI/organization=str:{org}\n'
-                '     DIALOG/autoAcceptDefault=bool:True\n'
                 '   path: {heanswers}\n'
                 '   owner: root:root\n'
                 '   permissions: \'0640\'\n'
