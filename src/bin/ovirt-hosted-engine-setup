@@ -41,7 +41,7 @@ __EOF__
 environment="OVESETUP_CORE/offlinePackager=bool:True"
 environment="${environment} PACKAGER/yumpackagerEnabled=bool:False"
 
-plugingroups="ovirt-hosted-engine-common:ovirt-hosted-engine-setup"
+plugingroups="gr-he-common:gr-he-setup"
 
 while [ -n "$1" ]; do
 	x="$1"
@@ -61,7 +61,7 @@ while [ -n "$1" ]; do
 			usage
 		;;
 		--upgrade-appliance)
- 			plugingroups="ovirt-hosted-engine-common:ovirt-hosted-engine-upgrade-appliance"
+ 			plugingroups="gr-he-common:gr-he-upgradeappliance"
 		;;
 		*)
 			die "Invalid option '${x}'"

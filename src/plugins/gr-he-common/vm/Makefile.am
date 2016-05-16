@@ -1,6 +1,6 @@
 #
-# ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2016 Red Hat, Inc.
+# ovirt-hosted-engine-setup -- ovirt with a manager in a VM
+# Copyright (C) 2016 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,12 +17,24 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
+include $(top_srcdir)/build/python.inc
+
 MAINTAINERCLEANFILES = \
 	$(srcdir)/Makefile.in \
 	$(NULL)
 
-SUBDIRS = \
-	gr-he-common \
-	gr-he-setup \
-	gr-he-upgradeappliance \
+mydir=$(ovirthostedengineplugindir)/gr-he-common/vm
+dist_my_PYTHON = \
+	__init__.py \
+	boot_disk.py \
+	cloud_init.py \
+	misc.py \
+	$(NULL)
+
+clean-local: \
+	python-clean \
+	$(NULL)
+
+all-local: \
+	python-syntax-check \
 	$(NULL)
