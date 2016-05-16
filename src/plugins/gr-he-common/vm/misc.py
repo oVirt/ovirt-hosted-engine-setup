@@ -19,7 +19,7 @@
 
 
 """
-VM state plugin.
+VM misc plugin.
 """
 
 
@@ -40,7 +40,7 @@ def _(m):
 @util.export
 class Plugin(plugin.PluginBase):
     """
-    VM shutdown plugin.
+    VM misc plugin.
     """
 
     SHUTDOWN_DELAY_SECS = '10'

@@ -827,7 +827,7 @@ class Plugin(plugin.PluginBase):
                 engine_restore = (
                     ' - engine-backup --mode=restore --file={backup_file}'
                     ' --log=engine_restore.log --restore-permissions'
-                    ' --provision-db'
+                    ' --provision-db {p_dwh_db} {p_reports_db}'
                     ' 1>{port}'
                     ' 2>&1\n'
                     ' - if [ $? -eq 0 ];'
@@ -838,6 +838,12 @@ class Plugin(plugin.PluginBase):
                     backup_file=self.environment[
                         ohostedcons.Upgrade.BACKUP_FILE
                     ],
+                    p_dwh_db='--provision-dwh-db' if self.environment[
+                        ohostedcons.Upgrade.RESTORE_DWH
+                    ] else '',
+                    p_reports_db='--provision-reports-db' if self.environment[
+                        ohostedcons.Upgrade.RESTORE_REPORTS
+                    ] else '',
                     port=(
                         ohostedcons.Const.VIRTIO_PORTS_PATH +
                         ohostedcons.Const.OVIRT_HE_CHANNEL_NAME
@@ -846,6 +852,7 @@ class Plugin(plugin.PluginBase):
                     fail_string=ohostedcons.Const.E_RESTORE_FAIL_STRING,
                 )
                 adminPwd = ''
+            self.logger.debug('engine_restore: {er}'.format(er=engine_restore))
 
             user_data += (
                 'write_files:\n'

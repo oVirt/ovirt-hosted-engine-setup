@@ -130,12 +130,10 @@ class VmStatus(object):
             client.HAClient.GlobalMdFlags.MAINTENANCE,
             False
         )
-        status['all_host_stats'] = {}
-        for host_id, host_stats in self._get_all_host_stats().items():
-            status['all_host_stats'][host_id] = host_stats
+        status['all_host_stats'] = self._get_all_host_stats()
         status['engine_vm_up'] = False
         status['engine_vm_host'] = None
-        for id, host in status['all_host_stats'].iteritems():
+        for host in status['all_host_stats'].values():
             if 'engine-status' in host and 'live-data' in host:
                 if '"vm": "up"' in host['engine-status'] and host['live-data']:
                     status['engine_vm_up'] = True

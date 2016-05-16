@@ -120,6 +120,7 @@ class Plugin(plugin.PluginBase):
             vm_conf = open(self._temp_vm_conf)
             lines = vm_conf.readlines()
             vm_conf.close()
+            # attaching cloud-init iso to configure the new appliance
             plines = []
             for line in lines:
                 if 'device:cdrom' in line and 'path:' in line:

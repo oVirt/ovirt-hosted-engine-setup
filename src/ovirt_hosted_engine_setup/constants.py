@@ -1045,6 +1045,8 @@ class FirstHostEnv(object):
 @util.codegen
 class Upgrade(object):
     BACKUP_FILE = 'OVEHOSTED_UPGRADE/backupFileName'
+    RESTORE_DWH = 'OVEHOSTED_UPGRADE/restoreDwh'
+    RESTORE_REPORTS = 'OVEHOSTED_UPGRADE/restoreReports'
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

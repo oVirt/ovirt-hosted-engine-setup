@@ -73,6 +73,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.CoreEnv.UPGRADE_PROCEED,
             None
         )
+        self.environment.setdefault(
+            ohostedcons.CoreEnv.UPGRADING_APPLIANCE,
+            False
+        )
         self.environment[ohostedcons.CoreEnv.NODE_SETUP] = False
 
     @plugin.event(

@@ -64,7 +64,7 @@ class Plugin(plugin.PluginBase):
             )
             return False
         try:
-            tar = tarfile.open(backup_file_path, 'r:gz')
+            tar = tarfile.open(backup_file_path, 'r:*')
         except tarfile.ReadError as ex:
             self.logger.error(
                 _("'{path}' is not a tar.gz archive: {m}").format(
@@ -89,6 +89,19 @@ class Plugin(plugin.PluginBase):
             )
             tar.close()
             return False
+        if './db/dwh_backup.db' in files:
+            self.environment[ohostedcons.Upgrade.RESTORE_DWH] = True
+            self.logger.info(_(
+                'The provided file contains also a DWH DB backup: '
+                'it will be restored as well'
+            ))
+        if './db/reports_backup.db' in files:
+            self.environment[ohostedcons.Upgrade.RESTORE_REPORTS] = True
+            self.logger.info(_(
+                'The provided file contains also a Reports DB backup: '
+                'it will be restored as well'
+            ))
+
         md5_f = tar.extractfile(tar.getmember('./md5sum'))
         md5_lines = md5_f.readlines()
         md5_list = [(x[0], './'+x[1].replace('\n', '')) for x in (
@@ -157,6 +170,14 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VMEnv.VM_UUID,
             None,
         )
+        self.environment.setdefault(
+            ohostedcons.Upgrade.RESTORE_DWH,
+            False,
+        )
+        self.environment.setdefault(
+            ohostedcons.Upgrade.RESTORE_REPORTS,
+            False,
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_LATE_SETUP,
@@ -180,7 +201,7 @@ class Plugin(plugin.PluginBase):
             self.logger.error(
                 _(
                     'The engine VM is runnnig on {host}, '
-                    'please shoutdown it before upgrading'
+                    'please shut it down it before upgrading'
                 ).format(
                     host=status['engine_vm_host']
                 )

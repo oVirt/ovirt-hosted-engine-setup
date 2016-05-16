@@ -86,6 +86,11 @@ class Plugin(plugin.PluginBase):
         interactive = self.environment[
             ohostedcons.CoreEnv.UPGRADE_PROCEED
         ] is None
+        self.logger.warning(_(
+            'The upgrade procedure will replace the disk of your engine VM, '
+            'please take care of making a backup before upgrading'
+        ))
+        # TODO: automatically backup the disk or at least provide instructions
         if interactive:
             self.environment[
                 ohostedcons.CoreEnv.UPGRADE_PROCEED
@@ -100,7 +105,7 @@ class Plugin(plugin.PluginBase):
                     'Your engine VM will be replaced, before proceeding '
                     'you need to take a backup of the engine with '
                     'engine-backup running this command on the engine VM:\n'
-                    ' engine-backup --mode=backup --scope=all '
+                    ' engine-backup --mode=backup '
                     '--file=engine_backup.tar.gz --log=engine_backup.log\n'
                     'Then you have to copy the backup archive to this host '
                     'and shutdown the engine VM before starting this '
@@ -110,6 +115,7 @@ class Plugin(plugin.PluginBase):
                     'Are you sure you want to continue? '
                     '(@VALUES@)[@DEFAULT@]: '
                 ),
+                # TODO: point to our site for troubleshooting info...
                 prompt=True,
                 validValues=(_('Yes'), _('No')),
                 caseSensitive=False,
@@ -151,6 +157,7 @@ class Plugin(plugin.PluginBase):
                 'Hosted Engine upgrade failed: this system is not reliable,'
                 ' please check the issue, fix and try again'
             ))
+            # TODO: point to our site for troubleshooting info...
             self.dialog.note(
                 text=_('Log file is located at {path}').format(
                     path=self.environment[

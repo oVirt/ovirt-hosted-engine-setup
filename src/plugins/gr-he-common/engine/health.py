@@ -160,7 +160,7 @@ class Plugin(
                             'engine-backup failed restoring the engine backup '
                             'on the appliance\n'
                             'Please check its log on the appliance.\n'
-                        ).format(since=TIMEOUT*nTimeout5)
+                        )
                     )
                 elif ohostedcons.Const.E_SETUP_SUCCESS_STRING in line:
                     completed = True

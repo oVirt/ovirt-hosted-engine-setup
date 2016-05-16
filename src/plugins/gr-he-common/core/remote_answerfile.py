@@ -118,10 +118,6 @@ class Plugin(plugin.PluginBase):
             ohostedcons.FirstHostEnv.DEPLOY_WITH_HE_35_HOSTS,
             None
         )
-        self.environment.setdefault(
-            ohostedcons.CoreEnv.UPGRADING_APPLIANCE,
-            False
-        )
 
     @plugin.event(
         name=ohostedcons.Stages.REQUIRE_ANSWER_FILE,

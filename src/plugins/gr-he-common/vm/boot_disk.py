@@ -475,7 +475,7 @@ class Plugin(plugin.PluginBase):
         )
         self.environment.setdefault(
             ohostedcons.Upgrade.BACKUP_FILE,
-            None,
+            None
         )
 
     @plugin.event(
