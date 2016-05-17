@@ -27,7 +27,6 @@ mydir=$(ovirthostedengineplugindir)/gr-he-common/core
 dist_my_PYTHON = \
 	__init__.py \
 	misc.py \
-	offlinepackager.py \
 	remote_answerfile.py \
 	vdsmconf.py \
 	$(NULL)

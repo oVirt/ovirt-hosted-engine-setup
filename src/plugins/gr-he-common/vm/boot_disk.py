@@ -42,6 +42,8 @@ from otopi import plugin
 from otopi import transaction
 from otopi import util
 
+from ovirt_setup_lib import dialog
+
 from ovirt_hosted_engine_ha.lib import heconflib
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
@@ -233,10 +235,10 @@ class Plugin(plugin.PluginBase):
         self._source_image = None
         self._image_path = None
         self._ovf_mem_size_mb = None
+        self._appliances = []
+        self._install_appliance = False
 
     def _detect_appliances(self):
-        self.logger.info(_('Detecting available oVirt engine appliances'))
-        appliances = []
         config = configparser.ConfigParser()
         config.optionxform = str
         confdir = os.path.join(
@@ -254,29 +256,16 @@ class Plugin(plugin.PluginBase):
                 )
                 config.readfp(fakefile)
             if set(
-                    [config.has_option(fakesection, k) for k in keys]
+                [config.has_option(fakesection, k) for k in keys]
             ) == set([True]):
-                app = {k: config.get(fakesection, k)
-                       for k in keys
-                       }
+                app = {k: config.get(fakesection, k) for k in keys}
                 app.update(
-                    {'index': str(len(appliances) + 1)}
+                    {'index': str(len(self._appliances) + 1)}
                 )
-                appliances.append(app)
+                self._appliances.append(app)
             else:
                 self.logger.error('error parsing: ' + cf)
-        self.logger.debug('available appliances: ' + str(appliances))
-        if not appliances:
-            msg = _('No engine appliance image is available on your system.')
-            self.logger.error(msg)
-            self.dialog.note(_(
-                'The oVirt engine appliance is now required to deploy '
-                'hosted-engine.\n'
-                'You could get oVirt engine appliance installing '
-                'ovirt-engine-appliance rpm.'
-            ))
-            raise RuntimeError(msg)
-        return appliances
+        self.logger.debug('available appliances: ' + str(self._appliances))
 
     def _file_hash(self, filename):
         h = hashlib.sha1()
@@ -512,6 +501,49 @@ class Plugin(plugin.PluginBase):
     def _setup(self):
         self.command.detect('sudo')
         self.command.detect('qemu-img')
+        self.logger.info(_('Detecting available oVirt engine appliances'))
+        self._detect_appliances()
+        if not self._appliances:
+            msg = _('No engine appliance image is available on your system.')
+            self.logger.error(msg)
+            self.dialog.note(_(
+                'The oVirt engine appliance is now required to deploy '
+                'hosted-engine.\n'
+                'You could get oVirt engine appliance installing '
+                'ovirt-engine-appliance rpm.'
+            ))
+            self._install_appliance = dialog.queryBoolean(
+                dialog=self.dialog,
+                name='OVEHOSTED_INSTALL_OVIRT_ENGINE_APPLIANCE',
+                note=_(
+                    'Do you want to install ovirt-engine-appliance rpm? '
+                    '(@VALUES@) [@DEFAULT@]: '
+                ),
+                prompt=True,
+                default=True,
+            )
+            if not self._install_appliance:
+                raise RuntimeError(msg)
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_INTERNAL_PACKAGES,
+        condition=lambda self: self._install_appliance,
+    )
+    def _internal_packages(self):
+        self.logger.info(_('Installing the oVirt engine appliance'))
+        self.packager.install(
+            packages=(ohostedcons.Const.APPLIANCE_RPM_NAME,)
+        )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_LATE_SETUP,
+    )
+    def _late_setup(self):
+        self._detect_appliances()
+        if not self._appliances:
+            raise RuntimeError(
+                _('Cannot deploy without oVirt engine appliance')
+            )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
@@ -531,13 +563,11 @@ class Plugin(plugin.PluginBase):
         interactive = self.environment[
             ohostedcons.VMEnv.OVF
         ] is None
-        appliances = []
         if interactive:
-            appliances = self._detect_appliances()
-            if appliances:
-                directlyOVA = str(len(appliances) + 1)
+            if self._appliances:
+                directlyOVA = str(len(self._appliances) + 1)
                 app_list = ''
-                for entry in appliances:
+                for entry in self._appliances:
                     app_list += _(
                         '\t[{i}] - {description} - {version}\n'
                     ).format(
@@ -558,7 +588,7 @@ class Plugin(plugin.PluginBase):
                 ova_path = self.environment[ohostedcons.VMEnv.OVF]
             else:
                 ova_path = ''
-                if appliances:
+                if self._appliances:
                     self.dialog.note(
                         _(
                             'The following appliance have been '
@@ -578,16 +608,20 @@ class Plugin(plugin.PluginBase):
                         caseSensitive=True,
                         default='1',
                         validValues=[
-                            str(i + 1) for i in range(len(appliances) + 1)
+                            str(i + 1) for i in range(
+                                len(self._appliances) + 1
+                            )
                         ],
                     )
                     if sapp != directlyOVA:
-                        ova_path = appliances[int(sapp) - 1]['path']
-                        appliance_ver = appliances[int(sapp) - 1]['version']
+                        ova_path = self._appliances[int(sapp) - 1]['path']
+                        appliance_ver = self._appliances[
+                            int(sapp) - 1
+                        ]['version']
                         self.logger.info(_('Verifying its sha1sum'))
                         if (
                             self._file_hash(ova_path) !=
-                            appliances[int(sapp) - 1]['sha1sum']
+                            self._appliances[int(sapp) - 1]['sha1sum']
                         ):
                             self.logger.error(
                                 _(

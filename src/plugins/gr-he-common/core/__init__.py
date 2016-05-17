@@ -23,7 +23,6 @@
 from otopi import util
 
 from . import misc
-from . import offlinepackager
 from . import remote_answerfile
 from . import vdsmconf
 
@@ -31,7 +30,6 @@ from . import vdsmconf
 @util.export
 def createPlugins(context):
     misc.Plugin(context=context)
-    offlinepackager.Plugin(context=context)
     remote_answerfile.Plugin(context=context)
     vdsmconf.Plugin(context=context)
 

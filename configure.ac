@@ -83,12 +83,14 @@ ovirthostedenginetemplatedir="\$(pkgdatadir)/templates"
 ovirthostedenginescriptsdir="\$(pkgdatadir)/scripts"
 ovirthostedenginelibdir="\$(pythondir)/ovirt_hosted_engine_setup"
 vdsmhooksdir="\$(libexecdir)/vdsm/hooks"
+APPLIANCE_RPM_PREFIX="ovirt-engine"
 AC_SUBST([otopiplugindir])
 AC_SUBST([ovirthostedengineplugindir])
 AC_SUBST([ovirthostedenginetemplatedir])
 AC_SUBST([ovirthostedenginescriptsdir])
 AC_SUBST([ovirthostedenginelibdir])
 AC_SUBST([vdsmhooksdir])
+AC_SUBST([APPLIANCE_RPM_PREFIX])
 AM_CONDITIONAL([PYTHON_SYNTAX_CHECK], [test "${enable_python_syntax_check}" = "yes"])
 
 AC_CONFIG_FILES([

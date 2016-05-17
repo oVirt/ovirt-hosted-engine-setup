@@ -64,6 +64,7 @@ config.py: config.py.in
 	-e 's|@datadir[@]|$(datadir)|g' \
 	-e 's|@prefix[@]|$(prefix)|g' \
 	-e 's|@localstatedir[@]|$(localstatedir)|g' \
+	-e 's|@APPLIANCE_RPM_PREFIX[@]|$(APPLIANCE_RPM_PREFIX)|g' \
 	-e 's|@PACKAGE_NAME[@]|$(PACKAGE_NAME)|g' \
 	-e 's|@PACKAGE_VERSION[@]|$(PACKAGE_VERSION)|g' < $< > $@
 
