@@ -351,20 +351,25 @@ class Plugin(plugin.PluginBase):
                 password,
             )
             self.logger.info('Connecting to the storage server')
+            connectionParams = [
+                {
+                    'connection': ip,
+                    'iqn': iqn,
+                    'portal': '0',
+                    'user': user,
+                    'password': password,
+                    'port': port,
+                    'id': ohostedcons.Const.BLANK_UUID,
+                }
+            ]
+            if self.environment[ohostedcons.StorageEnv.MNT_OPTIONS]:
+                connectionParams[0]['mnt_options'] = self.environment[
+                    ohostedcons.StorageEnv.MNT_OPTIONS
+                ]
             res = self.cli.connectStorageServer(
                 ohostedcons.VDSMConstants.ISCSI_DOMAIN,
                 ohostedcons.Const.BLANK_UUID,
-                [
-                    {
-                        'connection': ip,
-                        'iqn': iqn,
-                        'portal': '0',
-                        'user': user,
-                        'password': password,
-                        'port': port,
-                        'id': ohostedcons.Const.BLANK_UUID,
-                    }
-                ]
+                connectionParams,
             )
             if res['status']['code'] != 0:
                 raise RuntimeError(devices['status']['message'])
