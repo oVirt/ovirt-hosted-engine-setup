@@ -82,6 +82,9 @@ class Plugin(plugin.PluginBase):
             '@DOMAIN_TYPE@': self.environment[
                 ohostedcons.StorageEnv.DOMAIN_TYPE
             ],
+            '@MNT_OPTIONS@': self.environment[
+                ohostedcons.StorageEnv.MNT_OPTIONS
+            ],
             '@SP_UUID@': self.environment[ohostedcons.StorageEnv.SP_UUID],
             '@SD_UUID@': self.environment[ohostedcons.StorageEnv.SD_UUID],
             '@CONNECTION_UUID@': self.environment[

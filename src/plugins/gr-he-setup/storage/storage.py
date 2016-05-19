@@ -751,6 +751,10 @@ class Plugin(plugin.PluginBase):
             raise RuntimeError(_('Invalid Storage Type'))
 
         if conList:
+            if self.environment[ohostedcons.StorageEnv.MNT_OPTIONS]:
+                conList[0]['mnt_options'] = self.environment[
+                    ohostedcons.StorageEnv.MNT_OPTIONS
+                ]
             status = method(
                 spUUID,
                 self.storageType,
@@ -1129,6 +1133,11 @@ class Plugin(plugin.PluginBase):
         self.environment.setdefault(
             ohostedcons.StorageEnv.SP_UUID,
             str(uuid.uuid4())
+        )
+        # TODO: provide a way to let the user customize it validating the input
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.MNT_OPTIONS,
+            None
         )
         self.environment.setdefault(
             ohostedcons.StorageEnv.DOMAIN_TYPE,

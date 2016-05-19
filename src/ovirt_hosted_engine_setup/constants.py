@@ -590,6 +590,12 @@ class StorageEnv(object):
 
     @ohostedattrs(
         answerfile=True,
+    )
+    def MNT_OPTIONS(self):
+        return 'OVEHOSTED_STORAGE/mntOptions'
+
+    @ohostedattrs(
+        answerfile=True,
         summary=True,
         description=_('iSCSI Portal IP Address'),
     )
