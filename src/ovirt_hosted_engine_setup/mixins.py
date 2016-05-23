@@ -1,4 +1,4 @@
-#
+
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
 # Copyright (C) 2013-2015 Red Hat, Inc.
 #
@@ -36,6 +36,7 @@ def _(m):
 
 
 class VmOperations(object):
+
     """
     Hosted engine VM manipulation features for otopi Plugin objects
     """
@@ -247,6 +248,18 @@ class VmOperations(object):
         ]['@BOOT_PXE@'] == ',bootOrder:1':
             nic['bootOrder'] = '1'
         conf['devices'].append(nic)
+        display_type = self.environment[
+            ohostedcons.VMEnv.CONSOLE_TYPE
+        ]
+        if display_type == 'vnc':
+            video_device = 'cirrus'
+        else:
+            video_device = 'qxl'
+        conf['devices'].append({
+            "device": video_device,
+            "alias": "video0",
+            "type": "video"
+        })
 
         cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         status = cli.create(conf)

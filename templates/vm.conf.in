@@ -6,6 +6,7 @@ devices={index:0,iface:virtio,format:raw,poolID:@SP_UUID@,volumeID:@VOL_UUID@,im
 devices={device:scsi,model:virtio-scsi,type:controller}
 devices={nicModel:pv,macAddr:@MAC_ADDR@,linkActive:true,network:@BRIDGE@,filter:vdsm-no-mac-spoofing,specParams:{},deviceId:@NIC_UUID@,address:{bus:0x00, slot:0x03, domain:0x0000, type:pci, function:0x0},device:bridge,type:interface@BOOT_PXE@}
 devices={device:console,specParams:{},type:console,deviceId:@CONSOLE_UUID@,alias:console0}
+devices={device:@VIDEO_DEVICE@,alias:video0,type:video}
 vmName=@NAME@
 spiceSecureChannels=smain,sdisplay,sinputs,scursor,splayback,srecord,ssmartcard,susbredir
 smp=@VCPUS@
