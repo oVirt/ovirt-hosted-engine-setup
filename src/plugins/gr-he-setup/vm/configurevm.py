@@ -44,6 +44,7 @@ def _(m):
 
 @util.export
 class Plugin(plugin.PluginBase):
+
     """
     VM configuration plugin.
     """
@@ -200,6 +201,11 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.NetworkEnv.BRIDGE_NAME
             ],
         }
+
+        if self.environment[ohostedcons.VMEnv.CONSOLE_TYPE] == 'vnc':
+            subst['@VIDEO_DEVICE@'] = 'vga'
+        else:
+            subst['@VIDEO_DEVICE@'] = 'qxl'
         if self.environment[
             ohostedcons.VMEnv.BOOT
         ] in self.BOOT_DEVICE.keys():
