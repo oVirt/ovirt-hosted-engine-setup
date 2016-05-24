@@ -589,6 +589,8 @@ class StorageEnv(object):
     def IMAGE_SIZE_GB(self):
         return 'OVEHOSTED_STORAGE/imgSizeGB'
 
+    QCOW_SIZE_GB = 'OVEHOSTED_STORAGE/qcowSizeGB'
+
     IMAGE_DESC = 'OVEHOSTED_STORAGE/imgDesc'
 
     @ohostedattrs(
