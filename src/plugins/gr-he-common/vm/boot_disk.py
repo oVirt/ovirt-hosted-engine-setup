@@ -30,6 +30,7 @@ import hashlib
 from io import StringIO
 import json
 import guestfs
+import math
 import os
 import shutil
 import tarfile
@@ -338,6 +339,15 @@ class Plugin(plugin.PluginBase):
                     '{http://schemas.dmtf.org/ovf/envelope/1/}fileRef'
                 ],
             )
+            self.environment[
+                ohostedcons.StorageEnv.QCOW_SIZE_GB
+            ] = int(
+                math.ceil(
+                    tar.getmember(
+                        self._source_image
+                    ).size / 1024. / 1024. / 1024.
+                )
+            )
             self.logger.debug('Configuring CPUs')
             num_of_sockets = int(
                 tree.find(
@@ -632,7 +642,7 @@ class Plugin(plugin.PluginBase):
                 checker.check_available_space(
                     self.environment[ohostedcons.CoreEnv.TEMPDIR],
                     int(
-                        self.environment[ohostedcons.StorageEnv.IMAGE_SIZE_GB]
+                        self.environment[ohostedcons.StorageEnv.QCOW_SIZE_GB]
                     ) * 1024
                 )
                 valid = True
@@ -663,7 +673,7 @@ class Plugin(plugin.PluginBase):
                             'with at least {size} GB [@DEFAULT@]: '
                         ).format(
                             size=self.environment[
-                                ohostedcons.StorageEnv.IMAGE_SIZE_GB
+                                ohostedcons.StorageEnv.QCOW_SIZE_GB
                             ],
                         ),
                         prompt=True,
