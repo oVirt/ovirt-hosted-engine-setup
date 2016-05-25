@@ -165,22 +165,22 @@ class Plugin(plugin.PluginBase):
                     )
                 )
         else:
-            self._fetch_answer_file()
-            self._parse_answer_file()
+            if (
+                self.environment[ohostedcons.StorageEnv.CONF_IMG_UUID] and
+                self.environment[ohostedcons.StorageEnv.CONF_VOL_UUID]
+            ):
+                self._fetch_answer_file()
+                self._parse_answer_file()
+            else:
+                self.logger.error(_(
+                    'Unable to find the hosted-engine configuration volume '
+                    'on the shared storage.'
+                ))
 
-    @plugin.event(
-        stage=plugin.Stages.STAGE_VALIDATION,
-        condition=lambda self: (
-            self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
-        ),
-    )
-    def _validation(self):
         # Prevent directly deploying an HE host from 3.6 if the answer file of
         # the first host is at 3.5 since in that case the configuration volume
         # is not on the shared storage and we are not going to create it.
-
         he_answerfile_from_35 = self._check_he35_from_answerfile()
-
         if self.environment[
             ohostedcons.FirstHostEnv.DEPLOY_WITH_HE_35_HOSTS
         ] is None and he_answerfile_from_35:
