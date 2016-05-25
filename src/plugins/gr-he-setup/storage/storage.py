@@ -332,10 +332,10 @@ class Plugin(plugin.PluginBase):
         }
 
         volumeinfo = cli.getVolumeInfo(
-            sdUUID,
-            spUUID,
-            img,
-            vol_uuid
+            volumeID=vol_uuid,
+            imageID=img,
+            storagepoolID=spUUID,
+            storagedomainID=sdUUID,
         )
         self.logger.debug(volumeinfo)
         if volumeinfo['status']['code'] != 0:
@@ -350,7 +350,7 @@ class Plugin(plugin.PluginBase):
                 )
             )
         else:
-            description = volumeinfo['info']['description']
+            description = volumeinfo['description']
             if description in voldict:
                 self.environment[voldict[description]['img_key']] = img
                 self.environment[voldict[description]['vol_key']] = vol_uuid
@@ -368,9 +368,9 @@ class Plugin(plugin.PluginBase):
         spUUID = ohostedcons.Const.BLANK_UUID
 
         volumeslist = cli.getVolumesList(
-            sdUUID,
-            spUUID,
-            img
+            imageID=img,
+            storagepoolID=spUUID,
+            storagedomainID=sdUUID,
         )
         self.logger.debug('volumeslist: {vl}'.format(vl=volumeslist))
         if volumeslist['status']['code'] != 0:
@@ -382,7 +382,7 @@ class Plugin(plugin.PluginBase):
                 )
             )
         else:
-            for vol_uuid in volumeslist['uuidlist']:
+            for vol_uuid in volumeslist['items']:
                 self._analyze_volume(img, vol_uuid)
 
     def _scan_images(self):
