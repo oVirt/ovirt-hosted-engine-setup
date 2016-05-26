@@ -197,16 +197,33 @@ class Plugin(plugin.PluginBase):
                 'Please enable global maintenance mode before upgrading'
             ))
             raise RuntimeError(_('Not in global maintenance mode'))
-        if status['engine_vm_up']:
-            self.logger.error(
-                _(
-                    'The engine VM is runnnig on {host}, '
-                    'please shut it down it before upgrading'
-                ).format(
-                    host=status['engine_vm_host']
+
+        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        response = cli.list()
+        self.logger.debug(response)
+        if response['status']['code'] == 0:
+            if 'items' in response:
+                vms = set(response['items'])
+            else:
+                vms = set([])
+            if self.environment[ohostedcons.VMEnv.VM_UUID] not in vms:
+                raise RuntimeError(_(
+                    'The engine VM is not running on this host'
+                ))
+            if vms > set(self.environment[ohostedcons.VMEnv.VM_UUID]):
+                self.logger.error(
+                    _(
+                        'The following VMs has been found: '
+                        '{vms}'
+                    ).format(
+                        vms=', '.join(vms)
+                    )
                 )
-            )
-            raise RuntimeError(_('Engine VM is running'))
+                raise RuntimeError(
+                    _('Cannot upgrade Hosted Engine with other VMs running')
+                )
+        else:
+            raise RuntimeError(_('Unable to get VM list from VDSM'))
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
@@ -219,6 +236,16 @@ class Plugin(plugin.PluginBase):
         valid = False
         interactive = self.environment[ohostedcons.Upgrade.BACKUP_FILE] is None
         while not valid:
+            # TODO: ensure that the engine is still at 3.6!!!
+            # TODO: do it automatically
+            self.dialog.note(_(
+                'Please take a backup of the current engine running this '
+                'command on the engine VM:\n'
+                ' engine-backup --mode=backup '
+                '--file=engine_backup.tar.gz --log=engine_backup.log\n'
+                'Then copy the backup archive to this host and input here '
+                'its path when ready.\n'
+            ))
             if interactive:
                 backup_file_path = self.dialog.queryString(
                     name='OVEHOSTED_CONFIGURATION_BACKUPFILE',

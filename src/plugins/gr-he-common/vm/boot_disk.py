@@ -477,6 +477,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Upgrade.BACKUP_FILE,
             None
         )
+        self.environment.setdefault(
+            ohostedcons.VMEnv.APPLIANCE_VERSION,
+            None
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -526,6 +530,7 @@ class Plugin(plugin.PluginBase):
 
         valid = False
         while not valid:
+            appliance_ver = None
             if not interactive:
                 ova_path = self.environment[ohostedcons.VMEnv.OVF]
             else:
@@ -555,6 +560,7 @@ class Plugin(plugin.PluginBase):
                     )
                     if sapp != directlyOVA:
                         ova_path = appliances[int(sapp) - 1]['path']
+                        appliance_ver = appliances[int(sapp) - 1]['version']
                         self.logger.info(_('Verifying its sha1sum'))
                         if (
                             self._file_hash(ova_path) !=
@@ -584,6 +590,9 @@ class Plugin(plugin.PluginBase):
             valid = self._check_ovf(ova_path)
             if valid:
                 self.environment[ohostedcons.VMEnv.OVF] = ova_path
+                self.environment[
+                    ohostedcons.VMEnv.APPLIANCE_VERSION
+                ] = appliance_ver
             else:
                 if interactive:
                     self.logger.error(
@@ -658,6 +667,7 @@ class Plugin(plugin.PluginBase):
         name=ohostedcons.Stages.OVF_IMPORTED,
         after=(
             ohostedcons.Stages.VM_IMAGE_AVAILABLE,
+            ohostedcons.Stages.UPGRADE_VM_SHUTDOWN,
         ),
         condition=lambda self: (
             self.environment[ohostedcons.VMEnv.BOOT] == 'disk' and

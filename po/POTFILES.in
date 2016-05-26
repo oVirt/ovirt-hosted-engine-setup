@@ -71,6 +71,7 @@
 ./src/plugins/gr-he-setup/vm/memory.py
 ./src/plugins/gr-he-setup/vm/runvm.py
 ./src/plugins/gr-he-upgradeappliance/core/misc.py
+./src/plugins/gr-he-upgradeappliance/engine/add_vm_disk.py
 ./src/plugins/gr-he-upgradeappliance/vm/configurevm.py
 ./src/plugins/gr-he-upgradeappliance/vm/runvm.py
 ./src/vdsm_hooks/hostedengine.py

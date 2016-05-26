@@ -69,6 +69,10 @@ class Plugin(plugin.PluginBase):
             self._config.get(config.ENGINE, config.CONF_VOLUME_UUID),
         )
         self.environment.setdefault(
+            ohostedcons.VMEnv.VM_UUID,
+            self._config.get(config.ENGINE, config.HEVMID),
+        )
+        self.environment.setdefault(
             ohostedcons.CoreEnv.IS_ADDITIONAL_HOST,
             False,
         )
@@ -86,11 +90,6 @@ class Plugin(plugin.PluginBase):
         interactive = self.environment[
             ohostedcons.CoreEnv.UPGRADE_PROCEED
         ] is None
-        self.logger.warning(_(
-            'The upgrade procedure will replace the disk of your engine VM, '
-            'please take care of making a backup before upgrading'
-        ))
-        # TODO: automatically backup the disk or at least provide instructions
         if interactive:
             self.environment[
                 ohostedcons.CoreEnv.UPGRADE_PROCEED
@@ -102,16 +101,15 @@ class Plugin(plugin.PluginBase):
                     'a new appliance.\n'
                     'If your engine VM is already based on el7 you can also '
                     'simply upgrade the engine there.\n'
-                    'Your engine VM will be replaced, before proceeding '
-                    'you need to take a backup of the engine with '
-                    'engine-backup running this command on the engine VM:\n'
-                    ' engine-backup --mode=backup '
-                    '--file=engine_backup.tar.gz --log=engine_backup.log\n'
-                    'Then you have to copy the backup archive to this host '
-                    'and shutdown the engine VM before starting this '
-                    'upgrade procedure.\n'
-                    'Everything else in the engine VM will be lost being '
-                    'it be replaced by the new appliance.\n'
+                    'The disk of your engine VM will be replaced with a new '
+                    'one that contains an up-to-date appliance;\n'
+                    'the current engine VM disk will be left on the '
+                    'hosted-engine shared domain as a floating disk for '
+                    'recovery purposes.\n'
+                    'You will be asked to take a backup of the running engine '
+                    'and copy it to this host.\n'
+                    'The engine backup will be automatically injected '
+                    'and recovered on the new appliance.\n'
                     'Are you sure you want to continue? '
                     '(@VALUES@)[@DEFAULT@]: '
                 ),

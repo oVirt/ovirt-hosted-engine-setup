@@ -17,12 +17,22 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
+include $(top_srcdir)/build/python.inc
+
 MAINTAINERCLEANFILES = \
 	$(srcdir)/Makefile.in \
 	$(NULL)
 
-SUBDIRS = \
-	core \
-	engine \
-	vm \
+mydir=$(ovirthostedengineplugindir)/gr-he-upgradeappliance/engine
+dist_my_PYTHON = \
+	__init__.py \
+	add_vm_disk.py \
+	$(NULL)
+
+clean-local: \
+	python-clean \
+	$(NULL)
+
+all-local: \
+	python-syntax-check \
 	$(NULL)

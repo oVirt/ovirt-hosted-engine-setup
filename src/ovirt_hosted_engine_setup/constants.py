@@ -778,6 +778,13 @@ class VMEnv(object):
     def OVF(self):
         return 'OVEHOSTED_VM/ovfArchive'
 
+    @ohostedattrs(
+        summary=True,
+        description=_('Appliance version'),
+    )
+    def APPLIANCE_VERSION(self):
+        return 'OVEHOSTED_VM/applianceVersion'
+
     VM_PASSWD = 'OVEHOSTED_VDSM/passwd'
     VM_PASSWD_VALIDITY_SECS = 'OVEHOSTED_VDSM/passwdValiditySecs'
     SUBST = 'OVEHOSTED_VM/subst'
@@ -988,6 +995,12 @@ class Stages(object):
     CHECK_MAINTENANCE_MODE = 'ohosted.core.check.maintenance.mode'
     VALIDATION_CA_ACQUIRED = 'ohosted.engine.ca.acquired.validation'
     CLOSEUP_CA_ACQUIRED = 'ohosted.engine.ca.acquired.closeup'
+    CLOSEUP_CA_ACQUIRED = 'ohosted.engine.ca.acquired.closeup'
+    UPGRADE_CHECK_SD_SPACE = 'ohosted.upgrade.check.sd.space'
+    UPGRADE_DISK_CREATED = 'ohosted.upgrade.disk.created'
+    UPGRADE_VM_SHUTDOWN = 'ohosted.upgrade.vm.state.shutdown'
+    UPGRADED_DISK_SWITCHED = 'ohosted.upgrade.vm.disk.switched'
+    UPGRADED_DATACENTER_UP = 'ohosted.upgrade.datacenter.up'
 
     DIALOG_TITLES_S_VM = 'ohosted.dialog.titles.vm.start'
     DIALOG_TITLES_E_VM = 'ohosted.dialog.titles.vm.end'
@@ -1057,6 +1070,10 @@ class Upgrade(object):
     BACKUP_FILE = 'OVEHOSTED_UPGRADE/backupFileName'
     RESTORE_DWH = 'OVEHOSTED_UPGRADE/restoreDwh'
     RESTORE_REPORTS = 'OVEHOSTED_UPGRADE/restoreReports'
+    CONFIRM_DISK_SWITCH = 'OVEHOSTED_UPGRADE/confirmDiskSwitch'
+
+    PREV_IMG_UUID = 'OVEHOSTED_UPGRADE/prevImgUUID'
+    PREV_VOL_UUID = 'OVEHOSTED_UPGRADE/prevVolUUID'
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

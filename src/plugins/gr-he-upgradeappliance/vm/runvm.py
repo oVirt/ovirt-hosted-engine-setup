@@ -36,6 +36,7 @@ from otopi import util
 
 from ovirt_hosted_engine_ha.env import config
 from ovirt_hosted_engine_setup import constants as ohostedcons
+from ovirt_hosted_engine_setup import tasks
 
 
 def _(m):
@@ -101,6 +102,37 @@ class Plugin(plugin.PluginBase):
         self.command.detect('vdsClient')
 
     @plugin.event(
+        stage=plugin.Stages.STAGE_MISC,
+        after=(
+            ohostedcons.Stages.UPGRADE_DISK_CREATED,
+        ),
+        name=ohostedcons.Stages.UPGRADE_VM_SHUTDOWN,
+    )
+    def _misc_shutdown(self):
+        self.logger.info(_('Shutting down the current engine VM'))
+        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        res = cli.shutdown(self.environment[ohostedcons.VMEnv.VM_UUID])
+        self.logger.debug(res)
+
+        waiter = tasks.VMDownWaiter(self.environment)
+        if not waiter.wait():
+            # The VM is down but not destroyed
+            status = self.environment[
+                ohostedcons.VDSMEnv.VDS_CLI
+            ].destroy(
+                self.environment[ohostedcons.VMEnv.VM_UUID]
+            )
+            self.logger.debug(status)
+            if status['status']['code'] != 0:
+                self.logger.error(
+                    _(
+                        'Cannot destroy the Hosted Engine VM: ' +
+                        status['status']['message']
+                    )
+                )
+                raise RuntimeError(status['status']['message'])
+
+    @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
         name=ohostedcons.Stages.UPGRADED_APPLIANCE_RUNNING,
     )
@@ -119,11 +151,15 @@ class Plugin(plugin.PluginBase):
 
             vm_conf = open(self._temp_vm_conf)
             lines = vm_conf.readlines()
+            self.logger.debug('Original vm.conf: {l}'.format(l=lines))
             vm_conf.close()
-            # attaching cloud-init iso to configure the new appliance
+
             plines = []
+            cdrom_attached = False
+            disk_replaced = False
             for line in lines:
                 if 'device:cdrom' in line and 'path:' in line:
+                    # attaching cloud-init iso to configure the new appliance
                     sline = re.sub(
                         r'path:[^,]*,',
                         'path:{iso},'.format(
@@ -132,11 +168,42 @@ class Plugin(plugin.PluginBase):
                         line
                     )
                     plines.append(sline)
+                    cdrom_attached = True
+                elif (
+                    'device:disk' in line and
+                    self.environment[
+                        ohostedcons.Upgrade.PREV_IMG_UUID
+                    ] in line and
+                    self.environment[
+                        ohostedcons.Upgrade.PREV_VOL_UUID
+                    ] in line
+                ):
+                    # replacing engine VM disk with the new one
+                    sline = line.replace(
+                        self.environment[ohostedcons.Upgrade.PREV_IMG_UUID],
+                        self.environment[ohostedcons.StorageEnv.IMG_UUID]
+                    ).replace(
+                        self.environment[ohostedcons.Upgrade.PREV_VOL_UUID],
+                        self.environment[ohostedcons.StorageEnv.VOL_UUID]
+                    )
+                    plines.append(sline)
+                    disk_replaced = True
                 else:
                     plines.append(line)
+
+            if not cdrom_attached:
+                raise RuntimeError(_(
+                    'Unable to attach cloud-init ISO image'
+                ))
+            if not disk_replaced:
+                raise RuntimeError(_(
+                    'Unable to temporary replace the engine VM disk'
+                ))
+
             vm_conf = open(self._temp_vm_conf, 'w')
             vm_conf.writelines(plines)
             vm_conf.close()
+            self.logger.debug('Patched vm.conf: {l}'.format(l=plines))
         except EnvironmentError as ex:
             self.logger.error(
                 _(

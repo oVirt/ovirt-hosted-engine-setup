@@ -119,6 +119,7 @@ AC_CONFIG_FILES([
 	src/plugins/gr-he-setup/engine/Makefile
 	src/plugins/gr-he-upgradeappliance/Makefile
 	src/plugins/gr-he-upgradeappliance/core/Makefile
+	src/plugins/gr-he-upgradeappliance/engine/Makefile
 	src/plugins/gr-he-upgradeappliance/vm/Makefile
 	src/vdsm_hooks/Makefile
 	templates/Makefile
