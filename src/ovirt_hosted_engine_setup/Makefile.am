@@ -41,6 +41,7 @@ dist_ovirthostedenginelib_PYTHON = \
 	connect_storage_server.py \
 	constants.py \
 	domains.py \
+	engineapi.py \
 	util.py \
 	reinitialize_lockspace.py \
 	set_maintenance.py \

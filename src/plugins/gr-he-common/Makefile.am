@@ -24,5 +24,6 @@ MAINTAINERCLEANFILES = \
 SUBDIRS = \
 	core \
 	engine \
+	network \
 	vm \
 	$(NULL)

@@ -26,7 +26,6 @@ MAINTAINERCLEANFILES = \
 mydir=$(ovirthostedengineplugindir)/gr-he-setup/network
 dist_my_PYTHON = \
 	__init__.py \
-	bridge.py \
 	firewall_manager.py \
 	firewall.py \
 	gateway.py \

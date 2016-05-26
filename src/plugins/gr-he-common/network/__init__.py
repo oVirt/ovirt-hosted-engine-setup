@@ -24,18 +24,12 @@
 from otopi import util
 
 
-from . import firewall
-from . import firewall_manager
-from . import gateway
-from . import iptables
+from . import bridge
 
 
 @util.export
 def createPlugins(context):
-    firewall.Plugin(context=context)
-    firewall_manager.Plugin(context=context)
-    gateway.Plugin(context=context)
-    iptables.Plugin(context=context)
+    bridge.Plugin(context=context)
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

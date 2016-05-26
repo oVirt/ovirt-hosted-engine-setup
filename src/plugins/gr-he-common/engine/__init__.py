@@ -24,11 +24,13 @@
 from otopi import util
 
 
+from . import ca
 from . import health
 
 
 @util.export
 def createPlugins(context):
+    ca.Plugin(context=context)
     health.Plugin(context=context)
 
 

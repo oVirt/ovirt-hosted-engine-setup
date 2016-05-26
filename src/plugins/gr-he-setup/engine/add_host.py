@@ -46,6 +46,7 @@ from vdsm.network.netinfo.cache import CachingNetInfo
 
 from ovirt_host_deploy import constants as ohdcons
 from ovirt_hosted_engine_setup import check_liveliness
+from ovirt_hosted_engine_setup import engineapi
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import vds_info
 from ovirt_hosted_engine_setup import pkissh
@@ -66,7 +67,6 @@ class Plugin(plugin.PluginBase):
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
-        self._ovirtsdk_api = ovirtsdk.api
         self._ovirtsdk_xml = ovirtsdk.xml
         self._interactive_admin_pwd = True
         self._host_deploy_conf = None
@@ -323,101 +323,6 @@ class Plugin(plugin.PluginBase):
             return False
         return True
 
-    def _getCA(self):
-        fqdn = self.environment[
-            ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
-        ]
-        fd, cert = tempfile.mkstemp(
-            prefix='engine-ca',
-            suffix='.crt',
-        )
-        os.close(fd)
-        self.environment[
-            ohostedcons.EngineEnv.TEMPORARY_CERT_FILE
-        ] = cert
-        valid = False
-        interactive = True
-        if self.environment[
-            ohostedcons.EngineEnv.INSECURE_SSL
-        ]:
-            valid = True
-            if cert is not None and os.path.exists(cert):
-                os.unlink(cert)
-            self.environment[
-                ohostedcons.EngineEnv.TEMPORARY_CERT_FILE
-            ] = None
-        elif self.environment[
-            ohostedcons.EngineEnv.INSECURE_SSL
-        ] is False:
-            interactive = False
-        pkihelper = pkissh.PKIHelper()
-
-        while not valid:
-            cafile = ohostedcons.FileLocations.SYS_CUSTOMCA_CERT
-            if not os.path.isfile(ohostedcons.FileLocations.SYS_CUSTOMCA_CERT):
-                cafile = None
-            try:
-                content = pkihelper.getPKICert(
-                    fqdn,
-                    cafile,
-                )
-            except RuntimeError as ex:
-                self.logger.error(
-                    _('Error acquiring CA cert').format(
-                        message=ex.message,
-                    )
-                )
-            else:
-                try:
-                    with open(cert, 'w') as fileobj:
-                        fileobj.write(content)
-                except EnvironmentError as ex:
-                        raise RuntimeError(
-                            'Unable to write cert file: ' + ex.message
-                        )
-                if pkihelper.validateCA(fqdn, cert):
-                    valid = True
-            if not valid:
-                if interactive:
-                    if cafile:
-                        catype = _('custom')
-                    else:
-                        catype = _('internal')
-                    insecure = self.dialog.queryString(
-                        name='SSL_VALIDATE_CA',
-                        note=_(
-                            'The REST API cert couldn\'t be trusted with the '
-                            '{catype} CA cert\n'
-                            'Would you like to continue in insecure mode '
-                            '(not recommended)?\n'
-                            'If not, please provide your CA cert at {path} '
-                            'before continuing\n'
-                            '(@VALUES@)[@DEFAULT@]? '
-                        ).format(
-                            catype=catype,
-                            path=ohostedcons.FileLocations.SYS_CUSTOMCA_CERT,
-                        ),
-                        prompt=True,
-                        validValues=(_('Yes'), _('No')),
-                        caseSensitive=False,
-                        default=_('No')
-                    ) == _('Yes').lower()
-                    if insecure:
-                        valid = True
-                        self.environment[
-                            ohostedcons.EngineEnv.INSECURE_SSL
-                        ] = True
-                        cert = self.environment[
-                            ohostedcons.EngineEnv.TEMPORARY_CERT_FILE
-                        ]
-                        if cert is not None and os.path.exists(cert):
-                            os.unlink(cert)
-                        self.environment[
-                            ohostedcons.EngineEnv.TEMPORARY_CERT_FILE
-                        ] = None
-                else:
-                    raise RuntimeError('Failed trusting the REST API cert')
-
     def _getSSH(self):
         pkihelper = pkissh.PKIHelper()
         authorized_keys_line = pkihelper.getSSHkey(
@@ -522,22 +427,11 @@ class Plugin(plugin.PluginBase):
     )
     def _init(self):
         self.environment.setdefault(
-            ohostedcons.EngineEnv.ADMIN_PASSWORD,
-            None
-        )
-        self.environment[otopicons.CoreEnv.LOG_FILTER_KEYS].append(
-            ohostedcons.EngineEnv.ADMIN_PASSWORD
-        )
-        self.environment.setdefault(
             ohostedcons.EngineEnv.APP_HOST_NAME,
             None
         )
         self.environment.setdefault(
             ohostedcons.EngineEnv.HOST_CLUSTER_NAME,
-            None
-        )
-        self.environment.setdefault(
-            ohostedcons.EngineEnv.TEMPORARY_CERT_FILE,
             None
         )
         self.environment.setdefault(
@@ -547,10 +441,6 @@ class Plugin(plugin.PluginBase):
         self.environment.setdefault(
             ohostedcons.EngineEnv.PROMPT_NON_OPERATIONAL,
             True
-        )
-        self.environment.setdefault(
-            ohostedcons.EngineEnv.INSECURE_SSL,
-            None
         )
         self._selinux_enabled = False
 
@@ -597,46 +487,6 @@ class Plugin(plugin.PluginBase):
                         _('Empty host name not allowed')
                     )
 
-        self._interactive_admin_pwd = (
-            self.environment[ohostedcons.EngineEnv.ADMIN_PASSWORD] is None
-        )
-        while self.environment[ohostedcons.EngineEnv.ADMIN_PASSWORD] is None:
-            password = self.dialog.queryString(
-                name='ENGINE_ADMIN_PASSWORD',
-                note=_(
-                    "Enter engine admin password: "
-                ),
-                prompt=True,
-                hidden=True,
-            )
-            if password:
-                if not self._interactive_admin_pwd:
-                    self.environment[
-                        ohostedcons.EngineEnv.ADMIN_PASSWORD
-                    ] = password
-                else:
-                    password_check = self.dialog.queryString(
-                        name='ENGINE_ADMIN_PASSWORD',
-                        note=_(
-                            "Confirm engine admin password: "
-                        ),
-                        prompt=True,
-                        hidden=True,
-                    )
-                    if password == password_check:
-                        self.environment[
-                            ohostedcons.EngineEnv.ADMIN_PASSWORD
-                        ] = password
-                    else:
-                        self.logger.error(_('Passwords do not match'))
-            else:
-                if self._interactive_admin_pwd:
-                    self.logger.error(_('Please specify a password'))
-                else:
-                    raise RuntimeError(
-                        _('Empty password not allowed for user admin')
-                    )
-
     @plugin.event(
         stage=plugin.Stages.STAGE_VALIDATION,
     )
@@ -646,89 +496,17 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
         after=(
-            ohostedcons.Stages.ENGINE_ALIVE,
+            ohostedcons.Stages.CLOSEUP_CA_ACQUIRED,
         ),
         name=ohostedcons.Stages.HOST_ADDED,
     )
     def _closeup(self):
         # TODO: refactor into shorter and simpler functions
-        self._getCA()
         self._getSSH()
         self._configureHostDeploy()
         cluster_name = None
         default_cluster_name = 'Default'
-        valid = False
-        fqdn = self.environment[
-            ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
-        ]
-        while not valid:
-            try:
-                self.logger.info(_('Connecting to the Engine'))
-                insecure = False
-                if self.environment[
-                    ohostedcons.EngineEnv.INSECURE_SSL
-                ]:
-                    insecure = True
-                engine_api = self._ovirtsdk_api.API(
-                    url='https://{fqdn}/ovirt-engine/api'.format(
-                        fqdn=fqdn,
-                    ),
-                    username='admin@internal',
-                    password=self.environment[
-                        ohostedcons.EngineEnv.ADMIN_PASSWORD
-                    ],
-                    ca_file=self.environment[
-                        ohostedcons.EngineEnv.TEMPORARY_CERT_FILE
-                    ],
-                    insecure=insecure,
-                )
-                engine_api.clusters.list()
-                valid = True
-            except ovirtsdk.infrastructure.errors.RequestError as e:
-                if e.status == 401:
-                    if self._interactive_admin_pwd:
-                        self.logger.error(
-                            _(
-                                'The engine API didn''t accepted '
-                                'the administrator password you provided\n'
-                                'Please enter it again to retry.'
-                            )
-                        )
-                        self.environment[
-                            ohostedcons.EngineEnv.ADMIN_PASSWORD
-                        ] = self.dialog.queryString(
-                            name='ENGINE_ADMIN_PASSWORD',
-                            note=_(
-                                'Enter engine admin password: '
-                            ),
-                            prompt=True,
-                            hidden=True,
-                        )
-                    else:
-                        raise RuntimeError(
-                            _(
-                                'The engine API didn''t accepted '
-                                'the administrator password you provided\n'
-                            )
-                        )
-                else:
-                    self.logger.error(
-                        _(
-                            'Cannot connect to engine APIs on {fqdn}:\n'
-                            '{details}\n'
-                        ).format(
-                            fqdn=fqdn,
-                            details=e.detail,
-                        )
-                    )
-                    raise RuntimeError(
-                        _(
-                            'Cannot connect to engine APIs on {fqdn}'
-                        ).format(
-                            fqdn=fqdn,
-                        )
-                    )
-
+        engine_api = engineapi.get_engine_api(self)
         added_to_cluster = False
         while not added_to_cluster:
             try:
@@ -851,7 +629,9 @@ class Plugin(plugin.PluginBase):
                 while not check_liveliness.manualSetupDispatcher(
                     self,
                     check_liveliness.MSD_FURTHER_ACTIONS,
-                    fqdn
+                    self.environment[
+                        ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+                    ]
                 ):
                     pass
 
@@ -907,18 +687,6 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_CLEANUP,
     )
     def _cleanup(self):
-        cert = self.environment[ohostedcons.EngineEnv.TEMPORARY_CERT_FILE]
-        try:
-            if cert is not None and os.path.exists(cert):
-                os.unlink(cert)
-        except EnvironmentError as ex:
-            self.log.error(
-                _(
-                    'Unable to cleanup temporary CA cert file: {msg}'
-                ).format(
-                    msg=ex.message,
-                )
-            )
         try:
             if self._host_deploy_conf is not None and os.path.exists(
                     self._host_deploy_conf

@@ -103,6 +103,7 @@ AC_CONFIG_FILES([
 	src/plugins/gr-he-common/Makefile
 	src/plugins/gr-he-common/core/Makefile
 	src/plugins/gr-he-common/engine/Makefile
+	src/plugins/gr-he-common/network/Makefile
 	src/plugins/gr-he-common/vm/Makefile
 	src/plugins/gr-he-setup/Makefile
 	src/plugins/gr-he-setup/core/Makefile

@@ -3,6 +3,7 @@
 ./src/ovirt_hosted_engine_setup/connect_storage_server.py
 ./src/ovirt_hosted_engine_setup/constants.py
 ./src/ovirt_hosted_engine_setup/domains.py
+./src/ovirt_hosted_engine_setup/engineapi.py
 ./src/ovirt_hosted_engine_setup/__init__.py
 ./src/ovirt_hosted_engine_setup/mixins.py
 ./src/ovirt_hosted_engine_setup/ovf/__init__.py
@@ -17,7 +18,9 @@
 ./src/plugins/gr-he-common/core/offlinepackager.py
 ./src/plugins/gr-he-common/core/remote_answerfile.py
 ./src/plugins/gr-he-common/core/vdsmconf.py
+./src/plugins/gr-he-common/engine/ca.py
 ./src/plugins/gr-he-common/engine/health.py
+./src/plugins/gr-he-common/network/bridge.py
 ./src/plugins/gr-he-common/vm/boot_disk.py
 ./src/plugins/gr-he-common/vm/cloud_init.py
 ./src/plugins/gr-he-common/vm/misc.py
@@ -37,7 +40,6 @@
 ./src/plugins/gr-he-setup/ha/__init__.py
 ./src/plugins/gr-he-setup/libvirt/configureqemu.py
 ./src/plugins/gr-he-setup/libvirt/__init__.py
-./src/plugins/gr-he-setup/network/bridge.py
 ./src/plugins/gr-he-setup/network/firewall_manager.py
 ./src/plugins/gr-he-setup/network/firewall.py
 ./src/plugins/gr-he-setup/network/gateway.py

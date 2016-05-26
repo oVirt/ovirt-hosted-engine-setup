@@ -473,6 +473,7 @@ class NetworkEnv(object):
 class EngineEnv(object):
 
     ADMIN_PASSWORD = 'OVEHOSTED_ENGINE/adminPassword'
+    INTERACTIVE_ADMIN_PASSWORD = 'OVEHOSTED_ENGINE/interactiveAdminPassword'
 
     @ohostedattrs(
         summary=True,
@@ -985,6 +986,8 @@ class Stages(object):
     CONF_IMAGE_AVAILABLE = 'ohosted.notifications.confimage.available'
     UPGRADED_APPLIANCE_RUNNING = 'ohosted.vm.state.upgraded.appliance.running'
     CHECK_MAINTENANCE_MODE = 'ohosted.core.check.maintenance.mode'
+    VALIDATION_CA_ACQUIRED = 'ohosted.engine.ca.acquired.validation'
+    CLOSEUP_CA_ACQUIRED = 'ohosted.engine.ca.acquired.closeup'
 
     DIALOG_TITLES_S_VM = 'ohosted.dialog.titles.vm.start'
     DIALOG_TITLES_E_VM = 'ohosted.dialog.titles.vm.end'

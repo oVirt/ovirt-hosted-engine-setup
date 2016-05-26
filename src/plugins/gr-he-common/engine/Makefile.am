@@ -26,6 +26,7 @@ MAINTAINERCLEANFILES = \
 mydir=$(ovirthostedengineplugindir)/gr-he-common/engine
 dist_my_PYTHON = \
 	__init__.py \
+	ca.py \
 	health.py \
 	$(NULL)
 
