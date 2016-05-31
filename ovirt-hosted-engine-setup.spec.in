@@ -29,7 +29,7 @@ Version:        @PACKAGE_RPM_VERSION@
 Release:        @PACKAGE_RPM_RELEASE@%{?release_suffix}%{?dist}
 License:        LGPLv2+
 URL:            http://www.ovirt.org
-Source:         http://resources.ovirt.org/pub/ovirt-master-snapshot/src/%{name}/%{name}-%{package_version}.tar.gz
+Source:         http://resources.ovirt.org/pub/src/%{name}/%{name}-%{package_version}.tar.gz
 Group:          Applications/System
 
 BuildArch:      noarch
@@ -67,11 +67,11 @@ Requires:       otopi >= 1.5.0
 Requires:       ovirt-host-deploy >= 1.5.0
 Requires:       ovirt-hosted-engine-ha >= 2.0.0
 Requires:       ovirt-engine-sdk-python >= 3.6.3.0
-Requires:       ovirt-setup-lib >= 1.0.1
+Requires:       ovirt-setup-lib >= 1.0.2
 Requires:       glusterfs-cli >= 3.7.3
 Requires:       vdsm >= 4.17.999-1046
-Requires:       vdsm-cli >= 4.17.999-1046
-Requires:       vdsm-python >= 4.17.999-1046
+Requires:       vdsm-cli >= 4.18.0
+Requires:       vdsm-python >= 4.18.0
 
 Conflicts:      ovirt-engine-appliance < 4.0
 Conflicts:      ovirt-engine-appliance >= 4.1
@@ -124,5 +124,8 @@ make %{?_smp_mflags} install DESTDIR="%{buildroot}"
 %{vdsmhooksdir}/before_vm_start/
 
 %changelog
+* Tue May 31 2016 Sandro Bonazzola <sbonazzo@redhat.com> - 2.0.0-1
+- 2.0.0-1
+
 * Thu Aug  6 2015 Sandro Bonazzola <sbonazzo@redhat.com> - 2.0.0-0.0.master
 - 2.0.0-0.0.master
