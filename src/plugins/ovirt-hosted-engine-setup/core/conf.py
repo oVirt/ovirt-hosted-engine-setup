@@ -83,7 +83,7 @@ class Plugin(plugin.PluginBase):
             ],
             '@MNT_OPTIONS@': self.environment[
                 ohostedcons.StorageEnv.MNT_OPTIONS
-            ],
+            ] or '',
             '@SP_UUID@': self.environment[ohostedcons.StorageEnv.SP_UUID],
             '@SD_UUID@': self.environment[ohostedcons.StorageEnv.SD_UUID],
             '@CONNECTION_UUID@': self.environment[
