@@ -45,7 +45,7 @@ class Plugin(plugin.PluginBase):
     VM new disk plugin.
     """
 
-    API_RETRIES = 600
+    API_RETRIES = 3600  # one hour
     API_DELAY = 1
 
     def __init__(self, context):
