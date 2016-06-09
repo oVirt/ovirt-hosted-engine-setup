@@ -23,9 +23,6 @@ vds utilities
 """
 
 
-from vdsm.network.netinfo.cache import CachingNetInfo
-
-
 def capabilities(conn):
     """Returns a dictionary with the host capabilities"""
     result = conn.getVdsCapabilities()
@@ -38,24 +35,6 @@ def capabilities(conn):
     return result
 
 
-def _evaluateDefaultRoute(attrs, cfg):
-    defroute = None
-    cfgdefroute = cfg.get('DEFROUTE')
-    if cfgdefroute:
-        if cfgdefroute.lower().strip('" ') == 'yes':
-            defroute = True
-        elif cfgdefroute.lower().strip('" ') == 'no':
-            defroute = False
-
-    if (
-        defroute or
-        (attrs.get('bootproto') == 'dhcp' and defroute is not False) or
-        attrs.get('gateway')
-    ):
-        return True
-    return False
-
-
 def network(caps, device):
     """
     Returns a dictionary that describes the network of the device.
@@ -66,31 +45,30 @@ def network(caps, device):
             Status is the current network status (for instance it includes
             the IP address also if the interfaces got its address by DHCP)
     """
-    info = CachingNetInfo(caps)
     configuration = {}
     status = {}
-    if device in info.vlans:
-        port_info = info.vlans[device]
+    if device in caps['vlans']:
+        port_info = caps['vlans'][device]
         configuration['vlan'] = port_info['vlanid']
         iface = port_info['iface']
-        if iface in info.bondings:
+        if iface in caps['bondings']:
             configuration['bonding'] = iface
         else:
             configuration['nic'] = iface
-    elif device in info.bondings:
+    elif device in caps['bondings']:
         configuration['bonding'] = device
-        port_info = info.bondings[device]
-    elif device in info.nics:
+        port_info = caps['bondings'][device]
+    elif device in caps['nics']:
         configuration['nic'] = device
-        port_info = info.nics[device]
+        port_info = caps['nics'][device]
     else:
         raise RuntimeError(
             'The selected device %s is not a supported bridge '
             'port' % device
         )
 
-    if 'BOOTPROTO' in port_info['cfg']:
-        configuration['bootproto'] = port_info['cfg']['BOOTPROTO']
+    if port_info.get('dhcpv4'):
+        configuration['bootproto'] = 'dhcp'
     if configuration.get('bootproto') == 'dhcp':
         configuration['blockingdhcp'] = True
     else:
@@ -99,12 +77,7 @@ def network(caps, device):
         gateway = port_info.get('gateway')
         if gateway is not None:
             configuration['gateway'] = gateway
-        elif 'GATEWAY' in port_info['cfg']:
-            configuration['gateway'] = port_info['cfg']['GATEWAY']
-    configuration['defaultRoute'] = _evaluateDefaultRoute(
-        configuration,
-        port_info['cfg']
-    )
+    configuration['defaultRoute'] = port_info['ipv4defaultroute']
     if 'addr' in port_info:
         status['ipaddr'] = port_info['addr']
     if 'netmask' in port_info:

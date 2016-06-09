@@ -32,9 +32,6 @@ from otopi import util
 from otopi import plugin
 
 
-from vdsm.network.netinfo.cache import CachingNetInfo
-
-
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import vds_info
 from ovirt_setup_lib import hostname as osetuphostname
@@ -134,24 +131,22 @@ class Plugin(plugin.PluginBase):
         ),
     )
     def _customization(self):
-        info = CachingNetInfo(
-            vds_info.capabilities(
-                self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-            )
+        caps = vds_info.capabilities(
+            self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         )
         interfaces = set(
-            info.nics.keys() +
-            info.bondings.keys() +
-            info.vlans.keys()
+            caps['nics'].keys() +
+            caps['bondings'].keys() +
+            caps['vlans'].keys()
         )
         validValues = []
         enslaved = set()
         inv_bond = set()
 
-        for bridge in info.bridges.keys():
-            enslaved.update(set(info.bridges[bridge]['ports']))
-        for bond in info.bondings.keys():
-            slaves = set(info.bondings[bond]['slaves'])
+        for bridge in caps['bridges'].keys():
+            enslaved.update(set(caps['bridges'][bridge]['ports']))
+        for bond in caps['bondings'].keys():
+            slaves = set(caps['bondings'][bond]['slaves'])
             if slaves:
                 enslaved.update(slaves)
             else:
@@ -217,28 +212,11 @@ class Plugin(plugin.PluginBase):
         ),
     )
     def _get_existing_bridge_interface(self):
-        info = CachingNetInfo(
-            vds_info.capabilities(
-                self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-            )
-        )
-        cfgif = []
-        for e in info.nics.keys():
-            if 'cfg' in info.nics[e]:
-                cfgif.append((e, info.nics[e]['cfg']))
-        for e in info.bondings.keys():
-            if 'cfg' in info.bondings[e]:
-                cfgif.append((e, info.bondings[e]['cfg']))
-        for e in info.vlans.keys():
-            if 'cfg' in info.vlans[e]:
-                cfgif.append((e, info.vlans[e]['cfg']))
-        bridge_ifs = [
-            e[0] for e in cfgif
-            if 'BRIDGE' in e[1] and
-            e[1]['BRIDGE'] == self.environment[
-                ohostedcons.NetworkEnv.BRIDGE_NAME
-            ]
-            ]
+        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        caps = cli.getVdsCapabilities()
+        bridge_name = self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME]
+        bridge_network = caps['networks'].get(bridge_name)
+        bridge_ifs = bridge_network['ports'] if bridge_network else []
         if len(bridge_ifs) > 1:
             self.logger.warning(
                 _(

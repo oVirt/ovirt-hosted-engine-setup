@@ -42,9 +42,6 @@ from otopi import transaction
 from otopi import util
 
 
-from vdsm.network.netinfo.cache import CachingNetInfo
-
-
 from ovirt_host_deploy import constants as ohdcons
 from ovirt_hosted_engine_setup import check_liveliness
 from ovirt_hosted_engine_setup import engineapi
@@ -552,15 +549,15 @@ class Plugin(plugin.PluginBase):
                 cluster = engine_api.clusters.get(cluster_name)
 
                 conn = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-                net_info = CachingNetInfo(vds_info.capabilities(conn))
+                caps = vds_info.capabilities(conn)
                 bridge_port = self.environment[
                     ohostedcons.NetworkEnv.BRIDGE_IF
                 ]
-                if bridge_port in net_info.vlans:
+                if bridge_port in caps['vlans']:
                     self.logger.debug(
                         "Updating engine's management network to be vlanned"
                     )
-                    vlan_id = net_info.vlans[bridge_port]['vlanid']
+                    vlan_id = caps['vlans'][bridge_port]['vlanid']
                     self.logger.debug(
                         "Getting engine's management network via engine's APIs"
                     )
