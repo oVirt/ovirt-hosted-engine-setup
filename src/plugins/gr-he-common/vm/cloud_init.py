@@ -427,16 +427,9 @@ class Plugin(plugin.PluginBase):
         name=ohostedcons.Stages.CONFIG_CLOUD_INIT_OPTIONS,
     )
     def _customization(self):
-        interactive = set([
-            self.environment[ohostedcons.CloudInit.GENERATE_ISO],
-            self.environment[ohostedcons.CloudInit.ROOTPWD],
-            self.environment[ohostedcons.CloudInit.INSTANCE_HOSTNAME],
-            self.environment[ohostedcons.CloudInit.EXECUTE_ESETUP],
-            self.environment[ohostedcons.CloudInit.VM_STATIC_CIDR],
-            self.environment[ohostedcons.CloudInit.VM_DNS],
-        ]) == set([None])
-
-        if interactive:
+        if self.environment[
+            ohostedcons.CloudInit.GENERATE_ISO
+        ] is None:
             if self.dialog.queryString(
                 name='CLOUD_INIT_USE',
                 note=_(
@@ -473,9 +466,13 @@ class Plugin(plugin.PluginBase):
                 self.environment[
                     ohostedcons.CloudInit.GENERATE_ISO
                 ] = ohostedcons.Const.CLOUD_INIT_SKIP
-            if self.environment[
-                ohostedcons.CloudInit.GENERATE_ISO
-            ] == ohostedcons.Const.CLOUD_INIT_GENERATE:
+
+        if self.environment[
+            ohostedcons.CloudInit.GENERATE_ISO
+        ] == ohostedcons.Const.CLOUD_INIT_GENERATE:
+            if not self.environment[
+                ohostedcons.CloudInit.INSTANCE_HOSTNAME
+            ]:
                 instancehname = self._hostname_helper.getHostname(
                     envkey=None,
                     whichhost='CI_INSTANCE_HOSTNAME',
@@ -511,6 +508,9 @@ class Plugin(plugin.PluginBase):
                         ohostedcons.CloudInit.INSTANCE_HOSTNAME
                     ] = False
 
+            if not self.environment[
+                ohostedcons.CloudInit.EXECUTE_ESETUP
+            ]:
                 self.environment[
                     ohostedcons.CloudInit.EXECUTE_ESETUP
                 ] = self.dialog.queryString(
@@ -691,6 +691,19 @@ class Plugin(plugin.PluginBase):
                 caseSensitive=False,
                 default=_('No')
             ) == _('Yes').lower()
+        if (
+            self.environment[
+                ohostedcons.CloudInit.VM_ETC_HOSTS
+            ] and self.environment[
+                ohostedcons.CoreEnv.UPGRADING_APPLIANCE
+            ]
+        ):
+            self.logger.warning(_(
+                'Please take care that this will simply add an entry for this '
+                'host under /etc/hosts on the engine VM. '
+                'If in the past you added other entries there, recovering '
+                'them is up to you.'
+            ))
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,

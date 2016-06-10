@@ -177,6 +177,16 @@ class Plugin(plugin.PluginBase):
                 if self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE]:
                     self.environment[ohostedcons.VMEnv.OVF] = _ovf
                     self.environment[ohostedcons.VMEnv.CDROM] = None
+                    self.environment[ohostedcons.VMEnv.BOOT] = 'disk'
+                    self.environment[
+                        ohostedcons.CloudInit.GENERATE_ISO
+                    ] = ohostedcons.Const.CLOUD_INIT_GENERATE
+                    self.environment[
+                        ohostedcons.CloudInit.EXECUTE_ESETUP
+                    ] = True
+                    self.environment[
+                        ohostedcons.VMEnv.AUTOMATE_VM_SHUTDOWN
+                    ] = True
             else:
                 self.logger.error(_(
                     'Unable to find the hosted-engine configuration volume '
