@@ -69,9 +69,9 @@ Requires:       ovirt-hosted-engine-ha >= 2.0.0
 Requires:       ovirt-engine-sdk-python >= 3.6.3.0
 Requires:       ovirt-setup-lib >= 1.0.2
 Requires:       glusterfs-cli >= 3.7.3
-Requires:       vdsm >= 4.17.999-1046
-Requires:       vdsm-cli >= 4.18.0
-Requires:       vdsm-python >= 4.18.0
+Requires:       vdsm >= 4.18.2
+Requires:       vdsm-cli >= 4.18.2
+Requires:       vdsm-python >= 4.18.2
 
 Conflicts:      ovirt-engine-appliance < 4.0
 Conflicts:      ovirt-engine-appliance >= 4.1
@@ -124,6 +124,9 @@ make %{?_smp_mflags} install DESTDIR="%{buildroot}"
 %{vdsmhooksdir}/before_vm_start/
 
 %changelog
+* Thu Jun 16 2016 Simone Tiraboschi <stirabos@redhat.com> - 2.0.0.2-1
+- 2.0.0.2-1
+
 * Wed Jun 08 2016 Simone Tiraboschi <stirabos@redhat.com> - 2.0.0.2-0.0.master
 - 2.0.0.2-0.0.master
 
