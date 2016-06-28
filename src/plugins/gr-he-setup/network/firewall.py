@@ -65,6 +65,10 @@ class Plugin(plugin.PluginBase):
                 'name': 'hosted-console',
                 'directory': 'base'
             },
+            {
+                'name': 'hosted-cockpit',
+                'directory': 'base'
+            },
         ])
 
 
