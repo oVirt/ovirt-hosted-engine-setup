@@ -109,6 +109,10 @@ class VmStatus(object):
                 all_host_stats[host_id]['engine-status'] = json.loads(
                     all_host_stats[host_id]['engine-status']
                 )
+
+            all_host_stats["global_maintenance"] = cluster_stats.get(
+                client.HAClient.GlobalMdFlags.MAINTENANCE, False)
+
             print(json.dumps(all_host_stats))
             return all_host_stats
 
