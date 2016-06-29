@@ -131,7 +131,8 @@ class Plugin(plugin.PluginBase):
         ),
         condition=lambda self: (
             self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] or
-            self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE]
+            self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE] or
+            self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
         ),
     )
     def _customization(self):
@@ -187,6 +188,9 @@ class Plugin(plugin.PluginBase):
                     self.environment[
                         ohostedcons.VMEnv.AUTOMATE_VM_SHUTDOWN
                     ] = True
+                    self.environment[
+                        ohostedcons.Upgrade.BACKUP_SIZE_GB
+                    ] = self.environment[ohostedcons.StorageEnv.IMAGE_SIZE_GB]
             else:
                 self.logger.error(_(
                     'Unable to find the hosted-engine configuration volume '

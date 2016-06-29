@@ -96,6 +96,15 @@ class Plugin(plugin.PluginBase):
             )
 
     @plugin.event(
+        stage=plugin.Stages.STAGE_INIT,
+    )
+    def _init(self):
+        self.environment.setdefault(
+            ohostedcons.Upgrade.EXTEND_VOLUME,
+            False,
+        )
+
+    @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
     )
     def _setup(self):
@@ -104,7 +113,7 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
         after=(
-            ohostedcons.Stages.UPGRADE_DISK_CREATED,
+            ohostedcons.Stages.UPGRADE_BACKUP_DISK_CREATED,
         ),
         name=ohostedcons.Stages.UPGRADE_VM_SHUTDOWN,
     )
@@ -133,6 +142,57 @@ class Plugin(plugin.PluginBase):
                 raise RuntimeError(status['status']['message'])
 
     @plugin.event(
+        stage=plugin.Stages.STAGE_MISC,
+        name=ohostedcons.Stages.UPGRADE_DISK_EXTENDED,
+        after=(
+            ohostedcons.Stages.UPGRADE_DISK_BACKUP_SAVED,
+        ),
+        condition=lambda self: self.environment[
+            ohostedcons.Upgrade.EXTEND_VOLUME
+        ],
+    )
+    def _misc_extend_disk(self):
+        self.logger.info(_('Extending VM disk'))
+        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        res = cli.getStorageDomainInfo(
+            storagedomainID=self.environment[ohostedcons.StorageEnv.SD_UUID]
+        )
+        self.logger.debug(res)
+        if 'status' not in res or res['status']['code'] != 0:
+            raise RuntimeError(
+                _('Failed getting storage domain info: {m}').format(
+                    m=res['status']['message'],
+                )
+            )
+        pool_id = res['pool'][0]
+        res = cli.extendVolumeSize(
+            storagepoolID=pool_id,
+            storagedomainID=self.environment[ohostedcons.StorageEnv.SD_UUID],
+            imageID=self.environment[ohostedcons.StorageEnv.IMG_UUID],
+            volumeID=self.environment[ohostedcons.StorageEnv.VOL_UUID],
+            newSize=str(int(self.environment[
+                ohostedcons.StorageEnv.IMAGE_SIZE_GB
+            ])*1024*1024*1024),
+        )
+        self.logger.debug(res)
+        if 'status' not in res or res['status']['code'] != 0:
+            raise RuntimeError(
+                _('Failed getting storage domain info: {m}').format(
+                    m=res['status']['message'],
+                )
+            )
+        task_id = res['status']['message']
+        waiter = tasks.TaskWaiter(self.environment)
+        res = waiter.wait(task_id, 1800)
+        self.logger.debug(res)
+        if res['code'] != 0:
+            raise RuntimeError(
+                _('Failed extending the hosted-engine disk: {m}').format(
+                    m=res['message'],
+                )
+            )
+
+    @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
         name=ohostedcons.Stages.UPGRADED_APPLIANCE_RUNNING,
     )
@@ -156,7 +216,6 @@ class Plugin(plugin.PluginBase):
 
             plines = []
             cdrom_attached = False
-            disk_replaced = False
             for line in lines:
                 if 'device:cdrom' in line and 'path:' in line:
                     # attaching cloud-init iso to configure the new appliance
@@ -169,35 +228,12 @@ class Plugin(plugin.PluginBase):
                     )
                     plines.append(sline)
                     cdrom_attached = True
-                elif (
-                    'device:disk' in line and
-                    self.environment[
-                        ohostedcons.Upgrade.PREV_IMG_UUID
-                    ] in line and
-                    self.environment[
-                        ohostedcons.Upgrade.PREV_VOL_UUID
-                    ] in line
-                ):
-                    # replacing engine VM disk with the new one
-                    sline = line.replace(
-                        self.environment[ohostedcons.Upgrade.PREV_IMG_UUID],
-                        self.environment[ohostedcons.StorageEnv.IMG_UUID]
-                    ).replace(
-                        self.environment[ohostedcons.Upgrade.PREV_VOL_UUID],
-                        self.environment[ohostedcons.StorageEnv.VOL_UUID]
-                    )
-                    plines.append(sline)
-                    disk_replaced = True
                 else:
                     plines.append(line)
 
             if not cdrom_attached:
                 raise RuntimeError(_(
                     'Unable to attach cloud-init ISO image'
-                ))
-            if not disk_replaced:
-                raise RuntimeError(_(
-                    'Unable to temporary replace the engine VM disk'
                 ))
 
             vm_conf = open(self._temp_vm_conf, 'w')

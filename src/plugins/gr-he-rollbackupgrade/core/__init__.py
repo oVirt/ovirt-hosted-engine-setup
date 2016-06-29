@@ -18,7 +18,7 @@
 #
 
 
-"""hosted engine upgrade appliance engine plugin."""
+"""hosted engine rollback upgrade core plugin."""
 
 
 from otopi import util

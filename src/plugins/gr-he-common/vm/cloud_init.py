@@ -414,6 +414,7 @@ class Plugin(plugin.PluginBase):
         after=(
             ohostedcons.Stages.DIALOG_TITLES_S_VM,
             ohostedcons.Stages.CONFIG_OVF_IMPORT,
+            ohostedcons.Stages.UPGRADE_CHECK_UPGRADE_REQUIREMENTS,
         ),
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_VM,
@@ -421,8 +422,8 @@ class Plugin(plugin.PluginBase):
         condition=lambda self: (
             self.environment[ohostedcons.VMEnv.BOOT] == 'disk' and
             self.environment[ohostedcons.VMEnv.CDROM] is None and
-            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
-
+            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] and
+            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
         ),
         name=ohostedcons.Stages.CONFIG_CLOUD_INIT_OPTIONS,
     )

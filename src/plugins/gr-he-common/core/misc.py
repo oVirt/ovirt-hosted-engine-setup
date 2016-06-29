@@ -74,7 +74,15 @@ class Plugin(plugin.PluginBase):
             None
         )
         self.environment.setdefault(
+            ohostedcons.CoreEnv.ROLLBACK_PROCEED,
+            None
+        )
+        self.environment.setdefault(
             ohostedcons.CoreEnv.UPGRADING_APPLIANCE,
+            False
+        )
+        self.environment.setdefault(
+            ohostedcons.CoreEnv.ROLLBACK_UPGRADE,
             False
         )
         self.environment[ohostedcons.CoreEnv.NODE_SETUP] = False

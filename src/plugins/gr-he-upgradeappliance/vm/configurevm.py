@@ -34,7 +34,6 @@ from otopi import util
 
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
-from ovirt_hosted_engine_setup import vm_status
 
 
 def _(m):
@@ -178,52 +177,6 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Upgrade.RESTORE_REPORTS,
             False,
         )
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_LATE_SETUP,
-        after=(
-            ohostedcons.Stages.VDSMD_CONF_LOADED,
-            ohostedcons.Stages.VDSM_LIBVIRT_CONFIGURED,
-        ),
-        name=ohostedcons.Stages.CHECK_MAINTENANCE_MODE,
-    )
-    def _late_setup(self):
-        self.logger.info('Checking maintenance mode')
-        vmstatus = vm_status.VmStatus()
-        status = vmstatus.get_status()
-        self.logger.debug('hosted-engine-status: {s}'.format(s=status))
-        if not status['global_maintenance']:
-            self.logger.error(_(
-                'Please enable global maintenance mode before upgrading'
-            ))
-            raise RuntimeError(_('Not in global maintenance mode'))
-
-        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        response = cli.list()
-        self.logger.debug(response)
-        if response['status']['code'] == 0:
-            if 'items' in response:
-                vms = set(response['items'])
-            else:
-                vms = set([])
-            if self.environment[ohostedcons.VMEnv.VM_UUID] not in vms:
-                raise RuntimeError(_(
-                    'The engine VM is not running on this host'
-                ))
-            if vms > set(self.environment[ohostedcons.VMEnv.VM_UUID]):
-                self.logger.error(
-                    _(
-                        'The following VMs has been found: '
-                        '{vms}'
-                    ).format(
-                        vms=', '.join(vms)
-                    )
-                )
-                raise RuntimeError(
-                    _('Cannot upgrade Hosted Engine with other VMs running')
-                )
-        else:
-            raise RuntimeError(_('Unable to get VM list from VDSM'))
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,

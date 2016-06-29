@@ -31,6 +31,7 @@ from otopi import util
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import tasks
+from ovirt_hosted_engine_setup import vm_status
 
 
 def _(m):
@@ -49,14 +50,68 @@ class Plugin(plugin.PluginBase):
         super(Plugin, self).__init__(context=context)
 
     @plugin.event(
+        stage=plugin.Stages.STAGE_LATE_SETUP,
+        after=(
+            ohostedcons.Stages.VDSMD_CONF_LOADED,
+            ohostedcons.Stages.VDSM_LIBVIRT_CONFIGURED,
+        ),
+        name=ohostedcons.Stages.CHECK_MAINTENANCE_MODE,
+        condition=lambda self: (
+            self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE] or
+            self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
+        )
+    )
+    def _late_setup(self):
+        self.logger.info('Checking maintenance mode')
+        vmstatus = vm_status.VmStatus()
+        status = vmstatus.get_status()
+        self.logger.debug('hosted-engine-status: {s}'.format(s=status))
+        if not status['global_maintenance']:
+            self.logger.error(_(
+                'Please enable global maintenance mode before '
+                'upgrading or restoring'
+            ))
+            raise RuntimeError(_('Not in global maintenance mode'))
+
+        if self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]:
+            if status['engine_vm_up']:
+                self.logger.error(_(
+                    'The engine VM seams up, please stop it before '
+                    'restoring.'
+                ))
+                raise RuntimeError(_('Engine VM is up'))
+            else:
+                self.logger.info(_(
+                    'The engine VM is down.'
+                ))
+        if self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE]:
+            cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+            response = cli.list()
+            self.logger.debug(response)
+            if response['status']['code'] == 0:
+                if 'items' in response:
+                    vms = set(response['items'])
+                else:
+                    vms = set([])
+                if self.environment[ohostedcons.VMEnv.VM_UUID] not in vms:
+                    raise RuntimeError(_(
+                        'The engine VM is not running on this host'
+                    ))
+                else:
+                    self.logger.info('The engine VM is running on this host')
+            else:
+                raise RuntimeError(_('Unable to get VM list from VDSM'))
+
+    @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
         after=(
             ohostedcons.Stages.VDSCLI_RECONNECTED,
             ohostedcons.Stages.CONF_IMAGE_AVAILABLE,
-            ohostedcons.Stages.UPGRADED_DISK_SWITCHED,
+            ohostedcons.Stages.UPGRADE_BACKUP_DISK_REGISTERED,
         ),
         condition=lambda self: (
-            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
+            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] and
+            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
         ),
         name=ohostedcons.Stages.VM_SHUTDOWN,
     )

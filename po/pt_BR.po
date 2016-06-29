@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: devel@ovirt.org\n"
-"POT-Creation-Date: 2016-06-08 16:13+0200\n"
+"POT-Creation-Date: 2016-06-16 15:09+0200\n"
 "PO-Revision-Date: 2016-02-29 21:08-0300\n"
 "Last-Translator:Wesley Morais de Oliveira \n"
 "Language-Team: \n"
@@ -671,7 +671,7 @@ msgstr ""
 "Setup irá continuar assumindo que '{answfile}' foi correta e completamente "
 "gerado em outro host HE"
 
-#: src/plugins/gr-he-common/core/remote_answerfile.py:182
+#: src/plugins/gr-he-common/core/remote_answerfile.py:192
 #, fuzzy
 msgid ""
 "Unable to find the hosted-engine configuration volume on the shared storage."
@@ -679,7 +679,7 @@ msgstr ""
 "Salvando a configuração do hosted-engine no domínio do armazenamento "
 "compartilhado"
 
-#: src/plugins/gr-he-common/core/remote_answerfile.py:195
+#: src/plugins/gr-he-common/core/remote_answerfile.py:205
 msgid ""
 "It seems like your existing HE infrastructure was deployed with version 3.5 "
 "(or before) and never upgraded to current release.\n"
@@ -690,7 +690,7 @@ msgid ""
 "Please check the log file for more details.\n"
 msgstr ""
 
-#: src/plugins/gr-he-common/core/remote_answerfile.py:211
+#: src/plugins/gr-he-common/core/remote_answerfile.py:221
 #, fuzzy
 msgid ""
 "Replying \"No\" will abort Setup.\n"
@@ -699,7 +699,7 @@ msgstr ""
 "Tentar verificar o status do host novamente ou ignorar isto e continuar "
 "(@VALUES@)[@DEFAULT@]? "
 
-#: src/plugins/gr-he-common/core/remote_answerfile.py:223
+#: src/plugins/gr-he-common/core/remote_answerfile.py:233
 msgid "other hosted-engine host is still at version 3.5"
 msgstr ""
 
@@ -730,9 +730,9 @@ msgstr ""
 
 #: src/plugins/gr-he-common/engine/ca.py:131
 #: src/plugins/gr-he-common/engine/ca.py:134
-#: src/plugins/gr-he-common/vm/cloud_init.py:448
-#: src/plugins/gr-he-common/vm/cloud_init.py:450
-#: src/plugins/gr-he-common/vm/cloud_init.py:451
+#: src/plugins/gr-he-common/vm/cloud_init.py:441
+#: src/plugins/gr-he-common/vm/cloud_init.py:443
+#: src/plugins/gr-he-common/vm/cloud_init.py:444
 #: src/plugins/gr-he-common/vm/cloud_init.py:524
 #: src/plugins/gr-he-common/vm/cloud_init.py:526
 #: src/plugins/gr-he-common/vm/cloud_init.py:527
@@ -775,7 +775,7 @@ msgstr "Sim"
 
 #: src/plugins/gr-he-common/engine/ca.py:131
 #: src/plugins/gr-he-common/engine/ca.py:133
-#: src/plugins/gr-he-common/vm/cloud_init.py:448
+#: src/plugins/gr-he-common/vm/cloud_init.py:441
 #: src/plugins/gr-he-common/vm/cloud_init.py:524
 #: src/plugins/gr-he-common/vm/cloud_init.py:553
 #: src/plugins/gr-he-common/vm/cloud_init.py:690
@@ -1220,7 +1220,7 @@ msgstr ""
 "de servidores de nomes de domínio para VM do engine\n"
 "VM Engine DNS (deixá-la vazia para pular) [@DEFAULT@]: "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:443
+#: src/plugins/gr-he-common/vm/cloud_init.py:436
 msgid ""
 "Would you like to use cloud-init to customize the appliance on the first "
 "boot (@VALUES@)[@DEFAULT@]? "
@@ -1228,7 +1228,7 @@ msgstr ""
 "Gostaria de usar cloud-init para personalizar a appliance na primeira "
 "inicialização (@VALUES@)[@DEFAULT@]? "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:455
+#: src/plugins/gr-he-common/vm/cloud_init.py:448
 msgid ""
 "Would you like to generate on-fly a cloud-init ISO image (of no-cloud type)\n"
 "or do you have an existing one (@VALUES@)[@DEFAULT@]? "
@@ -1236,17 +1236,17 @@ msgstr ""
 "Gostaria de gerar uma imagem ISO on-fly cloud-init (de no-cloud tipo)\n"
 "ou você já tem uma existente (@VALUES@)[@DEFAULT@]? "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:461
-#: src/plugins/gr-he-common/vm/cloud_init.py:463
-#: src/plugins/gr-he-common/vm/cloud_init.py:464
+#: src/plugins/gr-he-common/vm/cloud_init.py:454
+#: src/plugins/gr-he-common/vm/cloud_init.py:456
+#: src/plugins/gr-he-common/vm/cloud_init.py:457
 msgid "Generate"
 msgstr "Gerar"
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:461
+#: src/plugins/gr-he-common/vm/cloud_init.py:454
 msgid "Existing"
 msgstr "Existente"
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:484
+#: src/plugins/gr-he-common/vm/cloud_init.py:481
 msgid ""
 "Please provide the FQDN you would like to use for the engine appliance.\n"
 "Note: This will be the FQDN of the engine VM you are now going to launch,\n"
@@ -1260,7 +1260,7 @@ msgstr ""
 "existente.\n"
 "VM engine FQDN: (deixe em branco para pular): "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:500
+#: src/plugins/gr-he-common/vm/cloud_init.py:497
 #: src/plugins/gr-he-setup/engine/fqdn.py:113
 msgid "Please input the hostname for the engine VM, not for this host."
 msgstr ""
@@ -1330,7 +1330,14 @@ msgstr ""
 "engine\n"
 "(@VALUES@)[@DEFAULT@] "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:975
+#: src/plugins/gr-he-common/vm/cloud_init.py:702
+msgid ""
+"Please take care that this will simply add an entry for this host under /etc/"
+"hosts on the engine VM. If in the past you added other entries there, "
+"recovering them is up to you."
+msgstr ""
+
+#: src/plugins/gr-he-common/vm/cloud_init.py:988
 msgid "Error generating cloud-init ISO image"
 msgstr "Erro ao gerar imagem ISO cloud-init"
 

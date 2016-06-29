@@ -44,6 +44,7 @@ from otopi import util
 from ovirt_hosted_engine_ha.lib import heconflib
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import domains as ohosteddomains
+from ovirt_hosted_engine_setup import util as ohostedutil
 from ovirt_hosted_engine_setup.ovf import ovfenvelope
 
 
@@ -122,11 +123,11 @@ class ImageTransaction(transaction.TransactionElement):
         if size['status']['code']:
             raise RuntimeError(size['status']['message'])
         destination_size = int(size['apparentsize'])
-        if destination_size != source_size:
+        if destination_size < source_size:
             raise RuntimeError(
                 _(
-                    'Incoherence detected in OVF file: image size {source} '
-                    'does not match declared size {destination}'
+                    'Error on volume size: the selected image (size {source}) '
+                    'doesn\'t fit the target volume (size {destination})'
                 ).format(
                     source=source_size,
                     destination=destination_size,
@@ -139,27 +140,7 @@ class ImageTransaction(transaction.TransactionElement):
             destination = self._get_volume_path()
         except RuntimeError as e:
             return (1, str(e))
-        try:
-            self._parent.execute(
-                (
-                    self._parent.command.get('sudo'),
-                    '-u',
-                    'vdsm',
-                    '-g',
-                    'kvm',
-                    self._parent.command.get('qemu-img'),
-                    'convert',
-                    '-O',
-                    'raw',
-                    source,
-                    destination
-                ),
-                raiseOnError=True
-            )
-        except RuntimeError as e:
-            self._parent.logger.debug('error uploading the image: ' + str(e))
-            return (1, str(e))
-        return (0, 'OK')
+        return ohostedutil.transferImage(self._parent, source, destination)
 
     def _injectBackup(self):
         try:
@@ -461,6 +442,26 @@ class Plugin(plugin.PluginBase):
                 tar.close()
         return success
 
+    def _get_image_path(self, imageID, volumeID):
+        status = self.environment[ohostedcons.VDSMEnv.VDS_CLI].prepareImage(
+            storagepoolID=ohostedcons.Const.BLANK_UUID,
+            storagedomainID=self.environment[ohostedcons.StorageEnv.SD_UUID],
+            imageID=imageID,
+            volumeID=volumeID,
+        )
+        self.logger.debug('_get_image_path: {s}'.format(s=status))
+        if 'status' not in status or status['status']['code'] != 0:
+            raise RuntimeError(
+                _('Failed preparing the disk: {m}').format(
+                    m=status['status']['message'],
+                )
+            )
+        if 'path' not in status:
+            raise RuntimeError(
+                _('Unable to get the disk path')
+            )
+        return status['path']
+
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
     )
@@ -481,6 +482,14 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VMEnv.APPLIANCE_VERSION,
             None
         )
+        self.environment.setdefault(
+            ohostedcons.Upgrade.BACKUP_IMG_UUID,
+            None,
+        )
+        self.environment.setdefault(
+            ohostedcons.Upgrade.BACKUP_VOL_UUID,
+            None,
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -494,13 +503,15 @@ class Plugin(plugin.PluginBase):
         after=(
             ohostedcons.Stages.DIALOG_TITLES_S_VM,
             ohostedcons.Stages.CONFIG_BOOT_DEVICE,
+            ohostedcons.Stages.UPGRADE_CHECK_SPM_HOST,
         ),
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_VM,
         ),
         condition=lambda self: (
             self.environment[ohostedcons.VMEnv.BOOT] == 'disk' and
-            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
+            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] and
+            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
         ),
         name=ohostedcons.Stages.CONFIG_OVF_IMPORT,
     )
@@ -667,11 +678,12 @@ class Plugin(plugin.PluginBase):
         name=ohostedcons.Stages.OVF_IMPORTED,
         after=(
             ohostedcons.Stages.VM_IMAGE_AVAILABLE,
-            ohostedcons.Stages.UPGRADE_VM_SHUTDOWN,
+            ohostedcons.Stages.UPGRADE_DISK_EXTENDED,
         ),
         condition=lambda self: (
             self.environment[ohostedcons.VMEnv.BOOT] == 'disk' and
-            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
+            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] and
+            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
         ),
     )
     def _misc(self):
@@ -691,6 +703,50 @@ class Plugin(plugin.PluginBase):
                     ],
                 )
             )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_MISC,
+        after=(
+            ohostedcons.Stages.UPGRADE_VM_SHUTDOWN,
+        ),
+        name=ohostedcons.Stages.UPGRADE_DISK_BACKUP_SAVED,
+        condition=lambda self: (
+            self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE] or
+            self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
+        )
+    )
+    def _misc_backup_disk(self):
+        if self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE]:
+            verb = _('Creating')
+            action = _('created')
+        elif self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]:
+            verb = _('Restoring')
+            action = _('restored')
+        self.logger.info(_(
+            '{v} a backup of the engine VM disk '
+            '(could take a few minutes depending on archive size)'
+        ).format(v=verb))
+        enginevm_disk_path = self._get_image_path(
+            self.environment[ohostedcons.StorageEnv.IMG_UUID],
+            self.environment[ohostedcons.StorageEnv.VOL_UUID],
+        )
+        backup_disk_path = self._get_image_path(
+            self.environment[ohostedcons.Upgrade.BACKUP_IMG_UUID],
+            self.environment[ohostedcons.Upgrade.BACKUP_VOL_UUID],
+        )
+        if self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE]:
+            source = enginevm_disk_path
+            destination = backup_disk_path
+        elif self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]:
+            source = backup_disk_path
+            destination = enginevm_disk_path
+        created = ohostedutil.transferImage(
+            self,
+            source,
+            destination,
+        )
+        if created[0] == 0:
+            self.logger.info(_('Successfully {a}').format(a=action))
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLEANUP,

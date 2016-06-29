@@ -1,5 +1,5 @@
 #
-# ovirt-hosted-engine-setup -- ovirt hosted engine setup
+# ovirt-hosted-engine-setup -- ovirt with a manager in a VM
 # Copyright (C) 2016 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
@@ -17,19 +17,10 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
+MAINTAINERCLEANFILES = \
+	$(srcdir)/Makefile.in \
+	$(NULL)
 
-"""hosted engine upgrade appliance engine plugin."""
-
-
-from otopi import util
-
-
-from . import misc
-
-
-@util.export
-def createPlugins(context):
-    misc.Plugin(context=context)
-
-
-# vim: expandtab tabstop=4 shiftwidth=4
+SUBDIRS = \
+	core \
+	$(NULL)

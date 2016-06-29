@@ -91,6 +91,8 @@ Usage: $0 [--help] <command> [<command-args>]
             host.
         --upgrade-appliance
             Upgrade the engine appliance.
+        --rollback-upgrade
+            Rollback using a backup saved in a previous upgrade attempt.
 
     For additional information about a specific command try:
         $@ <command> --help
@@ -147,6 +149,21 @@ __EOF__
 return ;}
 
     exec @datadir@/ovirt-hosted-engine-setup/scripts/ovirt-hosted-engine-setup --upgrade-appliance "$@"
+}
+
+cmd_rollback_upgrade() {
+    [ "$1" == "--help" ] && { cat << __EOF__
+Usage: $0 --rollback-upgrade [args]
+    Rollback using a backup saved in a previous upgrade attempt.
+
+    --config-append=<file>
+        Load extra configuration files.
+    --generate-answer=<file>
+        Generate answer file.
+__EOF__
+return ;}
+
+    exec @datadir@/ovirt-hosted-engine-setup/scripts/ovirt-hosted-engine-setup --rollback-upgrade "$@"
 }
 
 cmd_vm_start() {
@@ -458,6 +475,7 @@ cli_broker() {
         --reinitialize-lockspace) cmd_reinitialize_lockspace "$@" ;;
         --clean-metadata) cmd_clean_metadata "$@" ;;
         --upgrade-appliance) cmd_upgrade_appliance "$@" ;;
+        --rollback-upgrade) cmd_rollback_upgrade "$@" ;;
         --help)
             rc=0
             usage "$@"

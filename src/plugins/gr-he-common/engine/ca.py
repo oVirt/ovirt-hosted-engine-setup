@@ -180,6 +180,9 @@ class Plugin(plugin.PluginBase):
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_ENGINE,
         ),
+        condition=lambda self: (
+            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
+        ),
     )
     def _customization(self):
         self.environment[ohostedcons.EngineEnv.INTERACTIVE_ADMIN_PASSWORD] = (
@@ -220,8 +223,11 @@ class Plugin(plugin.PluginBase):
                     )
 
     @plugin.event(
-        stage=plugin.Stages.STAGE_VALIDATION,
-        name=ohostedcons.Stages.VALIDATION_CA_ACQUIRED,
+        stage=plugin.Stages.STAGE_CUSTOMIZATION,
+        name=ohostedcons.Stages.CUSTOMIZATION_CA_ACQUIRED,
+        after=(
+            ohostedcons.Stages.REQUIRE_ANSWER_FILE,
+        ),
         condition=lambda self: (
             self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE]
         ),
@@ -236,7 +242,8 @@ class Plugin(plugin.PluginBase):
         ),
         name=ohostedcons.Stages.CLOSEUP_CA_ACQUIRED,
         condition=lambda self: (
-            not self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE]
+            not self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE] and
+            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
         ),
     )
     def _closeup(self):
