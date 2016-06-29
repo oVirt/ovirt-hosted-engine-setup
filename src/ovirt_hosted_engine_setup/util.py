@@ -103,6 +103,30 @@ def persist(path):
         )
 
 
+def transferImage(base, source_path, destination_path):
+    try:
+        base.execute(
+            (
+                base.command.get('sudo'),
+                '-u',
+                'vdsm',
+                '-g',
+                'kvm',
+                base.command.get('qemu-img'),
+                'convert',
+                '-O',
+                'raw',
+                source_path,
+                destination_path
+            ),
+            raiseOnError=True
+        )
+    except RuntimeError as e:
+        base.logger.debug('error uploading the image: ' + str(e))
+        return (1, str(e))
+    return (0, 'OK')
+
+
 class VirtUserContext(object):
     """
     Switch to vdsm:kvm user with provided umask

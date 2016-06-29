@@ -117,6 +117,8 @@ AC_CONFIG_FILES([
 	src/plugins/gr-he-setup/libvirt/Makefile
 	src/plugins/gr-he-setup/vdsmd/Makefile
 	src/plugins/gr-he-setup/engine/Makefile
+	src/plugins/gr-he-rollbackupgrade/Makefile
+	src/plugins/gr-he-rollbackupgrade/core/Makefile
 	src/plugins/gr-he-upgradeappliance/Makefile
 	src/plugins/gr-he-upgradeappliance/core/Makefile
 	src/plugins/gr-he-upgradeappliance/engine/Makefile

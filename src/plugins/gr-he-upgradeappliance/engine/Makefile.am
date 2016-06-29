@@ -26,7 +26,7 @@ MAINTAINERCLEANFILES = \
 mydir=$(ovirthostedengineplugindir)/gr-he-upgradeappliance/engine
 dist_my_PYTHON = \
 	__init__.py \
-	add_vm_disk.py \
+	misc.py \
 	$(NULL)
 
 clean-local: \

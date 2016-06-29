@@ -358,6 +358,8 @@ class Const(object):
     # (packaging/dbscripts/create_tables.sql)
     MAX_STORAGE_USERNAME_LENGTH = 50
     MAX_STORAGE_PASSWORD_LENGTH = 50
+    UPGRADE_SUPPORTED_VERSIONS = ['3.6', '4.0', '4.1']
+    BACKUP_DISK_PREFIX = 'hosted-engine-backup-'
 
 
 @util.export
@@ -370,6 +372,7 @@ class CoreEnv(object):
     ADDITIONAL_HOST_ENABLED = 'OVEHOSTED_CORE/additionalHostEnabled'
     IS_ADDITIONAL_HOST = 'OVEHOSTED_CORE/isAdditionalHost'
     UPGRADING_APPLIANCE = 'OVEHOSTED_CORE/upgradingAppliance'
+    ROLLBACK_UPGRADE = 'OVEHOSTED_CORE/rollbackUpgrade'
     TEMPDIR = 'OVEHOSTED_CORE/tempDir'
 
     @ohostedattrs(
@@ -383,6 +386,12 @@ class CoreEnv(object):
     )
     def UPGRADE_PROCEED(self):
         return 'OVEHOSTED_CORE/upgradeProceed'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def ROLLBACK_PROCEED(self):
+        return 'OVEHOSTED_CORE/rollbackProceed'
 
     @ohostedattrs(
         answerfile=True,
@@ -993,13 +1002,17 @@ class Stages(object):
     CONF_IMAGE_AVAILABLE = 'ohosted.notifications.confimage.available'
     UPGRADED_APPLIANCE_RUNNING = 'ohosted.vm.state.upgraded.appliance.running'
     CHECK_MAINTENANCE_MODE = 'ohosted.core.check.maintenance.mode'
-    VALIDATION_CA_ACQUIRED = 'ohosted.engine.ca.acquired.validation'
+    CUSTOMIZATION_CA_ACQUIRED = 'ohosted.engine.ca.acquired.customization'
     CLOSEUP_CA_ACQUIRED = 'ohosted.engine.ca.acquired.closeup'
     CLOSEUP_CA_ACQUIRED = 'ohosted.engine.ca.acquired.closeup'
     UPGRADE_CHECK_SD_SPACE = 'ohosted.upgrade.check.sd.space'
-    UPGRADE_DISK_CREATED = 'ohosted.upgrade.disk.created'
+    UPGRADE_CHECK_SPM_HOST = 'ohosted.upgrade.check.spm.host'
+    UPGRADE_CHECK_UPGRADE_REQUIREMENTS = 'ohosted.upgrade.check.upgrade.req'
+    UPGRADE_BACKUP_DISK_CREATED = 'ohosted.upgrade.backup.disk.created'
     UPGRADE_VM_SHUTDOWN = 'ohosted.upgrade.vm.state.shutdown'
-    UPGRADED_DISK_SWITCHED = 'ohosted.upgrade.vm.disk.switched'
+    UPGRADE_DISK_BACKUP_SAVED = 'ohosted.upgrade.disk.backup.saved'
+    UPGRADE_DISK_EXTENDED = 'ohosted.upgrade.disk.extended'
+    UPGRADE_BACKUP_DISK_REGISTERED = 'ohosted.upgrade.backup.disk.registered'
     UPGRADED_DATACENTER_UP = 'ohosted.upgrade.datacenter.up'
 
     DIALOG_TITLES_S_VM = 'ohosted.dialog.titles.vm.start'
@@ -1050,11 +1063,13 @@ class Defaults(object):
 class Confirms(object):
     DEPLOY_PROCEED = 'DEPLOY_PROCEED'
     UPGRADE_PROCEED = 'UPGRADE_PROCEED'
+    ROLLBACK_PROCEED = 'ROLLBACK_PROCEED'
     CPU_PROCEED = 'CPU_PROCEED'
     DISK_PROCEED = 'DISK_PROCEED'
     MEMORY_PROCEED = 'MEMORY_PROCEED'
     SCREEN_PROCEED = 'SCREEN_PROCEED'
     SETTINGS = 'SETTINGS_PROCEED'
+    UPGRADE_DISK_RESIZE_PROCEED = 'UPGRADE_DISK_RESIZE_PROCEED'
 
 
 @util.export
@@ -1070,10 +1085,13 @@ class Upgrade(object):
     BACKUP_FILE = 'OVEHOSTED_UPGRADE/backupFileName'
     RESTORE_DWH = 'OVEHOSTED_UPGRADE/restoreDwh'
     RESTORE_REPORTS = 'OVEHOSTED_UPGRADE/restoreReports'
-    CONFIRM_DISK_SWITCH = 'OVEHOSTED_UPGRADE/confirmDiskSwitch'
+    CONFIRM_UPGRADE_SUCCESS = 'OVEHOSTED_UPGRADE/confirmUpgradeSuccess'
+    CONFIRM_UPGRADE_DISK_RESIZE = 'OVEHOSTED_UPGRADE/confirmUpgradeDiskResize'
 
-    PREV_IMG_UUID = 'OVEHOSTED_UPGRADE/prevImgUUID'
-    PREV_VOL_UUID = 'OVEHOSTED_UPGRADE/prevVolUUID'
+    BACKUP_IMG_UUID = 'OVEHOSTED_UPGRADE/backupImgUUID'
+    BACKUP_VOL_UUID = 'OVEHOSTED_UPGRADE/backupVolUUID'
+    BACKUP_SIZE_GB = 'OVEHOSTED_UPGRADE/backupImgSizeGB'
+    EXTEND_VOLUME = 'OVEHOSTED_UPGRADE/extend_volume'
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

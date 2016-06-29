@@ -24,5 +24,6 @@ MAINTAINERCLEANFILES = \
 SUBDIRS = \
 	gr-he-common \
 	gr-he-setup \
+	gr-he-rollbackupgrade \
 	gr-he-upgradeappliance \
 	$(NULL)

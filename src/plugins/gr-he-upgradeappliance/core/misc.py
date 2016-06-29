@@ -96,16 +96,18 @@ class Plugin(plugin.PluginBase):
             ] = self.dialog.queryString(
                 name=ohostedcons.Confirms.UPGRADE_PROCEED,
                 note=_(
-                    'Continuing will upgrade the engine VM running on one '
-                    'of the hosts of this cluster deploying and configuring '
+                    'Continuing will upgrade the engine VM running on this '
+                    'hosts deploying and configuring '
                     'a new appliance.\n'
                     'If your engine VM is already based on el7 you can also '
                     'simply upgrade the engine there.\n'
-                    'The disk of your engine VM will be replaced with a new '
-                    'one that contains an up-to-date appliance;\n'
-                    'the current engine VM disk will be left on the '
-                    'hosted-engine shared domain as a floating disk for '
-                    'recovery purposes.\n'
+                    'This procedure will create a new disk on the '
+                    'hosted-engine storage domain and it will backup '
+                    'there the content of your current engine VM disk.\n'
+                    'The new el7 based appliance will be deployed over the '
+                    'existing disk destroying its content; '
+                    'at any time you will be able to rollback using the '
+                    'content of the backup disk.\n'
                     'You will be asked to take a backup of the running engine '
                     'and copy it to this host.\n'
                     'The engine backup will be automatically injected '
@@ -152,8 +154,9 @@ class Plugin(plugin.PluginBase):
     def _terminate(self):
         if self.environment[otopicons.BaseEnv.ERROR]:
             self.logger.error(_(
-                'Hosted Engine upgrade failed: this system is not reliable,'
-                ' please check the issue, fix and try again'
+                'Hosted Engine upgrade failed: this system is not reliable. '
+                'If necessary you can use --rollback-upgrade option to '
+                'recover the engine VM disk from a backup'
             ))
             # TODO: point to our site for troubleshooting info...
             self.dialog.note(

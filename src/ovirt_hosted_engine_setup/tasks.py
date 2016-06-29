@@ -104,4 +104,53 @@ class DomainMonitorWaiter(base.Base):
                 raise RuntimeError(_('Error acquiring VDS status'))
 
 
+@util.export
+class TaskWaiter(base.Base):
+    """
+    Task waiting utility.
+    """
+
+    def __init__(self, environment):
+        super(TaskWaiter, self).__init__()
+        self.environment = environment
+
+    def wait(self, task_id, timeout=600):
+        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        info = cli.getTaskInfo(taskID=task_id)
+        self.logger.debug(info)
+        if 'status' not in info or info['status']['code'] != 0:
+            raise RuntimeError(
+                _('Failed getting task info: {m}').format(
+                    m=info['status']['message'],
+                )
+            )
+        verb = 'unknown'
+        if 'verb' in info:
+            verb = info['verb']
+        while timeout > 0:
+            res = cli.getTaskStatus(taskID=task_id)
+            self.logger.debug(res)
+            if 'status' not in res or res['status']['code'] != 0:
+                raise RuntimeError(
+                    _('Failed getting task status: {m}').format(
+                        m=res['status']['message'],
+                    )
+                )
+            if 'taskState' in res and res['taskState'] == 'finished':
+                return {
+                    'message': res['status']['message'],
+                    'code': res['code'],
+                    'taskResult': res['taskResult'],
+                }
+            if timeout % 10 == 0:
+                self.logger.info(
+                    _('Waiting for {v} to complete').format(v=verb)
+                )
+            timeout -= 1
+            time.sleep(1)
+        raise RuntimeError(
+            _('Timeout waiting for {v} to complete').format(v=verb)
+        )
+
+
 # vim: expandtab tabstop=4 shiftwidth=4
