@@ -323,7 +323,7 @@ class Plugin(plugin.PluginBase):
             raise RuntimeError(targets['status']['message'])
         full_target_template = (
             '^(?P<portal_hostname>[\w\d\-\.]+):(?P<portal_port>\d+),'
-            '(?P<tgpt>\d+) (?P<iqn>[\w\d\-\.:]+)$'
+            '(?P<tgpt>[\d\-]+) (?P<iqn>[\w\d\-\.:]+)$'
         )
         full_target_template_re = re.compile(full_target_template)
         found = []
