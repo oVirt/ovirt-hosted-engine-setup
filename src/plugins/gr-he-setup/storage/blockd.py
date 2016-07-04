@@ -404,7 +404,7 @@ class Plugin(plugin.PluginBase):
         self.logger.debug(devices)
         if devices['status']['code'] != 0:
             raise RuntimeError(devices['status']['message'])
-        for device in devices['devList']:
+        for device in devices['items']:
             fc_lun_list.append(device)
         return fc_lun_list
 
