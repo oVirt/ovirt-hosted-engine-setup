@@ -80,13 +80,31 @@ class Plugin(plugin.PluginBase):
             ohostedcons.StorageEnv.LOCKSPACE_IMAGE_UUID,
             None
         )
+        self.environment.setdefault(
+            ohostedcons.Upgrade.UPGRADE_CREATE_LM_VOLUMES,
+            False,
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
         name=ohostedcons.Stages.SANLOCK_INITIALIZED,
-        condition=lambda self: not self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
+        condition=lambda self: (
+            (
+                not self.environment[
+                    ohostedcons.CoreEnv.UPGRADING_APPLIANCE
+                ] or
+                (
+                    self.environment[
+                        ohostedcons.CoreEnv.UPGRADING_APPLIANCE
+                    ] and
+                    self.environment[
+                        ohostedcons.Upgrade.UPGRADE_CREATE_LM_VOLUMES
+                    ]
+                )
+            ) and
+            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] and
+            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
+        ),
         after=(
             ohostedcons.Stages.STORAGE_AVAILABLE,
         ),
@@ -109,6 +127,25 @@ class Plugin(plugin.PluginBase):
         lockspace = self.environment[ohostedcons.SanlockEnv.LOCKSPACE_NAME]
         host_id = self.environment[ohostedcons.StorageEnv.HOST_ID]
 
+        sp_uuid = self.environment[ohostedcons.StorageEnv.SP_UUID]
+        if self.environment[
+            ohostedcons.Upgrade.UPGRADE_CREATE_LM_VOLUMES
+        ]:
+            cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+            res = cli.getStorageDomainInfo(
+                storagedomainID=self.environment[
+                    ohostedcons.StorageEnv.SD_UUID
+                ]
+            )
+            self.logger.debug(res)
+            if 'status' not in res or res['status']['code'] != 0:
+                raise RuntimeError(
+                    _('Failed getting storage domain info: {m}').format(
+                        m=res['status']['message'],
+                    )
+                )
+            sp_uuid = res['pool'][0]
+
         # Prepare the Backend interface
         # - this supports nfs, iSCSI and Gluster automatically
         activate_devices = {
@@ -117,7 +154,7 @@ class Plugin(plugin.PluginBase):
         }
         backend = storage_backends.VdsmBackend(
             sd_uuid=self.environment[ohostedcons.StorageEnv.SD_UUID],
-            sp_uuid=self.environment[ohostedcons.StorageEnv.SP_UUID],
+            sp_uuid=sp_uuid,
             dom_type=dom_type,
             **activate_devices
         )

@@ -431,10 +431,6 @@ class Plugin(plugin.PluginBase):
             None
         )
         self.environment.setdefault(
-            ohostedcons.EngineEnv.HOST_CLUSTER_NAME,
-            None
-        )
-        self.environment.setdefault(
             ohostedcons.NetworkEnv.PROMPT_REQUIRED_NETWORKS,
             True
         )

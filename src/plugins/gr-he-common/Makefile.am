@@ -25,5 +25,6 @@ SUBDIRS = \
 	core \
 	engine \
 	network \
+	sanlock \
 	vm \
 	$(NULL)
