@@ -22,6 +22,7 @@
 
 
 import gettext
+import time
 
 
 from otopi import constants as otopicons
@@ -31,8 +32,10 @@ from otopi import util
 
 
 from ovirt_hosted_engine_ha.env import config
+from ovirt_hosted_engine_ha.lib import image
 from ovirt_hosted_engine_ha.lib import util as ohautil
 from ovirt_hosted_engine_setup import constants as ohostedcons
+from ovirt_hosted_engine_setup import vm_status
 
 
 def _(m):
@@ -73,8 +76,16 @@ class Plugin(plugin.PluginBase):
             self._config.get(config.ENGINE, config.HEVMID),
         )
         self.environment.setdefault(
+            ohostedcons.StorageEnv.HOST_ID,
+            int(self._config.get(config.ENGINE, config.HOST_ID)),
+        )
+        self.environment.setdefault(
             ohostedcons.CoreEnv.IS_ADDITIONAL_HOST,
             False,
+        )
+        self.environment.setdefault(
+            ohostedcons.Upgrade.LM_VOLUMES_UPGRADE_PROCEED,
+            None,
         )
 
     @plugin.event(
@@ -148,6 +159,173 @@ class Plugin(plugin.PluginBase):
             self.logger.debug('Disabling persisting file configuration')
 
     @plugin.event(
+        stage=plugin.Stages.STAGE_VALIDATION,
+        condition=lambda self: (
+            not self.environment[
+                ohostedcons.StorageEnv.LOCKSPACE_VOLUME_UUID
+            ] or
+            not self.environment[ohostedcons.StorageEnv.METADATA_VOLUME_UUID]
+        ),
+    )
+    def _validata_lm_volumes(self):
+        """
+        This method, if the relevant uuids aren't in the initial answerfile,
+        will look for lockspace and metadata volumes on the shared
+        storage identifying them by their description.
+        We need to re-scan each time we run the upgrade flow since they
+        could have been created in a previous upgrade attempt.
+        If the volumes are not on disk, it triggers volume creation as for
+        fresh deployments; volume creation code will also remove the previous
+        file and create a new symlink to the volume using the same file name.
+        """
+        self.logger.info(_('Scanning for lockspace and metadata volumes'))
+        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        img = image.Image(
+            self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE],
+            self.environment[ohostedcons.StorageEnv.SD_UUID],
+        )
+        img_list = img.get_images_list(
+            self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        )
+        self.logger.debug('img list: {il}'.format(il=img_list))
+        sdUUID = self.environment[ohostedcons.StorageEnv.SD_UUID]
+        spUUID = ohostedcons.Const.BLANK_UUID
+        for img in img_list:
+            volumeslist = cli.getVolumesList(
+                imageID=img,
+                storagepoolID=spUUID,
+                storagedomainID=sdUUID,
+            )
+            self.logger.debug('volumeslist: {vl}'.format(vl=volumeslist))
+            if (
+                volumeslist['status']['code'] != 0 or
+                'items' not in volumeslist
+            ):
+                # avoid raising here, simply skip the unknown image
+                self.logger.debug(
+                    'Error fetching volumes for {image}: {message}'.format(
+                        image=img,
+                        message=volumeslist['status']['message'],
+                    )
+                )
+                continue
+            for vol_uuid in volumeslist['items']:
+                volumeinfo = cli.getVolumeInfo(
+                    volumeID=vol_uuid,
+                    imageID=img,
+                    storagepoolID=spUUID,
+                    storagedomainID=sdUUID,
+                )
+                self.logger.debug(volumeinfo)
+                if volumeinfo['status']['code'] != 0:
+                    # avoid raising here, simply skip the unknown volume
+                    self.logger.debug(
+                        (
+                            'Error fetching volume info '
+                            'for {volume}: {message}'
+                        ).format(
+                            volume=vol_uuid,
+                            message=volumeinfo['status']['message'],
+                        )
+                    )
+                    continue
+                disk_description = volumeinfo['description']
+                if disk_description == self.environment[
+                    ohostedcons.SanlockEnv.LOCKSPACE_NAME
+                ] + '.lockspace':
+                    self.environment[
+                        ohostedcons.StorageEnv.LOCKSPACE_VOLUME_UUID
+                    ] = vol_uuid
+                    self.environment[
+                        ohostedcons.StorageEnv.LOCKSPACE_IMAGE_UUID
+                    ] = img
+                elif disk_description == self.environment[
+                    ohostedcons.SanlockEnv.LOCKSPACE_NAME
+                ] + '.metadata':
+                    self.environment[
+                        ohostedcons.StorageEnv.METADATA_VOLUME_UUID
+                    ] = vol_uuid
+                    self.environment[
+                        ohostedcons.StorageEnv.METADATA_IMAGE_UUID
+                    ] = img
+
+        if (
+            self.environment[ohostedcons.StorageEnv.LOCKSPACE_VOLUME_UUID] and
+            self.environment[ohostedcons.StorageEnv.METADATA_VOLUME_UUID]
+        ):
+            self.logger.info(_(
+                'Lockspace and metadata volumes are already on the '
+                'HE storage domain'
+            ))
+            return
+
+        interactive = self.environment[
+            ohostedcons.Upgrade.LM_VOLUMES_UPGRADE_PROCEED
+        ] is None
+        if interactive:
+            self.environment[
+                ohostedcons.Upgrade.LM_VOLUMES_UPGRADE_PROCEED
+            ] = self.dialog.queryString(
+                name=ohostedcons.Confirms.LM_VOLUMES_UPGRADE_PROCEED,
+                note=_(
+                    'This system was initially deployed with oVirt 3.4 '
+                    'using file based metadata and lockspace area.\n'
+                    'Now you have to upgrade to up to date structure '
+                    'using this tool.\n'
+                    'In order to do that please manually stop ovirt-ha-agent '
+                    'and ovirt-ha-broker on all the other HE hosts '
+                    '(but not this one). '
+                    'At the end you of this procedure you can simply '
+                    'manually upgrade ovirt-hosted-engine-ha and '
+                    'restart ovirt-ha-agent and ovirt-ha-broker on all '
+                    'the hosted-engine hosts.\n'
+                    'Are you sure you want to continue? '
+                    '(@VALUES@)[@DEFAULT@]: '
+                ),
+                prompt=True,
+                validValues=(_('Yes'), _('No')),
+                caseSensitive=False,
+                default=_('Yes')
+            ) == _('Yes').lower()
+        if not self.environment[
+            ohostedcons.Upgrade.LM_VOLUMES_UPGRADE_PROCEED
+        ]:
+            raise otopicontext.Abort('Aborted by user')
+
+        self.logger.info(_(
+            'Waiting for HA agents on other hosts to be stopped'
+        ))
+        vmstatus = vm_status.VmStatus()
+        ready = False
+        while not ready:
+            ready = True
+            status = vmstatus.get_status()
+            self.logger.debug('hosted-engine-status: {s}'.format(s=status))
+            for h in status['all_host_stats']:
+                host_id = status['all_host_stats'][h]['host-id']
+                stopped = status['all_host_stats'][h]['stopped']
+                hostname = status['all_host_stats'][h]['hostname']
+                if host_id == self.environment[ohostedcons.StorageEnv.HOST_ID]:
+                    if stopped:
+                        self.logger.warning(_(
+                            'Please keep ovirt-ha-agent running on this host'
+                        ))
+                        ready = False
+                else:
+                    if not stopped:
+                        self.logger.warning(_(
+                            'ovirt-ha-agent is still active on host {h}, '
+                            'please stop it (it can require a few seconds).'
+                        ).format(h=hostname))
+                        ready = False
+            if not ready:
+                time.sleep(2)
+
+        self.environment[
+            ohostedcons.Upgrade.UPGRADE_CREATE_LM_VOLUMES
+        ] = True
+
+    @plugin.event(
         stage=plugin.Stages.STAGE_TERMINATE,
         priority=plugin.Stages.PRIORITY_LAST,
     )
@@ -172,6 +350,5 @@ class Plugin(plugin.PluginBase):
                 'Please exit global maintenance mode to '
                 'restart the new engine VM.'
             ))
-
 
 # vim: expandtab tabstop=4 shiftwidth=4

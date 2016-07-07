@@ -104,13 +104,13 @@ AC_CONFIG_FILES([
 	src/plugins/gr-he-common/core/Makefile
 	src/plugins/gr-he-common/engine/Makefile
 	src/plugins/gr-he-common/network/Makefile
+	src/plugins/gr-he-common/sanlock/Makefile
 	src/plugins/gr-he-common/vm/Makefile
 	src/plugins/gr-he-setup/Makefile
 	src/plugins/gr-he-setup/core/Makefile
 	src/plugins/gr-he-setup/ha/Makefile
 	src/plugins/gr-he-setup/network/Makefile
 	src/plugins/gr-he-setup/pki/Makefile
-	src/plugins/gr-he-setup/sanlock/Makefile
 	src/plugins/gr-he-setup/storage/Makefile
 	src/plugins/gr-he-setup/system/Makefile
 	src/plugins/gr-he-setup/vm/Makefile

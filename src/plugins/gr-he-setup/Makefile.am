@@ -26,7 +26,6 @@ SUBDIRS = \
 	ha \
 	network \
 	pki \
-	sanlock \
 	storage \
 	system \
 	vm \

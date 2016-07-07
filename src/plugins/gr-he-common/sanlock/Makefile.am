@@ -23,7 +23,7 @@ MAINTAINERCLEANFILES = \
 	$(srcdir)/Makefile.in \
 	$(NULL)
 
-mydir=$(ovirthostedengineplugindir)/gr-he-setup/sanlock
+mydir=$(ovirthostedengineplugindir)/gr-he-common/sanlock
 dist_my_PYTHON = \
 	__init__.py \
 	lockspace.py \

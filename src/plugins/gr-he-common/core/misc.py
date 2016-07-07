@@ -85,6 +85,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.CoreEnv.ROLLBACK_UPGRADE,
             False
         )
+        self.environment.setdefault(
+            ohostedcons.EngineEnv.HOST_CLUSTER_NAME,
+            None
+        )
         self.environment[ohostedcons.CoreEnv.NODE_SETUP] = False
 
     @plugin.event(

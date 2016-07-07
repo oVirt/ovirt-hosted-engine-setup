@@ -21,6 +21,8 @@
 ./src/plugins/gr-he-common/engine/ca.py
 ./src/plugins/gr-he-common/engine/health.py
 ./src/plugins/gr-he-common/network/bridge.py
+./src/plugins/gr-he-common/sanlock/__init__.py
+./src/plugins/gr-he-common/sanlock/lockspace.py
 ./src/plugins/gr-he-common/vm/boot_disk.py
 ./src/plugins/gr-he-common/vm/cloud_init.py
 ./src/plugins/gr-he-common/vm/misc.py
@@ -47,8 +49,6 @@
 ./src/plugins/gr-he-setup/network/iptables.py
 ./src/plugins/gr-he-setup/pki/__init__.py
 ./src/plugins/gr-he-setup/pki/vdsmpki.py
-./src/plugins/gr-he-setup/sanlock/__init__.py
-./src/plugins/gr-he-setup/sanlock/lockspace.py
 ./src/plugins/gr-he-setup/storage/blockd.py
 ./src/plugins/gr-he-setup/storage/heconf.py
 ./src/plugins/gr-he-setup/storage/__init__.py
