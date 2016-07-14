@@ -47,7 +47,19 @@ Checks liveliness page of engine.\&
 .IP "\fB\-\-connect-storage\fP"
 Manually connect the storage domain to the local VDSM instance.\&
 .IP "\fB\-\-set-maintenance \-\-mode=<mode>\fP"
-Set maintenance status to the specified mode (global/local/none).\&
+Set maintenance status to the specified mode:
+.RS 7
+\fBglobal\fP - Allow the administrator to start/stop/modify the engine VM without any
+worry of interference from the HA agents. \&
+.RE
+.RS 7
+\fBlocal\fP - Allow the administrator to maintain this host.
+Note that if you have only 2 nodes and one is in maintenance,
+there is only one host available to run the engine VM. \&
+.RE
+.RS 7
+\fBnone\fP - Resume HA functionality. \&
+.RE
 .IP "\fB\-\-clean_metadata [\-\-force\-cleanup] [\-\-host\-id=<id>]\fP"
 Remove host's metadata from the global status database.\&
 .IP "\fB\-\-reinitialize\-lockspace [\-\-force]\fP"
