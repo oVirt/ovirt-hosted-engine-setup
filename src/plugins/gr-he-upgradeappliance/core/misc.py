@@ -54,7 +54,7 @@ class Plugin(plugin.PluginBase):
         # TODO: catch error if not configured and properly raise
         self.environment.setdefault(
             ohostedcons.StorageEnv.DOMAIN_TYPE,
-            self._config.get(config.ENGINE, config.STORAGE),
+            self._config.get(config.ENGINE, config.DOMAIN_TYPE),
         )
         self.environment.setdefault(
             ohostedcons.StorageEnv.SD_UUID,
