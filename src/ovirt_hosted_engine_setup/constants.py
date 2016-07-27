@@ -408,6 +408,7 @@ class CoreEnv(object):
     SKIP_TTY_CHECK = 'OVEHOSTED_CORE/skipTTYCheck'
     RE_DEPLOY = 'OVEHOSTED_CORE/additionalHostReDeployment'
     NODE_SETUP = 'OVEHOSTED_CORE/nodeSetup'
+    MISC_REACHED = 'OVEHOSTED_CORE/miscReached'
 
 
 @util.export

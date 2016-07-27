@@ -90,6 +90,14 @@ class Plugin(plugin.PluginBase):
             None
         )
         self.environment[ohostedcons.CoreEnv.NODE_SETUP] = False
+        self.environment[ohostedcons.CoreEnv.MISC_REACHED] = False
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_MISC,
+        priority=plugin.Stages.PRIORITY_FIRST,
+    )
+    def _misc_reached(self):
+        self.environment[ohostedcons.CoreEnv.MISC_REACHED] = True
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
@@ -138,6 +146,56 @@ class Plugin(plugin.PluginBase):
         # Using two stages here because some files can be written out of
         # transactions
         self.logger.debug('Finished persisting file configuration')
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_TERMINATE,
+        priority=plugin.Stages.PRIORITY_LAST,
+    )
+    def _terminate(self):
+        successfully = _('Hosted Engine successfully deployed')
+        failed_early = _('Hosted Engine deployment failed')
+        failed_hard = failed_early + _(
+            ': this system is not reliable, please check the issue,'
+            'fix and redeploy'
+        )
+        if self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE]:
+            successfully = _('Hosted Engine successfully upgraded')
+            failed_early = _('Hosted Engine upgrade failed')
+            failed_hard = failed_early + _(
+                ': this system is not reliable, you can use '
+                '--rollback-upgrade option to recover the engine '
+                'VM disk from a backup'
+            )
+        elif self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]:
+            successfully = _('Hosted Engine successfully rolled back')
+            failed_early = _('Hosted Engine rollback failed')
+            failed_hard = failed_early + _(
+                ': this system is not reliable, please try again this '
+                'procedure to reach a stable status'
+            )
+        if self.environment[otopicons.BaseEnv.ERROR]:
+            self.logger.error(
+                failed_hard if self.environment[
+                    ohostedcons.CoreEnv.MISC_REACHED
+                ] else failed_early
+            )
+            self.dialog.note(
+                text=_('Log file is located at {path}').format(
+                    path=self.environment[
+                        otopicons.CoreEnv.LOG_FILE_NAME
+                    ],
+                ),
+            )
+        else:
+            self.logger.info(successfully)
+            if (
+                self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE] or
+                self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
+            ):
+                self.logger.info(_(
+                    'Please exit global maintenance mode to '
+                    'restart the engine VM.'
+                ))
 
 
 # vim: expandtab tabstop=4 shiftwidth=4
