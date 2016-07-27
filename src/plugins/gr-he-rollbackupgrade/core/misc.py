@@ -25,7 +25,6 @@ import gettext
 import json
 
 
-from otopi import constants as otopicons
 from otopi import context as otopicontext
 from otopi import plugin
 from otopi import util
@@ -309,31 +308,6 @@ class Plugin(plugin.PluginBase):
                     destination=destination_size,
                 )
             )
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_TERMINATE,
-        priority=plugin.Stages.PRIORITY_LAST,
-    )
-    def _terminate(self):
-        if self.environment[otopicons.BaseEnv.ERROR]:
-            self.logger.error(_(
-                'Hosted Engine rollback failed: this system is not reliable. '
-                'Please try again this procedure to reach a stable status. '
-            ))
-            # TODO: point to our site for troubleshooting info...
-            self.dialog.note(
-                text=_('Log file is located at {path}').format(
-                    path=self.environment[
-                        otopicons.CoreEnv.LOG_FILE_NAME
-                    ],
-                ),
-            )
-        else:
-            self.logger.info(_('Hosted Engine successfully rolled back'))
-            self.logger.info(_(
-                'Please exit global maintenance mode to '
-                'restart the restored engine VM.'
-            ))
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

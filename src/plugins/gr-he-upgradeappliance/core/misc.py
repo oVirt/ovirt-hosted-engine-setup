@@ -25,7 +25,6 @@ import gettext
 import time
 
 
-from otopi import constants as otopicons
 from otopi import context as otopicontext
 from otopi import plugin
 from otopi import util
@@ -325,30 +324,5 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Upgrade.UPGRADE_CREATE_LM_VOLUMES
         ] = True
 
-    @plugin.event(
-        stage=plugin.Stages.STAGE_TERMINATE,
-        priority=plugin.Stages.PRIORITY_LAST,
-    )
-    def _terminate(self):
-        if self.environment[otopicons.BaseEnv.ERROR]:
-            self.logger.error(_(
-                'Hosted Engine upgrade failed: this system is not reliable. '
-                'If necessary you can use --rollback-upgrade option to '
-                'recover the engine VM disk from a backup'
-            ))
-            # TODO: point to our site for troubleshooting info...
-            self.dialog.note(
-                text=_('Log file is located at {path}').format(
-                    path=self.environment[
-                        otopicons.CoreEnv.LOG_FILE_NAME
-                    ],
-                ),
-            )
-        else:
-            self.logger.info(_('Hosted Engine successfully upgraded'))
-            self.logger.info(_(
-                'Please exit global maintenance mode to '
-                'restart the new engine VM.'
-            ))
 
 # vim: expandtab tabstop=4 shiftwidth=4
