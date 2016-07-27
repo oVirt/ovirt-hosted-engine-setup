@@ -467,8 +467,8 @@ class Plugin(plugin.PluginBase):
                     ' inside the Administrator Portal [@DEFAULT@]: '
                 ),
                 prompt=True,
-                default=self.environment[
-                    ohostedcons.NetworkEnv.HOST_NAME
+                default='hosted_engine_%s' % self.environment[
+                    ohostedcons.StorageEnv.HOST_ID
                 ],
             )
             if hostname:
