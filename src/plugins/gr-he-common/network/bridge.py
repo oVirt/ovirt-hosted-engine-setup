@@ -75,18 +75,6 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_SETUP,
     )
     def _setup(self):
-        if (
-            self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME] in
-            ethtool.get_devices()
-        ):
-            self.logger.info(
-                _(
-                    'Bridge {bridge} already created'
-                ).format(
-                    bridge=self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME]
-                )
-            )
-            self._enabled = False
         self._hostname_helper = osetuphostname.Hostname(plugin=self)
 
     @plugin.event(
@@ -108,12 +96,38 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
+        name=ohostedcons.Stages.BRIDGE_DETECTED,
+        after=(
+            ohostedcons.Stages.REQUIRE_ANSWER_FILE,
+            ohostedcons.Stages.DIALOG_TITLES_S_NETWORK,
+        ),
+        before=(
+            ohostedcons.Stages.DIALOG_TITLES_E_NETWORK,
+        ),
+    )
+    def _detect_bridges(self):
+        if (
+            self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME] in
+            ethtool.get_devices()
+        ):
+            self.logger.info(
+                _(
+                    'Bridge {bridge} already created'
+                ).format(
+                    bridge=self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME]
+                )
+            )
+            self._enabled = False
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CUSTOMIZATION,
         condition=lambda self: (
             self._enabled and
             not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
         ),
         after=(
             ohostedcons.Stages.DIALOG_TITLES_S_NETWORK,
+            ohostedcons.Stages.BRIDGE_DETECTED,
         ),
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_NETWORK,
@@ -196,6 +210,7 @@ class Plugin(plugin.PluginBase):
         ),
         after=(
             ohostedcons.Stages.DIALOG_TITLES_S_NETWORK,
+            ohostedcons.Stages.BRIDGE_DETECTED,
         ),
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_NETWORK,
