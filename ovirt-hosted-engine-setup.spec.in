@@ -65,13 +65,13 @@ Requires:       qemu-img-rhev
 
 Requires:       otopi >= 1.5.1
 Requires:       ovirt-host-deploy >= 1.5.0
-Requires:       ovirt-hosted-engine-ha >= 2.0.1
+Requires:       ovirt-hosted-engine-ha >= 2.0.2
 Requires:       ovirt-engine-sdk-python >= 3.6.3.0
 Requires:       ovirt-setup-lib >= 1.0.2
 Requires:       glusterfs-cli >= 3.7.3
-Requires:       vdsm >= 4.18.6
-Requires:       vdsm-cli >= 4.18.6
-Requires:       vdsm-python >= 4.18.6
+Requires:       vdsm >= 4.18.10
+Requires:       vdsm-cli >= 4.18.10
+Requires:       vdsm-python >= 4.18.10
 
 Conflicts:      ovirt-engine-appliance < 4.0
 Conflicts:      ovirt-engine-appliance >= 4.1
@@ -124,6 +124,9 @@ make %{?_smp_mflags} install DESTDIR="%{buildroot}"
 %{vdsmhooksdir}/before_vm_start/
 
 %changelog
+* Tue Aug 09 2016 Simone Tiraboschi <stirabos@redhat.com> - 2.0.1.4-1
+- 2.0.1.4-1
+
 * Wed Jul 27 2016 Simone Tiraboschi <stirabos@redhat.com> - 2.0.1.4-0.0.master
 - 2.0.1.4-0.0
 
