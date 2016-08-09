@@ -124,6 +124,9 @@ make %{?_smp_mflags} install DESTDIR="%{buildroot}"
 %{vdsmhooksdir}/before_vm_start/
 
 %changelog
+* Tue Aug 09 2016 Simone Tiraboschi <stirabos@redhat.com> - 2.0.1.5-0.0.master
+- 2.0.1.5-0.0.master
+
 * Tue Aug 09 2016 Simone Tiraboschi <stirabos@redhat.com> - 2.0.1.4-1
 - 2.0.1.4-1
 
