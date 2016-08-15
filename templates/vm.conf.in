@@ -12,3 +12,4 @@ spiceSecureChannels=smain,sdisplay,sinputs,scursor,splayback,srecord,ssmartcard,
 smp=@VCPUS@
 cpuType=@CPU_TYPE@
 emulatedMachine=@EMULATED_MACHINE@
+devices={device:virtio,specParams:{source:random},model:virtio,type:rng}
