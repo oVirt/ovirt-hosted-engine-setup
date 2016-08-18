@@ -86,7 +86,16 @@ class Plugin(plugin.PluginBase):
 
     def _parse_answer_file(self):
         buf = StringIO(unicode(self._tmp_ans))
-        self._config.readfp(buf)
+        try:
+            self._config.readfp(buf)
+        except configparser.Error as ex:
+            msg = _(
+                'The answer file on the shared storage is invalid, '
+                'please check and fix it: {ex}'
+            ).format(ex=ex)
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+
         for name, value in self._config.items(
             otopicons.Const.CONFIG_SECTION_DEFAULT
         ):
