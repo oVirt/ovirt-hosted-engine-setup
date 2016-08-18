@@ -27,6 +27,7 @@ import os
 import selinux
 import tempfile
 import time
+import socket
 
 
 import ovirtsdk.api
@@ -463,13 +464,13 @@ class Plugin(plugin.PluginBase):
             hostname = self.dialog.queryString(
                 name='APP_HOST_NAME',
                 note=_(
-                    'Enter the name which will be used to identify this host'
-                    ' inside the Administrator Portal [@DEFAULT@]: '
+                    'Enter the name which will be used as a display name to'
+                    ' identify this host inside the Administrator Portal\n'
+                    'Note: this is the name for the host, the hypervisor, and'
+                    ' not going to be used as the host address [@DEFAULT@]: '
                 ),
                 prompt=True,
-                default='hosted_engine_%s' % self.environment[
-                    ohostedcons.StorageEnv.HOST_ID
-                ],
+                default=socket.gethostname(),
             )
             if hostname:
                 self.environment[
