@@ -70,12 +70,6 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
         )
 
     @plugin.event(
-        stage=plugin.Stages.STAGE_SETUP,
-    )
-    def _setup(self):
-        self.command.detect('remote-viewer')
-
-    @plugin.event(
         stage=plugin.Stages.STAGE_LATE_SETUP,
         after=(
             ohostedcons.Stages.VDSMD_CONF_LOADED,

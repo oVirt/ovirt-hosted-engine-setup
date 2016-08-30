@@ -22,6 +22,7 @@
 
 
 import gettext
+import os
 import random
 import string
 import time
@@ -78,14 +79,21 @@ class VmOperations(object):
                 'Error getting VM stats',
                 exc_info=True,
             )
+        local_connection_text = _(
+            'You can now connect to the VM with the following command:\n'
+            '\thosted-engine --console\n'
+        )
         if console_type == 'vnc':
-            return _(
-                'You can now connect to the VM with the following command:\n'
-                '\t{remote} vnc://localhost:{displayPort}\n'
+            return local_connection_text + _(
+                'You can also graphically connect to the VM from your system '
+                'with the following command:\n'
+                '\tremote-viewer vnc://{host}:{displayPort}\n'
                 'Use temporary password "{password}" '
                 'to connect to vnc console.\n'
             ).format(
-                remote=self.command.get('remote-viewer'),
+                host=self.environment[
+                    ohostedcons.NetworkEnv.HOST_NAME
+                ],
                 password=self.environment[
                     ohostedcons.VMEnv.VM_PASSWD
                 ],
@@ -94,14 +102,22 @@ class VmOperations(object):
         elif console_type == 'qxl':
             if displaySecurePort < 0:
                 displaySecurePort = displayPort
-            return _(
-                'You can now connect to the VM with the following command:\n'
-                '\t{remote} --spice-ca-file={ca_cert} '
-                'spice://localhost?tls-port={displaySecurePort} '
+            return local_connection_text + _(
+                'You can also graphically connect to the VM from your system '
+                'with the following command:\n'
+                '\tremote-viewer --spice-ca-file={ca_cert_filename} '
+                'spice://{host}?tls-port={displaySecurePort} '
                 '--spice-host-subject="{subject}"\nUse temporary password '
-                '"{password}" to connect to spice console.'
+                '"{password}" to connect to spice console.\n'
+                'Please download {ca_cert} from this host to your '
+                'client system.\n'
             ).format(
-                remote=self.command.get('remote-viewer'),
+                host=self.environment[
+                    ohostedcons.NetworkEnv.HOST_NAME
+                ],
+                ca_cert_filename=os.path.basename(
+                    ohostedcons.FileLocations.LIBVIRT_SPICE_CA_CERT
+                ),
                 ca_cert=ohostedcons.FileLocations.LIBVIRT_SPICE_CA_CERT,
                 subject=self.environment[ohostedcons.VDSMEnv.SPICE_SUBJECT],
                 password=self.environment[
@@ -348,19 +364,6 @@ class VmOperations(object):
 
             self.dialog.note(
                 _(
-                    'Please note that in order to use remote-viewer you need '
-                    'to be able to run graphical applications.\n'
-                    'This means that if you are using ssh you have to supply '
-                    'the -Y flag (enables trusted X11 forwarding).\n'
-                    'Otherwise you can run the command from a terminal in '
-                    'your preferred desktop environment.\n'
-                    'If you cannot run graphical applications you can '
-                    'connect to the graphic console from another host or '
-                    'connect to the serial console using the following '
-                    'command:\n'
-                    'socat UNIX-CONNECT:/var/run/ovirt-vmconsole-console/'
-                    '{vmuuid}.sock,user=ovirt-vmconsole '
-                    'STDIO,raw,echo=0,escape=1\n'
                     'Please ensure that your Guest OS is properly configured '
                     'to support serial console according to your distro '
                     'documentation.\n'
