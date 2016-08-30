@@ -79,7 +79,7 @@ Usage: $0 [--help] <command> [<command-args>]
         --connect-storage
             Connect the storage domain
         --console
-            Open the configured console using virsh on localhost
+            Open the configured console using remote-viewer on localhost
         --set-maintenance --mode=<mode>
             Set maintenance status to the specified mode (global/local/none)
         --reinitialize-lockspace
@@ -352,34 +352,26 @@ return ;}
 cmd_console() {
     [ "$1" == "--help" ] && { cat << __EOF__
 Usage: $0 --console
-    Open the configured console using virsh on localhost
+    Open the configured console using remote-viewer on localhost
 __EOF__
 return ;}
 
-    listoutput=$(${VDSCOMMAND} list vms:"${vmid}")
-    while read param eq value; do
-        if [ "${param}" = 'Status' ]; then
-            status="${value}"
-            [ "${status}" = "Up" ] && up=1
+    if [ "${console}" == "vnc" ] ; then
+        echo -n "Use the password you've set using --add-console-password "
+        echo "for logging in"
+        exec /usr/bin/remote-viewer vnc://localhost:5900
+    elif [ "${console}" == "qxl" ] ; then
+        if [ ! -r "${ca_cert}" ] ; then
+            echo "Missing spice PKI certificate"
+            echo -n "You can find a guide on how to generate PKI certificate "
+            echo "at the following URL:"
+            echo "${PKI_GUIDE_URL}"
+            exit 1
         fi
-    done << __EOF__
-${listoutput}
-__EOF__
-    if [ -n "${up}" ]; then
-        echo "The engine VM is running on this host"
-        exec /usr/bin/virsh \
-            -c qemu://$(hostname)/system \
-            console \
-            HostedEngine
-# -c qemu://$(hostname)/system will force to connect over TCP and by
-# default it will require TLS.
-# TLS requires authentication thought a client cert (already at the right
-# place) and not with SASL as for the Unix domain socket
-    elif [ -n "${status}" ]; then
-        echo "The engine VM is on this host but its status is ${status}"
-        exit 1
-    else
-        echo "The engine VM is not on this host"
+        exec /usr/bin/remote-viewer \
+            --spice-ca-file=${ca_cert} \
+            spice://localhost?tls-port=5900 \
+            --spice-host-subject="${ca_subject}"
     fi
 }
 
