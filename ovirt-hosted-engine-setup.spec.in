@@ -72,6 +72,7 @@ Requires:       glusterfs-cli >= 3.7.3
 Requires:       vdsm >= 4.18.12
 Requires:       vdsm-cli >= 4.18.12
 Requires:       vdsm-python >= 4.18.12
+Requires(post): vdsm-python >= 4.18.12
 
 Conflicts:      ovirt-engine-appliance < 4.0
 Conflicts:      ovirt-engine-appliance >= 4.1
@@ -111,6 +112,7 @@ make %{?_smp_mflags} install DESTDIR="%{buildroot}"
 %doc README
 %dir %{_sysconfdir}/ovirt-hosted-engine-setup.env.d
 %dir %{_sysconfdir}/ovirt-hosted-engine
+%ghost %attr(600, root, root) %{_sysconfdir}/ovirt-hosted-engine/virsh_auth.conf
 %dir %attr(700, root, root) %{_localstatedir}/log/ovirt-hosted-engine-setup
 %dir %{_localstatedir}/lib/ovirt-hosted-engine-setup
 %dir %{_localstatedir}/lib/ovirt-hosted-engine-setup/answers
@@ -122,6 +124,23 @@ make %{?_smp_mflags} install DESTDIR="%{buildroot}"
 
 #move to a separate package?
 %{vdsmhooksdir}/before_vm_start/
+
+%post
+touch %{_sysconfdir}/ovirt-hosted-engine/virsh_auth.conf
+chmod 600 %{_sysconfdir}/ovirt-hosted-engine/virsh_auth.conf
+python -c '
+from vdsm.tool.configurators import passwd
+print((
+    "[credentials-vdsm]\n"
+    "authname={authname}\n"
+    "password={password}\n\n"
+    "[auth-libvirt-localhost]\n"
+    "credentials=vdsm\n"
+).format(
+    authname=passwd.SASL_USERNAME,
+    password=passwd.libvirt_password(),
+))
+' > %{_sysconfdir}/ovirt-hosted-engine/virsh_auth.conf
 
 %changelog
 * Tue Aug 30 2016 Simone Tiraboschi <stirabos@redhat.com> - 2.0.2.1-0.0.master

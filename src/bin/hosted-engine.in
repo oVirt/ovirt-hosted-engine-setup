@@ -19,7 +19,7 @@
 #
 
 HOSTED_ENGINE_CONF='/etc/ovirt-hosted-engine/hosted-engine.conf'
-PKI_GUIDE_URL='https://fedoraproject.org/wiki/QA:Testcase_Virtualization_Manually_set_spice_listening_port_with_TLS_port_set'
+VIRSH_AUTH='/etc/ovirt-hosted-engine/virsh_auth.conf'
 
 blankUUID='00000000-0000-0000-0000-000000000000'
 
@@ -368,13 +368,9 @@ __EOF__
     if [ -n "${up}" ]; then
         echo "The engine VM is running on this host"
         exec /usr/bin/virsh \
-            -c qemu://$(hostname)/system \
+            -c qemu:///system?authfile=${VIRSH_AUTH} \
             console \
             HostedEngine
-# -c qemu://$(hostname)/system will force to connect over TCP and by
-# default it will require TLS.
-# TLS requires authentication thought a client cert (already at the right
-# place) and not with SASL as for the Unix domain socket
     elif [ -n "${status}" ]; then
         echo "The engine VM is on this host but its status is ${status}"
         exit 1
