@@ -318,7 +318,7 @@ class Plugin(plugin.PluginBase):
             self.logger.debug('Configuring Disk')
             disk = tree.find('Section/Disk')
             self.environment[
-                ohostedcons.StorageEnv.IMAGE_SIZE_GB
+                ohostedcons.StorageEnv.OVF_SIZE_GB
             ] = int(
                 disk.attrib['{http://schemas.dmtf.org/ovf/envelope/1/}size']
             )
@@ -500,6 +500,10 @@ class Plugin(plugin.PluginBase):
         )
         self.environment.setdefault(
             ohostedcons.Upgrade.BACKUP_VOL_UUID,
+            None,
+        )
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.OVF_SIZE_GB,
             None,
         )
 

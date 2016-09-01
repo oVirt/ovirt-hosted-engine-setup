@@ -112,6 +112,7 @@ def transferImage(base, source_path, destination_path):
                 'kvm',
                 base.command.get('qemu-img'),
                 'convert',
+                '-n',
                 '-O',
                 'raw',
                 source_path,

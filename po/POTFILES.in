@@ -25,6 +25,7 @@
 ./src/plugins/gr-he-common/sanlock/lockspace.py
 ./src/plugins/gr-he-common/vm/boot_disk.py
 ./src/plugins/gr-he-common/vm/cloud_init.py
+./src/plugins/gr-he-common/vm/image.py
 ./src/plugins/gr-he-common/vm/misc.py
 ./src/plugins/gr-he-setup/core/answerfile.py
 ./src/plugins/gr-he-setup/core/conf.py
@@ -64,7 +65,6 @@
 ./src/plugins/gr-he-setup/vm/boot_cdrom.py
 ./src/plugins/gr-he-setup/vm/configurevm.py
 ./src/plugins/gr-he-setup/vm/cpu.py
-./src/plugins/gr-he-setup/vm/image.py
 ./src/plugins/gr-he-setup/vm/__init__.py
 ./src/plugins/gr-he-setup/vm/machine.py
 ./src/plugins/gr-he-setup/vm/mac.py

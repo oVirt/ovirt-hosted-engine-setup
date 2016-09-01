@@ -29,7 +29,6 @@ dist_my_PYTHON = \
 	boot_cdrom.py \
 	cpu.py \
 	configurevm.py \
-	image.py \
 	mac.py \
 	machine.py \
 	memory.py \

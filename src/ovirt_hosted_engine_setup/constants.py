@@ -588,6 +588,7 @@ class StorageEnv(object):
         return 'OVEHOSTED_STORAGE/imgSizeGB'
 
     QCOW_SIZE_GB = 'OVEHOSTED_STORAGE/qcowSizeGB'
+    OVF_SIZE_GB = 'OVEHOSTED_STORAGE/ovfSizeGB'
 
     IMAGE_DESC = 'OVEHOSTED_STORAGE/imgDesc'
 

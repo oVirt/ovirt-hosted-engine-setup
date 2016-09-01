@@ -28,6 +28,7 @@ dist_my_PYTHON = \
 	__init__.py \
 	boot_disk.py \
 	cloud_init.py \
+	image.py \
 	misc.py \
 	$(NULL)
 

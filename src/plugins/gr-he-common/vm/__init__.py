@@ -24,6 +24,7 @@ from otopi import util
 
 from . import boot_disk
 from . import cloud_init
+from . import image
 from . import misc
 
 
@@ -31,6 +32,7 @@ from . import misc
 def createPlugins(context):
     boot_disk.Plugin(context=context)
     cloud_init.Plugin(context=context)
+    image.Plugin(context=context)
     misc.Plugin(context=context)
 
 

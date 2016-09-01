@@ -39,6 +39,10 @@ def _(m):
     return gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
 
+def _int_or_0(x):
+    return int(x) if x else 0
+
+
 @util.export
 class Plugin(plugin.PluginBase):
     """
@@ -57,6 +61,14 @@ class Plugin(plugin.PluginBase):
             None
         )
         self.environment.setdefault(
+            ohostedcons.Upgrade.BACKUP_SIZE_GB,
+            None,
+        )
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.BDEVICE_SIZE_GB,
+            None
+        )
+        self.environment.setdefault(
             ohostedcons.StorageEnv.IMG_UUID,
             str(uuid.uuid4())
         )
@@ -71,12 +83,14 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
-        condition=lambda self: not self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
+        condition=lambda self: (
+            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] and
+            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
+        ),
         after=(
             ohostedcons.Stages.DIALOG_TITLES_S_VM,
             ohostedcons.Stages.CONFIG_OVF_IMPORT,
+            ohostedcons.Stages.REQUIRE_ANSWER_FILE
         ),
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_VM,
@@ -90,13 +104,21 @@ class Plugin(plugin.PluginBase):
         estimate_gb = None
         if self.environment[
             ohostedcons.StorageEnv.BDEVICE_SIZE_GB
-        ] is not None:
+        ] is not None and not self.environment[
+            ohostedcons.CoreEnv.UPGRADING_APPLIANCE
+        ]:
             # Conservative estimate, the exact value could be gathered from
             # vginfo but at this point the VG has still has to be created.
             # Later on it will be checked against the real value
             estimate_gb = int(self.environment[
                 ohostedcons.StorageEnv.BDEVICE_SIZE_GB
             ]) - ohostedcons.Const.STORAGE_DOMAIN_OVERHEAD_GIB
+
+        default = max(
+            _int_or_0(ohostedcons.Defaults.DEFAULT_IMAGE_SIZE_GB),
+            _int_or_0(self.environment[ohostedcons.StorageEnv.OVF_SIZE_GB]),
+            _int_or_0(self.environment[ohostedcons.Upgrade.BACKUP_SIZE_GB])
+        )
 
         valid = False
         while not valid:
@@ -106,11 +128,11 @@ class Plugin(plugin.PluginBase):
                 ] = self.dialog.queryString(
                     name='ovehosted_vmenv_mem',
                     note=_(
-                        'Please specify the disk size of the VM in GB '
-                        '(Defaults to minimum requirement): [@DEFAULT@]: '
+                        'Please specify the size of the VM disk in GB: '
+                        '[@DEFAULT@]: '
                     ),
                     prompt=True,
-                    default=ohostedcons.Defaults.DEFAULT_IMAGE_SIZE_GB,
+                    default=default,
                 )
             try:
                 valid = True
@@ -126,6 +148,47 @@ class Plugin(plugin.PluginBase):
                         estimate=estimate_gb,
                         required=self.environment[
                             ohostedcons.StorageEnv.IMAGE_SIZE_GB
+                        ],
+                    )
+                    self.logger.warning(msg)
+                    valid = False
+                    if not interactive:
+                        raise RuntimeError(msg)
+
+                if valid and self.environment[
+                    ohostedcons.StorageEnv.OVF_SIZE_GB
+                ] and int(
+                    self.environment[ohostedcons.StorageEnv.OVF_SIZE_GB]
+                ) > int(
+                    self.environment[ohostedcons.StorageEnv.IMAGE_SIZE_GB]
+                ):
+                    msg = _(
+                        'Minimum requirements to fit the disk from the '
+                        'appliance OVF not met (required {required} GiB)'
+                    ).format(
+                        required=self.environment[
+                            ohostedcons.StorageEnv.OVF_SIZE_GB
+                        ],
+                    )
+                    self.logger.warning(msg)
+                    valid = False
+                    if not interactive:
+                        raise RuntimeError(msg)
+
+                if valid and self.environment[
+                    ohostedcons.Upgrade.BACKUP_SIZE_GB
+                ] and int(
+                    self.environment[ohostedcons.Upgrade.BACKUP_SIZE_GB]
+                ) > int(
+                    self.environment[ohostedcons.StorageEnv.IMAGE_SIZE_GB]
+                ):
+                    msg = _(
+                        'The current appliance disk is bigger than the '
+                        'proposed size, this upgrade procedure cannot shrink '
+                        'the existing disk (minimum {minimum} GiB).'
+                    ).format(
+                        minimum=self.environment[
+                            ohostedcons.Upgrade.BACKUP_SIZE_GB
                         ],
                     )
                     self.logger.warning(msg)
@@ -182,9 +245,11 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.SANLOCK_INITIALIZED,
         ),
         name=ohostedcons.Stages.VM_IMAGE_AVAILABLE,
-        condition=lambda self: not self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
+        condition=lambda self: (
+            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] and
+            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE] and
+            not self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE]
+        ),
     )
     def _misc(self):
         sdUUID = self.environment[ohostedcons.StorageEnv.SD_UUID]

@@ -58,10 +58,6 @@ class Plugin(plugin.PluginBase):
     )
     def _init(self):
         self.environment.setdefault(
-            ohostedcons.Upgrade.BACKUP_SIZE_GB,
-            None,
-        )
-        self.environment.setdefault(
             ohostedcons.Upgrade.CONFIRM_UPGRADE_SUCCESS,
             None,
         )

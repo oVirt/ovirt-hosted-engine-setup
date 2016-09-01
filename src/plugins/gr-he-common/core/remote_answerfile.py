@@ -203,6 +203,9 @@ class Plugin(plugin.PluginBase):
                     self.environment[
                         ohostedcons.Upgrade.BACKUP_SIZE_GB
                     ] = self.environment[ohostedcons.StorageEnv.IMAGE_SIZE_GB]
+                    self.environment[
+                        ohostedcons.StorageEnv.IMAGE_SIZE_GB
+                    ] = None
             else:
                 self.logger.error(_(
                     'Unable to find the hosted-engine configuration volume '
