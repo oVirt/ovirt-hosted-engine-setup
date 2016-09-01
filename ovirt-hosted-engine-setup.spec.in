@@ -63,18 +63,18 @@ Requires:       qemu-img-rhev
 %endif
 
 
-Requires:       otopi >= 1.5.0
-Requires:       ovirt-host-deploy >= 1.5.0
-Requires:       ovirt-hosted-engine-ha >= 2.0.0
+Requires:       otopi >= 1.6.0
+Requires:       ovirt-host-deploy >= 1.6.0
+Requires:       ovirt-hosted-engine-ha >= 2.1.0
 Requires:       ovirt-engine-sdk-python >= 3.6.3.0
 Requires:       ovirt-setup-lib >= 1.0.2
 Requires:       glusterfs-cli >= 3.7.3
-Requires:       vdsm >= 4.17.999-1046
-Requires:       vdsm-cli >= 4.18.0
-Requires:       vdsm-python >= 4.18.0
+Requires:       vdsm >= 4.18.999-466
+Requires:       vdsm-cli >= 4.18.999-466
+Requires:       vdsm-python >= 4.18.999-466
 
-Conflicts:      ovirt-engine-appliance < 4.0
-Conflicts:      ovirt-engine-appliance >= 4.1
+Conflicts:      ovirt-engine-appliance < 4.1
+Conflicts:      ovirt-engine-appliance >= 4.2
 
 # Dependencies that will be required by ovirt-host-deploy
 # avoiding to have them installed in the middle of the setup
