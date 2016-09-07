@@ -445,43 +445,6 @@ class Plugin(plugin.PluginBase):
         self.command.detect('ip')
 
     @plugin.event(
-        stage=plugin.Stages.STAGE_CUSTOMIZATION,
-        after=(
-            ohostedcons.Stages.DIALOG_TITLES_S_ENGINE,
-        ),
-        before=(
-            ohostedcons.Stages.DIALOG_TITLES_E_ENGINE,
-        ),
-    )
-    def _customization(self):
-        interactive = (
-            self.environment[ohostedcons.EngineEnv.APP_HOST_NAME] is None
-        )
-        while self.environment[ohostedcons.EngineEnv.APP_HOST_NAME] is None:
-            hostname = self.dialog.queryString(
-                name='APP_HOST_NAME',
-                note=_(
-                    'Enter the name which will be used as a display name to'
-                    ' identify this host inside the Administrator Portal\n'
-                    'Note: this is the name for the host, the hypervisor, and'
-                    ' not going to be used as the host address [@DEFAULT@]: '
-                ),
-                prompt=True,
-                default=socket.gethostname(),
-            )
-            if hostname:
-                self.environment[
-                    ohostedcons.EngineEnv.APP_HOST_NAME
-                ] = hostname
-            else:
-                if interactive:
-                    self.logger.error(_('Please specify a host name'))
-                else:
-                    raise RuntimeError(
-                        _('Empty host name not allowed')
-                    )
-
-    @plugin.event(
         stage=plugin.Stages.STAGE_VALIDATION,
     )
     def _validation(self):
@@ -507,6 +470,10 @@ class Plugin(plugin.PluginBase):
                 cluster_name = self.environment[
                     ohostedcons.EngineEnv.HOST_CLUSTER_NAME
                 ]
+                if not self.environment[ohostedcons.EngineEnv.APP_HOST_NAME]:
+                    self.environment[
+                        ohostedcons.EngineEnv.APP_HOST_NAME
+                    ] = socket.gethostname()
                 self.logger.debug(
                     "Getting the list of available clusters via engine's APIs"
                 )
