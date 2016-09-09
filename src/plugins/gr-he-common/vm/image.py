@@ -125,7 +125,7 @@ class Plugin(plugin.PluginBase):
                 self.environment[
                     ohostedcons.StorageEnv.IMAGE_SIZE_GB
                 ] = self.dialog.queryString(
-                    name='ovehosted_vmenv_mem',
+                    name='ovehosted_vmenv_image',
                     note=_(
                         'Please specify the size of the VM disk in GB: '
                         '[@DEFAULT@]: '
