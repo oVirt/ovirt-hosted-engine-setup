@@ -276,6 +276,10 @@ class VmOperations(object):
             "alias": "video0",
             "type": "video"
         })
+        conf['devices'].append({
+            "device": display_type,
+            "type": "graphics"
+        })
 
         cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         status = cli.create(conf)
