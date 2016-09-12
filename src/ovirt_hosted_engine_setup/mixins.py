@@ -277,6 +277,13 @@ class VmOperations(object):
             "type": "video"
         })
 
+        conf['devices'].append({
+            "device": "virtio",
+            "specParams": {"source": "random"},
+            "model": "virtio",
+            "type": "rng",
+        })
+
         cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         status = cli.create(conf)
         self.logger.debug(status)
