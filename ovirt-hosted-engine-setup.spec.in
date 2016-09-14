@@ -69,10 +69,10 @@ Requires:       ovirt-hosted-engine-ha >= 2.0.3
 Requires:       ovirt-engine-sdk-python >= 3.6.3.0
 Requires:       ovirt-setup-lib >= 1.0.2
 Requires:       glusterfs-cli >= 3.7.3
-Requires:       vdsm >= 4.18.12
-Requires:       vdsm-cli >= 4.18.12
-Requires:       vdsm-python >= 4.18.12
-Requires(post): vdsm-python >= 4.18.12
+Requires:       vdsm >= 4.18.13
+Requires:       vdsm-cli >= 4.18.13
+Requires:       vdsm-python >= 4.18.13
+Requires(post): vdsm-python >= 4.18.13
 
 Conflicts:      ovirt-engine-appliance < 4.0
 Conflicts:      ovirt-engine-appliance >= 4.1
@@ -143,6 +143,9 @@ print((
 ' > %{_sysconfdir}/ovirt-hosted-engine/virsh_auth.conf
 
 %changelog
+* Wed Sep 14 2016 Simone Tiraboschi <stirabos@redhat.com> - 2.0.2.2-1
+- 2.0.2.2-1
+
 * Wed Sep 07 2016 Simone Tiraboschi <stirabos@redhat.com> - 2.0.2.2-0.0.master
 - 2.0.2.2-0.0.master
 
