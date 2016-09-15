@@ -196,6 +196,10 @@ class Plugin(plugin.PluginBase):
                     'Please exit global maintenance mode to '
                     'restart the engine VM.'
                 ))
-
+                self.logger.info(_(
+                    'Please note that the engine VM ssh keys have changed. '
+                    'Please remove the engine VM entry in ssh known_hosts on '
+                    'your clients.'
+                ))
 
 # vim: expandtab tabstop=4 shiftwidth=4
