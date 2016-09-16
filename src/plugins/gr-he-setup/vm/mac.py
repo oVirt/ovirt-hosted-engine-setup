@@ -25,10 +25,8 @@ VM MAC address configuration plugin.
 
 import gettext
 
-
 from otopi import plugin
 from otopi import util
-
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import util as ohostedutil

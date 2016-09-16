@@ -27,7 +27,6 @@ import random
 import string
 import time
 
-
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import tasks
 

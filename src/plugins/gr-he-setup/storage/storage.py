@@ -25,26 +25,24 @@ Local storage domain plugin.
 import gettext
 import os
 import re
-import selinux
 import stat
 import tempfile
 import uuid
 
-
 from otopi import constants as otopicons
 from otopi import plugin
 from otopi import util
-
 
 from ovirt_hosted_engine_ha.client import client
 from ovirt_hosted_engine_ha.lib import heconflib
 from ovirt_hosted_engine_ha.lib import image
 from ovirt_hosted_engine_ha.lib import storage_backends
 
-
 from ovirt_hosted_engine_setup import constants as ohostedcons
-from ovirt_hosted_engine_setup import tasks
 from ovirt_hosted_engine_setup import util as ohostedutil
+from ovirt_hosted_engine_setup import tasks
+
+import selinux
 
 
 def _(m):

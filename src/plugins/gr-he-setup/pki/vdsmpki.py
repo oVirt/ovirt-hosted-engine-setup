@@ -26,17 +26,16 @@ import gettext
 import glob
 import os
 import re
-import selinux
 import shutil
 import tempfile
-
 
 from otopi import plugin
 from otopi import util
 
-
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import util as ohostedutil
+
+import selinux
 
 
 def _(m):

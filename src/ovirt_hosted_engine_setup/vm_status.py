@@ -26,7 +26,6 @@ import json
 import socket
 import sys
 
-
 from ovirt_hosted_engine_ha.client import client
 from ovirt_hosted_engine_ha.lib.exceptions import BrokerConnectionError
 

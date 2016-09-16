@@ -27,13 +27,12 @@ import gettext
 import re
 import time
 
-
 from otopi import constants as otopicons
 from otopi import plugin
 from otopi import util
 
-
 from ovirt_setup_lib import dialog
+
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import domains as ohosteddomains
 

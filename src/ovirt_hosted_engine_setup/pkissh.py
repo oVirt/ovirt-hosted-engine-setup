@@ -27,12 +27,11 @@ import re
 import ssl
 import urllib2
 
+from otopi import base
 
-from . import ohttpshandler
 from M2Crypto import X509
 
-
-from otopi import base
+from . import ohttpshandler
 
 
 def _(m):

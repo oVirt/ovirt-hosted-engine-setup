@@ -22,7 +22,6 @@
 
 from ovirt_hosted_engine_ha.client import client
 
-
 if __name__ == "__main__":
     ha_cli = client.HAClient()
     ha_cli.connect_storage_server()

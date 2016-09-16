@@ -26,10 +26,8 @@ HA services
 import gettext
 import os
 
-
 from otopi import plugin
 from otopi import util
-
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 

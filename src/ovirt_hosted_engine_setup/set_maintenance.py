@@ -25,7 +25,6 @@ import gettext
 import socket
 import sys
 
-
 from ovirt_hosted_engine_ha.client import client
 
 

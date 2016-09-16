@@ -24,16 +24,13 @@ Host adder plugin.
 
 import gettext
 import os
-import selinux
+import socket
 import tempfile
 import time
-import socket
-
 
 import ovirtsdk.api
 import ovirtsdk.infrastructure.errors
 import ovirtsdk.xml
-
 
 from otopi import constants as otopicons
 from otopi import filetransaction
@@ -41,13 +38,15 @@ from otopi import plugin
 from otopi import transaction
 from otopi import util
 
-
 from ovirt_host_deploy import constants as ohdcons
+
+from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import check_liveliness
 from ovirt_hosted_engine_setup import engineapi
-from ovirt_hosted_engine_setup import constants as ohostedcons
-from ovirt_hosted_engine_setup import vds_info
 from ovirt_hosted_engine_setup import pkissh
+from ovirt_hosted_engine_setup import vds_info
+
+import selinux
 
 
 def _(m):

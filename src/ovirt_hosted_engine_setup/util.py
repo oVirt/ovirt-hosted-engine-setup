@@ -26,9 +26,7 @@ import os
 import random
 import re
 
-
 from otopi import util
-
 
 from . import constants as ohostedcons
 

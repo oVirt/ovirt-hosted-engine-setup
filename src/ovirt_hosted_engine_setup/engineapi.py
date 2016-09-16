@@ -22,11 +22,9 @@
 
 import gettext
 
-
 import ovirtsdk.api
 import ovirtsdk.infrastructure.errors
 import ovirtsdk.xml
-
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 

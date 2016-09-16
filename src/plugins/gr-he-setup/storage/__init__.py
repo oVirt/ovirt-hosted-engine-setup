@@ -23,7 +23,6 @@
 
 from otopi import util
 
-
 from . import blockd
 from . import heconf
 from . import nfs

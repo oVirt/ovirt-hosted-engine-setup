@@ -26,10 +26,8 @@ VM machine configuration plugin.
 import gettext
 import platform
 
-
 from otopi import plugin
 from otopi import util
-
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 

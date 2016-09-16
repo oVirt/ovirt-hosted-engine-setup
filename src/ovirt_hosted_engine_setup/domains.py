@@ -23,7 +23,6 @@ import os
 import re
 import tempfile
 
-
 from otopi import base
 from otopi import util
 

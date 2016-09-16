@@ -28,12 +28,10 @@ import os
 
 from io import StringIO
 
-
-from otopi import common
 from otopi import constants as otopicons
+from otopi import common
 from otopi import plugin
 from otopi import util
-
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import util as ohostedutil

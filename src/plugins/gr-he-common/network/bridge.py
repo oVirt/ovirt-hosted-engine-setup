@@ -23,18 +23,18 @@ bridge configuration plugin.
 """
 
 
-import ethtool
 import gettext
 import socket
 
-
-from otopi import util
 from otopi import plugin
+from otopi import util
 
+from ovirt_setup_lib import hostname as osetuphostname
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import vds_info
-from ovirt_setup_lib import hostname as osetuphostname
+
+import ethtool
 
 
 def _(m):

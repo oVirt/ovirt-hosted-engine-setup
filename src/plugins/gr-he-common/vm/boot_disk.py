@@ -27,9 +27,7 @@ import configparser
 import gettext
 import glob
 import hashlib
-from io import StringIO
 import json
-import guestfs
 import math
 import os
 import shutil
@@ -37,16 +35,20 @@ import tarfile
 import tempfile
 
 
+from io import StringIO
+
 from otopi import plugin
 from otopi import transaction
 from otopi import util
 
-
 from ovirt_hosted_engine_ha.lib import heconflib
+
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import domains as ohosteddomains
 from ovirt_hosted_engine_setup import util as ohostedutil
 from ovirt_hosted_engine_setup.ovf import ovfenvelope
+
+import guestfs
 
 
 def _(m):

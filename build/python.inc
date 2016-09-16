@@ -27,6 +27,9 @@ if PYTHON_SYNTAX_CHECK
 	if [ -n "$(PEP8)" ]; then \
 		$(PEP8) $(PYTHON_SYNTAX_CHECK_FILES); \
 	fi
+	if [ -n "$(ISORT)" ]; then \
+		$(ISORT) --check $(PYTHON_SYNTAX_CHECK_FILES); \
+	fi
 endif
 
 python-clean:

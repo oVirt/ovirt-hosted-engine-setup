@@ -25,13 +25,10 @@ cpu check plugin.
 
 import gettext
 
-
 from otopi import plugin
 from otopi import util
 
-
 from ovirt_host_deploy import hardware
-
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 

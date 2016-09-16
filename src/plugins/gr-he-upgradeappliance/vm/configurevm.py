@@ -26,20 +26,21 @@ VM configuration plugin.
 import configparser
 import gettext
 import hashlib
-import lzma
 import os
 import shutil
 import tarfile
 import tempfile
+
 
 from io import StringIO
 
 from otopi import plugin
 from otopi import util
 
-
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import engineapi
+
+import lzma
 
 
 def _(m):

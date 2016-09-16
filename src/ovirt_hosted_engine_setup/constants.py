@@ -25,9 +25,7 @@ import gettext
 import os
 import sys
 
-
 from otopi import util
-
 
 from ovirt_hosted_engine_setup import config
 

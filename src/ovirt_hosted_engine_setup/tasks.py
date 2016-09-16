@@ -21,10 +21,8 @@
 import gettext
 import time
 
-
 from otopi import base
 from otopi import util
-
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 

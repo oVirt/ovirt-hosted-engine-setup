@@ -28,7 +28,6 @@ import gettext
 from otopi import plugin
 from otopi import util
 
-
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import tasks
 from ovirt_hosted_engine_setup import vm_status

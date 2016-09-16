@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
 import os
-import hooking
 
+import hooking
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 

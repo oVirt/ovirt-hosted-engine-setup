@@ -30,10 +30,11 @@ from otopi import constants as otopicons
 from otopi import plugin
 from otopi import util
 
+from ovirt_hosted_engine_ha.lib import util as ohautil
+
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import check_liveliness
 from ovirt_hosted_engine_setup import mixins
-from ovirt_hosted_engine_ha.lib import util as ohautil
 
 
 def _(m):

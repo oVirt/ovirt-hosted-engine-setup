@@ -24,18 +24,17 @@ Firewall manager selection plugin.
 
 
 import gettext
-import libxml2
 import os
-
 
 from otopi import constants as otopicons
 from otopi import filetransaction
 from otopi import plugin
 from otopi import util
 
-
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import util as ohostedutil
+
+import libxml2
 
 
 def _(m):

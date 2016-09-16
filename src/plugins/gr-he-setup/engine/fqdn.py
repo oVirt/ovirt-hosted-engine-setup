@@ -23,13 +23,12 @@
 
 import gettext
 
-
 from otopi import plugin
 from otopi import util
 
+from ovirt_setup_lib import hostname as osetuphostname
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
-from ovirt_setup_lib import hostname as osetuphostname
 
 
 def _(m):

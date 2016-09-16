@@ -23,7 +23,6 @@
 
 from otopi import util
 
-
 from . import configureqemu
 
 

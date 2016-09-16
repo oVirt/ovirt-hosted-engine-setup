@@ -25,7 +25,6 @@ import gettext
 import ssl
 import sys
 
-
 from otopi import base
 
 

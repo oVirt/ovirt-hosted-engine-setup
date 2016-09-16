@@ -26,12 +26,11 @@ VM image creation plugin.
 import gettext
 import uuid
 
-
 from otopi import plugin
 from otopi import util
 
-
 from ovirt_hosted_engine_ha.lib import heconflib
+
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import domains as ohosteddomains
 

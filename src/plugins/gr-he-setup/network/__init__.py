@@ -23,7 +23,6 @@
 
 from otopi import util
 
-
 from . import firewall
 from . import firewall_manager
 from . import gateway

@@ -26,7 +26,6 @@ iptables plugin.
 import gettext
 import platform
 
-
 from otopi import constants
 from otopi import plugin
 from otopi import util

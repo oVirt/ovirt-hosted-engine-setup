@@ -25,12 +25,11 @@ VM memory configuration plugin.
 
 import gettext
 
-
 from otopi import plugin
 from otopi import util
 
-
 from ovirt_setup_lib import dialog
+
 from ovirt_hosted_engine_setup import constants as ohostedcons
 
 

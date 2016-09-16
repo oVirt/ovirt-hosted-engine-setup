@@ -23,7 +23,6 @@
 
 from otopi import util
 
-
 from . import configurevm
 from . import runvm
 

@@ -26,7 +26,6 @@ import re
 import socket
 import urllib2
 
-
 from otopi import base
 from otopi import util
 

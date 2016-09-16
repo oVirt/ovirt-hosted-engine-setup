@@ -23,9 +23,8 @@
 
 from otopi import util
 
-
-from . import vdsmconf
 from . import cpu
+from . import vdsmconf
 
 
 @util.export

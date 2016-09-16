@@ -28,13 +28,11 @@ import gettext
 import os
 import StringIO  # FIXME: May need some otopi magic for python3 compatibility
 
-
 from otopi import constants as otopicons
 from otopi import filetransaction
 from otopi import plugin
 from otopi import transaction
 from otopi import util
-
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 

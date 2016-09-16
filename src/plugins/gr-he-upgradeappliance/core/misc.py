@@ -24,15 +24,14 @@
 import gettext
 import time
 
-
 from otopi import context as otopicontext
 from otopi import plugin
 from otopi import util
 
-
 from ovirt_hosted_engine_ha.env import config
-from ovirt_hosted_engine_ha.lib import image
 from ovirt_hosted_engine_ha.lib import util as ohautil
+from ovirt_hosted_engine_ha.lib import image
+
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import vm_status
 

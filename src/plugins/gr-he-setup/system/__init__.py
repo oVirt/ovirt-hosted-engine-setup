@@ -23,10 +23,9 @@
 
 from otopi import util
 
-
 from . import packages
-from . import vdsmenv
 from . import sshd
+from . import vdsmenv
 
 
 @util.export

@@ -23,7 +23,6 @@
 
 import gettext
 
-
 from otopi import constants as otopicons
 from otopi import packager
 from otopi import plugin

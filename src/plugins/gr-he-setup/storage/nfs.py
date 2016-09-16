@@ -28,10 +28,8 @@ import tempfile
 import time
 import xml.dom.minidom
 
-
 from otopi import plugin
 from otopi import util
-
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import domains as ohosteddomains

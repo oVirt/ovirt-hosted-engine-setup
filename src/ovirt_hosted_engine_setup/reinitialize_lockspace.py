@@ -21,8 +21,8 @@
 """Reinitialize sanlock lockspace"""
 
 import sys
-from ovirt_hosted_engine_ha.client import client
 
+from ovirt_hosted_engine_ha.client import client
 
 if __name__ == "__main__":
     force = len(sys.argv) > 1 and sys.argv[1] == "--force"
