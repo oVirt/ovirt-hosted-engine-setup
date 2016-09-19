@@ -209,6 +209,13 @@ class Plugin(plugin.PluginBase):
         ]:
             self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] = False
         else:
+            self.logger.warning(
+                _(
+                    'Setup of additional hosts using this software is '
+                    'deprecated and will be removed in 4.1. Please use the '
+                    'engine web interface to deploy any additional hosts.'
+                )
+            )
             interactive = self.environment[
                 ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
             ] is None
