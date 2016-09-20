@@ -391,14 +391,7 @@ class Plugin(plugin.PluginBase):
     )
     def _wait_datacenter_up(self):
         engine_api = engineapi.get_engine_api(self)
-        cluster_broker = engine_api.clusters.get(
-            name=self.environment[
-                ohostedcons.EngineEnv.HOST_CLUSTER_NAME
-            ]
-        )
-        dc_broker = engine_api.datacenters.get(
-            id=cluster_broker.get_data_center().get_id()
-        )
+
         my_host_id = None
         my_host_uuid = self._get_host_uuid()
         for h in engine_api.hosts.list():
@@ -410,6 +403,14 @@ class Plugin(plugin.PluginBase):
                 'please check the backup recovery'
             ))
         host_broker = engine_api.hosts.get(id=my_host_id)
+
+        cluster_broker = engine_api.clusters.get(
+            id=host_broker.get_cluster().get_id()
+        )
+        dc_broker = engine_api.datacenters.get(
+            id=cluster_broker.get_data_center().get_id()
+        )
+
         ready = False
         interactive = self.environment[
             ohostedcons.Upgrade.CONFIRM_UPGRADE_SUCCESS
