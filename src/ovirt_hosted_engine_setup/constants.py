@@ -981,6 +981,7 @@ class Stages(object):
     VM_SHUTDOWN = 'ohosted.vm.state.shutdown'
     BRIDGE_AVAILABLE = 'ohosted.network.bridge.available'
     BRIDGE_DETECTED = 'ohosted.network.bridge.detected'
+    GOT_HOSTNAME_FIRST_HOST = 'ohosted.network.hostname.got'
     LIBVIRT_CONFIGURED = 'ohosted.libvirt.configured'
     SAVE_CONFIG = 'ohosted.save.config'
     SSHD_START = 'ohosted.sshd.started'

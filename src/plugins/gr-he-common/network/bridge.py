@@ -251,6 +251,7 @@ class Plugin(plugin.PluginBase):
         condition=lambda self: not self.environment[
             ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
         ],
+        name=ohostedcons.Stages.GOT_HOSTNAME_FIRST_HOST,
     )
     def _get_hostname_from_bridge_if(self):
         ipaddr = None
@@ -339,6 +340,31 @@ class Plugin(plugin.PluginBase):
                 'host.\n Note: The engine VM and all the other hosts '
                 'should be able to correctly resolve it.\nHost FQDN: '
             ),
+            validate_syntax=True,
+            system=True,
+            dns=True,
+            local_non_loopback=True,
+            reverse_dns=self.environment[
+                ohostedcons.NetworkEnv.FQDN_REVERSE_VALIDATION
+            ],
+            not_local=False,
+            allow_empty=False,
+        )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_VALIDATION,
+        condition=lambda self: not self.environment[
+            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
+        ],
+        after=(
+            ohostedcons.Stages.GOT_HOSTNAME_FIRST_HOST,
+        ),
+    )
+    def _validate_hostname_first_host(self):
+        self._hostname_helper.getHostname(
+            envkey=ohostedcons.NetworkEnv.HOST_NAME,
+            whichhost='HostedEngine',
+            supply_default=False,
             validate_syntax=True,
             system=True,
             dns=True,
