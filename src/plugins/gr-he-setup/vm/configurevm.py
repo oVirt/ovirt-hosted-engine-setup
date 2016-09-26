@@ -182,6 +182,9 @@ class Plugin(plugin.PluginBase):
             '@VCPUS@': self.environment[
                 ohostedcons.VMEnv.VCPUS
             ],
+            '@MAXVCPUS@': self.environment[
+                ohostedcons.VMEnv.MAXVCPUS
+            ],
             '@CPU_TYPE@': self.environment[
                 ohostedcons.VDSMEnv.VDSM_CPU
             ].replace('model_', ''),

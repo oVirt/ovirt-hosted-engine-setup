@@ -166,6 +166,7 @@ class VmOperations(object):
             ),
             'vmName': ohostedcons.Const.HOSTED_ENGINE_VM_NAME,
             'smp': self.environment[ohostedcons.VMEnv.VCPUS],
+            'maxVCpus': self.environment[ohostedcons.VMEnv.MAXVCPUS],
             'devices': [
                 {
                     'device': 'scsi',

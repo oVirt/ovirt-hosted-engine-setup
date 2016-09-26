@@ -10,6 +10,7 @@ devices={device:@VIDEO_DEVICE@,alias:video0,type:video}
 vmName=@NAME@
 spiceSecureChannels=smain,sdisplay,sinputs,scursor,splayback,srecord,ssmartcard,susbredir
 smp=@VCPUS@
+maxVCpus=@MAXVCPUS@
 cpuType=@CPU_TYPE@
 emulatedMachine=@EMULATED_MACHINE@
 devices={device:virtio,specParams:{source:random},model:virtio,type:rng}
