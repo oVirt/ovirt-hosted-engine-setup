@@ -11,6 +11,7 @@ devices={device:@CONSOLE_TYPE@,type:graphics}
 vmName=@NAME@
 spiceSecureChannels=smain,sdisplay,sinputs,scursor,splayback,srecord,ssmartcard,susbredir
 smp=@VCPUS@
+maxVCpus=@MAXVCPUS@
 cpuType=@CPU_TYPE@
 emulatedMachine=@EMULATED_MACHINE@
 devices={device:virtio,specParams:{source:random},model:virtio,type:rng}

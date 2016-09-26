@@ -63,6 +63,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VMEnv.APPLIANCEVCPUS,
             None
         )
+        self.environment.setdefault(
+            ohostedcons.VMEnv.MAXVCPUS,
+            None
+        )
         # fixing values from answerfiles badly generated prior than 3.6
         if type(self.environment[ohostedcons.VMEnv.VCPUS]) == int:
             self.environment[
@@ -87,7 +91,8 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VMEnv.VCPUS
         ] is None
         valid = False
-        maxvcpus = int(self._getMaxVCpus())
+        self.environment[ohostedcons.VMEnv.MAXVCPUS] = self._getMaxVCpus()
+        maxvcpus = int(self.environment[ohostedcons.VMEnv.MAXVCPUS])
 
         default = ohostedcons.Defaults.DEFAULT_VM_VCPUS
         default_msg = _('minimum requirement')

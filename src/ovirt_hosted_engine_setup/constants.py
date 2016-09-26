@@ -729,6 +729,8 @@ class VMEnv(object):
     def VCPUS(self):
         return 'OVEHOSTED_VM/vmVCpus'
 
+    MAXVCPUS = 'OVEHOSTED_VM/maxVCpus'
+
     APPLIANCEVCPUS = 'OVEHOSTED_VM/applianceVCpus'
 
     APPLIANCEMEM = 'OVEHOSTED_VM/applianceMem'
