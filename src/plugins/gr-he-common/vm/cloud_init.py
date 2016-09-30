@@ -23,7 +23,9 @@ VM cloud-init configuration plugin.
 """
 
 
+import ethtool
 import gettext
+import netaddr
 import os
 import pwd
 import re
@@ -38,9 +40,6 @@ from ovirt_setup_lib import hostname as osetuphostname
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import util as ohostedutil
-
-import ethtool
-import netaddr
 
 
 def _(m):

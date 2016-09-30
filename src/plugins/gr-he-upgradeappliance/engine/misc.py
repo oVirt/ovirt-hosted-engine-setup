@@ -26,15 +26,15 @@ VM new disk plugin.
 import gettext
 import time
 
-from ovirtsdk.infrastructure import brokers
-from ovirtsdk.xml import params
-
 from otopi import context as otopicontext
 from otopi import plugin
 from otopi import util
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import engineapi
+
+from ovirtsdk.infrastructure import brokers
+from ovirtsdk.xml import params
 
 
 def _(m):

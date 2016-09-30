@@ -25,6 +25,7 @@ Local storage domain plugin.
 import gettext
 import os
 import re
+import selinux
 import tempfile
 import uuid
 
@@ -37,8 +38,6 @@ from ovirt_hosted_engine_ha.lib import image
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import tasks
-
-import selinux
 
 
 def _(m):

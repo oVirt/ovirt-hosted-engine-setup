@@ -21,15 +21,17 @@
 # TODO: Use in engine:packaging/setup/plugins/ovirt-engine-setup/
 # ovirt-engine/all-in-one/sshd.py, perhaps other places
 
+
 import gettext
 import os
 import re
 import ssl
 import urllib2
 
-from otopi import base
 
 from M2Crypto import X509
+
+from otopi import base
 
 from . import ohttpshandler
 

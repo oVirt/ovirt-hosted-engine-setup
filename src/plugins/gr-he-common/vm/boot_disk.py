@@ -26,6 +26,7 @@ VM disk import plugin.
 import configparser
 import gettext
 import glob
+import guestfs
 import hashlib
 import json
 import math
@@ -47,8 +48,6 @@ from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import domains as ohosteddomains
 from ovirt_hosted_engine_setup import util as ohostedutil
 from ovirt_hosted_engine_setup.ovf import ovfenvelope
-
-import guestfs
 
 
 def _(m):

@@ -23,6 +23,7 @@ bridge configuration plugin.
 """
 
 
+import ethtool
 import gettext
 import socket
 
@@ -33,8 +34,6 @@ from ovirt_setup_lib import hostname as osetuphostname
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import vds_info
-
-import ethtool
 
 
 def _(m):
