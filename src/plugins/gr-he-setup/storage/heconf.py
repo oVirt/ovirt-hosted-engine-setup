@@ -84,9 +84,6 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_MISC,
         name=ohostedcons.Stages.CONF_VOLUME_AVAILABLE,
         after=(ohostedcons.Stages.STORAGE_AVAILABLE,),
-        condition=lambda self: not self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
     )
     def _misc_create_volume(self):
         diskType = 2
@@ -120,9 +117,6 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.OS_INSTALLED,
             ohostedcons.Stages.IMAGES_REPREPARED,
         ),
-        condition=lambda self: not self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
         name=ohostedcons.Stages.CONF_IMAGE_AVAILABLE,
     )
     def _closeup_create_tar(self):

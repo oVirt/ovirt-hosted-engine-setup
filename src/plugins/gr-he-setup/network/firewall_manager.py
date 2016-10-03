@@ -135,24 +135,6 @@ class Plugin(plugin.PluginBase):
         # at customization stage by otopi.
         self.environment[otopicons.NetEnv.FIREWALLD_AVAILABLE] = False
 
-        if (
-            self.environment[
-                ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-            ] and self.environment[
-                ohostedcons.NetworkEnv.FIREWALL_MANAGER
-            ] is not None
-        ):
-            self.logger.info(
-                _(
-                    "Additional host deployment, firewall manager is "
-                    "'{manager}'"
-                ).format(
-                    manager=self.environment[
-                        ohostedcons.NetworkEnv.FIREWALL_MANAGER
-                    ],
-                )
-            )
-
         if self.environment[ohostedcons.NetworkEnv.FIREWALL_MANAGER] is None:
             managers = []
             if self.environment[otopicons.NetEnv.FIREWALLD_AVAILABLE]:
@@ -255,8 +237,7 @@ class Plugin(plugin.PluginBase):
         condition=lambda self: (
             self.environment[
                 ohostedcons.NetworkEnv.FIREWALL_MANAGER
-            ] is None and
-            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
+            ] is None
         ),
         name=ohostedcons.Stages.NET_FIREWALL_FIRST_STAGE_CONFIGURED,
     )

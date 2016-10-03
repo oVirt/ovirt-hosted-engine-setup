@@ -93,54 +93,48 @@ class Plugin(plugin.PluginBase):
         ),
     )
     def _customization(self):
-        if self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]:
-            # VM has been installed, will boot from disk.
-            self.environment[ohostedcons.VMEnv.BOOT] = 'disk'
-            self.environment[ohostedcons.VMEnv.CDROM] = None
-            self.environment[ohostedcons.VMEnv.OVF] = None
-        else:
-            interactive = self.environment[
-                ohostedcons.VMEnv.BOOT
-            ] is None
-            valid = False
-            while not valid:
-                if interactive:
-                    self.environment[
-                        ohostedcons.VMEnv.BOOT
-                    ] = self.dialog.queryString(
-                        name='OVEHOSTED_VMENV_BOOT',
-                        note=_(
-                            'Booting from cdrom on RHEL7 is ISO image based'
-                            ' only, as cdrom passthrough is disabled (BZ760'
-                            '885)\n'
-                            'Please specify the device to boot the VM from '
-                            '(choose disk for the oVirt engine appliance)\n'
-                            '(@VALUES@) [@DEFAULT@]: '
-                        ),
-                        prompt=True,
-                        caseSensitive=True,
-                        validValues=list(self.BOOT_DEVICE.keys()),
-                        default=ohostedcons.Defaults.DEFAULT_BOOT,
-                    )
-
-                if self.environment[
+        interactive = self.environment[
+            ohostedcons.VMEnv.BOOT
+        ] is None
+        valid = False
+        while not valid:
+            if interactive:
+                self.environment[
                     ohostedcons.VMEnv.BOOT
-                ] in self.BOOT_DEVICE.keys():
-                    valid = True
-                elif interactive:
-                    self.logger.error(
-                        _(
-                            'The provided boot type is not supported. '
-                            'Please try again'
-                        )
+                ] = self.dialog.queryString(
+                    name='OVEHOSTED_VMENV_BOOT',
+                    note=_(
+                        'Booting from cdrom on RHEL7 is ISO image based'
+                        ' only, as cdrom passthrough is disabled (BZ760'
+                        '885)\n'
+                        'Please specify the device to boot the VM from '
+                        '(choose disk for the oVirt engine appliance)\n'
+                        '(@VALUES@) [@DEFAULT@]: '
+                    ),
+                    prompt=True,
+                    caseSensitive=True,
+                    validValues=list(self.BOOT_DEVICE.keys()),
+                    default=ohostedcons.Defaults.DEFAULT_BOOT,
+                )
+
+            if self.environment[
+                ohostedcons.VMEnv.BOOT
+            ] in self.BOOT_DEVICE.keys():
+                valid = True
+            elif interactive:
+                self.logger.error(
+                    _(
+                        'The provided boot type is not supported. '
+                        'Please try again'
                     )
-                else:
-                    raise RuntimeError(
-                        _(
-                            'The provided boot type is not supported. '
-                            'Please try again'
-                        )
+                )
+            else:
+                raise RuntimeError(
+                    _(
+                        'The provided boot type is not supported. '
+                        'Please try again'
                     )
+                )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,

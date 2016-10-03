@@ -205,11 +205,9 @@ class Plugin(plugin.PluginBase):
                 types_list=cpu_desc,
             )
         )
-        interactive = False
-        if not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]:
-            interactive = self.environment[
-                ohostedcons.VDSMEnv.VDSM_CPU
-            ] is None
+        interactive = self.environment[
+            ohostedcons.VDSMEnv.VDSM_CPU
+        ] is None
         valid = False
         while not valid:
             if interactive:

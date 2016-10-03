@@ -109,7 +109,6 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.UPGRADE_BACKUP_DISK_REGISTERED,
         ),
         condition=lambda self: (
-            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] and
             not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
         ),
         name=ohostedcons.Stages.VM_SHUTDOWN,

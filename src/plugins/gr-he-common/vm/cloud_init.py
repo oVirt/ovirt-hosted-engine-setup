@@ -422,7 +422,6 @@ class Plugin(plugin.PluginBase):
         condition=lambda self: (
             self.environment[ohostedcons.VMEnv.BOOT] == 'disk' and
             self.environment[ohostedcons.VMEnv.CDROM] is None and
-            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] and
             not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
         ),
         name=ohostedcons.Stages.CONFIG_CLOUD_INIT_OPTIONS,

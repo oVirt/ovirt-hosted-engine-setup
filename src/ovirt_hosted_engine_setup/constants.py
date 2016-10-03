@@ -367,8 +367,6 @@ class CoreEnv(object):
     USER_ANSWER_FILE = 'OVEHOSTED_CORE/userAnswerFile'
     ETC_ANSWER_FILE = 'OVEHOSTED_CORE/etcAnswerFile'
     REQUIREMENTS_CHECK_ENABLED = 'OVEHOSTED_CORE/checkRequirements'
-    ADDITIONAL_HOST_ENABLED = 'OVEHOSTED_CORE/additionalHostEnabled'
-    IS_ADDITIONAL_HOST = 'OVEHOSTED_CORE/isAdditionalHost'
     UPGRADING_APPLIANCE = 'OVEHOSTED_CORE/upgradingAppliance'
     ROLLBACK_UPGRADE = 'OVEHOSTED_CORE/rollbackUpgrade'
     TEMPDIR = 'OVEHOSTED_CORE/tempDir'
@@ -404,7 +402,6 @@ class CoreEnv(object):
         return 'OVEHOSTED_CORE/confirmSettings'
 
     SKIP_TTY_CHECK = 'OVEHOSTED_CORE/skipTTYCheck'
-    RE_DEPLOY = 'OVEHOSTED_CORE/additionalHostReDeployment'
     NODE_SETUP = 'OVEHOSTED_CORE/nodeSetup'
     MISC_REACHED = 'OVEHOSTED_CORE/miscReached'
 
@@ -958,7 +955,6 @@ class Stages(object):
     CONFIG_STORAGE_BLOCKD = 'ohosted.storage.blockd.configuration.available'
     CONFIG_STORAGE_NFS = 'ohosted.storage.nfs.configuration.available'
     CONFIG_GATEWAY = 'ohosted.networking.gateway.configuration.available'
-    CONFIG_ADDITIONAL_HOST = 'ohosted.core.additional.host'
     CONFIG_CLOUD_INIT_OPTIONS = 'ohosted.boot.configuration.cloud_init_options'
     CONFIG_CLOUD_INIT_VM_NETWORKING = \
         'ohosted.boot.configuration.cloud_init_vm_networking'

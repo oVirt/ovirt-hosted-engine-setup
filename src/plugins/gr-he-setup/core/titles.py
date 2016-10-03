@@ -115,9 +115,6 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         name=ohostedcons.Stages.DIALOG_TITLES_S_VM,
-        condition=lambda self: not self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_VM,
         ),
@@ -130,9 +127,6 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         name=ohostedcons.Stages.DIALOG_TITLES_E_VM,
-        condition=lambda self: not self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
         before=(
             ohostedcons.Stages.DIALOG_TITLES_S_ENGINE,
         ),

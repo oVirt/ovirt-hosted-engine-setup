@@ -100,7 +100,6 @@ class Plugin(plugin.PluginBase):
                     ]
                 )
             ) and
-            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] and
             not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
         ),
         after=(

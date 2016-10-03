@@ -438,9 +438,6 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.DIALOG_TITLES_E_STORAGE,
         ),
         condition=lambda self: (
-            not self.environment[
-                ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-            ] and
             self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE] in (
                 ohostedcons.DomainTypes.GLUSTERFS,
                 ohostedcons.DomainTypes.NFS3,

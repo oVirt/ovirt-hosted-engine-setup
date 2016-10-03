@@ -25,7 +25,6 @@ Local storage domain plugin.
 import gettext
 import os
 import re
-import stat
 import tempfile
 import uuid
 
@@ -33,13 +32,10 @@ from otopi import constants as otopicons
 from otopi import plugin
 from otopi import util
 
-from ovirt_hosted_engine_ha.client import client
 from ovirt_hosted_engine_ha.lib import heconflib
 from ovirt_hosted_engine_ha.lib import image
-from ovirt_hosted_engine_ha.lib import storage_backends
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
-from ovirt_hosted_engine_setup import util as ohostedutil
 from ovirt_hosted_engine_setup import tasks
 
 import selinux
@@ -70,7 +66,6 @@ class Plugin(plugin.PluginBase):
         self.cli = None
         self.storageType = None
         self.protocol_version = None
-        self.domain_exists = False
         self.pool_exists = False
         self._connected = False
         self._monitoring = False
@@ -183,134 +178,17 @@ class Plugin(plugin.PluginBase):
             os.unlink(self._fake_file)
             self._fake_file = None
 
-    def _re_deploying_host(self):
-        interactive = self.environment[ohostedcons.CoreEnv.RE_DEPLOY] is None
-        if interactive:
-            self.environment[
-                ohostedcons.CoreEnv.RE_DEPLOY
-            ] = self.dialog.queryString(
-                name='OVEHOSTED_RE_DEPLOY_HOST',
-                note=_(
-                    'The Host ID is already known. '
-                    'Is this a re-deployment on an additional host that was '
-                    'previously set up '
-                    '(@VALUES@)[@DEFAULT@]? '
-                ),
-                prompt=True,
-                validValues=(_('Yes'), _('No')),
-                caseSensitive=False,
-                default=_('Yes')
-            ) == _('Yes').lower()
-        return self.environment[ohostedcons.CoreEnv.RE_DEPLOY]
-
-    def _handleHostId(self):
-        if not self.environment[
-            ohostedcons.CoreEnv.ADDITIONAL_HOST_ENABLED
-        ]:
-            self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] = False
-        else:
-            self.logger.warning(
-                _(
-                    'Setup of additional hosts using this software is '
-                    'deprecated and will be removed in 4.1. Please use the '
-                    'engine web interface to deploy any additional hosts.'
-                )
-            )
-            interactive = self.environment[
-                ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-            ] is None
-            if interactive:
-                self.environment[
-                    ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-                ] = self.dialog.queryString(
-                    name='OVEHOSTED_ADDITIONAL_HOST',
-                    note=_(
-                        'The specified storage location already contains a '
-                        'data domain. Is this an additional host setup '
-                        '(@VALUES@)[@DEFAULT@]? '
-                    ),
-                    prompt=True,
-                    validValues=(_('Yes'), _('No')),
-                    caseSensitive=False,
-                    default=_('Yes')
-                ) == _('Yes').lower()
-        if self.environment[
-            ohostedcons.CoreEnv.ADDITIONAL_HOST_ENABLED
-        ] and not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]:
-            msg = _(
-                'Re-deploying the engine VM over a previously (partially) '
-                'deployed system is not supported. Please clean up the '
-                'storage device or select a different one and retry.'
-            )
-            self.logger.error(msg)
-            raise RuntimeError(msg)
-
-        if not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]:
-            self.logger.info(_('Installing on first host'))
-            self.environment[
-                ohostedcons.StorageEnv.HOST_ID
-            ] = ohostedcons.Const.FIRST_HOST_ID
-        else:
-            self.logger.info(_('Installing on additional host'))
-            if self.environment[
-                ohostedcons.StorageEnv.HOST_ID
-            ] == ohostedcons.Const.FIRST_HOST_ID:
-                self.environment[
-                    ohostedcons.StorageEnv.HOST_ID
-                ] = None
-            interactive = self.environment[
-                ohostedcons.StorageEnv.HOST_ID
-            ] is None
-            valid = False
-            while not valid:
-                if interactive:
-                    host_id = self.dialog.queryString(
-                        name='OVEHOSTED_HOST_ID',
-                        note=_(
-                            'Please specify the Host ID '
-                            '[Must be integer, default: @DEFAULT@]: '
-                        ),
-                        prompt=True,
-                        default=ohostedcons.Const.FIRST_HOST_ID + 1,
-                    )
-                else:
-                    host_id = self.environment[
-                        ohostedcons.StorageEnv.HOST_ID
-                    ]
-                try:
-                    valid = True
-                    self.environment[
-                        ohostedcons.StorageEnv.HOST_ID
-                    ] = int(host_id)
-                    if (
-                        self.environment[
-                            ohostedcons.StorageEnv.HOST_ID
-                        ] > ohostedcons.Const.MAX_HOST_ID or
-                        self.environment[
-                            ohostedcons.StorageEnv.HOST_ID
-                        ] < ohostedcons.Const.FIRST_HOST_ID
-                    ):
-                        valid = False
-                        msg = _(
-                            'Invalid value for Host ID: must be in {min}-{max}'
-                        ).format(
-                            min=ohostedcons.Const.FIRST_HOST_ID,
-                            max=ohostedcons.Const.MAX_HOST_ID,
-                        )
-                        if interactive:
-                            self.logger.error(msg)
-                        else:
-                            raise RuntimeError(msg)
-                except ValueError:
-                    valid = False
-                    if interactive:
-                        self.logger.error(
-                            _('Invalid value for Host ID: must be integer')
-                        )
-                    else:
-                        raise RuntimeError(
-                            _('Invalid value for Host ID: must be integer')
-                        )
+    def _abortAdditionalHosts(self):
+        self.logger.error(_(
+            'The selected device already contains a storage domain.'
+        ))
+        msg = _(
+            'Setup of additional hosts using this software is '
+            'not allowed anymore. Please use the '
+            'engine web interface to deploy any additional hosts.'
+        )
+        self.logger.error(msg)
+        raise RuntimeError(msg)
 
     def _analyze_volume(self, img, vol_uuid):
         cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
@@ -418,101 +296,6 @@ class Plugin(plugin.PluginBase):
         self.command.detect('umount')
         self.command.detect('chown')
 
-    @plugin.event(
-        stage=plugin.Stages.STAGE_VALIDATION,
-        condition=lambda self: self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
-        name=ohostedcons.Stages.EXISTING_CONF_VOLUME_DETECTED,
-    )
-    def _validation(self):
-        """
-        Check that host id is not already in use
-        """
-
-        if self.storageType in (
-            ohostedcons.VDSMConstants.ISCSI_DOMAIN,
-            ohostedcons.VDSMConstants.FC_DOMAIN,
-        ):
-            # We need to connect metadata LVMs
-            # Prepare the Backend interface
-            # Get UUIDs of the storage
-            lockspace = self.environment[
-                ohostedcons.SanlockEnv.LOCKSPACE_NAME
-            ]
-            activate_devices = {
-                lockspace + '.lockspace': (
-                    storage_backends.VdsmBackend.Device(
-                        image_uuid=self.environment[
-                            ohostedcons.StorageEnv.
-                            LOCKSPACE_IMAGE_UUID
-                        ],
-                        volume_uuid=self.environment[
-                            ohostedcons.StorageEnv.
-                            LOCKSPACE_VOLUME_UUID
-                        ],
-                    )
-                ),
-                lockspace + '.metadata': (
-                    storage_backends.VdsmBackend.Device(
-                        image_uuid=self.environment[
-                            ohostedcons.StorageEnv.
-                            METADATA_IMAGE_UUID
-                        ],
-                        volume_uuid=self.environment[
-                            ohostedcons.StorageEnv.
-                            METADATA_VOLUME_UUID
-                        ],
-                    )
-                ),
-            }
-            backend = storage_backends.VdsmBackend(
-                sd_uuid=self.environment[
-                    ohostedcons.StorageEnv.SD_UUID
-                ],
-                sp_uuid=self.environment[
-                    ohostedcons.StorageEnv.SP_UUID
-                ],
-                dom_type=self.environment[
-                    ohostedcons.StorageEnv.DOMAIN_TYPE
-                ],
-                **activate_devices
-            )
-            backend.set_external_logger(self.logger)
-            with ohostedutil.VirtUserContext(
-                self.environment,
-                # umask 007
-                umask=stat.S_IRWXO
-            ):
-                backend.connect()
-
-        all_host_stats = {}
-        with ohostedutil.VirtUserContext(
-            environment=self.environment,
-            umask=stat.S_IWGRP | stat.S_IWOTH,
-        ):
-            ha_cli = client.HAClient()
-            all_host_stats = ha_cli.get_all_host_stats_direct(
-                dom_type=self.environment[
-                    ohostedcons.StorageEnv.DOMAIN_TYPE
-                ],
-                sd_uuid=self.environment[
-                    ohostedcons.StorageEnv.SD_UUID
-                ],
-                service_type=self.environment[
-                    ohostedcons.SanlockEnv.LOCKSPACE_NAME
-                ] + ".metadata",
-            )
-        if (
-            self.environment[
-                ohostedcons.StorageEnv.HOST_ID
-            ] in all_host_stats.keys() and
-            not self._re_deploying_host()
-        ):
-            raise RuntimeError(
-                _('Invalid value for Host ID: already used')
-            )
-
     def _validName(self, name):
         if (
             name is None or
@@ -542,37 +325,7 @@ class Plugin(plugin.PluginBase):
                 self.logger.debug(vginfo)
                 if vginfo['status']['code'] != 0:
                     raise RuntimeError(vginfo['status']['message'])
-                self.environment[
-                    ohostedcons.CoreEnv.ADDITIONAL_HOST_ENABLED
-                ] = True
-                self.environment[
-                    ohostedcons.StorageEnv.SD_UUID
-                ] = vginfo['name']
-                domain_info = self._getStorageDomainInfo(
-                    self.environment[
-                        ohostedcons.StorageEnv.SD_UUID
-                    ]
-                )
-                if 'uuid' in domain_info:
-                    self.domain_exists = True
-                    pool_list = domain_info['pool']
-                    if pool_list:
-                        self.pool_exists = True
-                        spUUID = pool_list[0]
-                        if self.environment[
-                            ohostedcons.StorageEnv.SP_UUID
-                        ] != ohostedcons.Const.BLANK_UUID:
-                            self.environment[
-                                ohostedcons.StorageEnv.SP_UUID
-                            ] = spUUID
-                        else:
-                            self.logger.debug(
-                                'hosted-engine storage domain is attached to '
-                                'storage pool {sp}: the engine already '
-                                'imported it. Honoring BLANK_UUID from the '
-                                'answerfile'
-                            )
-                self._handleHostId()
+                self._abortAdditionalHosts()
         elif self.storageType in (
             ohostedcons.VDSMConstants.NFS_DOMAIN,
             ohostedcons.VDSMConstants.GLUSTERFS_DOMAIN,
@@ -597,58 +350,13 @@ class Plugin(plugin.PluginBase):
                         ]
                     )
                 ):
-                    self.domain_exists = True
-                    self.environment[
-                        ohostedcons.CoreEnv.ADDITIONAL_HOST_ENABLED
-                    ] = True
-                    self.environment[
-                        ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
-                    ] = domain_info['name']
-                    self.environment[
-                        ohostedcons.StorageEnv.SD_UUID
-                    ] = sdUUID
-                    self._handleHostId()
-                    pool_list = domain_info['pool']
-                    if pool_list:
-                        self.pool_exists = True
-                        spUUID = pool_list[0]
-                        if self.environment[
-                            ohostedcons.StorageEnv.SP_UUID
-                        ] != ohostedcons.Const.BLANK_UUID:
-                            self.environment[
-                                ohostedcons.StorageEnv.SP_UUID
-                            ] = spUUID
-                        else:
-                            self.logger.debug(
-                                'hosted-engine storage domain is attached to '
-                                'storage pool {sp}: the engine already '
-                                'imported it. Honoring BLANK_UUID from the '
-                                'answerfile'
-                            )
-                    break
+                    self._abortAdditionalHosts()
 
-        if not self.domain_exists:
-            self._handleHostId()
-            if self.storageType in (
-                ohostedcons.VDSMConstants.NFS_DOMAIN,
-                ohostedcons.VDSMConstants.GLUSTERFS_DOMAIN,
-            ):
-                self._storageServerConnection(disconnect=True)
-        else:
-            valid = self._validateStorageDomain(
-                self.environment[
-                    ohostedcons.StorageEnv.SD_UUID
-                ]
-            )
-            if valid[0] != 0:
-                raise RuntimeError(
-                    _(
-                        'Dirty Storage Domain: {message}\n'
-                        'Please clean the storage device and try again'
-                    ).format(
-                        message=valid[1],
-                    )
-                )
+        if self.storageType in (
+            ohostedcons.VDSMConstants.NFS_DOMAIN,
+            ohostedcons.VDSMConstants.GLUSTERFS_DOMAIN,
+        ):
+            self._storageServerConnection(disconnect=True)
 
     def _getStorageDomainsList(self, spUUID=None):
         if not spUUID:
@@ -1150,19 +858,7 @@ class Plugin(plugin.PluginBase):
         )
         self.environment.setdefault(
             ohostedcons.StorageEnv.HOST_ID,
-            None
-        )
-        self.environment.setdefault(
-            ohostedcons.CoreEnv.ADDITIONAL_HOST_ENABLED,
-            False
-        )
-        self.environment.setdefault(
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST,
-            None
-        )
-        self.environment.setdefault(
-            ohostedcons.CoreEnv.RE_DEPLOY,
-            None
+            ohostedcons.Const.FIRST_HOST_ID
         )
 
     @plugin.event(
@@ -1243,33 +939,6 @@ class Plugin(plugin.PluginBase):
         # type finishes.
         self._getExistingDomain()
 
-        if self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]:
-            if self.storageType in (
-                ohostedcons.VDSMConstants.ISCSI_DOMAIN,
-                ohostedcons.VDSMConstants.FC_DOMAIN,
-            ):
-                # For iSCSI/FC we need to explicitly call getStorageDomainStats
-                # to create/refresh the storage domain directory tree.
-                result = self.cli.getStorageDomainStats(
-                    self.environment[
-                        ohostedcons.StorageEnv.SD_UUID
-                    ],
-                )
-                self.logger.debug(
-                    'getStorageDomainStats: {result}'.format(
-                        result=result,
-                    )
-                )
-                if result['status']['code'] != 0:
-                    raise RuntimeError(
-                        'Unable to get storage domain stats: {message}'.format(
-                            message=result['status']['message'],
-                        )
-                    )
-
-            # Scan for metadata, lockspace and configuration image uuids
-            self._scan_images()
-
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
         after=(
@@ -1282,23 +951,21 @@ class Plugin(plugin.PluginBase):
         self._attach_loopback_device()
         self._storageServerConnection()
         self._check_existing_pools()
-        if not self.domain_exists:
-            self.logger.info(_('Creating Storage Domain'))
-            self._createStorageDomain()
-        if not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]:
-            if not self.pool_exists:
-                self.logger.info(_('Creating Storage Pool'))
-                self._createFakeStorageDomain()
-                self._createStoragePool()
-            self.logger.info(_('Connecting Storage Pool'))
-            self._storagePoolConnection()
-            self._spmStart()
-            self._activateStorageDomain(
-                self.environment[ohostedcons.StorageEnv.FAKE_MASTER_SD_UUID]
-            )
-            self._activateStorageDomain(
-                self.environment[ohostedcons.StorageEnv.SD_UUID]
-            )
+        self.logger.info(_('Creating Storage Domain'))
+        self._createStorageDomain()
+        if not self.pool_exists:
+            self.logger.info(_('Creating Storage Pool'))
+            self._createFakeStorageDomain()
+            self._createStoragePool()
+        self.logger.info(_('Connecting Storage Pool'))
+        self._storagePoolConnection()
+        self._spmStart()
+        self._activateStorageDomain(
+            self.environment[ohostedcons.StorageEnv.FAKE_MASTER_SD_UUID]
+        )
+        self._activateStorageDomain(
+            self.environment[ohostedcons.StorageEnv.SD_UUID]
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
@@ -1307,9 +974,6 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.VM_IMAGE_AVAILABLE,
             ohostedcons.Stages.OVF_IMPORTED,
         ),
-        condition=lambda self: not self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
     )
     def _destroy_pool(self):
         self._detachStorageDomain(
@@ -1326,9 +990,6 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
-        condition=lambda self: not self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
         name=ohostedcons.Stages.IMAGES_REPREPARED,
         after=(
             ohostedcons.Stages.VDSCLI_RECONNECTED,

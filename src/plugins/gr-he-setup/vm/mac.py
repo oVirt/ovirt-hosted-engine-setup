@@ -56,9 +56,6 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
-        condition=lambda self: not self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
         after=(
             ohostedcons.Stages.CONFIG_OVF_IMPORT,
             ohostedcons.Stages.DIALOG_TITLES_S_VM,

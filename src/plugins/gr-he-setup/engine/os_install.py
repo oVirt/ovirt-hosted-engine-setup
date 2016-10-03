@@ -54,9 +54,6 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.VM_RUNNING,
         ),
         name=ohostedcons.Stages.OS_INSTALLED,
-        condition=lambda self: not self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
     )
     def _closeup(self):
         self.environment[ohostedcons.VMEnv.SUBST][

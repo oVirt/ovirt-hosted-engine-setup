@@ -72,10 +72,6 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VMEnv.VM_UUID,
             self._config.get(config.ENGINE, config.HEVMID),
         )
-        self.environment.setdefault(
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST,
-            False,
-        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,

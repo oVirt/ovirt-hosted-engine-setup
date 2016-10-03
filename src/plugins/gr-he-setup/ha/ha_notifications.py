@@ -103,9 +103,6 @@ class Plugin(plugin.PluginBase):
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_ENGINE,
         ),
-        condition=lambda self: not self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
     )
     def _customization(self):
         default_smtp_config = {
@@ -217,9 +214,6 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
-        condition=lambda self: not self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
         name=ohostedcons.Stages.BROKER_CONF_AVAILABLE,
     )
     def _misc(self):

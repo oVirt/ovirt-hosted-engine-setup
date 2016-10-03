@@ -142,20 +142,11 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.DIALOG_TITLES_E_SYSTEM,
         ),
         condition=lambda self: (
-            self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] or
             self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE] or
             self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
         ),
     )
     def _customization(self):
-        if self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]:
-            self.logger.warning(
-                _(
-                    'A configuration file must be supplied to deploy '
-                    'Hosted Engine on an additional host.'
-                )
-            )
-
         if self.environment[
             ohostedcons.FirstHostEnv.SKIP_SHARED_STORAGE_ANSWERF
         ]:

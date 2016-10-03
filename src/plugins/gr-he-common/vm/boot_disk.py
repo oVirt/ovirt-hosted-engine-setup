@@ -526,7 +526,6 @@ class Plugin(plugin.PluginBase):
         ),
         condition=lambda self: (
             self.environment[ohostedcons.VMEnv.BOOT] == 'disk' and
-            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] and
             not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
         ),
         name=ohostedcons.Stages.CONFIG_OVF_IMPORT,
@@ -698,7 +697,6 @@ class Plugin(plugin.PluginBase):
         ),
         condition=lambda self: (
             self.environment[ohostedcons.VMEnv.BOOT] == 'disk' and
-            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] and
             not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
         ),
     )

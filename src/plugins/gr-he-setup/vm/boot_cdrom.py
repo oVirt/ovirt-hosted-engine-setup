@@ -139,7 +139,6 @@ class Plugin(plugin.PluginBase):
                 self.environment[ohostedcons.VMEnv.BOOT] == 'cdrom' or
                 self.environment[ohostedcons.VMEnv.BOOT] == 'disk'
             ) and
-            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] and
             not self.environment[
                 ohostedcons.CloudInit.GENERATE_ISO
             ] in (

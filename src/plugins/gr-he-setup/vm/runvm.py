@@ -98,9 +98,6 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
-        condition=lambda self: not self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
         after=(
             ohostedcons.Stages.DIALOG_TITLES_S_VM,
         ),
@@ -158,8 +155,7 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
             ohostedcons.Stages.NET_FIREWALL_FIRST_STAGE_CONFIGURED,
         ),
         condition=lambda self: (
-            self.environment[ohostedcons.VMEnv.BOOT] != 'disk' and
-            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
+            self.environment[ohostedcons.VMEnv.BOOT] != 'disk'
         ),
     )
     def _boot_from_install_media(self):
@@ -189,9 +185,6 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
             ohostedcons.Stages.OS_INSTALLED,
         ),
         name=ohostedcons.Stages.INSTALLED_VM_RUNNING,
-        condition=lambda self: not self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
     )
     def _boot_from_hd(self):
         # Temporary attach cloud-init no-cloud iso if we have to

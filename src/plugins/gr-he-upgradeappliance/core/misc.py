@@ -78,10 +78,6 @@ class Plugin(plugin.PluginBase):
             int(self._config.get(config.ENGINE, config.HOST_ID)),
         )
         self.environment.setdefault(
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST,
-            False,
-        )
-        self.environment.setdefault(
             ohostedcons.Upgrade.LM_VOLUMES_UPGRADE_PROCEED,
             None,
         )

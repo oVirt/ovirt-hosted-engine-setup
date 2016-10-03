@@ -119,8 +119,7 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         condition=lambda self: (
-            self._enabled and
-            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
+            self._enabled
         ),
         after=(
             ohostedcons.Stages.DIALOG_TITLES_S_NETWORK,
@@ -200,8 +199,7 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         condition=lambda self: (
-            not self._enabled and
-            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
+            not self._enabled
         ),
         after=(
             ohostedcons.Stages.DIALOG_TITLES_S_NETWORK,
@@ -248,9 +246,6 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_VALIDATION,
-        condition=lambda self: not self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
         name=ohostedcons.Stages.GOT_HOSTNAME_FIRST_HOST,
     )
     def _get_hostname_from_bridge_if(self):
@@ -326,36 +321,6 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_VALIDATION,
-        condition=lambda self: self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
-    )
-    def _get_hostname_additional_hosts(self):
-        self._hostname_helper.getHostname(
-            envkey=ohostedcons.NetworkEnv.HOST_NAME,
-            whichhost='HE_ADDITIONAL',
-            supply_default=True,
-            prompttext=_(
-                'Please provide the fully qualified domain name of this '
-                'host.\n Note: The engine VM and all the other hosts '
-                'should be able to correctly resolve it.\nHost FQDN: '
-            ),
-            validate_syntax=True,
-            system=True,
-            dns=True,
-            local_non_loopback=True,
-            reverse_dns=self.environment[
-                ohostedcons.NetworkEnv.FQDN_REVERSE_VALIDATION
-            ],
-            not_local=False,
-            allow_empty=False,
-        )
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_VALIDATION,
-        condition=lambda self: not self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
         after=(
             ohostedcons.Stages.GOT_HOSTNAME_FIRST_HOST,
         ),
@@ -380,8 +345,7 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_MISC,
         name=ohostedcons.Stages.BRIDGE_AVAILABLE,
         condition=lambda self: (
-            self._enabled and
-            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST]
+            self._enabled
         ),
         after=(
             ohostedcons.Stages.VDSMD_START,
@@ -408,9 +372,6 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
-        condition=lambda self: not self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
     )
     def _closeup(self):
         self.services.startup('network', True)

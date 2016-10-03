@@ -53,9 +53,6 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.DIALOG_TITLES_E_NETWORK,
             ohostedcons.Stages.NET_FIREWALL_MANAGER_PROCESS_TEMPLATES,
         ),
-        condition=lambda self: not self.environment[
-            ohostedcons.CoreEnv.IS_ADDITIONAL_HOST
-        ],
     )
     def _configuration(self):
         self.environment[ohostedcons.NetworkEnv.FIREWALLD_SERVICES].extend([

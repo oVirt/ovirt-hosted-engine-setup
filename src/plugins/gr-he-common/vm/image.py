@@ -84,7 +84,6 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         condition=lambda self: (
-            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] and
             not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
         ),
         after=(
@@ -246,7 +245,6 @@ class Plugin(plugin.PluginBase):
         ),
         name=ohostedcons.Stages.VM_IMAGE_AVAILABLE,
         condition=lambda self: (
-            not self.environment[ohostedcons.CoreEnv.IS_ADDITIONAL_HOST] and
             not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE] and
             not self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE]
         ),
