@@ -181,7 +181,6 @@ class Plugin(plugin.PluginBase):
                 if self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE]:
                     self.environment[ohostedcons.VMEnv.OVF] = _ovf
                     self.environment[ohostedcons.VMEnv.CDROM] = None
-                    self.environment[ohostedcons.VMEnv.BOOT] = 'disk'
                     self.environment[
                         ohostedcons.CloudInit.GENERATE_ISO
                     ] = ohostedcons.Const.CLOUD_INIT_GENERATE

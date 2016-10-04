@@ -749,15 +749,7 @@ class VMEnv(object):
     @ohostedattrs(
         answerfile=True,
         summary=True,
-        description=_('Boot type'),
-    )
-    def BOOT(self):
-        return 'OVEHOSTED_VM/vmBoot'
-
-    @ohostedattrs(
-        answerfile=True,
-        summary=True,
-        description=_('ISO image (cdrom boot/cloud-init)'),
+        description=_('ISO image (cdrom cloud-init)'),
     )
     def CDROM(self):
         return 'OVEHOSTED_VM/vmCDRom'
@@ -949,7 +941,6 @@ class NotificationsEnv(object):
 @util.export
 @util.codegen
 class Stages(object):
-    CONFIG_BOOT_DEVICE = 'ohosted.boot.configuration.available'
     CONFIG_STORAGE_EARLY = 'ohosted.storage.configuration.early'
     CONFIG_STORAGE_LATE = 'ohosted.storage.configuration.late'
     CONFIG_STORAGE_BLOCKD = 'ohosted.storage.blockd.configuration.available'
@@ -1043,7 +1034,6 @@ class Defaults(object):
     DEFAULT_IMAGE_SIZE_GB = 25  # based on minimum requirements.
     MINIMAL_MEM_SIZE_MB = 4096  # based on minimum requirements.
     DEFAULT_CONF_IMAGE_SIZE_GB = 1
-    DEFAULT_BOOT = 'disk'  # boot device - drive C or cdrom or pxe
     DEFAULT_CDROM = '/dev/null'
     DEFAULT_BRIDGE_IF = 'em1'
     DEFAULT_BRIDGE_NAME = 'ovirtmgmt'

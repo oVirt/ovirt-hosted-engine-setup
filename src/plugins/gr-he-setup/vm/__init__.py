@@ -22,7 +22,7 @@
 
 from otopi import util
 
-from . import boot_cdrom
+from . import cdrom
 from . import configurevm
 from . import cpu
 from . import mac
@@ -33,7 +33,7 @@ from . import runvm
 
 @util.export
 def createPlugins(context):
-    boot_cdrom.Plugin(context=context)
+    cdrom.Plugin(context=context)
     configurevm.Plugin(context=context)
     cpu.Plugin(context=context)
     mac.Plugin(context=context)

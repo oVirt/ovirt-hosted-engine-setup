@@ -302,10 +302,6 @@ class Plugin(plugin.PluginBase):
     )
     def _init(self):
         self.environment.setdefault(
-            ohostedcons.VMEnv.BOOT,
-            'disk',
-        )
-        self.environment.setdefault(
             ohostedcons.NetworkEnv.BRIDGE_NAME,
             None,
         )

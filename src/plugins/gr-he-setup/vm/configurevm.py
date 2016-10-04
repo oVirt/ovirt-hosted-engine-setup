@@ -47,12 +47,6 @@ class Plugin(plugin.PluginBase):
     VM configuration plugin.
     """
 
-    BOOT_DEVICE = {
-        'cdrom': '@BOOT_CDROM@',
-        'pxe': '@BOOT_PXE@',
-        'disk': '@BOOT_DISK@',
-    }
-
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
 
@@ -63,10 +57,6 @@ class Plugin(plugin.PluginBase):
         self.environment.setdefault(
             ohostedcons.VMEnv.VM_UUID,
             str(uuid.uuid4())
-        )
-        self.environment.setdefault(
-            ohostedcons.VMEnv.BOOT,
-            None,
         )
         self.environment[ohostedcons.VMEnv.SUBST] = {}
         self.environment.setdefault(
@@ -81,60 +71,6 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VMEnv.CONSOLE_UUID,
             str(uuid.uuid4())
         )
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_CUSTOMIZATION,
-        name=ohostedcons.Stages.CONFIG_BOOT_DEVICE,
-        after=(
-            ohostedcons.Stages.DIALOG_TITLES_S_VM,
-        ),
-        before=(
-            ohostedcons.Stages.DIALOG_TITLES_E_VM,
-        ),
-    )
-    def _customization(self):
-        interactive = self.environment[
-            ohostedcons.VMEnv.BOOT
-        ] is None
-        valid = False
-        while not valid:
-            if interactive:
-                self.environment[
-                    ohostedcons.VMEnv.BOOT
-                ] = self.dialog.queryString(
-                    name='OVEHOSTED_VMENV_BOOT',
-                    note=_(
-                        'Booting from cdrom on RHEL7 is ISO image based'
-                        ' only, as cdrom passthrough is disabled (BZ760'
-                        '885)\n'
-                        'Please specify the device to boot the VM from '
-                        '(choose disk for the oVirt engine appliance)\n'
-                        '(@VALUES@) [@DEFAULT@]: '
-                    ),
-                    prompt=True,
-                    caseSensitive=True,
-                    validValues=list(self.BOOT_DEVICE.keys()),
-                    default=ohostedcons.Defaults.DEFAULT_BOOT,
-                )
-
-            if self.environment[
-                ohostedcons.VMEnv.BOOT
-            ] in self.BOOT_DEVICE.keys():
-                valid = True
-            elif interactive:
-                self.logger.error(
-                    _(
-                        'The provided boot type is not supported. '
-                        'Please try again'
-                    )
-                )
-            else:
-                raise RuntimeError(
-                    _(
-                        'The provided boot type is not supported. '
-                        'Please try again'
-                    )
-                )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
@@ -201,14 +137,6 @@ class Plugin(plugin.PluginBase):
             subst['@VIDEO_DEVICE@'] = 'vga'
         else:
             subst['@VIDEO_DEVICE@'] = 'qxl'
-        if self.environment[
-            ohostedcons.VMEnv.BOOT
-        ] in self.BOOT_DEVICE.keys():
-            for key in self.BOOT_DEVICE.keys():
-                if key != self.environment[ohostedcons.VMEnv.BOOT]:
-                    subst[self.BOOT_DEVICE[key]] = ''
-                else:
-                    subst[self.BOOT_DEVICE[key]] = ',bootOrder:1'
 
         if self.environment[
             ohostedcons.VMEnv.CDROM

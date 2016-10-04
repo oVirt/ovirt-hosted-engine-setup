@@ -33,7 +33,6 @@ from otopi import util
 from ovirt_hosted_engine_ha.lib import util as ohautil
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
-from ovirt_hosted_engine_setup import check_liveliness
 from ovirt_hosted_engine_setup import mixins
 
 
@@ -150,37 +149,6 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
-        name=ohostedcons.Stages.VM_RUNNING,
-        after=(
-            ohostedcons.Stages.NET_FIREWALL_FIRST_STAGE_CONFIGURED,
-        ),
-        condition=lambda self: (
-            self.environment[ohostedcons.VMEnv.BOOT] != 'disk'
-        ),
-    )
-    def _boot_from_install_media(self):
-        os_installed = False
-        self._create_vm()
-        while not os_installed:
-            try:
-                os_installed = check_liveliness.manualSetupDispatcher(
-                    self,
-                    check_liveliness.MSD_OS_INSTALLED,
-                )
-            except socket.error as e:
-                self.logger.debug(
-                    'Error talking with VDSM (%s), reconnecting.' % str(e),
-                    exc_info=True
-                )
-                self.environment[
-                    ohostedcons.VDSMEnv.VDS_CLI
-                ] = ohautil.connect_vdsm_json_rpc(
-                    logger=self.logger,
-                    timeout=ohostedcons.Const.VDSCLI_SSL_TIMEOUT,
-                )
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_CLOSEUP,
         after=(
             ohostedcons.Stages.OS_INSTALLED,
         ),
@@ -188,10 +156,7 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
     )
     def _boot_from_hd(self):
         # Temporary attach cloud-init no-cloud iso if we have to
-        if (
-                self.environment[ohostedcons.VMEnv.BOOT] == 'disk' and
-                self.environment[ohostedcons.VMEnv.CDROM]
-        ):
+        if self.environment[ohostedcons.VMEnv.CDROM]:
             self.environment[
                 ohostedcons.VMEnv.SUBST
             ]['@CDROM@'] = self.environment[

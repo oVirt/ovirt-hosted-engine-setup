@@ -62,7 +62,7 @@
 ./src/plugins/gr-he-setup/vdsmd/cpu.py
 ./src/plugins/gr-he-setup/vdsmd/__init__.py
 ./src/plugins/gr-he-setup/vdsmd/vdsmconf.py
-./src/plugins/gr-he-setup/vm/boot_cdrom.py
+./src/plugins/gr-he-setup/vm/cdrom.py
 ./src/plugins/gr-he-setup/vm/configurevm.py
 ./src/plugins/gr-he-setup/vm/cpu.py
 ./src/plugins/gr-he-setup/vm/__init__.py

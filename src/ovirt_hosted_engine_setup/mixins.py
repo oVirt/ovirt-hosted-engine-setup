@@ -207,10 +207,6 @@ class VmOperations(object):
             'shared': 'false',
             'type': 'disk',
         }
-        if self.environment[
-            ohostedcons.VMEnv.SUBST
-        ]['@BOOT_CDROM@'] == ',bootOrder:1':
-            cdrom['bootOrder'] = '1'
         conf['devices'].append(cdrom)
         disk = {
             'index': '0',
@@ -235,11 +231,8 @@ class VmOperations(object):
             'shared': 'exclusive',
             'propagateErrors': 'off',
             'type': 'disk',
+            'bootOrder': '1',
         }
-        if self.environment[
-            ohostedcons.VMEnv.SUBST
-        ]['@BOOT_DISK@'] == ',bootOrder:1':
-            disk['bootOrder'] = '1'
         conf['devices'].append(disk)
         nic = {
             'nicModel': 'pv',
@@ -259,10 +252,6 @@ class VmOperations(object):
             'device': 'bridge',
             'type': 'interface',
         }
-        if self.environment[
-            ohostedcons.VMEnv.SUBST
-        ]['@BOOT_PXE@'] == ',bootOrder:1':
-            nic['bootOrder'] = '1'
         conf['devices'].append(nic)
         display_type = self.environment[
             ohostedcons.VMEnv.CONSOLE_TYPE

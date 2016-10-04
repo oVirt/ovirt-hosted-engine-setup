@@ -128,17 +128,12 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         after=(
             ohostedcons.Stages.DIALOG_TITLES_S_VM,
-            ohostedcons.Stages.CONFIG_BOOT_DEVICE,
             ohostedcons.Stages.CONFIG_CLOUD_INIT_OPTIONS,
         ),
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_VM,
         ),
         condition=lambda self: (
-            (
-                self.environment[ohostedcons.VMEnv.BOOT] == 'cdrom' or
-                self.environment[ohostedcons.VMEnv.BOOT] == 'disk'
-            ) and
             not self.environment[
                 ohostedcons.CloudInit.GENERATE_ISO
             ] in (
@@ -148,32 +143,23 @@ class Plugin(plugin.PluginBase):
         )
     )
     def _customization(self):
-        mode = 'installation'
-        additional = ''
-        if self.environment[ohostedcons.VMEnv.BOOT] == 'disk':
-            additional = _(
-                'You can configure an optional ISO image '
-                'for cloud-init configuration\n'
-            )
-            mode = 'configuration'
         interactive = self.environment[
             ohostedcons.VMEnv.CDROM
         ] is None
         if not interactive:
             if (
-                    self.environment[ohostedcons.VMEnv.CDROM] and
-                    not self._check_iso_readable(
-                        self.environment[ohostedcons.VMEnv.CDROM]
-                    )
+                self.environment[ohostedcons.VMEnv.CDROM] and
+                not self._check_iso_readable(
+                    self.environment[ohostedcons.VMEnv.CDROM]
+                )
             ):
                 raise RuntimeError(
                     _(
-                        'The specified {mode} media is not valid or '
+                        'The specified configuration media is not valid or '
                         'not readable. '
                         'Please ensure that {filepath} is valid and '
                         'could be read by qemu user or kvm group'
                     ).format(
-                        mode=mode,
                         filepath=self.environment[
                             ohostedcons.VMEnv.CDROM
                         ]
@@ -187,12 +173,10 @@ class Plugin(plugin.PluginBase):
                 ] = self.dialog.queryString(
                     name='OVEHOSTED_VMENV_CDROM',
                     note=_(
-                        '{additional}'
-                        'Please specify path to {mode} media '
+                        'You can configure an optional ISO image '
+                        'for cloud-init configuration.\n'
+                        'Please specify path to configuration media '
                         'you would like to use [@DEFAULT@]: '
-                    ).format(
-                        additional=additional,
-                        mode=mode,
                     ),
                     prompt=True,
                     caseSensitive=True,
@@ -200,14 +184,13 @@ class Plugin(plugin.PluginBase):
                         ohostedcons.VMEnv.CDROM
                     ]),
                 )
-                if mode == 'configuration':
-                    if self.environment[
+                if self.environment[
+                    ohostedcons.VMEnv.CDROM
+                ] == 'None':
+                    self.environment[
                         ohostedcons.VMEnv.CDROM
-                    ] == 'None':
-                        self.environment[
-                            ohostedcons.VMEnv.CDROM
-                        ] = False
-                        valid = True
+                    ] = False
+                    valid = True
                 if not valid:
                     valid = self._check_iso_readable(
                         self.environment[ohostedcons.VMEnv.CDROM]

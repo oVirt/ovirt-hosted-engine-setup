@@ -26,7 +26,7 @@ MAINTAINERCLEANFILES = \
 mydir=$(ovirthostedengineplugindir)/gr-he-setup/vm
 dist_my_PYTHON = \
 	__init__.py \
-	boot_cdrom.py \
+	cdrom.py \
 	cpu.py \
 	configurevm.py \
 	mac.py \

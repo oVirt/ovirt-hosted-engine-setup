@@ -420,7 +420,6 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.DIALOG_TITLES_E_VM,
         ),
         condition=lambda self: (
-            self.environment[ohostedcons.VMEnv.BOOT] == 'disk' and
             self.environment[ohostedcons.VMEnv.CDROM] is None and
             not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
         ),

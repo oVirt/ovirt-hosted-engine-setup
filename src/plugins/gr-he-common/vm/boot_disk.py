@@ -268,15 +268,15 @@ class Plugin(plugin.PluginBase):
                 self.logger.error('error parsing: ' + cf)
         self.logger.debug('available appliances: ' + str(appliances))
         if not appliances:
-            self.logger.info(_(
-                'No engine appliance image is available on your system.'
-            ))
+            msg = _('No engine appliance image is available on your system.')
+            self.logger.error(msg)
             self.dialog.note(_(
-                'Using an oVirt engine appliance could greatly speed-up '
-                'ovirt hosted-engine deploy.\n'
+                'The oVirt engine appliance is now required to deploy '
+                'hosted-engine.\n'
                 'You could get oVirt engine appliance installing '
                 'ovirt-engine-appliance rpm.'
             ))
+            raise RuntimeError(msg)
         return appliances
 
     def _file_hash(self, filename):
@@ -518,14 +518,12 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         after=(
             ohostedcons.Stages.DIALOG_TITLES_S_VM,
-            ohostedcons.Stages.CONFIG_BOOT_DEVICE,
             ohostedcons.Stages.UPGRADE_CHECK_SPM_HOST,
         ),
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_VM,
         ),
         condition=lambda self: (
-            self.environment[ohostedcons.VMEnv.BOOT] == 'disk' and
             not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
         ),
         name=ohostedcons.Stages.CONFIG_OVF_IMPORT,
@@ -696,7 +694,6 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.UPGRADE_DISK_EXTENDED,
         ),
         condition=lambda self: (
-            self.environment[ohostedcons.VMEnv.BOOT] == 'disk' and
             not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
         ),
     )
