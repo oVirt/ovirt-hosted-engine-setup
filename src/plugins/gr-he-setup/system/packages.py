@@ -46,7 +46,7 @@ class Plugin(plugin.PluginBase):
         self.logger.info(
             _(
                 'Please abort the setup and install vdsm-gluster, '
-                'gluster-server >= {minversion} and restart vdsmd service '
+                'glusterfs-server >= {minversion} and restart vdsmd service '
                 'in order to gain Hyper Converged setup support.'
             ).format(
                 minversion=self.environment[
