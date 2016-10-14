@@ -847,7 +847,6 @@ class Plugin(plugin.PluginBase):
             ohostedcons.StorageEnv.SP_UUID,
             str(uuid.uuid4())
         )
-        # TODO: provide a way to let the user customize it validating the input
         self.environment.setdefault(
             ohostedcons.StorageEnv.MNT_OPTIONS,
             None

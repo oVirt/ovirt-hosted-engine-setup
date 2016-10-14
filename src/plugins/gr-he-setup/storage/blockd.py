@@ -376,10 +376,6 @@ class Plugin(plugin.PluginBase):
                     'id': ohostedcons.Const.BLANK_UUID,
                 }
             ]
-            if self.environment[ohostedcons.StorageEnv.MNT_OPTIONS]:
-                connectionParams[0]['mnt_options'] = self.environment[
-                    ohostedcons.StorageEnv.MNT_OPTIONS
-                ]
             res = self.cli.connectStorageServer(
                 storagepoolID=ohostedcons.Const.BLANK_UUID,
                 domainType=ohostedcons.VDSMConstants.ISCSI_DOMAIN,
@@ -567,6 +563,14 @@ class Plugin(plugin.PluginBase):
         lunGUID = None
         valid_lun = False
         target = None
+        if self.environment[ohostedcons.StorageEnv.MNT_OPTIONS]:
+            msg = _(
+                'Custom mount options are not supported on {type} devices.'
+            ).format(
+                type=self.domainType,
+            )
+            self.logger.error(msg)
+            raise RuntimeError(msg)
         if self.domainType == ohostedcons.DomainTypes.ISCSI:
             valid_access = False
             address = None
@@ -608,6 +612,7 @@ class Plugin(plugin.PluginBase):
                 )
             else:
                 target = None
+            self._customize_mnt_options()
             lunGUID = self._customize_lun(self.domainType, target)
             if lunGUID is not None:
                 try:

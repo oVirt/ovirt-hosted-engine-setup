@@ -51,7 +51,7 @@ class Plugin(plugin.PluginBase):
         super(Plugin, self).__init__(context=context)
         self._checker = ohosteddomains.DomainChecker()
 
-    def _mount(self, path, connection, domain_type):
+    def _mount(self, path, connection, domain_type, mnt_options):
         fstype = ''
         opts = []
 
@@ -71,6 +71,11 @@ class Plugin(plugin.PluginBase):
             self.command.get('mount'),
             '-t%s' % fstype,
         )
+
+        if mnt_options:
+            opts.extend(
+                mnt_options.split(',')
+            )
 
         if opts:
             mount_cmd += (
@@ -293,14 +298,20 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
             ] = path
 
-    def _validateDomain(self, connection, domain_type, check_space):
+    def _validateDomain(
+        self,
+        connection,
+        domain_type,
+        check_space,
+        mnt_options,
+    ):
         if self.environment[
             ohostedcons.StorageEnv.DOMAIN_TYPE
         ] == ohostedcons.DomainTypes.GLUSTERFS:
             self._check_volume_properties(connection)
         path = tempfile.mkdtemp()
         try:
-            self._mount(path, connection, domain_type)
+            self._mount(path, connection, domain_type, mnt_options)
             self._checker.check_valid_path(path)
             self._check_domain_rights(path)
             self._checker.check_base_writable(path)
@@ -373,6 +384,22 @@ class Plugin(plugin.PluginBase):
                     prompt=True,
                     caseSensitive=True,
                 )
+                mnt_options = self.environment[
+                    ohostedcons.StorageEnv.MNT_OPTIONS
+                ]
+                self.environment[
+                    ohostedcons.StorageEnv.MNT_OPTIONS
+                ] = self.dialog.queryString(
+                    name='OVEHOSTED_STORAGE_DOMAIN_MNT_OPTIONS',
+                    note=_(
+                        'If needed, specify additional mount options for '
+                        'the connection to the hosted-engine storage domain '
+                        '[@DEFAULT@]: '
+                    ),
+                    prompt=True,
+                    caseSensitive=True,
+                    default=mnt_options if mnt_options else '',
+                )
             try:
                 self._fix_path_syntax()
                 self._validateDomain(
@@ -383,6 +410,9 @@ class Plugin(plugin.PluginBase):
                         ohostedcons.StorageEnv.DOMAIN_TYPE
                     ],
                     check_space=False,
+                    mnt_options=self.environment[
+                        ohostedcons.StorageEnv.MNT_OPTIONS
+                    ],
                 )
                 validDomain = True
             except (ValueError, RuntimeError) as e:
@@ -460,6 +490,9 @@ class Plugin(plugin.PluginBase):
                     ohostedcons.StorageEnv.DOMAIN_TYPE
                 ],
                 check_space=True,
+                mnt_options=self.environment[
+                    ohostedcons.StorageEnv.MNT_OPTIONS
+                ],
             )
         except ohosteddomains.InsufficientSpaceError as e:
             self.logger.debug('exception', exc_info=True)
