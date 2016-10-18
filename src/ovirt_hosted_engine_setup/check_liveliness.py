@@ -24,7 +24,8 @@ import contextlib
 import gettext
 import re
 import socket
-import urllib2
+from six.moves.urllib.error import URLError
+from six.moves.urllib.request import urlopen
 
 from otopi import base
 from otopi import util
@@ -168,7 +169,7 @@ class LivelinessChecker(base.Base):
         isUp = False
         try:
             with contextlib.closing(
-                urllib2.urlopen(
+                urlopen(
                     url=health_url,
                     timeout=self.TIMEOUT,
                 )
@@ -182,7 +183,7 @@ class LivelinessChecker(base.Base):
                             status=content,
                         )
                     )
-        except (urllib2.URLError, socket.timeout):
+        except (URLError, socket.timeout):
             self.logger.info(_('Engine is still unreachable'))
         return isUp
 

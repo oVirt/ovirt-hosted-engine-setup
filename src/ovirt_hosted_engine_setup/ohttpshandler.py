@@ -54,12 +54,8 @@ class OVHTTPSHandler(base.Base):
                 ca_certs=ca_certs,
             )
         )
-        if sys.version_info[0] < 3:
-            from urllib2 import HTTPSHandler
-            from urllib2 import build_opener
-        else:
-            from urllib.request import HTTPSHandler
-            from urllib.request import build_opener
+        from six.moves.urllib.request import HTTPSHandler
+        from six.moves.urllib.request import build_opener
 
         if getattr(ssl, 'create_default_context', None):
             # new in python 3.4/2.7.9 (backported by Redhat to 2.7.5)

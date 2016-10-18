@@ -26,10 +26,10 @@ import gettext
 import os
 import re
 import ssl
-import urllib2
 
 
 from M2Crypto import X509
+from six.moves.urllib.error import URLError
 
 from otopi import base
 
@@ -138,7 +138,7 @@ class PKIHelper(base.Base):
             )
 
             return True
-        except urllib2.URLError as ex:
+        except URLError as ex:
             self.logger.debug(ex)
             if isinstance(ex.args[0], ssl.SSLError):
                 return False
