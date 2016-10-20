@@ -24,6 +24,7 @@ gateway configuration plugin.
 
 
 import gettext
+import os
 import socket
 import struct
 
@@ -80,6 +81,16 @@ class Plugin(plugin.PluginBase):
     )
     def _setup(self):
         self.command.detect('ping')
+        if (
+            os.environ.get('proxy') or
+            os.environ.get('http_proxy') or
+            os.environ.get('https_proxy')
+        ):
+            self.logger.warning(_(
+                'It seems that this host is configured to use a proxy, '
+                'please ensure that this host will be able to reach the '
+                'engine VM trough that proxy or add a specific exception.'
+            ))
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
