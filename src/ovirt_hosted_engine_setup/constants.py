@@ -126,6 +126,8 @@ class FileLocations(object):
     DATADIR = '/usr/share'
     LIBEXECDIR = '/usr/libexec'
     SD_MOUNT_PARENT_DIR = '/rhev/data-center/mnt'
+    LOCALTIME = '/etc/localtime'
+    TZ_PARENT_DIR = '/usr/share/zoneinfo'
     OVIRT_HOSTED_ENGINE = 'ovirt-hosted-engine'
     OVIRT_HOSTED_ENGINE_HA = 'ovirt-hosted-engine-ha'
     OVIRT_HOSTED_ENGINE_SETUP = 'ovirt-hosted-engine-setup'
@@ -855,6 +857,14 @@ class CloudInit(object):
     )
     def VM_ETC_HOSTS(self):
         return 'OVEHOSTED_VM/cloudinitVMETCHOSTS'
+
+    @ohostedattrs(
+        answerfile=True,
+        summary=True,
+        description=_('Engine VM timezone'),
+    )
+    def VM_TZ(self):
+        return 'OVEHOSTED_VM/cloudinitVMTZ'
 
 
 @util.export

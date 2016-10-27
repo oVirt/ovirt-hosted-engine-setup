@@ -348,6 +348,21 @@ class Plugin(plugin.PluginBase):
             ] = dns_clean
             valid = True
 
+    def _get_host_tz(self):
+        tz = ''
+        try:
+            tz = os.path.relpath(
+                os.path.realpath(ohostedcons.FileLocations.LOCALTIME),
+                ohostedcons.FileLocations.TZ_PARENT_DIR
+            )
+        except OSError:
+            pass
+        if not tz:
+            self.logger.error(
+                _('Unable to detect host timezone.')
+            )
+        return tz
+
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
     )
@@ -394,6 +409,10 @@ class Plugin(plugin.PluginBase):
         self.environment.setdefault(
             ohostedcons.CloudInit.VM_ETC_HOSTS,
             None
+        )
+        self.environment.setdefault(
+            ohostedcons.CloudInit.VM_TZ,
+            self._get_host_tz()
         )
         self.environment.setdefault(
             ohostedcons.VMEnv.AUTOMATE_VM_SHUTDOWN,
@@ -652,8 +671,6 @@ class Plugin(plugin.PluginBase):
                 'via cloud-init'
             ))
 
-    # TODO: ask about synchronizing with the host timezone
-
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         after=(
@@ -731,6 +748,11 @@ class Plugin(plugin.PluginBase):
                     ohostedcons.CloudInit.ROOTPWD
                 ],
             )
+
+        if self.environment[ohostedcons.CloudInit.VM_TZ]:
+            user_data += (
+                'timezone: {tz}\n'
+            ).format(tz=self.environment[ohostedcons.CloudInit.VM_TZ])
 
         if (
             self.environment[
