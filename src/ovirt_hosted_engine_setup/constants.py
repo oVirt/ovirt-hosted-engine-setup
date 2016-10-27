@@ -825,6 +825,18 @@ class CloudInit(object):
     @ohostedattrs(
         answerfile=True,
     )
+    def ROOT_SSH_ACCESS(self):
+        return 'OVEHOSTED_VM/rootSshAccess'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def ROOT_SSH_PUBKEY(self):
+        return 'OVEHOSTED_VM/rootSshPubkey'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
     def INSTANCE_HOSTNAME(self):
         return 'OVEHOSTED_VM/cloudinitInstanceHostName'
 

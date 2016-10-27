@@ -37,6 +37,7 @@ from otopi import plugin
 from otopi import util
 
 from ovirt_setup_lib import hostname as osetuphostname
+from ovirt_setup_lib import dialog
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import util as ohostedutil
@@ -387,6 +388,14 @@ class Plugin(plugin.PluginBase):
             ohostedcons.CloudInit.ROOTPWD
         )
         self.environment.setdefault(
+            ohostedcons.CloudInit.ROOT_SSH_PUBKEY,
+            None
+        )
+        self.environment.setdefault(
+            ohostedcons.CloudInit.ROOT_SSH_ACCESS,
+            None
+        )
+        self.environment.setdefault(
             ohostedcons.CloudInit.INSTANCE_HOSTNAME,
             None
         )
@@ -424,6 +433,7 @@ class Plugin(plugin.PluginBase):
     )
     def _setup(self):
         self.command.detect('genisoimage')
+        self.command.detect('ssh-keygen')
         self._hostname_helper = osetuphostname.Hostname(plugin=self)
         self.command.detect('ping')
 
@@ -653,7 +663,76 @@ class Plugin(plugin.PluginBase):
                         self.logger.error(_('Passwords do not match'))
                 else:
                     self.environment[ohostedcons.CloudInit.ROOTPWD] = ''
-                    self.logger.info(_('Skipping appliance root password'))
+                    self.logger.warning(_('Skipping appliance root password'))
+
+            while self.environment[
+                ohostedcons.CloudInit.ROOT_SSH_PUBKEY
+            ] is None:
+                pubkey = self.dialog.queryString(
+                    name='CI_ROOT_SSH_PUBKEY',
+                    note=_(
+                        "Enter ssh public key for the root user that "
+                        'will be used for the engine appliance '
+                        '(leave it empty to skip): '
+                    ),
+                    prompt=True,
+                    hidden=False,
+                    default='',
+                ).strip()
+                if pubkey:
+                    fd, pkfilename = tempfile.mkstemp(suffix='pub')
+                    pkfile = os.fdopen(fd, 'w')
+                    try:
+                        pkfile.write(pubkey)
+                    finally:
+                        pkfile.close()
+                    rc, stdout, stderr = self.execute(
+                        (
+                            self.command.get('ssh-keygen'),
+                            '-lf',
+                            pkfilename,
+                        ),
+                        raiseOnError=False,
+                    )
+                    os.unlink(pkfilename)
+                    if rc != 0:
+                        self.logger.error(_(
+                            'The ssh key is not valid.'
+                        ))
+                    else:
+                        self.environment[
+                            ohostedcons.CloudInit.ROOT_SSH_PUBKEY
+                        ] = pubkey
+                else:
+                    self.environment[
+                        ohostedcons.CloudInit.ROOT_SSH_PUBKEY
+                    ] = ''
+                    self.logger.warning(_(
+                        'Skipping appliance root ssh public key'
+                    ))
+
+            vv_root_a = (
+                'yes',
+                'no',
+                'without-password',
+            )
+            dialog.queryEnvKey(
+                dialog=self.dialog,
+                logger=self.logger,
+                env=self.environment,
+                key=ohostedcons.CloudInit.ROOT_SSH_ACCESS,
+                name='CI_ROOT_SSH_ACCESS',
+                note=_(
+                    'Do you want to enable ssh access for the root user '
+                    '(@VALUES@) [@DEFAULT@]: '
+                ),
+                prompt=True,
+                hidden=False,
+                default=vv_root_a[0],
+                store=True,
+                validValues=vv_root_a,
+                caseSensitive=False,
+            )
 
         if (
             self.environment[
@@ -735,6 +814,23 @@ class Plugin(plugin.PluginBase):
             '# vim: syntax=yaml\n'
         )
         f_user_data = os.path.join(self._directory_name, 'user-data')
+
+        if (
+            self.environment[ohostedcons.CloudInit.ROOT_SSH_PUBKEY] or
+            self.environment[ohostedcons.CloudInit.ROOTPWD]
+        ):
+            user_data += (
+                'disable_root: false\n'
+            )
+
+        if self.environment[ohostedcons.CloudInit.ROOT_SSH_PUBKEY]:
+            user_data += (
+                'ssh_authorized_keys:\n'
+                ' - {pubkey}\n'
+            ).format(
+                pubkey=self.environment[ohostedcons.CloudInit.ROOT_SSH_PUBKEY],
+            )
+
         if self.environment[ohostedcons.CloudInit.ROOTPWD]:
             # TODO: use salted hashed password
             user_data += (
@@ -754,6 +850,8 @@ class Plugin(plugin.PluginBase):
                 'timezone: {tz}\n'
             ).format(tz=self.environment[ohostedcons.CloudInit.VM_TZ])
 
+        bootcmd = ''
+
         if (
             self.environment[
                 ohostedcons.CloudInit.VM_ETC_HOSTS
@@ -762,14 +860,11 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.CloudInit.VM_STATIC_CIDR
             ]
         ):
-            user_data += (
-                'bootcmd:\n'
-            )
 
             if self.environment[
                 ohostedcons.CloudInit.VM_ETC_HOSTS
             ]:
-                user_data += (
+                bootcmd += (
                     ' - echo "{myip} {myfqdn}" >> /etc/hosts\n'
                 ).format(
                     myip=self._getMyIPAddress().ip,
@@ -785,7 +880,7 @@ class Plugin(plugin.PluginBase):
                     ip = netaddr.IPNetwork(
                         self.environment[ohostedcons.CloudInit.VM_STATIC_CIDR]
                     )
-                    user_data += (
+                    bootcmd += (
                         ' - echo "{ip} {fqdn}" >> /etc/hosts\n'
                     ).format(
                         ip=ip.ip,
@@ -817,7 +912,7 @@ class Plugin(plugin.PluginBase):
                     ]
                     dn = 1
                     for dns in dnslist:
-                        user_data += ' - echo "DNS{dn}={dns}" >> {f}\n'.format(
+                        bootcmd += ' - echo "DNS{dn}={dns}" >> {f}\n'.format(
                             dn=dn,
                             dns=dns,
                             f=fname,
@@ -826,16 +921,35 @@ class Plugin(plugin.PluginBase):
                     if self.environment[
                         ohostedcons.CloudInit.INSTANCE_DOMAINNAME
                     ]:
-                        user_data += ' - echo "DOMAIN={d}" >> {f}\n'.format(
+                        bootcmd += ' - echo "DOMAIN={d}" >> {f}\n'.format(
                             d=self.environment[
                                 ohostedcons.CloudInit.INSTANCE_DOMAINNAME
                             ],
                             f=fname,
                         )
-                user_data += (
+                bootcmd += (
                     ' - ifdown {iname}\n'
                     ' - ifup {iname}\n'
                 ).format(iname=_interface_name)
+
+        if bootcmd:
+            user_data += 'bootcmd:\n%s' % bootcmd
+
+        user_data += (
+            ' - if grep -Gq "^\s*PermitRootLogin" /etc/ssh/sshd_config;'
+            ' then sed -re'
+            ' "s/^\s*(PermitRootLogin)\s+(yes|no|without-password)/'
+            ' \\1 {root_ssh}/" -i.$(date -u +%Y%m%d%H%M%S)'
+            ' /etc/ssh/sshd_config;'
+            ' else'
+            ' echo "PermitRootLogin {root_ssh}" >> /etc/ssh/sshd_config;'
+            ' fi\n'
+            ' - systemctl restart sshd\n'
+        ).format(
+            root_ssh=self.environment[
+                ohostedcons.CloudInit.ROOT_SSH_ACCESS
+            ].lower()
+        )
 
         if self.environment[ohostedcons.CloudInit.EXECUTE_ESETUP]:
             org = 'Test'
