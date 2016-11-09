@@ -350,18 +350,27 @@ class Plugin(plugin.PluginBase):
             valid = True
 
     def _get_host_tz(self):
+        self.logger.info(_('Detecting host timezone.'))
         tz = ''
         try:
-            tz = os.path.relpath(
-                os.path.realpath(ohostedcons.FileLocations.LOCALTIME),
-                ohostedcons.FileLocations.TZ_PARENT_DIR
-            )
+            if os.path.islink(ohostedcons.FileLocations.LOCALTIME):
+                tz = os.path.relpath(
+                    os.path.realpath(ohostedcons.FileLocations.LOCALTIME),
+                    ohostedcons.FileLocations.TZ_PARENT_DIR
+                )
+            else:
+                self.logger.warning(_(
+                    '{fname} is not a symlink to a timezone definition.'
+                ).format(
+                    fname=ohostedcons.FileLocations.LOCALTIME,
+                ))
         except OSError:
             pass
         if not tz:
-            self.logger.error(
-                _('Unable to detect host timezone.')
-            )
+            self.logger.warning(_(
+                'Unable to detect host timezone. '
+                'Engine VM timezone will be set to UTC. '
+            ))
         return tz
 
     @plugin.event(
@@ -421,7 +430,7 @@ class Plugin(plugin.PluginBase):
         )
         self.environment.setdefault(
             ohostedcons.CloudInit.VM_TZ,
-            self._get_host_tz()
+            None
         )
         self.environment.setdefault(
             ohostedcons.VMEnv.AUTOMATE_VM_SHUTDOWN,
@@ -454,6 +463,11 @@ class Plugin(plugin.PluginBase):
         name=ohostedcons.Stages.CONFIG_CLOUD_INIT_OPTIONS,
     )
     def _customization(self):
+        if self.environment[
+            ohostedcons.CloudInit.VM_TZ
+        ] is None:
+            self.environment[ohostedcons.CloudInit.VM_TZ] = self._get_host_tz()
+
         if self.environment[
             ohostedcons.CloudInit.GENERATE_ISO
         ] is None:
