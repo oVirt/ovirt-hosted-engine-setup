@@ -239,7 +239,6 @@ class VmOperations(object):
             'macAddr': self.environment[ohostedcons.VMEnv.MAC_ADDR],
             'linkActive': 'true',
             'network': self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME],
-            'filter': 'vdsm-no-mac-spoofing',
             'specParams': {},
             'deviceId': self.environment[ohostedcons.VMEnv.NIC_UUID],
             'address': {
