@@ -1090,6 +1090,7 @@ class FirstHostEnv(object):
 @util.codegen
 class Upgrade(object):
     BACKUP_FILE = 'OVEHOSTED_UPGRADE/backupFileName'
+    DST_BACKUP_FILE = 'OVEHOSTED_UPGRADE/dstBackupFileName'
     RESTORE_DWH = 'OVEHOSTED_UPGRADE/restoreDwh'
     RESTORE_REPORTS = 'OVEHOSTED_UPGRADE/restoreReports'
     CONFIRM_UPGRADE_SUCCESS = 'OVEHOSTED_UPGRADE/confirmUpgradeSuccess'

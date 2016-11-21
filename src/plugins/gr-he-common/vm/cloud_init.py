@@ -850,7 +850,7 @@ class Plugin(plugin.PluginBase):
                     ' fi\n'
                 ).format(
                     backup_file=self.environment[
-                        ohostedcons.Upgrade.BACKUP_FILE
+                        ohostedcons.Upgrade.DST_BACKUP_FILE
                     ],
                     p_dwh_db='--provision-dwh-db' if self.environment[
                         ohostedcons.Upgrade.RESTORE_DWH

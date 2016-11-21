@@ -369,11 +369,19 @@ class Plugin(plugin.PluginBase):
                     prompt=True,
                     caseSensitive=True,
                 )
+            backup_file_path = self.resolveFile(backup_file_path)
             valid = self._validate_backup_file(backup_file_path)
-            if valid and interactive:
+            if valid:
                 self.environment[
                     ohostedcons.Upgrade.BACKUP_FILE
                 ] = backup_file_path
+                if not self.environment[ohostedcons.Upgrade.DST_BACKUP_FILE]:
+                    self.environment[
+                        ohostedcons.Upgrade.DST_BACKUP_FILE
+                    ] = os.path.join(
+                        '/root/',
+                        os.path.basename(backup_file_path)
+                    )
             if not valid and not interactive:
                 raise RuntimeError(_('Invalid backup file'))
 
