@@ -164,7 +164,7 @@ class ImageTransaction(transaction.TransactionElement):
         self._parent.logger.debug('disk mounted')
         g.upload(
             self._backup_src,
-            os.path.join('/root/', os.path.basename(self._backup_src))
+            self._parent.environment[ohostedcons.Upgrade.DST_BACKUP_FILE]
         )
         self._parent.logger.debug('backup file uploaded')
         g.umount('/')
@@ -476,6 +476,10 @@ class Plugin(plugin.PluginBase):
         )
         self.environment.setdefault(
             ohostedcons.Upgrade.BACKUP_FILE,
+            None
+        )
+        self.environment.setdefault(
+            ohostedcons.Upgrade.DST_BACKUP_FILE,
             None
         )
         self.environment.setdefault(
