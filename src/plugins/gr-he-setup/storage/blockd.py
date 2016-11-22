@@ -612,7 +612,6 @@ class Plugin(plugin.PluginBase):
                 )
             else:
                 target = None
-            self._customize_mnt_options()
             lunGUID = self._customize_lun(self.domainType, target)
             if lunGUID is not None:
                 try:
