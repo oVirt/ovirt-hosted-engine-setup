@@ -258,7 +258,7 @@ class Plugin(plugin.PluginBase):
     )
     def _validate_disks(self):
         cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        size = cli.getVolumeSize(
+        size = cli.getVolumeInfo(
             storagepoolID=ohostedcons.Const.BLANK_UUID,
             storagedomainID=self.environment[
                 ohostedcons.StorageEnv.SD_UUID
@@ -273,9 +273,9 @@ class Plugin(plugin.PluginBase):
         self.logger.debug(size)
         if size['status']['code']:
             raise RuntimeError(size['status']['message'])
-        destination_size = int(size['apparentsize'])
+        destination_size = int(size['capacity'])
 
-        size = cli.getVolumeSize(
+        size = cli.getVolumeInfo(
             storagepoolID=ohostedcons.Const.BLANK_UUID,
             storagedomainID=self.environment[
                 ohostedcons.StorageEnv.SD_UUID
