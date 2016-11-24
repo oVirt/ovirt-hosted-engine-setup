@@ -26,6 +26,7 @@ import socket
 import sys
 
 from ovirt_hosted_engine_ha.client import client
+from ovirt_hosted_engine_ha.env import config
 
 
 def _(m):
@@ -50,6 +51,21 @@ class Maintenance(object):
             return False
         m_local = (mode == 'local')
         m_global = (mode == 'global')
+        if m_local:
+            # Check that we have a host where to migrate VM to.
+            _host_id = int(config.Config().get(config.ENGINE, config.HOST_ID))
+            candidates = ha_cli.get_all_host_stats()
+            candidates = [h for h in candidates
+                          if candidates[h]["score"] > 0 and
+                          candidates[h]["host-id"] != _host_id and
+                          candidates[h]["live-data"]]
+            if not candidates:
+                sys.stderr.write(
+                    _("Unable to enter local maintenance mode: "
+                      "there are no available hosts capable "
+                      "of running the engine VM.\n")
+                )
+                return False
         try:
             ha_cli.set_maintenance_mode(
                 mode=ha_cli.MaintenanceMode.LOCAL,
