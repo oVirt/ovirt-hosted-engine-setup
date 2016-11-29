@@ -239,6 +239,7 @@ class Plugin(plugin.PluginBase):
         self._install_appliance = False
 
     def _detect_appliances(self):
+        self._appliances = []
         config = configparser.ConfigParser()
         config.optionxform = str
         confdir = os.path.join(
@@ -541,6 +542,7 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_LATE_SETUP,
+        condition=lambda self: self._install_appliance,
     )
     def _late_setup(self):
         self._detect_appliances()
