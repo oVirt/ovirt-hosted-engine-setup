@@ -75,9 +75,11 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
+        name=ohostedcons.Stages.CUSTOMIZATION_CPU_NUMBER,
         after=(
             ohostedcons.Stages.DIALOG_TITLES_S_VM,
             ohostedcons.Stages.CONFIG_OVF_IMPORT,
+            ohostedcons.Stages.CUSTOMIZATION_CPU_MODEL,
         ),
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_VM,

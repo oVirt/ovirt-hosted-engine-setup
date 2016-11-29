@@ -162,6 +162,7 @@ class Plugin(plugin.PluginBase):
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_VM,
         ),
+        name=ohostedcons.Stages.CUSTOMIZATION_CPU_MODEL,
     )
     def _customization(self):
         cpu, compatible = self._getCompatibleCpuModels()

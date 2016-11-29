@@ -62,32 +62,10 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         name=ohostedcons.Stages.DIALOG_TITLES_E_STORAGE,
         before=(
-            ohostedcons.Stages.DIALOG_TITLES_S_SYSTEM,
-        ),
-    )
-    def _storage_end(self):
-        pass
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_CUSTOMIZATION,
-        name=ohostedcons.Stages.DIALOG_TITLES_S_SYSTEM,
-        before=(
-            ohostedcons.Stages.DIALOG_TITLES_E_SYSTEM,
-        ),
-    )
-    def _system_start(self):
-        self._title(
-            text=_('SYSTEM CONFIGURATION'),
-        )
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_CUSTOMIZATION,
-        name=ohostedcons.Stages.DIALOG_TITLES_E_SYSTEM,
-        before=(
             ohostedcons.Stages.DIALOG_TITLES_S_NETWORK,
         ),
     )
-    def _system_end(self):
+    def _storage_end(self):
         pass
 
     @plugin.event(
@@ -99,7 +77,7 @@ class Plugin(plugin.PluginBase):
     )
     def _network_start(self):
         self._title(
-            text=_('NETWORK CONFIGURATION'),
+            text=_('HOST NETWORK CONFIGURATION'),
         )
 
     @plugin.event(

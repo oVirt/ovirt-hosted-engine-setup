@@ -59,10 +59,12 @@ class Plugin(plugin.PluginBase):
         after=(
             ohostedcons.Stages.CONFIG_OVF_IMPORT,
             ohostedcons.Stages.DIALOG_TITLES_S_VM,
+            ohostedcons.Stages.CUSTOMIZATION_CPU_NUMBER,
         ),
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_VM,
         ),
+        name=ohostedcons.Stages.CUSTOMIZATION_MAC_ADDRESS,
     )
     def _customization(self):
         interactive = self.environment[

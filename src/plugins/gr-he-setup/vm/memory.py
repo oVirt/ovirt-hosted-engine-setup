@@ -78,6 +78,8 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.DIALOG_TITLES_S_VM,
         ),
         before=(
+            ohostedcons.Stages.CUSTOMIZATION_CPU_MODEL,
+            ohostedcons.Stages.CUSTOMIZATION_MAC_ADDRESS,
             ohostedcons.Stages.DIALOG_TITLES_E_VM,
         ),
     )

@@ -549,6 +549,34 @@ class Plugin(plugin.PluginBase):
                         ohostedcons.CloudInit.INSTANCE_HOSTNAME
                     ] = False
 
+            if (
+                self.environment[
+                    ohostedcons.CloudInit.INSTANCE_HOSTNAME
+                ] and
+                self.environment[
+                    ohostedcons.CloudInit.INSTANCE_DOMAINNAME
+                ] is None
+            ):
+                default_domain = ''
+                if '.' in self.environment[
+                    ohostedcons.CloudInit.INSTANCE_HOSTNAME
+                ]:
+                    default_domain = self.environment[
+                        ohostedcons.CloudInit.INSTANCE_HOSTNAME
+                    ].split('.', 1)[1]
+                self.environment[
+                    ohostedcons.CloudInit.INSTANCE_DOMAINNAME
+                ] = self.dialog.queryString(
+                    name='CI_INSTANCE_DOMAINNAME',
+                    note=_(
+                        'Please provide the domain name you would like to'
+                        'use for the engine appliance.\n'
+                        'Engine VM domain: [@DEFAULT@]'
+                    ),
+                    prompt=True,
+                    default=default_domain,
+                )
+
             if not self.environment[
                 ohostedcons.CloudInit.EXECUTE_ESETUP
             ]:
@@ -595,34 +623,6 @@ class Plugin(plugin.PluginBase):
                 caseSensitive=False,
                 default=_('Yes')
             ) == _('Yes').lower()
-
-        if (
-            self.environment[
-                ohostedcons.CloudInit.INSTANCE_HOSTNAME
-            ] and
-            self.environment[
-                ohostedcons.CloudInit.INSTANCE_DOMAINNAME
-            ] is None
-        ):
-            default_domain = ''
-            if '.' in self.environment[
-                ohostedcons.CloudInit.INSTANCE_HOSTNAME
-            ]:
-                default_domain = self.environment[
-                    ohostedcons.CloudInit.INSTANCE_HOSTNAME
-                ].split('.', 1)[1]
-            self.environment[
-                ohostedcons.CloudInit.INSTANCE_DOMAINNAME
-            ] = self.dialog.queryString(
-                name='CI_INSTANCE_DOMAINNAME',
-                note=_(
-                    'Please provide the domain name you would like to use for '
-                    'the engine appliance.\n'
-                    'Engine VM domain: [@DEFAULT@]'
-                ),
-                prompt=True,
-                default=default_domain,
-            )
 
         if (
             self.environment[
@@ -769,6 +769,7 @@ class Plugin(plugin.PluginBase):
         after=(
             ohostedcons.Stages.DIALOG_TITLES_S_VM,
             ohostedcons.Stages.CONFIG_CLOUD_INIT_OPTIONS,
+            ohostedcons.Stages.CUSTOMIZATION_MAC_ADDRESS,
         ),
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_VM,

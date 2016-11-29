@@ -135,11 +135,11 @@ class Plugin(plugin.PluginBase):
         name=ohostedcons.Stages.REQUIRE_ANSWER_FILE,
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         after=(
-            ohostedcons.Stages.DIALOG_TITLES_S_SYSTEM,
+            ohostedcons.Stages.DIALOG_TITLES_S_STORAGE,
             ohostedcons.Stages.CONFIG_STORAGE_LATE,
         ),
         before=(
-            ohostedcons.Stages.DIALOG_TITLES_E_SYSTEM,
+            ohostedcons.Stages.DIALOG_TITLES_E_STORAGE,
         ),
         condition=lambda self: (
             self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE] or

@@ -318,7 +318,7 @@ class Plugin(plugin.PluginBase):
                     '{http://schemas.dmtf.org/ovf/envelope/1/}disk-alias'
                 ]
             except KeyError:
-                self.logger.warning(
+                self.logger.debug(
                     _(
                         'OVF does not contain a valid image description, '
                         'using default.'
