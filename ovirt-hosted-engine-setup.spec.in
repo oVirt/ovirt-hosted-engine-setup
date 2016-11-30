@@ -132,7 +132,8 @@ make %{?_smp_mflags} install DESTDIR="%{buildroot}"
 %dir %{_localstatedir}/lib/ovirt-hosted-engine-setup
 %dir %{_localstatedir}/lib/ovirt-hosted-engine-setup/answers
 %{_sbindir}/hosted-engine
-%{_sbindir}/%{name}
+%{_sbindir}/ovirt-hosted-engine-setup
+%{_sbindir}/ovirt-hosted-engine-cleanup
 %{python_sitelib}/ovirt_hosted_engine_setup/
 %{_datadir}/%{name}/
 %{_mandir}/man8/*
