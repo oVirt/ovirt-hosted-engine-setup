@@ -37,6 +37,7 @@ dist_scripts_DATA = \
 
 dist_scripts_SCRIPTS = \
 	ovirt-hosted-engine-setup \
+	ovirt-hosted-engine-cleanup \
 	$(NULL)
 
 CLEANFILES = \
@@ -52,9 +53,11 @@ install-data-local:
 	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/log/ovirt-hosted-engine-setup
 	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/lib/ovirt-hosted-engine-setup/answers
 
-install-exec-local: ovirt-hosted-engine-setup
+install-exec-local: $(dist_scripts_SCRIPTS)
 	$(MKDIR_P) $(DESTDIR)/$(sbindir)
 	$(LN_S) -f $(ovirthostedenginescriptsdir)/ovirt-hosted-engine-setup $(DESTDIR)/$(sbindir)/ovirt-hosted-engine-setup
+	$(LN_S) -f $(ovirthostedenginescriptsdir)/ovirt-hosted-engine-cleanup $(DESTDIR)/$(sbindir)/ovirt-hosted-engine-cleanup
 
 uninstall-local:
 	rm -f $(DESTDIR)/$(sbindir)/ovirt-hosted-engine-setup
+	rm -f $(DESTDIR)/$(sbindir)/ovirt-hosted-engine-cleanup

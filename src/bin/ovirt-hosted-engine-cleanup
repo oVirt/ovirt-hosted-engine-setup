@@ -1,0 +1,83 @@
+#!/bin/sh
+
+caution() {
+    if [ -z "${QUIET_MODE}" ]; then
+    cat << __EOF__
+$(tput smso) This will de-configure the host to run ovirt-hosted-engine-setup from scratch. $(tput rmso)
+Caution, this operation should be used with care.
+
+Are you sure you want to proceed? [y/n]
+__EOF__
+    read answer
+    [ "${answer}" = "y" ] || die "Please contact support for further assistance."
+    fi
+}
+
+usage() {
+    cat << __EOF__
+Usage: $0 [options]
+
+    -h            - This help text.
+    -q            - Quiet mode, do not prompt for confirmation. Dangerous!!!
+
+__EOF__
+}
+
+while getopts hq option; do
+    case "${option}" in
+        \?) usage; exit 1;;
+        h) usage; exit 0;;
+        q) QUIET_MODE=1;;
+    esac
+done
+
+caution
+
+echo "  -=== Destroy hosted-engine VM ===- "
+hosted-engine --vm-poweroff
+
+echo "  -=== Stop HA services ===- "
+systemctl stop ovirt-ha-agent
+systemctl stop ovirt-ha-broker
+
+echo "  -=== Shutdown sanlock ===- "
+sanlock client shutdown -f 1
+
+echo "  -=== Disconnecting the hosted-engine storage domain ===- "
+hosted-engine --disconnect-storage
+
+echo "  -=== De-configure VDSM networks ===- "
+vdsm-tool restore-nets
+
+echo "  -=== Stop other services ===- "
+systemctl stop vdsmd
+systemctl stop supervdsmd
+systemctl stop libvirtd
+systemctl stop momd
+systemctl stop sanlock
+
+echo "  -=== De-configure external daemons ===- "
+vdsm-tool remove-config
+
+echo "  -=== Removing configuration files ===- "
+FILES="/etc/init/libvirtd.conf"
+FILES+=" /etc/libvirt/nwfilter/vdsm-no-mac-spoofing.xml"
+FILES+=" /etc/ovirt-hosted-engine/answers.conf"
+FILES+=" /etc/ovirt-hosted-engine/hosted-engine.conf"
+FILES+=" /etc/vdsm/vdsm.conf"
+FILES+=" /etc/pki/vdsm/*/*.pem"
+FILES+=" /etc/pki/CA/cacert.pem"
+FILES+=" /etc/pki/libvirt/*.pem"
+FILES+=" /etc/pki/libvirt/private/*.pem"
+FILES+=" /etc/pki/ovirt-vmconsole/*.pem"
+FILES+=" /var/cache/libvirt/*"
+FILES+=" /var/run/ovirt-hosted-engine-ha/*"
+
+for f in $FILES
+do
+   [ ! -e $f ] && echo "? $f already missing" && continue
+   echo "- removing $f"
+   rm -rf $f && continue
+   echo "! error removing $f"
+done
+
