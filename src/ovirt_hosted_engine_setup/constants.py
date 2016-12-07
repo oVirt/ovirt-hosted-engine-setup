@@ -126,6 +126,7 @@ class StorageDomainType(object):
 class FileLocations(object):
     SYSCONFDIR = '/etc'
     DATADIR = '/usr/share'
+    DOCDIR = config.DOCDIR
     LIBEXECDIR = '/usr/libexec'
     SD_MOUNT_PARENT_DIR = '/rhev/data-center/mnt'
     OVIRT_HOSTED_ENGINE = 'ovirt-hosted-engine'
@@ -153,6 +154,14 @@ class FileLocations(object):
         'run',
         OVIRT_HOSTED_ENGINE_HA,
         'vm.conf'
+    )
+    README_APPLIANCE = os.path.join(
+        DOCDIR,
+        'readme.appliance'
+    )
+    README_ROLLBACK = os.path.join(
+        DOCDIR,
+        'readme.rollback'
     )
     # TODO: Only for upgrades, remove after 3.6
     PREV_ENGINE_VM_CONF = os.path.join(

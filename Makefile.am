@@ -39,6 +39,8 @@ EXTRA_DIST = \
 	.gitignore \
 	m4/.gitignore \
 	po/.gitignore \
+	readme.appliance \
+	readme.rollback \
 	$(NULL)
 
 SUBDIRS = \

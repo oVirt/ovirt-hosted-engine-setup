@@ -34,6 +34,7 @@ from ovirt_hosted_engine_ha.env import config
 from ovirt_hosted_engine_ha.lib import util as ohautil
 from ovirt_hosted_engine_ha.lib import image
 from ovirt_hosted_engine_setup import constants as ohostedcons
+from ovirt_hosted_engine_setup import util as ohostedutil
 
 
 def _(m):
@@ -96,7 +97,9 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.CoreEnv.ROLLBACK_PROCEED
             ] = self.dialog.queryString(
                 name=ohostedcons.Confirms.ROLLBACK_PROCEED,
-                note=_(
+                note=ohostedutil.readmeFileContent(
+                    ohostedcons.FileLocations.README_ROLLBACK
+                ) + _(
                     'Continuing will rollback the engine VM from a previous '
                     'upgrade attempt.\n'
                     'This procedure will restore an engine VM image '

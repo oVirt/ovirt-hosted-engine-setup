@@ -34,6 +34,7 @@ from ovirt_hosted_engine_ha.env import config
 from ovirt_hosted_engine_ha.lib import image
 from ovirt_hosted_engine_ha.lib import util as ohautil
 from ovirt_hosted_engine_setup import constants as ohostedcons
+from ovirt_hosted_engine_setup import util as ohostedutil
 from ovirt_hosted_engine_setup import vm_status
 
 
@@ -105,7 +106,9 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.CoreEnv.UPGRADE_PROCEED
             ] = self.dialog.queryString(
                 name=ohostedcons.Confirms.UPGRADE_PROCEED,
-                note=_(
+                note=ohostedutil.readmeFileContent(
+                    ohostedcons.FileLocations.README_APPLIANCE
+                ) + _(
                     'Continuing will upgrade the engine VM running on this '
                     'hosts deploying and configuring '
                     'a new appliance.\n'

@@ -26,6 +26,7 @@ PACKAGE_VERSION = '@PACKAGE_VERSION@'
 SYSCONFDIR = '@sysconfdir@'
 DATADIR = '@datadir@'
 LOCALSTATEDIR = '@localstatedir@'
+DOCDIR = '@docdir@'
 
 
 # vim: expandtab tabstop=4 shiftwidth=4
