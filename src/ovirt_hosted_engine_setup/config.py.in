@@ -27,6 +27,7 @@ APPLIANCE_RPM_PREFIX = '@APPLIANCE_RPM_PREFIX@'
 SYSCONFDIR = '@sysconfdir@'
 DATADIR = '@datadir@'
 LOCALSTATEDIR = '@localstatedir@'
+DOCDIR = '@docdir@'
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

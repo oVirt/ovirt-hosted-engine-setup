@@ -126,6 +126,16 @@ def transferImage(base, source_path, destination_path):
     return (0, 'OK')
 
 
+def readmeFileContent(readmeFile):
+    readme_content = ''
+
+    if os.path.exists(readmeFile):
+        with open(readmeFile) as readme_file:
+            readme_content = readme_file.read()
+
+    return readme_content
+
+
 class VirtUserContext(object):
     """
     Switch to vdsm:kvm user with provided umask

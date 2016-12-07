@@ -62,6 +62,7 @@ config.py: config.py.in
 	$(SED) \
 	-e 's|@sysconfdir[@]|$(sysconfdir)|g' \
 	-e 's|@datadir[@]|$(datadir)|g' \
+	-e 's|@docdir[@]|$(docdir)|g' \
 	-e 's|@prefix[@]|$(prefix)|g' \
 	-e 's|@localstatedir[@]|$(localstatedir)|g' \
 	-e 's|@APPLIANCE_RPM_PREFIX[@]|$(APPLIANCE_RPM_PREFIX)|g' \
