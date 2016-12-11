@@ -45,6 +45,7 @@ dist_ovirthostedenginelib_PYTHON = \
 	util.py \
 	reinitialize_lockspace.py \
 	set_maintenance.py \
+	set_shared_config.py \
 	tasks.py \
 	vm_status.py \
 	mixins.py \

@@ -60,6 +60,14 @@ there is only one host available to run the engine VM. \&
 .RS 7
 \fBnone\fP - Resume HA functionality. \&
 .RE
+.IP "\fB\-\-set-shared-config key value [\-\-type=<type>]\fP"
+Set the specified key in the shared storage configuration to the specified value. \&
+.RE
+.RS 7
+If type is given the key is set in the file from the specified type.
+This is useful if the key is duplicated in several configuration files. \&
+Valid types are: broker.
+.RE
 .IP "\fB\-\-clean_metadata [\-\-force\-cleanup] [\-\-host\-id=<id>]\fP"
 Remove host's metadata from the global status database.\&
 .IP "\fB\-\-reinitialize\-lockspace [\-\-force]\fP"

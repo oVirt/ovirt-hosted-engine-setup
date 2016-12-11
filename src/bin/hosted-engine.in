@@ -82,6 +82,9 @@ Usage: $0 [--help] <command> [<command-args>]
             Open the configured console using virsh on localhost
         --set-maintenance --mode=<mode>
             Set maintenance status to the specified mode (global/local/none)
+        --set-shared-config key value [--type=<type>]
+            Set specified key to the specified value. If the key is duplicated
+            in several files a type must be provided.
         --reinitialize-lockspace
             Make sure all hosted engine agents are down and reinitialize the
             sanlock lockspaces.
@@ -409,6 +412,37 @@ return ;}
     fi
 }
 
+cmd_set_shared_config() {
+    [ "$1" == "--help" ] && { cat << __EOF__
+Usage: $0 --set-shared-config key value [--type=<type>]
+    Set shared storage configuration.
+    Valid types are: broker.
+    Available only after deployment has completed.
+__EOF__
+return ;}
+
+    key=${1}
+    value=${2}
+
+    if [[ "$3" == --type=* ]]; then
+            type="${3#*--type=}"
+    fi
+
+    if [ -z "$key" ] ; then
+        echo "You must specify a key to set"
+        exit 1
+    fi
+    if [ -z "$value" ] ; then
+        echo "You must specify a new value to set"
+        exit 1
+    fi
+    if [ -n "${vmid}" ] ; then
+        python -m ovirt_hosted_engine_setup.set_shared_config "${key}" "${value}" "${type}"
+    else
+        exit_not_deployed
+    fi
+}
+
 cmd_reinitialize_lockspace() {
     [ "$1" == "--help" ] && { cat << __EOF__
 Usage: $0 --reinitialize-lockspace [--force]
@@ -476,6 +510,7 @@ cli_broker() {
         --connect-storage) cmd_connect_storage "$@" ;;
         --console) cmd_console "$@" ;;
         --set-maintenance) cmd_set_maintenance "$@" ;;
+        --set-shared-config) cmd_set_shared_config "$@" ;;
         --reinitialize-lockspace) cmd_reinitialize_lockspace "$@" ;;
         --clean-metadata) cmd_clean_metadata "$@" ;;
         --upgrade-appliance) cmd_upgrade_appliance "$@" ;;
