@@ -50,10 +50,6 @@ class Plugin(plugin.PluginBase):
             ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN,
             None
         )
-        self.environment.setdefault(
-            ohostedcons.NetworkEnv.FQDN_REVERSE_VALIDATION,
-            False
-        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,

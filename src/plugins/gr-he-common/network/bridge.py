@@ -66,6 +66,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.NetworkEnv.REFUSE_DEPLOYING_WITH_NM,
             True
         )
+        self.environment.setdefault(
+            ohostedcons.NetworkEnv.FQDN_REVERSE_VALIDATION,
+            False
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
