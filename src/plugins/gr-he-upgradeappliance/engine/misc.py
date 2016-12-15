@@ -413,8 +413,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Upgrade.CONFIRM_UPGRADE_SUCCESS
         ] is None
         while not ready:
-            dc_broker = dc_broker.update()
-            host_broker = host_broker.update()
+            dc_broker = engine_api.datacenters.get(
+                id=cluster_broker.get_data_center().get_id()
+            )
+            host_broker = engine_api.hosts.get(id=my_host_id)
             dc_status = dc_broker.get_status().state
             host_status = host_broker.get_status().state
             if not (dc_status == 'up' and host_status == 'up'):
