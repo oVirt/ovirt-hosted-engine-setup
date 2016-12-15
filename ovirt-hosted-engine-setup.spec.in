@@ -92,6 +92,7 @@ Requires:       tar
 Requires:       tuned
 Requires:       util-linux
 Requires:       collectd
+Requires:       collectd-disk
 Requires:       collectd-netlink
 Requires:       collectd-virt
 Requires:       collectd-write_http
