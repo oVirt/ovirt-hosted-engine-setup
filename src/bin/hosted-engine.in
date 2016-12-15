@@ -85,6 +85,9 @@ Usage: $0 [--help] <command> [<command-args>]
         --set-shared-config key value [--type=<type>]
             Set specified key to the specified value. If the key is duplicated
             in several files a type must be provided.
+        --get-shared-config key [--type=<type>]
+            Get specified key's value. If the key is duplicated in several
+            files a type must be provided.
         --reinitialize-lockspace
             Make sure all hosted engine agents are down and reinitialize the
             sanlock lockspaces.
@@ -443,6 +446,33 @@ return ;}
     fi
 }
 
+cmd_get_shared_config() {
+    [ "$1" == "--help" ] && { cat << __EOF__
+Usage: $0 --get-shared-config key [--type=<type>]
+    Get shared storage configuration.
+    Valid types are: broker.
+    Available only after deployment has completed.
+__EOF__
+return ;}
+
+    key=${1}
+
+    if [[ "$2" == --type=* ]]; then
+            type="${2#*--type=}"
+    fi
+
+    if [ -z "$key" ] ; then
+        echo "You must specify a key to get"
+        exit 1
+    fi
+
+    if [ -n "${vmid}" ] ; then
+        python -m ovirt_hosted_engine_setup.get_shared_config "${key}" "${type}"
+    else
+        exit_not_deployed
+    fi
+}
+
 cmd_reinitialize_lockspace() {
     [ "$1" == "--help" ] && { cat << __EOF__
 Usage: $0 --reinitialize-lockspace [--force]
@@ -511,6 +541,7 @@ cli_broker() {
         --console) cmd_console "$@" ;;
         --set-maintenance) cmd_set_maintenance "$@" ;;
         --set-shared-config) cmd_set_shared_config "$@" ;;
+        --get-shared-config) cmd_get_shared_config "$@" ;;
         --reinitialize-lockspace) cmd_reinitialize_lockspace "$@" ;;
         --clean-metadata) cmd_clean_metadata "$@" ;;
         --upgrade-appliance) cmd_upgrade_appliance "$@" ;;

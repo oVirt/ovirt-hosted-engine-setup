@@ -68,6 +68,14 @@ If type is given the key is set in the file from the specified type.
 This is useful if the key is duplicated in several configuration files. \&
 Valid types are: broker.
 .RE
+.IP "\fB\-\-get-shared-config key [\-\-type=<type>]\fP"
+Get the specified key in the shared storage configuration. \&
+.RE
+.RS 7
+If type is given the key is retrieved from the file of the specified type.
+This is useful if the key is duplicated in several configuration files. \&
+Valid types are: broker.
+.RE
 .IP "\fB\-\-clean_metadata [\-\-force\-cleanup] [\-\-host\-id=<id>]\fP"
 Remove host's metadata from the global status database.\&
 .IP "\fB\-\-reinitialize\-lockspace [\-\-force]\fP"
