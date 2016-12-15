@@ -91,6 +91,13 @@ Requires:       socat
 Requires:       tar
 Requires:       tuned
 Requires:       util-linux
+Requires:       collectd
+Requires:       collectd-netlink
+Requires:       collectd-virt
+Requires:       collectd-write_http
+Requires:       fluentd
+Requires:       rubygem-fluent-plugin-rewrite-tag-filter
+Requires:       rubygem-fluent-plugin-secure-forward
 
 %description
 Hosted Engine setup tool for oVirt project.
