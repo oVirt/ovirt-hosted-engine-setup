@@ -451,7 +451,7 @@ class Plugin(plugin.PluginBase):
         after=(
             ohostedcons.Stages.DIALOG_TITLES_S_VM,
             ohostedcons.Stages.CONFIG_OVF_IMPORT,
-            ohostedcons.Stages.UPGRADE_CHECK_UPGRADE_REQUIREMENTS,
+            ohostedcons.Stages.UPGRADE_CHECK_UPGRADE_VERSIONS,
         ),
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_VM,

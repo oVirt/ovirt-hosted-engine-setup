@@ -337,6 +337,7 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         after=(
             ohostedcons.Stages.CONFIG_OVF_IMPORT,
+            ohostedcons.Stages.UPGRADE_CHECK_UPGRADE_VERSIONS,
         ),
         name=ohostedcons.Stages.CONFIG_BACKUP_FILE,
     )
@@ -345,7 +346,6 @@ class Plugin(plugin.PluginBase):
         interactive = self.environment[ohostedcons.Upgrade.BACKUP_FILE] is None
         backup_file_path = self.environment[ohostedcons.Upgrade.BACKUP_FILE]
         while not valid:
-            # TODO: ensure that the engine is still at 3.6!!!
             # TODO: do it automatically
             self.dialog.note(_(
                 'Please take a backup of the current engine running this '

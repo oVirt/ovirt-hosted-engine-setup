@@ -30,6 +30,8 @@ from otopi import context as otopicontext
 from otopi import plugin
 from otopi import util
 
+from ovirt_setup_lib import dialog
+
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import engineapi
 
@@ -52,6 +54,7 @@ class Plugin(plugin.PluginBase):
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
+        self._e_version = None
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
@@ -63,6 +66,10 @@ class Plugin(plugin.PluginBase):
         )
         self.environment.setdefault(
             ohostedcons.Upgrade.CONFIRM_UPGRADE_DISK_RESIZE,
+            None,
+        )
+        self.environment.setdefault(
+            ohostedcons.Upgrade.UPGRADE_ABORT_ON_UNSUPPORTED_VER,
             None,
         )
 
@@ -303,7 +310,7 @@ class Plugin(plugin.PluginBase):
                 ma=version.major,
                 mi=version.minor,
             )
-            if release not in ohostedcons.Const.UPGRADE_SUPPORTED_VERSIONS:
+            if release not in ohostedcons.Const.UPGRADE_REQUIRED_CLUSTER_V:
                 self.logger.error(
                     _(
                         '{t} {name} is at version {release} which is not '
@@ -321,6 +328,94 @@ class Plugin(plugin.PluginBase):
         self.logger.info(
             _('All the datacenters and clusters are at a compatible level')
         )
+        e_major = engine_api.get_product_info().version.major
+        e_minor = engine_api.get_product_info().version.minor
+        if not e_major:
+            # just for compatibility
+            # see: bz#1405386
+            e_major = engine_api.get_product_info().get_version().major
+            e_minor = engine_api.get_product_info().get_version().minor
+        if e_major and e_minor:
+            self._e_version = '{ma}.{mi}'.format(
+                ma=e_major,
+                mi=e_minor,
+            )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CUSTOMIZATION,
+        name=ohostedcons.Stages.UPGRADE_CHECK_UPGRADE_VERSIONS,
+        after=(
+            ohostedcons.Stages.UPGRADE_CHECK_UPGRADE_REQUIREMENTS,
+            ohostedcons.Stages.CONFIG_OVF_IMPORT,
+        ),
+    )
+    def _check_upgrade_versions(self):
+        supported = True
+        if not self._e_version:
+            self.logger.warning(_('Unable to detect engine version'))
+            supported = False
+        else:
+            if (
+                self._e_version not in
+                ohostedcons.Const.UPGRADE_SUPPORTED_SOURCES
+            ):
+                supported = False
+        if not self.environment[ohostedcons.VMEnv.APPLIANCE_VERSION]:
+            self.logger.warning(_('Unable to detect appliance version'))
+            supported = False
+        else:
+            a_version = self.environment[
+                ohostedcons.VMEnv.APPLIANCE_VERSION
+            ].split('-')[0]
+            if a_version not in ohostedcons.Const.UPGRADE_SUPPORTED_TARGETS:
+                supported = False
+        if not supported:
+            self.logger.warning(_('Unsupported upgrade path'))
+            self.dialog.note(
+                _(
+                    'This procedure has been designed and tested only for '
+                    'upgrading the engine VM from {sources} to {targets}.\n'
+                    'Any other usage is highly experimental and potentially '
+                    'dangerous:\n'
+                    '  Current engine: {e_version}\n'
+                    '  Selected appliance: {a_version}'
+                ).format(
+                    sources=ohostedcons.Const.UPGRADE_SUPPORTED_SOURCES,
+                    targets=ohostedcons.Const.UPGRADE_SUPPORTED_TARGETS,
+                    e_version=self._e_version if self._e_version
+                    else _('unknown'),
+                    a_version=self.environment[
+                        ohostedcons.VMEnv.APPLIANCE_VERSION
+                    ] if self.environment[
+                        ohostedcons.VMEnv.APPLIANCE_VERSION
+                    ] else _('unknown'),
+                )
+            )
+            if self.environment[
+                ohostedcons.Upgrade.UPGRADE_ABORT_ON_UNSUPPORTED_VER
+            ] is None:
+                self.environment[
+                    ohostedcons.Upgrade.UPGRADE_ABORT_ON_UNSUPPORTED_VER
+                ] = dialog.queryBoolean(
+                    dialog=self.dialog,
+                    name='UPGRADE_ABORT_ON_UNSUPPORTED_VER',
+                    note=_(
+                        'Do you want to abort the upgrade process? '
+                        '(@VALUES@) [@DEFAULT@]: '
+                    ),
+                    prompt=True,
+                    default=True,
+                )
+            if self.environment[
+                ohostedcons.Upgrade.UPGRADE_ABORT_ON_UNSUPPORTED_VER
+            ]:
+                raise RuntimeError(
+                    _('Upgrade aborted due to unsupported version')
+                )
+            else:
+                self.logger.warning(_(
+                    'Proceeding on an unsupported and highly experimental path'
+                ))
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,

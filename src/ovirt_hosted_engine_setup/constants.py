@@ -367,7 +367,9 @@ class Const(object):
     # (packaging/dbscripts/create_tables.sql)
     MAX_STORAGE_USERNAME_LENGTH = 50
     MAX_STORAGE_PASSWORD_LENGTH = 50
-    UPGRADE_SUPPORTED_VERSIONS = ['3.6', '4.0', '4.1']
+    UPGRADE_SUPPORTED_SOURCES = ['3.6']
+    UPGRADE_SUPPORTED_TARGETS = ['4.0']
+    UPGRADE_REQUIRED_CLUSTER_V = ['3.6', '4.0', '4.1']
     BACKUP_DISK_PREFIX = 'hosted-engine-backup-'
     APPLIANCE_RPM_NAME = '%s-appliance' % config.APPLIANCE_RPM_PREFIX
 
@@ -1035,6 +1037,7 @@ class Stages(object):
     UPGRADE_CHECK_SD_SPACE = 'ohosted.upgrade.check.sd.space'
     UPGRADE_CHECK_SPM_HOST = 'ohosted.upgrade.check.spm.host'
     UPGRADE_CHECK_UPGRADE_REQUIREMENTS = 'ohosted.upgrade.check.upgrade.req'
+    UPGRADE_CHECK_UPGRADE_VERSIONS = 'ohosted.upgrade.check.upgrade.ver'
     UPGRADE_BACKUP_DISK_CREATED = 'ohosted.upgrade.backup.disk.created'
     UPGRADE_VM_SHUTDOWN = 'ohosted.upgrade.vm.state.shutdown'
     UPGRADE_DISK_BACKUP_SAVED = 'ohosted.upgrade.disk.backup.saved'
@@ -1120,6 +1123,7 @@ class Upgrade(object):
     EXTEND_VOLUME = 'OVEHOSTED_UPGRADE/extend_volume'
     UPGRADE_CREATE_LM_VOLUMES = 'OVEHOSTED_UPGRADE/createLMVolumes'
     LM_VOLUMES_UPGRADE_PROCEED = 'OVEHOSTED_UPGRADE/LMVolumesUpgradeProceed'
+    UPGRADE_ABORT_ON_UNSUPPORTED_VER = 'OVEHOSTED_UPGRADE/abortUnsupportedVer'
 
 
 # vim: expandtab tabstop=4 shiftwidth=4
