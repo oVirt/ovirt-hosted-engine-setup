@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt with a manager in a VM
-# Copyright (C) 2012-2013 Red Hat, Inc.
+# Copyright (C) 2012-2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -25,6 +25,20 @@ SUBDIRS = \
 
 MAINTAINERCLEANFILES = \
 	$(srcdir)/Makefile.in \
+	$(NULL)
+
+PYTHON_SYNTAX_CHECK_FILES := \
+	$(srcdir)/__init__.py \
+	$(srcdir)/vmconf.py \
+	$(srcdir)/vmconf_test.py \
+	$(NULL)
+
+dist_noinst_PYTHON = \
+	vmconf_test.py \
+	$(NULL)
+
+dist_noinst_DATA = \
+	vm_test.conf \
 	$(NULL)
 
 CLEANFILES = \
@@ -54,6 +68,8 @@ dist_ovirthostedenginelib_PYTHON = \
 	vds_info.py \
 	ohttpshandler.py \
 	pkissh.py \
+	vdsm_helper.py \
+	vmconf.py \
 	$(NULL)
 
 nodist_ovirthostedenginelib_PYTHON = \
