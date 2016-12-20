@@ -20,7 +20,7 @@ tmp.*
 *.spec
 *.swp
 *.tmp
-__pycache__
+.cache
 .bundeled
 target
 check

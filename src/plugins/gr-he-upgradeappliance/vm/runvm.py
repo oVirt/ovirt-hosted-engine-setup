@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2016 Red Hat, Inc.
+# Copyright (C) 2016-2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -36,6 +36,7 @@ from ovirt_hosted_engine_ha.env import config
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import tasks
+from ovirt_hosted_engine_setup import vmconf
 
 
 def _(m):
@@ -53,20 +54,20 @@ class Plugin(plugin.PluginBase):
         self._temp_vm_conf = None
 
     def _createvm(self):
-        # TODO: parse the file and use JsonRPC via mixins.py
-        self.execute(
-            args=(
-                self.command.get('vdsClient'),
-                '-s',
-                '0',
-                'create',
-                self._temp_vm_conf
-            ),
-            raiseOnError=True
-        )
+        vm_params = vmconf.parseVmConfFile(self._temp_vm_conf)
         POWER_MAX_TRIES = 20
         POWER_DELAY = 3
         cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        status = cli.create(vm_params)
+        self.logger.debug(status)
+        if status['status']['code'] != 0:
+            raise RuntimeError(
+                _(
+                    'Cannot create the VM: {message}'
+                ).format(
+                    message=status['status']['message']
+                )
+            )
         # Now it's in WaitForLaunch, need to be on powering up
         powering = False
         tries = POWER_MAX_TRIES
@@ -102,12 +103,6 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Upgrade.EXTEND_VOLUME,
             False,
         )
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_SETUP,
-    )
-    def _setup(self):
-        self.command.detect('vdsClient')
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,

@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2015 Red Hat, Inc.
+# Copyright (C) 2013-2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -188,18 +188,10 @@ return ;}
         check_vm_conf
         local down=
         local status=
-        listoutput=$(${VDSCOMMAND} list vms:"${vmid}")
-        while read param eq value; do
-            if [ "${param}" = 'Status' ]; then
-                status="${value}"
-                [ "${status}" = "Down" ] && down=1
-            fi
-        done << __EOF__
-${listoutput}
-__EOF__
-        if [ -n "${down}" ]; then
+        status=$(${VDSMHELPER} checkVmStatus ${vmid})
+        if [[ $status == *"Down"* ]]; then
             echo "VM exists and is down, destroying it"
-            ${VDSCOMMAND} destroy "${vmid}"
+            ${VDSMHELPER} destroy "${vmid}"
         elif [ -n "${status}" ]; then
             echo "VM exists and its status is ${status}"
             exit 1
@@ -209,7 +201,7 @@ __EOF__
         else
             vmconf="${conf}"
         fi
-        ${VDSCOMMAND} create "${vmconf}"
+        ${VDSMHELPER} create "${vmconf}"
     else
         exit_not_deployed
     fi
@@ -229,7 +221,7 @@ return ;}
         temp_conf="$(mktemp)"
         cp "${conf}" "${temp_conf}"
         echo "launchPaused=true">>"${temp_conf}"
-        ${VDSCOMMAND} create "${temp_conf}"
+        ${VDSMHELPER} create "${temp_conf}"
         rm -f "${temp_conf}"
     else
         exit_not_deployed
@@ -245,7 +237,7 @@ __EOF__
 return ;}
 
     if [ -n "${vmid}" ] ; then
-        ${VDSCOMMAND} shutdown "${vmid}" 120 "VM is shutting down!"
+        ${VDSMHELPER} shutdown "${vmid}" 120 "VM is shutting down!"
     else
         exit_not_deployed
     fi
@@ -260,7 +252,7 @@ __EOF__
 return ;}
 
     if [ -n "${vmid}" ] ; then
-        ${VDSCOMMAND} destroy "${vmid}"
+        ${VDSMHELPER} destroy "${vmid}"
     else
         exit_not_deployed
     fi
@@ -310,7 +302,7 @@ return ;}
             pass="$(readpassword)" || exit 1
         fi
     fi
-    ${VDSCOMMAND} setVmTicket "${vmid}" "${pass}" 120
+    ${VDSMHELPER} setVmTicket "${vmid}" "${pass}" 120
 }
 
 cmd_check_deployed() {
@@ -362,16 +354,8 @@ Usage: $0 --console
 __EOF__
 return ;}
 
-    listoutput=$(${VDSCOMMAND} list vms:"${vmid}")
-    while read param eq value; do
-        if [ "${param}" = 'Status' ]; then
-            status="${value}"
-            [ "${status}" = "Up" ] && up=1
-        fi
-    done << __EOF__
-${listoutput}
-__EOF__
-    if [ -n "${up}" ]; then
+    status=$(${VDSMHELPER} checkVmStatus ${vmid})
+    if [[ $status == *"Up"* ]]; then
         echo "The engine VM is running on this host"
         exec /usr/bin/virsh \
             -c qemu:///system?authfile=${VIRSH_AUTH} \
@@ -518,11 +502,7 @@ if [ -z "$1" ] ; then
     usage
 fi
 
-if [ "${vdsm_use_ssl}" == "true" ] ; then
-    VDSCOMMAND="vdsClient -s localhost"
-else
-    VDSCOMMAND="vdsClient localhost"
-fi
+VDSMHELPER="python -m ovirt_hosted_engine_setup.vdsm_helper"
 
 cli_broker() {
     x="$1"

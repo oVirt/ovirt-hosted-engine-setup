@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -69,6 +69,9 @@ maintainer-clean-local:
 	sed '/^$$/d' "$(srcdir)/po/.gitignore" | while read f; do \
 		rm -f $(srcdir)/po/$$f po/$$f; \
 	done
+
+test:
+	py.test .
 
 POTFILES.in:
 	( cd "$(srcdir)" && \

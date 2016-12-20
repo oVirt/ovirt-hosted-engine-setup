@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2016 Red Hat, Inc.
+# Copyright (C) 2013-2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -55,6 +55,7 @@ Requires:       libvirt-client
 
 BuildRequires:  gettext >= 0.18.2
 BuildRequires:  python2-devel
+BuildRequires:  pytest
 
 %if 0%{?fedora}
 Requires:       qemu-img
@@ -72,7 +73,6 @@ Requires:       ovirt-engine-sdk-python >= 3.6.3.0
 Requires:       ovirt-setup-lib >= 1.1.0
 Requires:       glusterfs-cli >= 3.7.3
 Requires:       vdsm >= 4.18.999-466
-Requires:       vdsm-cli >= 4.18.999-466
 Requires:       vdsm-python >= 4.18.999-466
 Requires(post): vdsm-python >= 4.18.999-466
 
@@ -112,6 +112,9 @@ Hosted Engine setup tool for oVirt project.
         --disable-python-syntax-check \
         %{?conf}
 make %{?_smp_mflags}
+
+%check
+make test
 
 %install
 make %{?_smp_mflags} install DESTDIR="%{buildroot}"
