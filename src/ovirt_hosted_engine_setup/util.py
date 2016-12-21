@@ -30,7 +30,7 @@ from otopi import util
 
 from . import constants as ohostedcons
 
-UNICAST_MAC_ADDR = re.compile("[a-fA-F0-9][02468aAcCeE](:[a-fA-F0-9]{2}){5}")
+UNICAST_MAC_ADDR = re.compile("^[a-fA-F0-9][02468aAcCeE](:[a-fA-F0-9]{2}){5}$")
 
 
 def _(m):
