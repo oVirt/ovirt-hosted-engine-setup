@@ -50,6 +50,8 @@ class Plugin(plugin.PluginBase):
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
         self._checker = ohosteddomains.DomainChecker()
+        # TODO: remove once the engine is able to handle this
+        self.query_for_additional_mnt_options = False
 
     def _mount(self, path, connection, domain_type, mnt_options):
         fstype = ''
@@ -384,22 +386,23 @@ class Plugin(plugin.PluginBase):
                     prompt=True,
                     caseSensitive=True,
                 )
-                mnt_options = self.environment[
-                    ohostedcons.StorageEnv.MNT_OPTIONS
-                ]
-                self.environment[
-                    ohostedcons.StorageEnv.MNT_OPTIONS
-                ] = self.dialog.queryString(
-                    name='OVEHOSTED_STORAGE_DOMAIN_MNT_OPTIONS',
-                    note=_(
-                        'If needed, specify additional mount options for '
-                        'the connection to the hosted-engine storage domain '
-                        '[@DEFAULT@]: '
-                    ),
-                    prompt=True,
-                    caseSensitive=True,
-                    default=mnt_options if mnt_options else '',
-                )
+                if self.query_for_additional_mnt_options:
+                    mnt_options = self.environment[
+                        ohostedcons.StorageEnv.MNT_OPTIONS
+                    ]
+                    self.environment[
+                        ohostedcons.StorageEnv.MNT_OPTIONS
+                    ] = self.dialog.queryString(
+                        name='OVEHOSTED_STORAGE_DOMAIN_MNT_OPTIONS',
+                        note=_(
+                            'If needed, specify additional mount options for '
+                            'the connection to the hosted-engine storage'
+                            'domain [@DEFAULT@]: '
+                        ),
+                        prompt=True,
+                        caseSensitive=True,
+                        default=mnt_options if mnt_options else '',
+                    )
             try:
                 self._fix_path_syntax()
                 self._validateDomain(
