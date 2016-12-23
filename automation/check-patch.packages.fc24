@@ -6,3 +6,4 @@ ovirt-engine-sdk-python
 python-isort
 python-pep8
 pyflakes
+pytest
