@@ -35,9 +35,11 @@ def _(m):
 
 def get_engine_api(
     base,
+    timeout=None,
 ):
     '''
     :param base: Reference to caller.
+    :param timeout: Engine API timeout.
     '''
     valid = False
     engine_api = None
@@ -64,6 +66,8 @@ def get_engine_api(
                     ohostedcons.EngineEnv.TEMPORARY_CERT_FILE
                 ],
                 insecure=insecure,
+                timeout=timeout if timeout else
+                ohostedcons.Defaults.DEFAULT_ENGINE_SETUP_TIMEOUT,
             )
             engine_api.clusters.list()
             valid = True
