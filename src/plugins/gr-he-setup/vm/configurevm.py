@@ -135,8 +135,10 @@ class Plugin(plugin.PluginBase):
 
         if self.environment[ohostedcons.VMEnv.CONSOLE_TYPE] == 'vnc':
             subst['@VIDEO_DEVICE@'] = 'vga'
+            subst['@GRAPHICS_DEVICE@'] = 'vnc'
         else:
             subst['@VIDEO_DEVICE@'] = 'qxl'
+            subst['@GRAPHICS_DEVICE@'] = 'spice'
 
         if self.environment[
             ohostedcons.VMEnv.CDROM

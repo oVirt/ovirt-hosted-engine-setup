@@ -257,15 +257,17 @@ class VmOperations(object):
         ]
         if display_type == 'vnc':
             video_device = 'vga'
+            graphics_device = 'vnc'
         else:
             video_device = 'qxl'
+            graphics_device = 'spice'
         conf['devices'].append({
             "device": video_device,
             "alias": "video0",
             "type": "video"
         })
         conf['devices'].append({
-            "device": display_type,
+            "device": graphics_device,
             "type": "graphics"
         })
 
