@@ -136,6 +136,23 @@ def readmeFileContent(readmeFile):
     return readme_content
 
 
+def checkUserPermissions(base, username, cmd):
+    err = None
+    cmdToExec = [base.command.get('sudo'), '-u', username] + cmd.split(' ')
+    try:
+        base.execute(
+            cmdToExec,
+            raiseOnError=True
+        )
+    except RuntimeError as e:
+        err = str(e)
+
+    if err:
+        msg = 'the command "%s" failed to execute' % ' '.join(cmdToExec)
+
+    return True if not err else msg
+
+
 class VirtUserContext(object):
     """
     Switch to vdsm:kvm user with provided umask

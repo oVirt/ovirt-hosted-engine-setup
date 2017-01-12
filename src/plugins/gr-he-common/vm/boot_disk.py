@@ -680,6 +680,24 @@ class Plugin(plugin.PluginBase):
         valid = False
         checker = ohosteddomains.DomainChecker()
         while not valid:
+            vdsmPermissionsErrorMessage = None
+            spaceErrorMessage = None
+            tempDirCheck = ohostedutil.checkUserPermissions(
+                self,
+                'vdsm',
+                'ls %s' % self.environment[ohostedcons.CoreEnv.TEMPDIR]
+            )
+            if tempDirCheck is not True:
+                vdsmPermissionsErrorMessage = _(
+                    'vdsm user has no read permissions on'
+                    ' {tmpdir}, please choose another. {errmsg}'
+                ).format(
+                    tmpdir=self.environment[
+                        ohostedcons.CoreEnv.TEMPDIR],
+                    errmsg=tempDirCheck,
+                )
+
+            spaceCheck = False
             try:
                 checker.check_available_space(
                     self.environment[ohostedcons.CoreEnv.TEMPDIR],
@@ -687,7 +705,7 @@ class Plugin(plugin.PluginBase):
                         self.environment[ohostedcons.StorageEnv.QCOW_SIZE_GB]
                     ) * 1024
                 )
-                valid = True
+                spaceCheck = True
             except ohosteddomains.InsufficientSpaceError as e:
                 self.logger.debug(
                     'Error checking TMPDIR space',
@@ -695,17 +713,24 @@ class Plugin(plugin.PluginBase):
                 )
                 self.logger.debug(e)
                 valid = False
-                errorMessage = _(
+                spaceErrorMessage = _(
                     'Not enough space in the temporary directory [{tmpdir}]'
                 ).format(
                     tmpdir=self.environment[
                         ohostedcons.CoreEnv.TEMPDIR
                     ],
                 )
-                if not interactive:
-                    raise RuntimeError(errorMessage)
-                else:
-                    self.logger.error(errorMessage)
+            if not interactive:
+                if not spaceCheck:
+                    raise RuntimeError(spaceErrorMessage)
+                if tempDirCheck is not True:
+                    raise RuntimeError(vdsmPermissionsErrorMessage)
+            else:
+                if not spaceCheck:
+                    self.logger.error(spaceErrorMessage)
+                if tempDirCheck is not True:
+                    self.logger.error(vdsmPermissionsErrorMessage)
+                if not spaceCheck or tempDirCheck is not True:
                     self.environment[
                         ohostedcons.CoreEnv.TEMPDIR
                     ] = self.dialog.queryString(
@@ -724,6 +749,8 @@ class Plugin(plugin.PluginBase):
                             ohostedcons.CoreEnv.TEMPDIR
                         ]),
                     )
+
+            valid = True if tempDirCheck is True and spaceCheck else False
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
