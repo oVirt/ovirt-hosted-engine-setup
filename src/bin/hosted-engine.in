@@ -301,10 +301,13 @@ Usage: $0 --console
 __EOF__
 return ;}
 
+    echo -n "Use the password you've set using --add-console-password "
+    echo "for logging in"
+
     if [ "${console}" == "vnc" ] ; then
-        echo -n "Use the password you've set using --add-console-password "
-        echo "for logging in"
-        exec /usr/bin/remote-viewer vnc://localhost:5900
+
+        displayPort=$(vdsClient -s 0 getVmStats $vmid | grep displayPort | cut -d "=" -f 2 | xargs)
+        exec /usr/bin/remote-viewer vnc://localhost:$displayPort
     elif [ "${console}" == "qxl" ] ; then
         if [ ! -r "${ca_cert}" ] ; then
             echo "Missing spice PKI certificate"
@@ -313,10 +316,12 @@ return ;}
             echo "${PKI_GUIDE_URL}"
             exit 1
         fi
+        displaySecurePort=$(vdsClient -s 0 getVmStats $vmid | grep displaySecurePort | cut -d "=" -f 2 | xargs)
+        host_subject=$(openssl x509 -noout -subject -in /etc/pki/vdsm/libvirt-spice/server-cert.pem | cut -d "=" -f 2- | xargs | sed 's/^\///1' | sed 's/\//,/g')
         exec /usr/bin/remote-viewer \
             --spice-ca-file=${ca_cert} \
-            spice://localhost?tls-port=5900 \
-            --spice-host-subject="${ca_subject}"
+            spice://localhost?tls-port=$displaySecurePort \
+            --spice-host-subject="${host_subject}"
     fi
 }
 
