@@ -64,7 +64,7 @@ class Plugin(plugin.PluginBase):
                 for node in nodes:
                     ret += format.format(
                         protocol=node.prop('protocol'),
-                        port=node.prop('port'),
+                        port=node.prop('port').replace("-", ":"),
                     )
             finally:
                 if doc is not None:

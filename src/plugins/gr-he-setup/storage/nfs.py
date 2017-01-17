@@ -31,6 +31,8 @@ import xml.dom.minidom
 from otopi import plugin
 from otopi import util
 
+from ovirt_setup_lib import dialog
+
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import domains as ohosteddomains
 
@@ -461,6 +463,39 @@ class Plugin(plugin.PluginBase):
                             )
                         )
                     )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CUSTOMIZATION,
+        name=ohostedcons.Stages.CONFIG_STORAGE_HC,
+        after=(
+            ohostedcons.Stages.CONFIG_STORAGE_NFS,
+        ),
+        before=(
+            ohostedcons.Stages.CONFIG_STORAGE_LATE,
+        ),
+        condition=lambda self: (
+            self.environment[
+                ohostedcons.StorageEnv.DOMAIN_TYPE
+            ] == ohostedcons.DomainTypes.GLUSTERFS
+        ),
+    )
+    def _customization_hc(self):
+        if self.environment[
+            ohostedcons.StorageEnv.ENABLE_HC_GLUSTER_SERVICE
+        ] is None:
+            self.environment[
+                ohostedcons.StorageEnv.ENABLE_HC_GLUSTER_SERVICE
+            ] = dialog.queryBoolean(
+                dialog=self.dialog,
+                name='ENABLE_HC_GLUSTER_SERVICE',
+                note=_(
+                    'Do you want to configure this host and '
+                    'its cluster for gluster? '
+                    '(@VALUES@) [@DEFAULT@]: '
+                ),
+                prompt=True,
+                default=False,
+            )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,

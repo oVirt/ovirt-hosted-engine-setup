@@ -32,4 +32,5 @@ basefirewalldtemplatesdir=$(ovirthostedenginetemplatedir)/firewalld/base
 dist_basefirewalldtemplates_DATA = \
 	hosted-cockpit.xml.in \
 	hosted-console.xml.in \
+	hosted-gluster.xml.in \
 	$(NULL)

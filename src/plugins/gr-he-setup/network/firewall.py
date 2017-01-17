@@ -65,6 +65,15 @@ class Plugin(plugin.PluginBase):
                 'directory': 'base'
             },
         ])
+        if self.environment[ohostedcons.StorageEnv.ENABLE_HC_GLUSTER_SERVICE]:
+            self.environment[
+                ohostedcons.NetworkEnv.FIREWALLD_SERVICES
+            ].extend([
+                {
+                    'name': 'hosted-gluster',
+                    'directory': 'base'
+                },
+            ])
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

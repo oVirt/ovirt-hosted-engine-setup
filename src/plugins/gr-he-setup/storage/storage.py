@@ -851,6 +851,10 @@ class Plugin(plugin.PluginBase):
             None
         )
         self.environment.setdefault(
+            ohostedcons.StorageEnv.ENABLE_HC_GLUSTER_SERVICE,
+            None
+        )
+        self.environment.setdefault(
             ohostedcons.StorageEnv.DOMAIN_TYPE,
             None
         )
