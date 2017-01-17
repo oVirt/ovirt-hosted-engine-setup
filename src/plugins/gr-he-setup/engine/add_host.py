@@ -284,6 +284,46 @@ class Plugin(plugin.PluginBase):
             ))
         return cluster, cpu
 
+    def _wait_gluster_service_ready(self, engine_api, cluster_name):
+        self.logger.info(
+            _(
+                "Waiting for cluster '{name}' "
+                "to be configured for gluster..."
+            ).format(
+                name=cluster_name,
+            )
+        )
+        tries = self.VDSM_RETRIES
+        gluster_service = False
+        while not gluster_service and tries > 0:
+            tries -= 1
+            cluster = engine_api.clusters.get(cluster_name)
+            gluster_service = cluster.get_gluster_service()
+            if not gluster_service:
+                self.logger.debug(
+                    'cluster {cluster} cluster.__dict__ {cdict}'.format(
+                        cluster=cluster,
+                        cdict=cluster.__dict__,
+                    )
+                )
+                if tries % 30 == 0:
+                    self.logger.info(
+                        _(
+                            "Waiting for cluster '{name}' "
+                            "to be configured for gluster service..."
+                        ).format(
+                            name=cluster.name,
+                        )
+                    )
+                time.sleep(self.VDSM_DELAY)
+        if not gluster_service and tries == 0:
+            self.logger.error(_(
+                'Timed out while waiting for cluster to be configured '
+                'for gluster service. '
+                'Please check the logs.'
+            ))
+        return cluster, gluster_service
+
     def _wait_network_vlan_ready(self, engine_api, network_id, vlan_id):
         tries = self.VDSM_RETRIES
         updated = False
@@ -543,6 +583,23 @@ class Plugin(plugin.PluginBase):
                         mgmt_network_id,
                         vlan_id
                     )
+
+                if self.environment[
+                    ohostedcons.StorageEnv.ENABLE_HC_GLUSTER_SERVICE
+                ]:
+                    self.logger.debug(
+                        "Configuring the cluster for gluster service"
+                    )
+                    cluster.set_gluster_service(True)
+                    cluster.update()
+                    c, gluster_ready = self._wait_gluster_service_ready(
+                        engine_api,
+                        cluster_name
+                    )
+                    if not gluster_ready:
+                        raise RuntimeError(_(
+                            'Unable to configure the cluster for gluster'
+                        ))
 
                 self.logger.debug('Adding the host to the cluster')
 

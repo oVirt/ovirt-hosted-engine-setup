@@ -618,6 +618,12 @@ class StorageEnv(object):
 
     @ohostedattrs(
         answerfile=True,
+    )
+    def ENABLE_HC_GLUSTER_SERVICE(self):
+        return 'OVEHOSTED_ENGINE/enableHcGlusterService'
+
+    @ohostedattrs(
+        answerfile=True,
         summary=True,
         description=_('iSCSI Portal IP Address'),
     )
@@ -977,6 +983,7 @@ class Stages(object):
     CONFIG_STORAGE_LATE = 'ohosted.storage.configuration.late'
     CONFIG_STORAGE_BLOCKD = 'ohosted.storage.blockd.configuration.available'
     CONFIG_STORAGE_NFS = 'ohosted.storage.nfs.configuration.available'
+    CONFIG_STORAGE_HC = 'ohosted.storage.hc.configuration.available'
     CONFIG_GATEWAY = 'ohosted.networking.gateway.configuration.available'
     CONFIG_CLOUD_INIT_OPTIONS = 'ohosted.boot.configuration.cloud_init_options'
     CONFIG_CLOUD_INIT_VM_NETWORKING = \
