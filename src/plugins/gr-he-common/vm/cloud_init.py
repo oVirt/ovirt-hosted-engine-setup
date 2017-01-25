@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2015-2016 Red Hat, Inc.
+# Copyright (C) 2015-2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -959,7 +959,6 @@ class Plugin(plugin.PluginBase):
             ' else'
             ' echo "PermitRootLogin {root_ssh}" >> /etc/ssh/sshd_config;'
             ' fi\n'
-            ' - systemctl restart sshd\n'
         ).format(
             root_ssh=self.environment[
                 ohostedcons.CloudInit.ROOT_SSH_ACCESS
@@ -1029,6 +1028,7 @@ class Plugin(plugin.PluginBase):
                 '   owner: root:root\n'
                 '   permissions: \'0640\'\n'
                 'runcmd:\n'
+                ' - systemctl restart sshd &\n'
                 '{engine_restore}'
                 ' - /usr/bin/engine-setup --offline'
                 ' --config-append={applianceanswers}'
