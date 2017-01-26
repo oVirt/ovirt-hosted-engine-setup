@@ -1028,6 +1028,8 @@ class Plugin(plugin.PluginBase):
                 '   owner: root:root\n'
                 '   permissions: \'0640\'\n'
                 'runcmd:\n'
+                # restarting sshd only at runcmd stage and restarting it
+                # in background to be sure it will never block this script
                 ' - systemctl restart sshd &\n'
                 '{engine_restore}'
                 ' - /usr/bin/engine-setup --offline'
