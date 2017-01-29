@@ -569,7 +569,7 @@ class Plugin(plugin.PluginBase):
                 ] = self.dialog.queryString(
                     name='CI_INSTANCE_DOMAINNAME',
                     note=_(
-                        'Please provide the domain name you would like to'
+                        'Please provide the domain name you would like to '
                         'use for the engine appliance.\n'
                         'Engine VM domain: [@DEFAULT@]'
                     ),
