@@ -57,7 +57,6 @@
 ./src/plugins/gr-he-setup/storage/nfs.py
 ./src/plugins/gr-he-setup/storage/storage.py
 ./src/plugins/gr-he-setup/system/__init__.py
-./src/plugins/gr-he-setup/system/packages.py
 ./src/plugins/gr-he-setup/system/sshd.py
 ./src/plugins/gr-he-setup/system/vdsmenv.py
 ./src/plugins/gr-he-setup/vdsmd/cpu.py

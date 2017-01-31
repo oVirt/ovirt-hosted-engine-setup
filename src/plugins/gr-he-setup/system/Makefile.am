@@ -26,7 +26,6 @@ MAINTAINERCLEANFILES = \
 mydir=$(ovirthostedengineplugindir)/gr-he-setup/system
 dist_my_PYTHON = \
 	__init__.py \
-	packages.py \
 	vdsmenv.py \
 	sshd.py \
 	$(NULL)
