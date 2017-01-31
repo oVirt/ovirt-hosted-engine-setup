@@ -23,14 +23,12 @@
 
 from otopi import util
 
-from . import packages
 from . import sshd
 from . import vdsmenv
 
 
 @util.export
 def createPlugins(context):
-    packages.Plugin(context=context)
     vdsmenv.Plugin(context=context)
     sshd.Plugin(context=context)
 

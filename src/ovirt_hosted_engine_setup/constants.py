@@ -355,7 +355,6 @@ class Const(object):
     CLOUD_INIT_EXISTING = 'existing'
     CLOUD_INIT_APPLIANCEANSWERS = '/root/ovirt-engine-answers'
     CLOUD_INIT_HEANSWERS = '/root/heanswers.conf'
-    GLUSTER_MINIMUM_VERSION = '3.7.2'
     OVIRT_HE_CHANNEL_NAME = 'org.ovirt.hosted-engine-setup.0'
     OVIRT_HE_CHANNEL_PATH = '/var/lib/libvirt/qemu/channels/'
     VIRTIO_PORTS_PATH = '/dev/virtio-ports/'
@@ -899,7 +898,6 @@ class VDSMEnv(object):
     VDSM_UID = 'OVEHOSTED_VDSM/vdsmUid'
     KVM_GID = 'OVEHOSTED_VDSM/kvmGid'
     VDS_CLI = 'OVEHOSTED_VDSM/vdscli'
-    GLUSTER_MINIMUM_VERSION = 'OVEHOSTED_VDSM/glusterMinimumVersion'
 
     @ohostedattrs(
         answerfile=True,
