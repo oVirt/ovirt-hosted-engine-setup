@@ -32,6 +32,7 @@ from otopi import util
 
 from ovirt_setup_lib import dialog
 
+from ovirt_hosted_engine_ha.lib import upgrade
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import engineapi
 
@@ -296,6 +297,20 @@ class Plugin(plugin.PluginBase):
     )
     def _check_upgrade_requirements(self):
         self.logger.info('Checking version requirements')
+        upg = upgrade.Upgrade()
+        if not upg.is_conf_file_uptodate():
+            self.logger.error(_(
+                'Hosted-engine configuration didn\'t correctly reach 3.6 '
+                'level. Please successfully complete the upgrade to '
+                '3.6 before proceeding with this upgrade. '
+                )
+            )
+            raise RuntimeError(
+                _('Unsupported hosted-engine configuration level')
+            )
+        self.logger.info(
+            _('Hosted-engine configuration is at a compatible level')
+        )
         engine_api = engineapi.get_engine_api(self)
         self.logger.debug('Successfully connected to the engine')
         elements = engine_api.clusters.list() + engine_api.datacenters.list()
