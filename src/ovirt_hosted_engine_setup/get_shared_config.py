@@ -52,7 +52,7 @@ if __name__ == "__main__":
     if not value_and_type:
         sys.exit(1)
     print _('\n{key} : {value}, type : {config_type}\n').format(
-        key=sys.argv[1],
+        key=sys.argv[0],
         value=value_and_type[0],
         config_type=value_and_type[1]
     )
