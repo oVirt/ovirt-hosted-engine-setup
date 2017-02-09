@@ -198,12 +198,10 @@ class Plugin(plugin.PluginBase):
             )
             os.close(fd)
             _config = config.Config(logger=self.logger)
-            _config.refresh_local_conf_file(
-                localcopy_filename=self._temp_vm_conf,
-                archive_fname=ohostedcons.FileLocations.HECONFD_VM_CONF,
-            )
+            _config.refresh_vm_conf()
+            _orig_vm_conf = _config.get(config.ENGINE, config.CONF_FILE)
 
-            vm_conf = open(self._temp_vm_conf)
+            vm_conf = open(_orig_vm_conf)
             lines = vm_conf.readlines()
             self.logger.debug('Original vm.conf: {l}'.format(l=lines))
             vm_conf.close()
