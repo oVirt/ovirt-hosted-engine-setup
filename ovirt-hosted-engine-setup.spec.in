@@ -68,7 +68,7 @@ Requires:       qemu-img-rhev
 
 Requires:       otopi >= 1.6.0
 Requires:       ovirt-host-deploy >= 1.6.0
-Requires:       ovirt-hosted-engine-ha >= 2.1.0
+Requires:       ovirt-hosted-engine-ha >= 2.1.0.3
 Requires:       ovirt-engine-sdk-python >= 3.6.3.0
 Requires:       ovirt-setup-lib >= 1.1.0
 Requires:       glusterfs-cli >= 3.7.3
@@ -159,6 +159,9 @@ print((
 ' > %{_sysconfdir}/ovirt-hosted-engine/virsh_auth.conf
 
 %changelog
+* Wed Feb 15 2017 Simone Tiraboschi <stirabos@redhat.com> - 2.1.0.3-1
+- 2.1.0.3-1
+
 * Thu Feb 09 2017 Simone Tiraboschi <stirabos@redhat.com> - 2.1.0.3-0.0.master
 - 2.1.0.3-0.0.master
 
