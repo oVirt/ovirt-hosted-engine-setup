@@ -44,6 +44,28 @@ class GetSharedConfig(object):
                 _('Cannot connect to the HA daemon, please check the logs.\n')
             )
             return None
+        except KeyError:
+            config_keys_for_type = ha_cli.get_all_config_keys(config_type)
+            sys.stderr.write(
+                _('Invalid configuration key {key}.\n'.
+                  format(key=key)
+                 )
+            )
+            sys.stderr.write(
+                _('Available keys are:\n')
+            )
+            for c_type in config_keys_for_type:
+                sys.stderr.write(
+                    _('{c_type} : {keys}\n'.
+                      format(c_type=c_type,
+                             keys=config_keys_for_type[c_type]
+                            )
+                     )
+                )
+            return None
+        except Exception as e:
+            sys.stderr.write(str(e) + '\n')
+            return None
 
 if __name__ == "__main__":
     get_shared_config = GetSharedConfig()
