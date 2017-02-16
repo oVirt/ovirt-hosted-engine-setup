@@ -142,6 +142,9 @@ make %{?_smp_mflags} install DESTDIR="%{buildroot}"
 %{vdsmhooksdir}/before_vm_start/
 
 %post
+if [ -e %{_sysconfdir}/ovirt-hosted-engine/answers.conf ] ; then
+chown root:kvm %{_sysconfdir}/ovirt-hosted-engine/answers.conf
+fi
 touch %{_sysconfdir}/ovirt-hosted-engine/virsh_auth.conf
 chmod 600 %{_sysconfdir}/ovirt-hosted-engine/virsh_auth.conf
 python -c '
