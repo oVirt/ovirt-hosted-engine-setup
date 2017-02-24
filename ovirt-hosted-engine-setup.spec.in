@@ -86,7 +86,6 @@ Requires:       iproute
 Requires:       kexec-tools
 Requires:       m2crypto
 Requires:       ovirt-vmconsole-host
-Requires:       qemu-kvm-tools
 Requires:       socat
 Requires:       tar
 Requires:       tuned
