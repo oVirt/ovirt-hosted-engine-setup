@@ -335,7 +335,7 @@ class Plugin(plugin.PluginBase):
             # see: bz#1405386
             e_major = engine_api.get_product_info().get_version().major
             e_minor = engine_api.get_product_info().get_version().minor
-        if e_major and e_minor:
+        if e_major is not None and e_minor is not None:
             self._e_version = '{ma}.{mi}'.format(
                 ma=e_major,
                 mi=e_minor,
