@@ -165,6 +165,8 @@ class Plugin(plugin.PluginBase):
                     mode=0o600,
                     owner=ohostedcons.Defaults.DEFAULT_SYSTEM_USER_VDSM,
                     group=ohostedcons.Defaults.DEFAULT_SYSTEM_GROUP_KVM,
+                    downer=ohostedcons.Defaults.DEFAULT_SYSTEM_USER_VDSM,
+                    dgroup=ohostedcons.Defaults.DEFAULT_SYSTEM_GROUP_KVM,
                     enforcePermissions=True,
                 ),
             )
