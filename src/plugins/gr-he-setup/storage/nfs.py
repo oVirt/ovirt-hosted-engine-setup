@@ -371,6 +371,7 @@ class Plugin(plugin.PluginBase):
                     'the shared storage.'
                 )
             )
+            self.query_for_additional_mnt_options = True
         interactive = self.environment[
             ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
         ] is None
