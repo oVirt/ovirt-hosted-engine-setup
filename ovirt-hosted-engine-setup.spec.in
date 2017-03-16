@@ -81,7 +81,9 @@ Conflicts:      ovirt-engine-appliance >= 4.2
 
 # Dependencies that will be required by ovirt-host-deploy
 # avoiding to have them installed in the middle of the setup
+%ifarch %{ix86} x86_64
 Requires:       dmidecode
+%endif
 Requires:       iproute
 Requires:       kexec-tools
 Requires:       m2crypto
