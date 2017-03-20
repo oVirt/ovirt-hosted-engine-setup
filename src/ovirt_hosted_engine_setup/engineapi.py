@@ -36,6 +36,7 @@ def _(m):
 def get_engine_api(
     base,
     timeout=None,
+    attempts=ohostedcons.Defaults.DEFAULT_ENGINE_API_RETRY_ATTEMPTS,
 ):
     '''
     :param base: Reference to caller.
@@ -46,7 +47,8 @@ def get_engine_api(
     fqdn = base.environment[
         ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
     ]
-    while not valid:
+    while not valid and attempts > 0:
+        attempts = attempts - 1
         try:
             base.logger.info(_('Connecting to Engine'))
             insecure = False
@@ -67,10 +69,19 @@ def get_engine_api(
                 ],
                 insecure=insecure,
                 timeout=timeout if timeout else
-                ohostedcons.Defaults.DEFAULT_ENGINE_SETUP_TIMEOUT,
+                ohostedcons.Defaults.DEFAULT_ENGINE_API_TIMEOUT,
             )
             engine_api.clusters.list()
             valid = True
+        except ovirtsdk.infrastructure.errors.ConnectionError as e:
+            base.logger.debug(
+                _(
+                    'Cannot connect to Engine API on {fqdn}: \n'
+                    'Trying again \n'
+                ).format(
+                    fqdn=fqdn,
+                )
+            )
         except ovirtsdk.infrastructure.errors.RequestError as e:
             if e.status == 401:
                 if base.environment[
@@ -101,7 +112,7 @@ def get_engine_api(
                         )
                     )
             else:
-                base.logger.error(
+                base.logger.debug(
                     _(
                         'Cannot connect to Engine API on {fqdn}:\n'
                         '{details}\n'
@@ -110,13 +121,14 @@ def get_engine_api(
                         details=e.detail,
                     )
                 )
-                raise RuntimeError(
-                    _(
-                        'Cannot connect to Engine API on {fqdn}'
-                    ).format(
-                        fqdn=fqdn,
-                    )
-                )
+    if not valid:
+        raise RuntimeError(
+            _(
+                'Cannot connect to Engine API on {fqdn}'
+            ).format(
+                fqdn=fqdn,
+            )
+        )
     return engine_api
 
 
