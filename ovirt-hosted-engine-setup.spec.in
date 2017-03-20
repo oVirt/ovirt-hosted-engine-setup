@@ -77,7 +77,7 @@ Requires:       vdsm-python >= 4.18.999-466
 Requires(post): vdsm-python >= 4.18.999-466
 
 Conflicts:      ovirt-engine-appliance < 4.0
-Conflicts:      ovirt-engine-appliance >= 4.2
+Conflicts:      ovirt-engine-appliance >= 4.3
 
 # Dependencies that will be required by ovirt-host-deploy
 # avoiding to have them installed in the middle of the setup
