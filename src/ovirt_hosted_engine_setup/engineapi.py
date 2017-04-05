@@ -17,7 +17,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
-"""Connect engine API"""
+"""Connect to Engine API"""
 
 
 import gettext
@@ -48,7 +48,7 @@ def get_engine_api(
     ]
     while not valid:
         try:
-            base.logger.info(_('Connecting to the Engine'))
+            base.logger.info(_('Connecting to Engine'))
             insecure = False
             if base.environment[
                 ohostedcons.EngineEnv.INSECURE_SSL
@@ -78,8 +78,8 @@ def get_engine_api(
                 ]:
                     base.logger.error(
                         _(
-                            'The engine API didn''t accepted '
-                            'the administrator password you provided\n'
+                            'The Engine API didn''t accept '
+                            'the administrator password you provided.\n'
                             'Please enter it again to retry.'
                         )
                     )
@@ -96,14 +96,14 @@ def get_engine_api(
                 else:
                     raise RuntimeError(
                         _(
-                            'The engine API didn''t accepted '
+                            'The Engine API didn''t accept '
                             'the administrator password you provided\n'
                         )
                     )
             else:
                 base.logger.error(
                     _(
-                        'Cannot connect to engine APIs on {fqdn}:\n'
+                        'Cannot connect to Engine API on {fqdn}:\n'
                         '{details}\n'
                     ).format(
                         fqdn=fqdn,
@@ -112,7 +112,7 @@ def get_engine_api(
                 )
                 raise RuntimeError(
                     _(
-                        'Cannot connect to engine APIs on {fqdn}'
+                        'Cannot connect to Engine API on {fqdn}'
                     ).format(
                         fqdn=fqdn,
                     )
