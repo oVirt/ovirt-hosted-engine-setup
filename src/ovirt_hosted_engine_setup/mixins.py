@@ -273,7 +273,7 @@ class VmOperations(object):
 
         conf['devices'].append({
             "device": "virtio",
-            "specParams": {"source": "random"},
+            "specParams": {"source": "urandom"},
             "model": "virtio",
             "type": "rng",
         })

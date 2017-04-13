@@ -14,4 +14,4 @@ smp=@VCPUS@
 maxVCpus=@MAXVCPUS@
 cpuType=@CPU_TYPE@
 emulatedMachine=@EMULATED_MACHINE@
-devices={device:virtio,specParams:{source:random},model:virtio,type:rng}
+devices={device:virtio,specParams:{source:urandom},model:virtio,type:rng}
