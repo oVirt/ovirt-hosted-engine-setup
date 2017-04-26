@@ -371,6 +371,7 @@ class Const(object):
     UPGRADE_REQUIRED_CLUSTER_V = ['3.6', '4.0', '4.1']
     BACKUP_DISK_PREFIX = 'hosted-engine-backup-'
     APPLIANCE_RPM_NAME = '%s-appliance' % config.APPLIANCE_RPM_PREFIX
+    VM_LIVELINESS_CHECK_TIMEOUT = 600
 
 
 @util.export
@@ -1005,6 +1006,7 @@ class Stages(object):
     VM_CONFIGURED = 'ohosted.vm.state.configured'
     VM_RUNNING = 'ohosted.vm.state.running'
     VM_SHUTDOWN = 'ohosted.vm.state.shutdown'
+    ENGINE_VM_UP_CHECK = 'ohosted.engine.vm.up.check'
     BRIDGE_AVAILABLE = 'ohosted.network.bridge.available'
     BRIDGE_DETECTED = 'ohosted.network.bridge.detected'
     GOT_HOSTNAME_FIRST_HOST = 'ohosted.network.hostname.got'

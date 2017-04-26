@@ -27,8 +27,12 @@ from otopi import constants as otopicons
 from otopi import plugin
 from otopi import util
 
+from ovirt_hosted_engine_ha.lib.exceptions import BrokerConnectionError
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import util as ohostedutil
+from ovirt_hosted_engine_setup import vm_status
+
+import time
 
 
 def _(m):
@@ -144,6 +148,38 @@ class Plugin(plugin.PluginBase):
         # Using two stages here because some files can be written out of
         # transactions
         self.logger.debug('Finished persisting file configuration')
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CLOSEUP,
+        after=(
+            ohostedcons.Stages.HA_START,
+        ),
+        name=ohostedcons.Stages.ENGINE_VM_UP_CHECK,
+    )
+    def engine_vm_up_check(self):
+        timeout = ohostedcons.Const.VM_LIVELINESS_CHECK_TIMEOUT
+        vmstatus = vm_status.VmStatus()
+        self.logger.info('Waiting for engine to start...')
+        while timeout >= 0:
+            try:
+                if vmstatus.get_status()['engine_vm_up']:
+                    self.logger.info('Engine vm is up')
+                    break
+
+            except BrokerConnectionError as e:
+                self.logger.debug(str(e))
+
+            time.sleep(5)
+            timeout -= 5
+
+            if timeout % 60 == 0:
+                self.logger.info('Still waiting for engine to start...')
+
+        if timeout < 0:
+            self.logger.info(
+                'Engine vm is still powering up, please check the vm\'s '
+                'status using: \'hosted-engine --vm-status\''
+            )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_TERMINATE,
