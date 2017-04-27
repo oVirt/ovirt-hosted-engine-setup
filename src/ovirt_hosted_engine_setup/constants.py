@@ -491,6 +491,7 @@ class NetworkEnv(object):
 class EngineEnv(object):
 
     ADMIN_PASSWORD = 'OVEHOSTED_ENGINE/adminPassword'
+    ADMIN_USERNAME = 'OVEHOSTED_ENGINE/adminUsername'
     INTERACTIVE_ADMIN_PASSWORD = 'OVEHOSTED_ENGINE/interactiveAdminPassword'
 
     @ohostedattrs(
@@ -1090,6 +1091,7 @@ class Defaults(object):
     DEFAULT_ENGINE_API_RETRY_ATTEMPTS = 5
     DEFAULT_STATE_TRANS_NOTIFICATION = 'maintenance|start|stop|migrate|up|down'
     DEFAULT_TEMPDIR = '/var/tmp'
+    DEFAULT_ADMIN_USERNAME = 'admin@internal'
 
 
 @util.export

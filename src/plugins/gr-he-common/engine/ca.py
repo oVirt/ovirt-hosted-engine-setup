@@ -154,6 +154,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.EngineEnv.ADMIN_PASSWORD,
             None
         )
+        self.environment.setdefault(
+            ohostedcons.EngineEnv.ADMIN_USERNAME,
+            ohostedcons.Defaults.DEFAULT_ADMIN_USERNAME,
+        )
         self.environment[otopicons.CoreEnv.LOG_FILTER_KEYS].append(
             ohostedcons.EngineEnv.ADMIN_PASSWORD
         )
