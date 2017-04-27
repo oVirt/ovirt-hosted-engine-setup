@@ -60,7 +60,9 @@ def get_engine_api(
                 url='https://{fqdn}/ovirt-engine/api'.format(
                     fqdn=fqdn,
                 ),
-                username='admin@internal',
+                username=base.environment[
+                    ohostedcons.EngineEnv.ADMIN_USERNAME
+                ],
                 password=base.environment[
                     ohostedcons.EngineEnv.ADMIN_PASSWORD
                 ],
@@ -93,6 +95,16 @@ def get_engine_api(
                             'the administrator password you provided.\n'
                             'Please enter it again to retry.'
                         )
+                    )
+                    base.environment[
+                        ohostedcons.EngineEnv.ADMIN_USERNAME
+                    ] = base.dialog.queryString(
+                        name='ENGINE_ADMIN_USERNAME',
+                        note=_(
+                            'Enter engine admin username [@DEFAULT@]: '
+                        ),
+                        prompt=True,
+                        default=ohostedcons.Defaults.DEFAULT_ADMIN_USERNAME,
                     )
                     base.environment[
                         ohostedcons.EngineEnv.ADMIN_PASSWORD
