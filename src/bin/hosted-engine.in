@@ -77,9 +77,9 @@ Usage: $0 [--help] <command> [<command-args>]
         --check-liveliness
             Checks liveliness page of engine
         --connect-storage
-            Connect the storage domain
+            Connect the hosted engine storage domain
         --disconnect-storage
-            Disconnect any connected storage domains
+            Disconnect the hosted engine storage domain
         --console
             Open the configured console using virsh on localhost
         --set-maintenance --mode=<mode>
