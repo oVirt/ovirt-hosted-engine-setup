@@ -237,6 +237,7 @@ class Plugin(plugin.PluginBase):
         self._ovf_mem_size_mb = None
         self._appliances = []
         self._install_appliance = False
+        self._appliance_rpm_name = ohostedcons.Const.APPLIANCE_RPM_NAME
 
     def _detect_appliances(self):
         self._appliances = []
@@ -506,23 +507,31 @@ class Plugin(plugin.PluginBase):
     def _setup(self):
         self.command.detect('sudo')
         self.command.detect('qemu-img')
+        if self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE]:
+            self._appliance_rpm_name = ohostedcons.Const.APPLIANCE40_RPM_NAME
         self.logger.info(_('Detecting available oVirt engine appliances'))
         self._detect_appliances()
         if not self._appliances:
             msg = _('No engine appliance image is available on your system.')
             self.logger.error(msg)
-            self.dialog.note(_(
-                'The oVirt engine appliance is now required to deploy '
-                'hosted-engine.\n'
-                'You could get oVirt engine appliance installing '
-                'ovirt-engine-appliance rpm.'
-            ))
+            self.dialog.note(
+                _(
+                    'The engine appliance is now required to deploy '
+                    'hosted-engine.\n'
+                    'You could get it installing '
+                    '{appliance_rpm_name} rpm.'
+                ).format(
+                    appliance_rpm_name=self._appliance_rpm_name,
+                )
+            )
             self._install_appliance = dialog.queryBoolean(
                 dialog=self.dialog,
                 name='OVEHOSTED_INSTALL_OVIRT_ENGINE_APPLIANCE',
                 note=_(
-                    'Do you want to install ovirt-engine-appliance rpm? '
+                    'Do you want to install {appliance_rpm_name} rpm? '
                     '(@VALUES@) [@DEFAULT@]: '
+                ).format(
+                    appliance_rpm_name=self._appliance_rpm_name,
                 ),
                 prompt=True,
                 default=True,
@@ -537,7 +546,7 @@ class Plugin(plugin.PluginBase):
     def _internal_packages(self):
         self.logger.info(_('Installing the oVirt engine appliance'))
         self.packager.install(
-            packages=(ohostedcons.Const.APPLIANCE_RPM_NAME,)
+            packages=(self._appliance_rpm_name,)
         )
 
     @plugin.event(
