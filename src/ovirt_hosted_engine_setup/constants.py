@@ -371,6 +371,7 @@ class Const(object):
     UPGRADE_REQUIRED_CLUSTER_V = ['3.6', '4.0', '4.1']
     BACKUP_DISK_PREFIX = 'hosted-engine-backup-'
     APPLIANCE_RPM_NAME = '%s-appliance' % config.APPLIANCE_RPM_PREFIX
+    APPLIANCE40_RPM_NAME = '%s-appliance' % config.APPLIANCE40_RPM_PREFIX
 
 
 @util.export
