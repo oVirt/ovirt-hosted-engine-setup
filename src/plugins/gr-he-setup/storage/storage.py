@@ -482,7 +482,7 @@ class Plugin(plugin.PluginBase):
                             _('Connection to storage server failed')
                         )
 
-        if self._fake_SD_path:
+        if self._fake_SD_path and not disconnect:
             # We have to keep the loopback device mounted
             # and use the real file path cause VDSM forcefully
             # resolves it!
@@ -582,6 +582,25 @@ class Plugin(plugin.PluginBase):
         )
         if status['status']['code'] != 0:
                 raise RuntimeError(status['status']['message'])
+
+    def _disconnectFakeStorageDomain(self):
+        self.logger.debug('_disconnectFakeStorageDomain')
+        fakeSDconList = [{
+            'connection': self._fake_file,
+            'spec': self._fake_file,
+            'vfsType': self.VFSTYPE,
+            'id': self.environment[
+                ohostedcons.StorageEnv.FAKE_MASTER_SD_CONNECTION_UUID
+            ],
+        }]
+        status = self.cli.disconnectStorageServer(
+            ohostedcons.Const.BLANK_UUID,
+            ohostedcons.VDSMConstants.POSIXFS_DOMAIN,
+            fakeSDconList
+        )
+        self.logger.debug(status)
+        if status['status']['code'] != 0:
+            raise RuntimeError(status['status']['message'])
 
     def _createStoragePool(self):
         self.logger.debug('createStoragePool')
@@ -985,6 +1004,7 @@ class Plugin(plugin.PluginBase):
         self.logger.info(_('Destroying Storage Pool'))
         self._destroyStoragePool()
         self._destroyFakeStorageDomain()
+        self._disconnectFakeStorageDomain()
         self._remove_loopback_device()
         self.logger.info(_('Start monitoring domain'))
         self._startMonitoringDomain()
@@ -1016,6 +1036,7 @@ class Plugin(plugin.PluginBase):
             try:
                 self._destroyStoragePool()
                 self._destroyFakeStorageDomain()
+                self._disconnectFakeStorageDomain()
                 self._remove_loopback_device()
             except RuntimeError:
                 self.logger.debug('Not SPM?', exc_info=True)
