@@ -99,6 +99,7 @@ Requires:       collectd-netlink
 Requires:       collectd-virt
 Requires:       collectd-write_http
 Requires:       fluentd
+Requires:       rubygem-fluent-plugin-collectd-nest
 Requires:       rubygem-fluent-plugin-rewrite-tag-filter
 Requires:       rubygem-fluent-plugin-secure-forward
 
