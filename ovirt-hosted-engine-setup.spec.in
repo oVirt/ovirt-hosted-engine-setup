@@ -69,14 +69,14 @@ Requires:       qemu-img-rhev
 Requires:       otopi >= 1.6.0
 Requires:       ovirt-host-deploy >= 1.6.0
 Requires:       ovirt-hosted-engine-ha >= 2.1.0.3
-Requires:       ovirt-engine-sdk-python >= 3.6.3.0
+Requires:       ovirt-engine-sdk-python >= 3.6.9.1
 Requires:       ovirt-setup-lib >= 1.1.1
 Requires:       glusterfs-cli >= 3.7.3
-Requires:       vdsm >= 4.19.3
-Requires:       vdsm-cli >= 4.19.3
-Requires:       vdsm-client >= 4.19.3
-Requires:       vdsm-python >= 4.19.3
-Requires(post): vdsm-python >= 4.19.3
+Requires:       vdsm >= 4.19.17
+Requires:       vdsm-cli >= 4.19.17
+Requires:       vdsm-client >= 4.19.17
+Requires:       vdsm-python >= 4.19.17
+Requires(post): vdsm-python >= 4.19.17
 
 Conflicts:      ovirt-engine-appliance < 4.0
 Conflicts:      ovirt-engine-appliance >= 4.2
@@ -165,6 +165,9 @@ print((
 ' > %{_sysconfdir}/ovirt-hosted-engine/virsh_auth.conf
 
 %changelog
+* Wed May 31 2017 Simone Tiraboschi <stirabos@redhat.com> - 2.1.2-1
+- 2.1.2-1
+
 * Thu May 25 2017 Simone Tiraboschi <stirabos@redhat.com> - 2.1.2-0.0.master
 - 2.1.2-0.0.master
 
