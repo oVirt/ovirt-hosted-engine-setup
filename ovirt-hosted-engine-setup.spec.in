@@ -101,6 +101,7 @@ Requires:       fluentd
 Requires:       rubygem-fluent-plugin-collectd-nest
 Requires:       rubygem-fluent-plugin-rewrite-tag-filter
 Requires:       rubygem-fluent-plugin-secure-forward
+Requires:       rubygem-fluent-plugin-viaq_data_model
 
 %description
 Hosted Engine setup tool for oVirt project.
