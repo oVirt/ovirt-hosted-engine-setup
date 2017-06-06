@@ -58,21 +58,6 @@ class Plugin(plugin.PluginBase):
         self._enable = False
         self._directory_name = None
 
-    # TODO: Fix to support also IPv6
-    _INET_ADDRESS_RE = re.compile(
-        flags=re.VERBOSE,
-        pattern=r"""
-            \s+
-            inet
-            \s
-            (?P<address>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/\d{1,2})
-            .+
-            \s+
-            (?P<interface>[a-zA-Z0-9_.]+)
-            $
-    """
-    )
-
     def _validate_ip_cidr(self, ipcidr):
         try:
             ip = netaddr.IPNetwork(ipcidr)
@@ -115,26 +100,16 @@ class Plugin(plugin.PluginBase):
                 device=device,
             )
         )
-        rc, stdout, stderr = self.execute(
-            args=(
-                self.command.get('ip'),
-                'addr',
-                'show',
-                device,
-            ),
+        addresses = self._hostname_helper.getLocalAddresses(
+            exclude_loopback=True,
+            device=device
         )
-        address = None
-        for line in stdout:
-            addressmatch = self._INET_ADDRESS_RE.match(line)
-            if addressmatch is not None:
-                address = addressmatch.group('address')
-                break
-        self.logger.debug('address: ' + str(address))
-
-        if address is None:
+        if not addresses:
             raise RuntimeError(
                 _('Cannot acquire nic/bridge address')
             )
+        address = addresses.pop()
+        self.logger.debug('address: ' + str(address))
         try:
             ipna = netaddr.IPNetwork(address)
         except netaddr.AddrFormatError:
