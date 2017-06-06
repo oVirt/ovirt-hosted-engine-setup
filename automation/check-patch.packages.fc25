@@ -7,3 +7,5 @@ python-isort
 python-pep8
 pyflakes
 pytest
+dnf
+dnf-command(builddep)

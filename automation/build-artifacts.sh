@@ -10,7 +10,13 @@ SUFFIX=".$(date -u +%Y%m%d%H%M%S).git$(git rev-parse --short HEAD)"
 autoreconf -ivf
 ./configure
 make dist
-yum-builddep ovirt-hosted-engine-setup.spec
+
+if [ -x /usr/bin/dnf ] ; then
+    dnf builddep ovirt-hosted-engine-setup.spec
+else
+    yum-builddep ovirt-hosted-engine-setup.spec
+fi
+
 rpmbuild \
     -D "_topdir $PWD/tmp.repos" \
     -D "release_suffix ${SUFFIX}" \

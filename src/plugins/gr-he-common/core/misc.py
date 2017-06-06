@@ -22,17 +22,17 @@
 
 
 import gettext
+import time
 
 from otopi import constants as otopicons
 from otopi import plugin
 from otopi import util
 
 from ovirt_hosted_engine_ha.lib.exceptions import BrokerConnectionError
+
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import util as ohostedutil
 from ovirt_hosted_engine_setup import vm_status
-
-import time
 
 
 def _(m):
