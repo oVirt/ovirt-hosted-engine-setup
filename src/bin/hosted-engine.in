@@ -36,7 +36,8 @@ exit_not_deployed() {
 
 check_vm_conf() {
     if [ ! -r "${conf}" ] ; then
-        echo "Unable to read vm.conf, please check ovirt-ha-agent logs"
+        echo The hosted engine configuration has not been retrieved from shared storage.\
+             Please ensure that ovirt-ha-agent is running and the storage server is reachable.
         exit 1
     fi
 }
@@ -77,9 +78,9 @@ Usage: $0 [--help] <command> [<command-args>]
         --check-liveliness
             Checks liveliness page of engine
         --connect-storage
-            Connect the storage domain
+            Connect the hosted engine storage domain
         --disconnect-storage
-            Disconnect any connected storage domains
+            Disconnect the hosted engine storage domain
         --console
             Open the configured console using virsh on localhost
         --set-maintenance --mode=<mode>
@@ -192,7 +193,7 @@ return ;}
         local status=
         status=$(${VDSMHELPER} checkVmStatus ${vmid})
         if [[ $status == *"Down"* ]]; then
-            echo "VM exists and is down, destroying it"
+            echo "VM exists and is down, cleaning up and restarting"
             ${VDSMHELPER} destroy "${vmid}"
         elif [ -n "${status}" ]; then
             echo "VM exists and its status is ${status}"
