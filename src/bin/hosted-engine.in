@@ -36,7 +36,8 @@ exit_not_deployed() {
 
 check_vm_conf() {
     if [ ! -r "${conf}" ] ; then
-        echo "Unable to read vm.conf, please check ovirt-ha-agent logs"
+        echo The hosted engine configuration has not been retrieved from shared storage.\
+             Please ensure that ovirt-ha-agent is running and the storage server is reachable.
         exit 1
     fi
 }
