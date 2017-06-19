@@ -67,42 +67,18 @@ Requires:       qemu-img-rhev
 
 
 Requires:       otopi >= 1.6.0
-Requires:       ovirt-host-deploy >= 1.6.0
+Requires:       ovirt-host-deploy >= 1.7.0
 Requires:       ovirt-hosted-engine-ha >= 2.2.0
 Requires:       ovirt-engine-sdk-python >= 3.6.9.1
 Requires:       ovirt-setup-lib >= 1.1.3
 Requires:       glusterfs-cli >= 3.10.0
-Requires:       vdsm >= 4.19.17
-Requires:       vdsm-client >= 4.19.17
-Requires:       vdsm-python >= 4.19.17
-Requires(post): vdsm-python >= 4.19.17
+Requires:       vdsm-python >= 4.20.0
+Requires(post): vdsm-python >= 4.20.0
+Requires:       ovirt-host >= 4.2.0
 
 Conflicts:      ovirt-engine-appliance < 4.0
 Conflicts:      ovirt-engine-appliance >= 4.3
 
-# Dependencies that will be required by ovirt-host-deploy
-# avoiding to have them installed in the middle of the setup
-%ifarch %{ix86} x86_64
-Requires:       dmidecode
-%endif
-Requires:       iproute
-Requires:       kexec-tools
-Requires:       m2crypto
-Requires:       ovirt-vmconsole-host
-Requires:       socat
-Requires:       tar
-Requires:       tuned
-Requires:       util-linux
-Requires:       collectd
-Requires:       collectd-disk
-Requires:       collectd-netlink
-Requires:       collectd-virt
-Requires:       collectd-write_http
-Requires:       fluentd
-Requires:       rubygem-fluent-plugin-collectd-nest
-Requires:       rubygem-fluent-plugin-rewrite-tag-filter
-Requires:       rubygem-fluent-plugin-secure-forward
-Requires:       rubygem-fluent-plugin-viaq_data_model
 
 %description
 Hosted Engine setup tool for oVirt project.
