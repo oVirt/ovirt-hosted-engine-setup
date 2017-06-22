@@ -27,6 +27,8 @@ import random
 import string
 import time
 
+from vdsm.client import ServerError
+
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import tasks
 
@@ -61,18 +63,18 @@ class VmOperations(object):
         displaySecurePort = 5901
         cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         try:
-            stats = cli.getVmStats(
-                self.environment[ohostedcons.VMEnv.VM_UUID]
-            )
+            stats = cli.VM.getStats(
+                vmID=self.environment[ohostedcons.VMEnv.VM_UUID]
+            )[0]
             self.logger.debug(stats)
-            if stats['status']['code'] != 0:
-                self.logger.error(stats['status']['message'])
-            else:
-                statsList = stats['items'][0]
-                displaySecurePort = statsList.get(
-                    'displaySecurePort', displaySecurePort
-                )
-                displayPort = statsList.get('displayPort', displayPort)
+            displaySecurePort = stats.get(
+                'displaySecurePort', displaySecurePort
+            )
+            displayPort = stats.get('displayPort', displayPort)
+
+        except ServerError as e:
+            self.logger.error(str(e))
+
         except Exception:
             self.logger.debug(
                 'Error getting VM stats',
@@ -279,14 +281,14 @@ class VmOperations(object):
         })
 
         cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        status = cli.create(conf)
-        self.logger.debug(status)
-        if status['status']['code'] != 0:
-            raise RuntimeError(
-                _(
-                    'Cannot create the VM: {message}'
-                ).format(
-                    message=status['status']['message']
+        try:
+            cli.VM.create(
+                vmID=conf['vmId'],
+                vmParams=conf
+            )
+        except ServerError as e:
+            raise RuntimeError(_('Cannot create the VM: {message}').format(
+                    message=str(e)
                 )
             )
         # Now it's in WaitForLaunch, need to be on powering up
@@ -294,21 +296,21 @@ class VmOperations(object):
         tries = self.POWER_MAX_TRIES
         while not powering and tries > 0:
             tries -= 1
-            stats = cli.getVmStats(
-                self.environment[ohostedcons.VMEnv.VM_UUID]
-            )
+            try:
+                stats = cli.VM.getStats(
+                    vmID=self.environment[ohostedcons.VMEnv.VM_UUID]
+                )[0]
+            except ServerError as e:
+                raise RuntimeError(str(e))
+
             self.logger.debug(stats)
-            if stats['status']['code'] != 0:
-                raise RuntimeError(stats['status']['message'])
+            if stats['status'] in ('Powering up', 'Up'):
+                powering = True
+            elif stats['status'] == 'Down':
+                # VM creation failure
+                tries = 0
             else:
-                statsList = stats['items'][0]
-                if statsList['status'] in ('Powering up', 'Up'):
-                    powering = True
-                elif statsList['status'] == 'Down':
-                    # VM creation failure
-                    tries = 0
-                else:
-                    time.sleep(self.POWER_DELAY)
+                time.sleep(self.POWER_DELAY)
         if not powering:
             raise RuntimeError(
                 _(
@@ -320,20 +322,21 @@ class VmOperations(object):
         tries = self.TICKET_MAX_TRIES
         while not password_set and tries > 0:
             tries -= 1
-            status = cli.setVmTicket(
-                vmID=self.environment[ohostedcons.VMEnv.VM_UUID],
-                password=self.environment[ohostedcons.VMEnv.VM_PASSWD],
-                ttl=self.environment[
-                    ohostedcons.VMEnv.VM_PASSWD_VALIDITY_SECS
-                ],
-                existingConnAction='keep',
-                params={},
-            )
-            self.logger.debug(status)
-            if status['status']['code'] == 0:
+            try:
+                cli.VM.setTicket(
+                    vmID=self.environment[ohostedcons.VMEnv.VM_UUID],
+                    password=self.environment[ohostedcons.VMEnv.VM_PASSWD],
+                    ttl=self.environment[
+                        ohostedcons.VMEnv.VM_PASSWD_VALIDITY_SECS
+                    ],
+                    existingConnAction='keep',
+                    params={},
+                )
                 password_set = True
-            else:
+            except ServerError as e:
+                self.logger.debug(e)
                 time.sleep(self.TICKET_DELAY)
+
         if not password_set:
             raise RuntimeError(
                 _(
@@ -388,8 +391,12 @@ class VmOperations(object):
 
     def _destroy_vm(self):
         cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        res = cli.destroy(self.environment[ohostedcons.VMEnv.VM_UUID])
-        self.logger.debug(res)
+        try:
+            cli.VM.destroy(
+                vmID=self.environment[ohostedcons.VMEnv.VM_UUID]
+            )
+        except ServerError as e:
+            self.logger.debug(str(e))
 
     def _wait_vm_destroyed(self):
         waiter = tasks.VMDownWaiter(self.environment)

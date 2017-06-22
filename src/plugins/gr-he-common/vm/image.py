@@ -29,6 +29,8 @@ import uuid
 from otopi import plugin
 from otopi import util
 
+from vdsm.client import ServerError
+
 from ovirt_hosted_engine_ha.lib import heconflib
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
@@ -262,12 +264,13 @@ class Plugin(plugin.PluginBase):
         ):
             # Checking the available space on VG where
             # we have to preallocate the image
-            vginfo = cli.getVGInfo(
-                self.environment[ohostedcons.StorageEnv.VG_UUID]
-            )
+            try:
+                vg_uuid = self.environment[ohostedcons.StorageEnv.VG_UUID]
+                vginfo = cli.LVMVolumeGroup.getInfo(lvmvolumegroupID=vg_uuid)
+            except ServerError as e:
+                raise RuntimeError(str(e))
+
             self.logger.debug(vginfo)
-            if vginfo['status']['code'] != 0:
-                raise RuntimeError(vginfo['status']['message'])
             vgfree = int(vginfo['vgfree'])
             available_gb = vgfree / pow(2, 30)
             required_size = int(self.environment[

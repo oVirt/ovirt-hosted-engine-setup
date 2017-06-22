@@ -24,6 +24,8 @@ import time
 from otopi import base
 from otopi import util
 
+from vdsm.client import ServerError
+
 from ovirt_hosted_engine_setup import constants as ohostedcons
 
 
@@ -50,21 +52,19 @@ class VMDownWaiter(base.Base):
         while not down:
             time.sleep(self.POLLING_INTERVAL)
             self.logger.debug('Waiting for VM down')
-            response = cli.getVmStats(
-                self.environment[ohostedcons.VMEnv.VM_UUID]
-            )
-            code = response['status']['code']
-            message = response['status']['message']
-            self.logger.debug(message)
-            if code == 0:
-                stats = response['items'][0]
+            try:
+                stats = cli.VM.getStats(
+                    vmID=self.environment[ohostedcons.VMEnv.VM_UUID]
+                )[0]
                 down = (stats['status'] == 'Down')
-            elif code == 1:
-                # Assuming VM destroyed
-                down = True
-                destroyed = True
-            else:
-                raise RuntimeError(_('Error acquiring VM status'))
+            except ServerError as e:
+                if e.code == 1:
+                    # Assuming VM destroyed
+                    down = True
+                    destroyed = True
+                else:
+                    self.logger.debug(str(e))
+                    raise RuntimeError(_('Error acquiring VM status'))
         return destroyed
 
 
@@ -86,13 +86,15 @@ class DomainMonitorWaiter(base.Base):
         while not acquired:
             time.sleep(self.POLLING_INTERVAL)
             self.logger.debug('Waiting for domain monitor')
-            response = cli.getVdsStats()
-            self.logger.debug(response)
-            if response['status']['code'] != 0:
-                self.logger.debug(response['status']['message'])
-                raise RuntimeError(_('Error acquiring VDS status'))
             try:
-                domains = response['storageDomains']
+                stats = cli.Host.getStats()
+                self.logger.debug(stats)
+            except ServerError as e:
+                self.logger.debug(str(e))
+                raise RuntimeError(_('Error acquiring VDS status'))
+
+            try:
+                domains = stats['storageDomains']
                 acquired = domains[sdUUID]['acquired']
             except KeyError:
                 self.logger.debug(
@@ -114,32 +116,33 @@ class TaskWaiter(base.Base):
 
     def wait(self, task_id, timeout=600):
         cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        info = cli.getTaskInfo(taskID=task_id)
-        self.logger.debug(info)
-        if 'status' not in info or info['status']['code'] != 0:
+        try:
+            info = cli.Task.getInfo(taskID=task_id)
+            self.logger.debug(info)
+        except ServerError as e:
             raise RuntimeError(
                 _('Failed getting task info: {m}').format(
-                    m=info['status']['message'],
+                    m=str(e),
                 )
             )
+
         verb = 'unknown'
         if 'verb' in info:
             verb = info['verb']
         while timeout > 0:
-            res = cli.getTaskStatus(taskID=task_id)
-            self.logger.debug(res)
-            if 'status' not in res or res['status']['code'] != 0:
+            try:
+                res = cli.Task.getStatus(taskID=task_id)
+                self.logger.debug(res)
+            except ServerError as e:
                 raise RuntimeError(
                     _('Failed getting task status: {m}').format(
-                        m=res['status']['message'],
+                        m=str(e),
                     )
                 )
+
             if 'taskState' in res and res['taskState'] == 'finished':
-                return {
-                    'message': res['status']['message'],
-                    'code': res['code'],
-                    'taskResult': res['taskResult'],
-                }
+                return res
+
             if timeout % 10 == 0:
                 self.logger.info(
                     _('Waiting for {v} to complete').format(v=verb)

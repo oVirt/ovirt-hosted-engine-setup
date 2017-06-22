@@ -42,6 +42,8 @@ from otopi import plugin
 from otopi import transaction
 from otopi import util
 
+from vdsm.client import ServerError
+
 from ovirt_setup_lib import dialog
 
 from ovirt_hosted_engine_ha.lib import heconflib
@@ -109,23 +111,24 @@ class ImageTransaction(transaction.TransactionElement):
         source_size = int(info['virtual-size'])
 
         cli = self._parent.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        size = cli.getVolumeSize(
-            volumeID=self._parent.environment[
-                ohostedcons.StorageEnv.VOL_UUID
-            ],
-            storagepoolID=self._parent.environment[
-                ohostedcons.StorageEnv.SP_UUID
-            ],
-            storagedomainID=self._parent.environment[
-                ohostedcons.StorageEnv.SD_UUID
-            ],
-            imageID=self._parent.environment[
-                ohostedcons.StorageEnv.IMG_UUID
-            ],
-        )
+        try:
+            size = cli.Volume.getSize(
+                volumeID=self._parent.environment[
+                    ohostedcons.StorageEnv.VOL_UUID
+                ],
+                storagepoolID=self._parent.environment[
+                    ohostedcons.StorageEnv.SP_UUID
+                ],
+                storagedomainID=self._parent.environment[
+                    ohostedcons.StorageEnv.SD_UUID
+                ],
+                imageID=self._parent.environment[
+                    ohostedcons.StorageEnv.IMG_UUID
+                ],
+            )
+        except ServerError as e:
+            raise RuntimeError(str(e))
 
-        if size['status']['code']:
-            raise RuntimeError(size['status']['message'])
         destination_size = int(size['apparentsize'])
         if destination_size < source_size:
             raise RuntimeError(
@@ -482,24 +485,29 @@ class Plugin(plugin.PluginBase):
         return success
 
     def _get_image_path(self, imageID, volumeID):
-        status = self.environment[ohostedcons.VDSMEnv.VDS_CLI].prepareImage(
-            storagepoolID=ohostedcons.Const.BLANK_UUID,
-            storagedomainID=self.environment[ohostedcons.StorageEnv.SD_UUID],
-            imageID=imageID,
-            volumeID=volumeID,
-        )
-        self.logger.debug('_get_image_path: {s}'.format(s=status))
-        if 'status' not in status or status['status']['code'] != 0:
+        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        try:
+            pathDict = cli.Image.prepare(
+                storagepoolID=ohostedcons.Const.BLANK_UUID,
+                storagedomainID=self.environment[
+                    ohostedcons.StorageEnv.SD_UUID
+                ],
+                imageID=imageID,
+                volumeID=volumeID,
+            )
+            self.logger.debug('_get_image_path: {s}'.format(s=pathDict))
+        except ServerError as e:
             raise RuntimeError(
                 _('Failed preparing the disk: {m}').format(
-                    m=status['status']['message'],
+                    m=str(e),
                 )
             )
-        if 'path' not in status:
+
+        if 'path' not in pathDict:
             raise RuntimeError(
                 _('Unable to get the disk path')
             )
-        return status['path']
+        return pathDict['path']
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,

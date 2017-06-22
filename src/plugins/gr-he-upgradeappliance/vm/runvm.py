@@ -32,6 +32,8 @@ import time
 from otopi import plugin
 from otopi import util
 
+from vdsm.client import ServerError
+
 from ovirt_hosted_engine_ha.env import config
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
@@ -58,36 +60,42 @@ class Plugin(plugin.PluginBase):
         POWER_MAX_TRIES = 20
         POWER_DELAY = 3
         cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        status = cli.create(vm_params)
-        self.logger.debug(status)
-        if status['status']['code'] != 0:
+        try:
+            status = cli.VM.create(
+                vmID=vm_params['vmId'],
+                vmParams=vm_params
+            )
+            self.logger.debug(status)
+        except ServerError as e:
             raise RuntimeError(
                 _(
                     'Cannot create the VM: {message}'
                 ).format(
-                    message=status['status']['message']
+                    message=str(e)
                 )
             )
+
         # Now it's in WaitForLaunch, need to be on powering up
         powering = False
         tries = POWER_MAX_TRIES
         while not powering and tries > 0:
             tries -= 1
-            stats = cli.getVmStats(
-                self.environment[ohostedcons.VMEnv.VM_UUID]
-            )
-            self.logger.debug(stats)
-            if stats['status']['code'] != 0:
-                raise RuntimeError(stats['status']['message'])
+            try:
+                stats = cli.VM.getStats(
+                    vmID=self.environment[ohostedcons.VMEnv.VM_UUID]
+                )[0]
+                self.logger.debug(stats)
+            except ServerError as e:
+                raise RuntimeError(str(e))
+
+            if stats['status'] in ('Powering up', 'Up'):
+                powering = True
+            elif stats['status'] == 'Down':
+                # VM creation failure
+                tries = 0
             else:
-                statsList = stats['items'][0]
-                if statsList['status'] in ('Powering up', 'Up'):
-                    powering = True
-                elif statsList['status'] == 'Down':
-                    # VM creation failure
-                    tries = 0
-                else:
-                    time.sleep(POWER_DELAY)
+                time.sleep(POWER_DELAY)
+
         if not powering:
             raise RuntimeError(
                 _(
@@ -114,26 +122,27 @@ class Plugin(plugin.PluginBase):
     def _misc_shutdown(self):
         self.logger.info(_('Shutting down the current engine VM'))
         cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        res = cli.shutdown(self.environment[ohostedcons.VMEnv.VM_UUID])
-        self.logger.debug(res)
+        try:
+            cli.VM.shutdown(
+                vmID=self.environment[ohostedcons.VMEnv.VM_UUID]
+            )
+        except ServerError as e:
+            self.logger.debug(str(e))
 
         waiter = tasks.VMDownWaiter(self.environment)
         if not waiter.wait():
             # The VM is down but not destroyed
-            status = self.environment[
-                ohostedcons.VDSMEnv.VDS_CLI
-            ].destroy(
-                self.environment[ohostedcons.VMEnv.VM_UUID]
-            )
-            self.logger.debug(status)
-            if status['status']['code'] != 0:
+            try:
+                cli.VM.destroy(
+                    vmID=self.environment[ohostedcons.VMEnv.VM_UUID]
+                )
+            except ServerError as e:
                 self.logger.error(
-                    _(
-                        'Cannot destroy the Hosted Engine VM: ' +
-                        status['status']['message']
+                    _('Cannot destroy the Hosted Engine VM: {error}').format(
+                        error=str(e)
                     )
                 )
-                raise RuntimeError(status['status']['message'])
+                raise RuntimeError(str(e))
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
@@ -148,34 +157,42 @@ class Plugin(plugin.PluginBase):
     def _misc_extend_disk(self):
         self.logger.info(_('Extending VM disk'))
         cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        res = cli.getStorageDomainInfo(
-            storagedomainID=self.environment[ohostedcons.StorageEnv.SD_UUID]
-        )
-        self.logger.debug(res)
-        if 'status' not in res or res['status']['code'] != 0:
+        try:
+            res = cli.StorageDomain.getInfo(
+                storagedomainID=self.environment[
+                    ohostedcons.StorageEnv.SD_UUID
+                ]
+            )
+            self.logger.debug(res)
+        except ServerError as e:
             raise RuntimeError(
                 _('Failed getting storage domain info: {m}').format(
-                    m=res['status']['message'],
+                    m=str(e),
                 )
             )
+
         pool_id = res['pool'][0]
-        res = cli.extendVolumeSize(
-            storagepoolID=pool_id,
-            storagedomainID=self.environment[ohostedcons.StorageEnv.SD_UUID],
-            imageID=self.environment[ohostedcons.StorageEnv.IMG_UUID],
-            volumeID=self.environment[ohostedcons.StorageEnv.VOL_UUID],
-            newSize=str(int(self.environment[
-                ohostedcons.StorageEnv.IMAGE_SIZE_GB
-            ])*1024*1024*1024),
-        )
-        self.logger.debug(res)
-        if 'status' not in res or res['status']['code'] != 0:
+
+        try:
+            task_id = cli.Volume.extendSize(
+                storagepoolID=pool_id,
+                storagedomainID=self.environment[
+                    ohostedcons.StorageEnv.SD_UUID
+                ],
+                imageID=self.environment[ohostedcons.StorageEnv.IMG_UUID],
+                volumeID=self.environment[ohostedcons.StorageEnv.VOL_UUID],
+                newSize=str(int(self.environment[
+                    ohostedcons.StorageEnv.IMAGE_SIZE_GB
+                ])*1024*1024*1024),
+            )
+            self.logger.debug(task_id)
+        except ServerError as e:
             raise RuntimeError(
                 _('Failed getting storage domain info: {m}').format(
-                    m=res['status']['message'],
+                    m=str(e),
                 )
             )
-        task_id = res['status']['message']
+
         waiter = tasks.TaskWaiter(self.environment)
         res = waiter.wait(task_id, 1800)
         self.logger.debug(res)

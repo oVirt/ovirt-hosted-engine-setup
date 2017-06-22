@@ -30,6 +30,8 @@ from otopi import context as otopicontext
 from otopi import plugin
 from otopi import util
 
+from vdsm.client import ServerError
+
 from ovirt_setup_lib import dialog
 
 from ovirt_hosted_engine_ha.lib import upgrade
@@ -77,14 +79,16 @@ class Plugin(plugin.PluginBase):
 
     def _get_host_uuid(self):
         conn = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        hw_info = conn.getVdsHardwareInfo()
-        self.logger.debug('hw_info: {h}'.format(h=hw_info))
-        if hw_info['status']['code'] != 0:
+        try:
+            hw_info = conn.Host.getHardwareInfo()
+            self.logger.debug('hw_info: {h}'.format(h=hw_info))
+        except ServerError as e:
             raise RuntimeError(
                 'Unable to get host uuid: {message}'.format(
-                    message=hw_info['status']['message'],
+                    message=str(e),
                 )
             )
+
         return hw_info['systemUUID']
 
     def _wait_disk_ready(self, engine_api, d_img_id, registering):

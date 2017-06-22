@@ -31,6 +31,8 @@ from otopi import constants as otopicons
 from otopi import plugin
 from otopi import util
 
+from vdsm.client import ServerError
+
 from ovirt_setup_lib import dialog
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
@@ -301,22 +303,24 @@ class Plugin(plugin.PluginBase):
             ).lower() == _('Force').lower()
 
     def _iscsi_discovery(self, address, port, user, password):
-        targets = self.cli.discoverSendTargets(
-            host=address,
-            port=port,
-            user=user,
-            password=password,
-        )
-        self.logger.debug(targets)
-        if targets['status']['code'] != 0:
-            raise RuntimeError(targets['status']['message'])
+        try:
+            targets = self.cli.ISCSIConnection.discoverSendTargets(
+                host=address,
+                port=port,
+                user=user,
+                password=password,
+            )
+            self.logger.debug(targets)
+        except ServerError as e:
+            raise RuntimeError(str(e))
+
         full_target_template = (
             '^(?P<portal_hostname>[\w\d\-\.]+):(?P<portal_port>\d+),'
             '(?P<tgpt>-?\d+) (?P<iqn>[\w\d\-\.:]+)$'
         )
         full_target_template_re = re.compile(full_target_template)
         found = []
-        for t in targets['items']:
+        for t in targets:
             m = full_target_template_re.match(t)
             mg = m.groupdict()
             if (
@@ -331,18 +335,20 @@ class Plugin(plugin.PluginBase):
         retry = self._MAXRETRY
         iscsi_lun_list = []
         for _try in range(0, retry):
-            devices = self.cli.getDeviceList(
-                ohostedcons.VDSMConstants.ISCSI_DOMAIN
-            )
-            self.logger.debug(devices)
-            if devices['status']['code'] != 0:
-                raise RuntimeError(devices['status']['message'])
-            if 'items' in devices:
-                for device in devices['items']:
-                    for path in device['pathlist']:
-                        if path['iqn'] == iqn:
-                            if device not in iscsi_lun_list:
-                                iscsi_lun_list.append(device)
+            try:
+                devices = self.cli.Host.getDeviceList(
+                    storageType=ohostedcons.VDSMConstants.ISCSI_DOMAIN
+                )
+                self.logger.debug(devices)
+            except ServerError as e:
+                raise RuntimeError(str(e))
+
+            for device in devices:
+                for path in device['pathlist']:
+                    if path['iqn'] == iqn:
+                        if device not in iscsi_lun_list:
+                            iscsi_lun_list.append(device)
+
             if iscsi_lun_list:
                 break
 
@@ -366,13 +372,15 @@ class Plugin(plugin.PluginBase):
                     'id': ohostedcons.Const.BLANK_UUID,
                 }
             ]
-            res = self.cli.connectStorageServer(
-                storagepoolID=ohostedcons.Const.BLANK_UUID,
-                domainType=ohostedcons.VDSMConstants.ISCSI_DOMAIN,
-                connectionParams=connectionParams,
-            )
-            if res['status']['code'] != 0:
-                raise RuntimeError(res['status']['message'])
+            try:
+                self.cli.StoragePool.connectStorageServer(
+                    storagepoolID=ohostedcons.Const.BLANK_UUID,
+                    domainType=ohostedcons.VDSMConstants.ISCSI_DOMAIN,
+                    connectionParams=connectionParams,
+                )
+            except ServerError as e:
+                raise RuntimeError(str(e))
+
             retry -= 1
             time.sleep(self._RETRY_DELAY)
         else:
@@ -383,13 +391,15 @@ class Plugin(plugin.PluginBase):
 
     def _fc_get_lun_list(self):
         fc_lun_list = []
-        devices = self.cli.getDeviceList(
-            ohostedcons.VDSMConstants.FC_DOMAIN
-        )
-        self.logger.debug(devices)
-        if devices['status']['code'] != 0:
-            raise RuntimeError(devices['status']['message'])
-        for device in devices['items']:
+        try:
+            devices = self.cli.Host.getDeviceList(
+                storageType=ohostedcons.VDSMConstants.FC_DOMAIN
+            )
+            self.logger.debug(devices)
+        except ServerError as e:
+            raise RuntimeError(str(e))
+
+        for device in devices:
             fc_lun_list.append(device)
         return fc_lun_list
 
@@ -651,51 +661,53 @@ class Plugin(plugin.PluginBase):
                 forceVG = True
             self.logger.info(_('Creating Volume Group'))
 
-            while True:
-                dom = self.cli.createVG(
-                    name=self.environment[ohostedcons.StorageEnv.SD_UUID],
-                    devlist=[
-                        self.environment[
-                            ohostedcons.StorageEnv.LUN_ID
+            vg_uuid = None
+            while vg_uuid is None:
+                try:
+                    vg_uuid = self.cli.LVMVolumeGroup.create(
+                        name=self.environment[ohostedcons.StorageEnv.SD_UUID],
+                        devlist=[
+                            self.environment[
+                                ohostedcons.StorageEnv.LUN_ID
+                            ],
                         ],
-                    ],
-                    force=forceVG,
-                )
-
-                self.logger.debug(dom)
-                if dom['status']['code'] == 0:
-                    break
-
-                self.logger.error(
-                    _(
-                        'Error creating Volume Group: {message}'
-                    ).format(
-                        message=dom['status']['message']
+                        force=forceVG,
                     )
-                )
+                    self.logger.debug(vg_uuid)
 
-                if not forceVG:
-                    # eventually retry forcing VG creation on dirty storage
-                    self._customize_forcecreatevg()
-                    if self.environment[
-                        ohostedcons.StorageEnv.FORCE_CREATEVG
-                    ]:
-                        forceVG = True
-                        # Retry VG creation
-                        continue
+                except ServerError as e:
+                    self.logger.error(
+                        _(
+                            'Error creating Volume Group: {message}'
+                        ).format(message=str(e))
+                    )
 
-                raise RuntimeError(dom['status']['message'])
+                    if not forceVG:
+                        # eventually retry forcing VG creation on dirty storage
+                        self._customize_forcecreatevg()
+                        if self.environment[
+                            ohostedcons.StorageEnv.FORCE_CREATEVG
+                        ]:
+                            forceVG = True
+                            # Retry VG creation
+                            continue
+
+                    raise RuntimeError(str(e))
 
             self.environment[
                 ohostedcons.StorageEnv.VG_UUID
-            ] = dom['status']['message']
+            ] = vg_uuid
 
-        vginfo = self.cli.getVGInfo(
-            self.environment[ohostedcons.StorageEnv.VG_UUID]
-        )
-        self.logger.debug(vginfo)
-        if vginfo['status']['code'] != 0:
-            raise RuntimeError(vginfo['status']['message'])
+        try:
+            vginfo = self.cli.LVMVolumeGroup.getInfo(
+                lvmvolumegroupID=self.environment[
+                    ohostedcons.StorageEnv.VG_UUID
+                ]
+            )
+            self.logger.debug(vginfo)
+        except ServerError as e:
+            raise RuntimeError(str(e))
+
         if (
             self.domainType == ohostedcons.DomainTypes.ISCSI and
             self.environment[ohostedcons.StorageEnv.ISCSI_PORTAL] is None

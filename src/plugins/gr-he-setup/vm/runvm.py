@@ -30,6 +30,8 @@ from otopi import constants as otopicons
 from otopi import plugin
 from otopi import util
 
+from vdsm.client import ServerError
+
 from ovirt_hosted_engine_ha.lib import util as ohautil
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
@@ -79,21 +81,25 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
     )
     def _late_setup(self):
         cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        response = cli.list()
-        self.logger.debug(response)
-        if response['status']['code'] == 0 and 'items' in response:
-            if 'items' in response and response['items']:
-                self.logger.error(
-                    _(
-                        'The following VMs have been found: '
-                        '{vms}'
-                    ).format(
-                        vms=', '.join(response['items'])
-                    )
+        try:
+            vm_list = cli.Host.getVMList()
+            self.logger.debug(vm_list)
+        except ServerError as e:
+            self.logger.debug(str(e))
+            return
+
+        if vm_list:
+            self.logger.error(
+                _(
+                    'The following VMs have been found: '
+                    '{vms}'
+                ).format(
+                    vms=', '.join(vm_list)
                 )
-                raise RuntimeError(
-                    _('Cannot setup Hosted Engine with other VMs running')
-                )
+            )
+            raise RuntimeError(
+                _('Cannot setup Hosted Engine with other VMs running')
+            )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
@@ -174,7 +180,7 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
                 )
                 self.environment[
                     ohostedcons.VDSMEnv.VDS_CLI
-                ] = ohautil.connect_vdsm_json_rpc(
+                ] = ohautil.connect_vdsm_json_rpc_new(
                     logger=self.logger,
                     timeout=ohostedcons.Const.VDSCLI_SSL_TIMEOUT,
                 )

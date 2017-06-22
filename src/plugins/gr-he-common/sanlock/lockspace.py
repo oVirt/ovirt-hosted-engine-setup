@@ -30,6 +30,8 @@ import stat
 from otopi import plugin
 from otopi import util
 
+from vdsm.client import ServerError
+
 from ovirt_hosted_engine_ha.lib import storage_backends
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
@@ -128,18 +130,20 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Upgrade.UPGRADE_CREATE_LM_VOLUMES
         ]:
             cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-            res = cli.getStorageDomainInfo(
-                storagedomainID=self.environment[
-                    ohostedcons.StorageEnv.SD_UUID
-                ]
-            )
-            self.logger.debug(res)
-            if 'status' not in res or res['status']['code'] != 0:
+            try:
+                res = cli.StorageDomain.getInfo(
+                    storagedomainID=self.environment[
+                        ohostedcons.StorageEnv.SD_UUID
+                    ]
+                )
+                self.logger.debug(res)
+            except ServerError as e:
                 raise RuntimeError(
                     _('Failed getting storage domain info: {m}').format(
-                        m=res['status']['message'],
+                        m=str(e)
                     )
                 )
+
             sp_uuid = res['pool'][0]
 
         # Prepare the Backend interface

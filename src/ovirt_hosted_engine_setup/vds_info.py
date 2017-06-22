@@ -22,16 +22,19 @@
 vds utilities
 """
 
+from vdsm.client import ServerError
+
 
 def capabilities(conn):
     """Returns a dictionary with the host capabilities"""
-    result = conn.getVdsCapabilities()
-    code, message = result['status']['code'], result['status']['message']
-    if code != 0 or 'software_version' not in result:
-        raise RuntimeError(
-            'Failed to get vds capabilities. Error code: '
-            '"%s" message: "%s"' % (code, message)
-        )
+    try:
+        result = conn.Host.getCapabilities()
+    except ServerError as e:
+        raise RuntimeError('Failed to get vds capabilities: %s' % str(e))
+
+    if 'software_version' not in result:
+        raise RuntimeError('Failed to get vds capabilities.')
+
     return result
 
 

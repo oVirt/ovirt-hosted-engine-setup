@@ -28,6 +28,8 @@ import gettext
 from otopi import plugin
 from otopi import util
 
+from vdsm.client import ServerError
+
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import tasks
 from ovirt_hosted_engine_setup import vm_status
@@ -85,21 +87,23 @@ class Plugin(plugin.PluginBase):
                 ))
         if self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE]:
             cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-            response = cli.list()
-            self.logger.debug(response)
-            if response['status']['code'] == 0:
-                if 'items' in response:
-                    vms = set(response['items'])
-                else:
-                    vms = set([])
-                if self.environment[ohostedcons.VMEnv.VM_UUID] not in vms:
-                    raise RuntimeError(_(
-                        'The engine VM is not running on this host'
-                    ))
-                else:
-                    self.logger.info('The engine VM is running on this host')
-            else:
-                raise RuntimeError(_('Unable to get VM list from VDSM'))
+            try:
+                vmList = cli.Host.getVMList()
+                self.logger.debug(vmList)
+            except ServerError as e:
+                raise RuntimeError(
+                    _('Unable to get VM list from VDSM. Error: {m}').format(
+                        m=str(e)
+                    )
+                )
+
+            vms = set(vmList)
+            if self.environment[ohostedcons.VMEnv.VM_UUID] not in vms:
+                raise RuntimeError(_(
+                    'The engine VM is not running on this host'
+                ))
+
+            self.logger.info('The engine VM is running on this host')
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
@@ -119,8 +123,13 @@ class Plugin(plugin.PluginBase):
         ]:
             self.logger.info(_('Shutting down the engine VM'))
             cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-            res = cli.shutdown(self.environment[ohostedcons.VMEnv.VM_UUID])
-            self.logger.debug(res)
+            try:
+                cli.VM.shutdown(
+                    vmID=self.environment[ohostedcons.VMEnv.VM_UUID]
+                )
+            except ServerError as e:
+                self.logger.debug(str(e))
+
         else:
             self.dialog.note(
                 _(
@@ -132,20 +141,18 @@ class Plugin(plugin.PluginBase):
         waiter = tasks.VMDownWaiter(self.environment)
         if not waiter.wait():
             # The VM is down but not destroyed
-            status = self.environment[
-                ohostedcons.VDSMEnv.VDS_CLI
-            ].destroy(
-                self.environment[ohostedcons.VMEnv.VM_UUID]
-            )
-            self.logger.debug(status)
-            if status['status']['code'] != 0:
+            cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+            try:
+                cli.VM.destroy(
+                    vmID=self.environment[ohostedcons.VMEnv.VM_UUID]
+                )
+            except ServerError as e:
                 self.logger.error(
-                    _(
-                        'Cannot destroy the Hosted Engine VM: ' +
-                        status['status']['message']
+                    _('Cannot destroy the Hosted Engine VM: {error}').format(
+                        error=str(e)
                     )
                 )
-                raise RuntimeError(status['status']['message'])
+                raise RuntimeError(str(e))
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

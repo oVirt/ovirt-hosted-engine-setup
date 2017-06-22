@@ -28,6 +28,8 @@ import gettext
 from otopi import plugin
 from otopi import util
 
+from vdsm.client import ServerError
+
 from ovirt_setup_lib import dialog
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
@@ -48,9 +50,11 @@ class Plugin(plugin.PluginBase):
 
     def _getMaxMemorySize(self):
         cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        stats = cli.getVdsStats()
-        if stats['status']['code'] != 0:
-            raise RuntimeError(stats['status']['message'])
+        try:
+            stats = cli.Host.getStats()
+        except ServerError as e:
+            raise RuntimeError(str(e))
+
         return max(0, int(stats['memAvailable']))
 
     @plugin.event(

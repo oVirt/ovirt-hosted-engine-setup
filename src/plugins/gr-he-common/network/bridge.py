@@ -30,6 +30,8 @@ import socket
 from otopi import plugin
 from otopi import util
 
+from vdsm.client import ServerError
+
 from ovirt_setup_lib import hostname as osetuphostname
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
@@ -407,20 +409,23 @@ class Plugin(plugin.PluginBase):
 
 
 def _setupNetworks(conn, networks, bonds, options):
-    result = conn.setupNetworks(networks, bonds, options)
-    code, message = result['status']['code'], result['status']['message']
-    if code != 0:
-        raise RuntimeError('Failed to setup networks %r. Error code: "%s" '
-                           'message: "%s"' % (networks, code, message))
+    try:
+        conn.Host.setupNetworks(
+            networks=networks,
+            bondings=bonds,
+            options=options
+        )
+    except ServerError as e:
+        raise RuntimeError('Failed to setup networks %r. Error: "%s"' %
+                           (networks, str(e)))
 
 
 def _setSafeNetworkConfig(conn):
-    result = conn.setSafeNetworkConfig()
-    code, message = result['status']['code'], result['status']['message']
-    if code != 0:
+    try:
+        conn.Host.setSafeNetworkConfig()
+    except ServerError as e:
         raise RuntimeError('Failed to persist network configuration. '
-                           'Error code: "%s" message: "%s"' %
-                           (code, message))
+                           'Error: "%s"' % str(e))
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

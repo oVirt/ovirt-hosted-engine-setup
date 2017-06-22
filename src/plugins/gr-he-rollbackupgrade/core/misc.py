@@ -28,6 +28,8 @@ from otopi import context as otopicontext
 from otopi import plugin
 from otopi import util
 
+from vdsm.client import ServerError
+
 from ovirt_hosted_engine_ha.env import config
 from ovirt_hosted_engine_ha.lib import util as ohautil
 from ovirt_hosted_engine_ha.lib import image
@@ -119,7 +121,7 @@ class Plugin(plugin.PluginBase):
 
         self.environment[
             ohostedcons.VDSMEnv.VDS_CLI
-        ] = ohautil.connect_vdsm_json_rpc(
+        ] = ohautil.connect_vdsm_json_rpc_new(
             logger=self.logger,
             timeout=ohostedcons.Const.VDSCLI_SSL_TIMEOUT,
         )
@@ -150,65 +152,67 @@ class Plugin(plugin.PluginBase):
             self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE],
             self.environment[ohostedcons.StorageEnv.SD_UUID],
         )
-        img_list = img.get_images_list(
-            self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        )
+        img_list = img.get_images_list(cli)
         self.logger.debug('img list: {il}'.format(il=img_list))
         sdUUID = self.environment[ohostedcons.StorageEnv.SD_UUID]
         spUUID = ohostedcons.Const.BLANK_UUID
         index = 0
         for img in img_list:
-            volumeslist = cli.getVolumesList(
-                imageID=img,
-                storagepoolID=spUUID,
-                storagedomainID=sdUUID,
-            )
-            self.logger.debug('volumeslist: {vl}'.format(vl=volumeslist))
-            if volumeslist['status']['code'] != 0:
+            try:
+                volumeslist = cli.Volume.getList(
+                    imageID=img,
+                    storagepoolID=spUUID,
+                    storagedomainID=sdUUID,
+                )
+                self.logger.debug('volumeslist: {vl}'.format(vl=volumeslist))
+            except ServerError as e:
                 # avoid raising here, simply skip the unknown image
                 self.logger.debug(
                     'Error fetching volumes for {image}: {message}'.format(
                         image=image,
-                        message=volumeslist['status']['message'],
+                        message=str(e),
                     )
                 )
-            else:
-                for vol_uuid in volumeslist['items']:
-                    volumeinfo = cli.getVolumeInfo(
+                continue
+
+            for vol_uuid in volumeslist:
+                try:
+                    volumeinfo = cli.Volume.getInfo(
                         volumeID=vol_uuid,
                         imageID=img,
                         storagepoolID=spUUID,
                         storagedomainID=sdUUID,
                     )
                     self.logger.debug(volumeinfo)
-                    if volumeinfo['status']['code'] != 0:
-                        # avoid raising here, simply skip the unknown volume
-                        self.logger.debug(
-                            (
-                                'Error fetching volume info '
-                                'for {volume}: {message}'
-                            ).format(
-                                volume=vol_uuid,
-                                message=volumeinfo['status']['message'],
-                            )
+                except ServerError as e:
+                    # avoid raising here, simply skip the unknown volume
+                    self.logger.debug(
+                        (
+                            'Error fetching volume info '
+                            'for {volume}: {message}'
+                        ).format(
+                            volume=vol_uuid,
+                            message=str(e),
                         )
-                    else:
-                        disk_description = ''
-                        try:
-                            jd = json.loads(volumeinfo['description'])
-                            disk_description = jd['DiskDescription']
-                        except (ValueError, KeyError):
-                            pass
-                        if disk_description.startswith(
-                            ohostedcons.Const.BACKUP_DISK_PREFIX
-                        ):
-                            candidate_backup_volumes.append({
-                                'index': index+1,
-                                'description': disk_description,
-                                'img_uuid': img,
-                                'vol_uuid': vol_uuid,
-                            })
-                            index += 1
+                    )
+                    continue
+
+                disk_description = ''
+                try:
+                    jd = json.loads(volumeinfo['description'])
+                    disk_description = jd['DiskDescription']
+                except (ValueError, KeyError):
+                    pass
+                if disk_description.startswith(
+                    ohostedcons.Const.BACKUP_DISK_PREFIX
+                ):
+                    candidate_backup_volumes.append({
+                        'index': index+1,
+                        'description': disk_description,
+                        'img_uuid': img,
+                        'vol_uuid': vol_uuid,
+                    })
+                    index += 1
 
         if not candidate_backup_volumes:
             self.logger.error(_(
@@ -261,39 +265,43 @@ class Plugin(plugin.PluginBase):
     )
     def _validate_disks(self):
         cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        size = cli.getVolumeInfo(
-            storagepoolID=ohostedcons.Const.BLANK_UUID,
-            storagedomainID=self.environment[
-                ohostedcons.StorageEnv.SD_UUID
-            ],
-            imageID=self.environment[
-                ohostedcons.StorageEnv.IMG_UUID
-            ],
-            volumeID=self.environment[
-                ohostedcons.StorageEnv.VOL_UUID
-            ],
-        )
-        self.logger.debug(size)
-        if size['status']['code']:
-            raise RuntimeError(size['status']['message'])
-        destination_size = int(size['capacity'])
+        try:
+            info = cli.Volume.getInfo(
+                storagepoolID=ohostedcons.Const.BLANK_UUID,
+                storagedomainID=self.environment[
+                    ohostedcons.StorageEnv.SD_UUID
+                ],
+                imageID=self.environment[
+                    ohostedcons.StorageEnv.IMG_UUID
+                ],
+                volumeID=self.environment[
+                    ohostedcons.StorageEnv.VOL_UUID
+                ],
+            )
+        except ServerError as e:
+            raise RuntimeError(str(e))
 
-        size = cli.getVolumeInfo(
-            storagepoolID=ohostedcons.Const.BLANK_UUID,
-            storagedomainID=self.environment[
-                ohostedcons.StorageEnv.SD_UUID
-            ],
-            imageID=self.environment[
-                ohostedcons.Upgrade.BACKUP_IMG_UUID
-            ],
-            volumeID=self.environment[
-                ohostedcons.Upgrade.BACKUP_VOL_UUID
-            ],
-        )
-        self.logger.debug(size)
-        if size['status']['code']:
-            raise RuntimeError(size['status']['message'])
-        source_size = int(size['apparentsize'])
+        self.logger.debug(info)
+        destination_size = int(info['capacity'])
+
+        try:
+            info = cli.Volume.getInfo(
+                storagepoolID=ohostedcons.Const.BLANK_UUID,
+                storagedomainID=self.environment[
+                    ohostedcons.StorageEnv.SD_UUID
+                ],
+                imageID=self.environment[
+                    ohostedcons.Upgrade.BACKUP_IMG_UUID
+                ],
+                volumeID=self.environment[
+                    ohostedcons.Upgrade.BACKUP_VOL_UUID
+                ],
+            )
+        except ServerError as e:
+            raise RuntimeError(str(e))
+
+        self.logger.debug(info)
+        source_size = int(info['apparentsize'])
 
         if destination_size < source_size:
             raise RuntimeError(

@@ -28,6 +28,8 @@ from otopi import context as otopicontext
 from otopi import plugin
 from otopi import util
 
+from vdsm.client import ServerError
+
 from ovirt_hosted_engine_ha.env import config
 from ovirt_hosted_engine_ha.lib import util as ohautil
 from ovirt_hosted_engine_ha.lib import image
@@ -138,7 +140,7 @@ class Plugin(plugin.PluginBase):
 
         self.environment[
             ohostedcons.VDSMEnv.VDS_CLI
-        ] = ohautil.connect_vdsm_json_rpc(
+        ] = ohautil.connect_vdsm_json_rpc_new(
             logger=self.logger,
             timeout=ohostedcons.Const.VDSCLI_SSL_TIMEOUT,
         )
@@ -181,40 +183,38 @@ class Plugin(plugin.PluginBase):
             self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE],
             self.environment[ohostedcons.StorageEnv.SD_UUID],
         )
-        img_list = img.get_images_list(
-            self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        )
+        img_list = img.get_images_list(cli)
         self.logger.debug('img list: {il}'.format(il=img_list))
         sdUUID = self.environment[ohostedcons.StorageEnv.SD_UUID]
         spUUID = ohostedcons.Const.BLANK_UUID
         for img in img_list:
-            volumeslist = cli.getVolumesList(
-                imageID=img,
-                storagepoolID=spUUID,
-                storagedomainID=sdUUID,
-            )
-            self.logger.debug('volumeslist: {vl}'.format(vl=volumeslist))
-            if (
-                volumeslist['status']['code'] != 0 or
-                'items' not in volumeslist
-            ):
-                # avoid raising here, simply skip the unknown image
-                self.logger.debug(
-                    'Error fetching volumes for {image}: {message}'.format(
-                        image=img,
-                        message=volumeslist['status']['message'],
-                    )
-                )
-                continue
-            for vol_uuid in volumeslist['items']:
-                volumeinfo = cli.getVolumeInfo(
-                    volumeID=vol_uuid,
+            try:
+                volumeslist = cli.StorageDomain.getVolumes(
                     imageID=img,
                     storagepoolID=spUUID,
                     storagedomainID=sdUUID,
                 )
-                self.logger.debug(volumeinfo)
-                if volumeinfo['status']['code'] != 0:
+                self.logger.debug('volumeslist: {vl}'.format(vl=volumeslist))
+            except ServerError as e:
+                # avoid raising here, simply skip the unknown image
+                self.logger.debug(
+                    'Error fetching volumes for {image}: {message}'.format(
+                        image=img,
+                        message=str(e),
+                    )
+                )
+                continue
+
+            for vol_uuid in volumeslist['items']:
+                try:
+                    volumeinfo = cli.Volume.getInfo(
+                        volumeID=vol_uuid,
+                        imageID=img,
+                        storagepoolID=spUUID,
+                        storagedomainID=sdUUID,
+                    )
+                    self.logger.debug(volumeinfo)
+                except ServerError as e:
                     # avoid raising here, simply skip the unknown volume
                     self.logger.debug(
                         (
@@ -222,10 +222,11 @@ class Plugin(plugin.PluginBase):
                             'for {volume}: {message}'
                         ).format(
                             volume=vol_uuid,
-                            message=volumeinfo['status']['message'],
+                            message=str(e),
                         )
                     )
                     continue
+
                 disk_description = volumeinfo['description']
                 if disk_description == self.environment[
                     ohostedcons.SanlockEnv.LOCKSPACE_NAME

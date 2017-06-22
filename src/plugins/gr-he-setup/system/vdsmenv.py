@@ -90,7 +90,7 @@ class Plugin(plugin.PluginBase):
             )
         self.environment[
             ohostedcons.VDSMEnv.VDS_CLI
-        ] = ohautil.connect_vdsm_json_rpc(
+        ] = ohautil.connect_vdsm_json_rpc_new(
             logger=self.logger,
             timeout=ohostedcons.Const.VDSCLI_SSL_TIMEOUT,
         )
@@ -153,7 +153,7 @@ class Plugin(plugin.PluginBase):
         )
         self.environment[
             ohostedcons.VDSMEnv.VDS_CLI
-        ] = ohautil.connect_vdsm_json_rpc(
+        ] = ohautil.connect_vdsm_json_rpc_new(
             logger=self.logger,
             timeout=ohostedcons.Const.VDSCLI_SSL_TIMEOUT,
         )
@@ -170,7 +170,7 @@ class Plugin(plugin.PluginBase):
         # restarted vdsm adding the host
         self.environment[
             ohostedcons.VDSMEnv.VDS_CLI
-        ] = ohautil.connect_vdsm_json_rpc(
+        ] = ohautil.connect_vdsm_json_rpc_new(
             logger=self.logger,
             timeout=ohostedcons.Const.VDSCLI_SSL_TIMEOUT,
         )
