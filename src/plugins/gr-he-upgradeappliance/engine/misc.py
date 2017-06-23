@@ -379,9 +379,9 @@ class Plugin(plugin.PluginBase):
             self.logger.warning(_('Unable to detect appliance version'))
             supported = False
         else:
-            a_version = self.environment[
+            a_version = '.'.join(self.environment[
                 ohostedcons.VMEnv.APPLIANCE_VERSION
-            ].split('-')[0]
+            ].split('-')[0].split('.')[:2])
             if a_version not in ohostedcons.Const.UPGRADE_SUPPORTED_TARGETS:
                 supported = False
         if not supported:
