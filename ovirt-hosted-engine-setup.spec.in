@@ -52,6 +52,7 @@ Requires:       sanlock >= 2.8
 Requires:       sanlock-python >= 2.8
 Requires:       sudo
 Requires:       libvirt-client
+Requires:       m2crypto
 
 BuildRequires:  gettext >= 0.18.2
 BuildRequires:  python2-devel
