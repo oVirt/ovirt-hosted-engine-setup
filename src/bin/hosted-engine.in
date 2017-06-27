@@ -423,8 +423,10 @@ cmd_set_shared_config() {
     [ "$1" == "--help" ] && { cat << __EOF__
 Usage: $0 --set-shared-config key value [--type=<type>]
     Set shared storage configuration.
-    Valid types are: broker.
+    Valid types are: broker, he_conf.
     Available only after deployment has completed.
+    New values for he_conf (hosted-engine.conf file) will be used by all hosts (re)deployed after the configuration change.
+    Currently running hosts will still use the old values.
 __EOF__
 return ;}
 
@@ -454,7 +456,7 @@ cmd_get_shared_config() {
     [ "$1" == "--help" ] && { cat << __EOF__
 Usage: $0 --get-shared-config key [--type=<type>]
     Get shared storage configuration.
-    Valid types are: broker.
+    Valid types are: broker, he_conf.
     Available only after deployment has completed.
 __EOF__
 return ;}
