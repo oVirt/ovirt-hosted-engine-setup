@@ -147,6 +147,9 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     args.command(args)
+    # force module de-import to close the globally
+    # shared json rpc client in the right order
+    del sys.modules["ovirt_hosted_engine_ha.lib.util"]
 
 
 # vim: expandtab tabstop=4 shiftwidth=4
