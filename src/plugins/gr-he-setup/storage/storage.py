@@ -900,6 +900,21 @@ class Plugin(plugin.PluginBase):
     def _early_customization(self):
         self.cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         self._check_existing_pools()
+        sd_list = self._getStorageDomainsList()
+        for sdUUID in sd_list:
+            domain_info = self._getStorageDomainInfo(sdUUID)
+            if domain_info['name'] == self.environment[
+                ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
+            ]:
+                msg = (
+                    'This host is already connected to a storage domain named '
+                    '{sdname}, please deploy on a clean system.'
+                ).format(
+                    sdname=self.environment[
+                        ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
+                    ]
+                )
+                raise RuntimeError(msg)
         domain_type = self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE]
         if domain_type is None:
             domain_type = self.dialog.queryString(
