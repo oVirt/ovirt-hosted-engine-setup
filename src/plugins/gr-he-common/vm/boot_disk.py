@@ -151,57 +151,26 @@ class ImageTransaction(transaction.TransactionElement):
             destination = self._get_volume_path()
         except RuntimeError as e:
             return (1, str(e))
-        # NFS mounts using root_squash will fail if accessed with root user.
-        # Dropping root privileges and moving to vdsm user.
-        try:
-            os.setresgid(
-                self._parent.environment[ohostedcons.VDSMEnv.KVM_GID],
-                self._parent.environment[ohostedcons.VDSMEnv.KVM_GID],
-                -1
-            )
-            os.setresuid(
-                self._parent.environment[ohostedcons.VDSMEnv.VDSM_UID],
-                self._parent.environment[ohostedcons.VDSMEnv.VDSM_UID],
-                -1
-            )
-        except OSError as os_err:
-            self._parent.logger.error('Unable to drop root privileges')
-            self._parent.logger.debug('exception', exc_info=True)
-            raise os_err
-
-        try:
-            g = guestfs.GuestFS(python_return_dict=True)
-            g.set_backend('direct')
-            g.add_drive_opts(filename=destination, format='raw', readonly=0)
-            self.logger.debug(
-                'disk added from {path}'.format(path=destination)
-            )
-            try:
-                g.launch()
-                self._parent.logger.debug('guestfs launched')
-                g.mount('/dev/sda1', '/')
-                self._parent.logger.debug('disk mounted')
-                g.upload(
-                    self._backup_src,
-                    self._parent.environment[
-                        ohostedcons.Upgrade.DST_BACKUP_FILE
-                    ]
-                )
-                self._parent.logger.debug('backup file uploaded')
-                g.umount('/')
-                self._parent.logger.debug('disk unmounted')
-            finally:
-                g.shutdown()
-        finally:
-            g.close()
-        try:
-            # regain root privileges
-            os.setresgid(0, 0, -1)
-            os.setresuid(0, 0, -1)
-        except OSError as os_err:
-            self._parent.logger.error('Unable to regain root privileges')
-            self._parent.logger.debug('exception', exc_info=True)
-            raise os_err
+        # TODO: what on errors?
+        g = guestfs.GuestFS(python_return_dict=True)
+        g.set_backend('direct')
+        g.add_drive_opts(filename=destination, format='raw', readonly=0)
+        self.logger.debug(
+            'disk added from {path}'.format(path=destination)
+        )
+        g.launch()
+        self._parent.logger.debug('guestfs launched')
+        g.mount('/dev/sda1', '/')
+        self._parent.logger.debug('disk mounted')
+        g.upload(
+            self._backup_src,
+            self._parent.environment[ohostedcons.Upgrade.DST_BACKUP_FILE]
+        )
+        self._parent.logger.debug('backup file uploaded')
+        g.umount('/')
+        self._parent.logger.debug('disk unmounted')
+        g.shutdown()
+        g.close()
         return (0, 'OK')
 
     def prepare(self):
