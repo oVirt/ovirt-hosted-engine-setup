@@ -67,7 +67,7 @@ Requires:       qemu-img-rhev
 %endif
 
 
-Requires:       otopi >= 1.6.0
+Requires:       otopi >= 1.7.1
 Requires:       ovirt-host-deploy >= 1.7.0
 Requires:       ovirt-hosted-engine-ha >= 2.2.0
 Requires:       ovirt-engine-sdk-python >= 3.6.9.1

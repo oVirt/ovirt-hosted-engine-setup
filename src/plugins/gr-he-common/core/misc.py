@@ -48,7 +48,6 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_BOOT,
-        priority=plugin.Stages.PRIORITY_HIGH,
         before=(
             otopicons.Stages.CORE_LOG_INIT,
         ),
