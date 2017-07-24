@@ -153,6 +153,7 @@ class ImageTransaction(transaction.TransactionElement):
             return (1, str(e))
         # NFS mounts using root_squash will fail if accessed with root user.
         # Dropping root privileges and moving to vdsm user.
+        prev_xdg_runtime_dir = os.getenv('XDG_RUNTIME_DIR', None)
         try:
             os.setresgid(
                 self._parent.environment[ohostedcons.VDSMEnv.KVM_GID],
@@ -164,6 +165,9 @@ class ImageTransaction(transaction.TransactionElement):
                 self._parent.environment[ohostedcons.VDSMEnv.VDSM_UID],
                 -1
             )
+            # $XDG_RUNTIME_DIR is not set if the current user is not the
+            # original user of the session
+            os.unsetenv('XDG_RUNTIME_DIR')
         except OSError as os_err:
             self._parent.logger.error('Unable to drop root privileges')
             self._parent.logger.debug('exception', exc_info=True)
@@ -198,6 +202,8 @@ class ImageTransaction(transaction.TransactionElement):
             # regain root privileges
             os.setresgid(0, 0, -1)
             os.setresuid(0, 0, -1)
+            if prev_xdg_runtime_dir:
+                os.environ['XDG_RUNTIME_DIR'] = prev_xdg_runtime_dir
         except OSError as os_err:
             self._parent.logger.error('Unable to regain root privileges')
             self._parent.logger.debug('exception', exc_info=True)
