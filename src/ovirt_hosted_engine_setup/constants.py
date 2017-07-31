@@ -485,6 +485,7 @@ class NetworkEnv(object):
 
     PROMPT_REQUIRED_NETWORKS = 'OVEHOSTED_NETWORK/promptRequiredNetworks'
     REFUSE_DEPLOYING_WITH_NM = 'OVEHOSTED_NETWORK/refuseDeployingWithNM'
+    ALLOW_INVALID_BOND_MODES = 'OVEHOSTED_NETWORK/allowInvalidBondModes'
 
 
 @util.export

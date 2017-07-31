@@ -70,6 +70,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.NetworkEnv.FQDN_REVERSE_VALIDATION,
             False
         )
+        self.environment.setdefault(
+            ohostedcons.NetworkEnv.ALLOW_INVALID_BOND_MODES,
+            False
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -133,6 +137,10 @@ class Plugin(plugin.PluginBase):
         ),
     )
     def _customization(self):
+        INVALID_BOND_MODES = ('0', '5', '6')
+        ALLOW_INVALID_BOND_MODES =  \
+            ohostedcons.NetworkEnv.ALLOW_INVALID_BOND_MODES
+
         caps = vds_info.capabilities(
             self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         )
@@ -148,6 +156,29 @@ class Plugin(plugin.PluginBase):
         for bridge in caps['bridges'].keys():
             enslaved.update(set(caps['bridges'][bridge]['ports']))
         for bond in caps['bondings'].keys():
+            bondMode = caps['bondings'][bond]['opts']['mode']
+            if (bondMode in INVALID_BOND_MODES):
+                self.logger.warning(
+                    _(
+                        "Bond {bondname} is on mode {bondmode}, "
+                        "modes {invalid} are not supported"
+                    ).format(
+                        bondname=bond,
+                        bondmode=bondMode,
+                        invalid=INVALID_BOND_MODES
+                    )
+                )
+                if not self.environment[ALLOW_INVALID_BOND_MODES]:
+                    inv_bond.update(set([bond]))
+                else:
+                    self.logger.warning(
+                        _(
+                            "Allowing anyway, as enforced by {key}={val}"
+                        ).format(
+                            key=ALLOW_INVALID_BOND_MODES,
+                            val=self.environment[ALLOW_INVALID_BOND_MODES]
+                        )
+                    )
             slaves = set(caps['bondings'][bond]['slaves'])
             if slaves:
                 enslaved.update(slaves)
