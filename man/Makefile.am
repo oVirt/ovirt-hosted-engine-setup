@@ -24,4 +24,5 @@ MAINTAINERCLEANFILES = \
 dist_man_MANS = \
 	hosted-engine.8 \
 	ovirt-hosted-engine-setup.8 \
+	ovirt-hosted-engine-cleanup.8 \
 	$(NULL)
