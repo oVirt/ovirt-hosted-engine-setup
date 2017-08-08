@@ -27,7 +27,7 @@ import socket
 import sys
 
 from ovirt_hosted_engine_ha.client import client
-from ovirt_hosted_engine_ha.lib.exceptions import BrokerConnectionError
+from ovirt_hosted_engine_ha.lib.exceptions import BrokerConnectionError, DisconnectionError
 
 
 def _(m):
@@ -100,55 +100,62 @@ class VmStatus(object):
         return cluster_stats
 
     def print_status(self):
-        all_host_stats = self._get_all_host_stats()
-        cluster_stats = self._get_cluster_stats()
+        try:
+            all_host_stats = self._get_all_host_stats()
+            cluster_stats = self._get_cluster_stats()
 
-        if self.with_json:
+            if self.with_json:
+                for host_id, host_stats in all_host_stats.items():
+                    all_host_stats[host_id]['engine-status'] = json.loads(
+                        all_host_stats[host_id]['engine-status']
+                    )
+
+                all_host_stats["global_maintenance"] = cluster_stats.get(
+                    client.HAClient.GlobalMdFlags.MAINTENANCE, False)
+
+                print(json.dumps(all_host_stats))
+                return all_host_stats
+
+            glb_msg = ''
+            if cluster_stats.get(client.HAClient.GlobalMdFlags.MAINTENANCE, False):
+                glb_msg = _('\n\n!! Cluster is in GLOBAL MAINTENANCE mode !!\n')
+                print(glb_msg)
+
             for host_id, host_stats in all_host_stats.items():
-                all_host_stats[host_id]['engine-status'] = json.loads(
-                    all_host_stats[host_id]['engine-status']
+                print _('\n\n--== Host {host_id} status ==--\n').format(
+                    host_id=host_id
                 )
-
-            all_host_stats["global_maintenance"] = cluster_stats.get(
-                client.HAClient.GlobalMdFlags.MAINTENANCE, False)
-
-            print(json.dumps(all_host_stats))
+                for key in host_stats.keys():
+                    if (key == 'engine-status' and
+                            not host_stats.get('live-data', True)):
+                        print _('{key:35}: {value}').format(
+                            key=self.DESCRIPTIONS.get(key, key),
+                            value=_('unknown stale-data'),
+                        )
+                    elif key != 'extra':
+                        print _('{key:35}: {value}').format(
+                            key=self.DESCRIPTIONS.get(key, key),
+                            value=host_stats[key],
+                        )
+                if 'extra' in host_stats.keys():
+                    key = 'extra'
+                    print _('{key:35}:').format(
+                        key=self.DESCRIPTIONS.get(key, key)
+                    )
+                    for line in host_stats[key].splitlines():
+                        print '\t{value}'.format(
+                            value=line
+                        )
+            # Print again so it's easier to notice
+            if glb_msg:
+                print(glb_msg)
             return all_host_stats
-
-        glb_msg = ''
-        if cluster_stats.get(client.HAClient.GlobalMdFlags.MAINTENANCE, False):
-            glb_msg = _('\n\n!! Cluster is in GLOBAL MAINTENANCE mode !!\n')
-            print(glb_msg)
-
-        for host_id, host_stats in all_host_stats.items():
-            print _('\n\n--== Host {host_id} status ==--\n').format(
-                host_id=host_id
+        except DisconnectionError as e:
+            sys.stderr.write(
+                    _('An error occured while retrieving vm status, please make sure your storage is reachable.\n')
             )
-            for key in host_stats.keys():
-                if (key == 'engine-status' and
-                        not host_stats.get('live-data', True)):
-                    print _('{key:35}: {value}').format(
-                        key=self.DESCRIPTIONS.get(key, key),
-                        value=_('unknown stale-data'),
-                    )
-                elif key != 'extra':
-                    print _('{key:35}: {value}').format(
-                        key=self.DESCRIPTIONS.get(key, key),
-                        value=host_stats[key],
-                    )
-            if 'extra' in host_stats.keys():
-                key = 'extra'
-                print _('{key:35}:').format(
-                    key=self.DESCRIPTIONS.get(key, key)
-                )
-                for line in host_stats[key].splitlines():
-                    print '\t{value}'.format(
-                        value=line
-                    )
-        # Print again so it's easier to notice
-        if glb_msg:
-            print(glb_msg)
-        return all_host_stats
+            sys.stderr.write(str(e) + '\n')
+            return None
 
     def get_status(self):
         status = {}
