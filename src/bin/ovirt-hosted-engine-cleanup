@@ -1,5 +1,10 @@
 #!/bin/sh
 
+die() {
+    echo "FATAL: $1" >&2
+    exit 1
+}
+
 caution() {
     if [ -z "${QUIET_MODE}" ]; then
     cat << __EOF__
