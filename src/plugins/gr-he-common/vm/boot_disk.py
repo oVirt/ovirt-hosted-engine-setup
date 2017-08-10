@@ -549,14 +549,14 @@ class Plugin(plugin.PluginBase):
         self.logger.info(_('Detecting available oVirt engine appliances'))
         self._detect_appliances()
         if not self._appliances:
-            msg = _('No engine appliance image is available on your system.')
-            self.logger.error(msg)
             self.dialog.note(
                 _(
                     'The engine appliance is now required to deploy '
                     'hosted-engine.\n'
                     'You could get it installing '
-                    '{appliance_rpm_name} rpm.'
+                    '{appliance_rpm_name} rpm\n'
+                    'or provide a path to OVF archive at the '
+                    '\'VM Configuration\' stage.'
                 ).format(
                     appliance_rpm_name=self._appliance_rpm_name,
                 )
@@ -573,8 +573,6 @@ class Plugin(plugin.PluginBase):
                 prompt=True,
                 default=True,
             )
-            if not self._install_appliance:
-                raise RuntimeError(msg)
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INTERNAL_PACKAGES,
