@@ -300,17 +300,6 @@ class Plugin(plugin.PluginBase):
                 default=_('Abort'),
             ).lower() == _('Force').lower()
 
-    def _create_vg(self, forceVG=False):
-        return self.cli.createVG(
-            name=self.environment[ohostedcons.StorageEnv.SD_UUID],
-            devlist=[
-                self.environment[
-                    ohostedcons.StorageEnv.LUN_ID
-                ],
-            ],
-            force=forceVG,
-        )
-
     def _iscsi_discovery(self, address, port, user, password):
         targets = self.cli.discoverSendTargets(
             host=address,
@@ -661,9 +650,22 @@ class Plugin(plugin.PluginBase):
             ]:
                 forceVG = True
             self.logger.info(_('Creating Volume Group'))
-            dom = self._create_vg(forceVG)
-            self.logger.debug(dom)
-            if dom['status']['code'] != 0:
+
+            while True:
+                dom = self.cli.createVG(
+                    name=self.environment[ohostedcons.StorageEnv.SD_UUID],
+                    devlist=[
+                        self.environment[
+                            ohostedcons.StorageEnv.LUN_ID
+                        ],
+                    ],
+                    force=forceVG,
+                )
+
+                self.logger.debug(dom)
+                if dom['status']['code'] == 0:
+                    break
+
                 self.logger.error(
                     _(
                         'Error creating Volume Group: {message}'
@@ -671,28 +673,19 @@ class Plugin(plugin.PluginBase):
                         message=dom['status']['message']
                     )
                 )
+
                 if not forceVG:
                     # eventually retry forcing VG creation on dirty storage
                     self._customize_forcecreatevg()
-                    if not self.environment[
+                    if self.environment[
                         ohostedcons.StorageEnv.FORCE_CREATEVG
                     ]:
-                        raise RuntimeError(dom['status']['message'])
-                    else:
                         forceVG = True
-                        dom = self._create_vg(forceVG)
-                        self.logger.debug(dom)
-                        if dom['status']['code'] != 0:
-                            self.logger.error(
-                                _(
-                                    'Error creating Volume Group: {message}'
-                                ).format(
-                                    message=dom['status']['message']
-                                )
-                            )
-                            raise RuntimeError(dom['status']['message'])
-                else:
-                    raise RuntimeError(dom['status']['message'])
+                        # Retry VG creation
+                        continue
+
+                raise RuntimeError(dom['status']['message'])
+
             self.environment[
                 ohostedcons.StorageEnv.VG_UUID
             ] = dom['status']['message']
