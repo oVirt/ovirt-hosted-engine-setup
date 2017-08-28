@@ -22,60 +22,70 @@
 
 
 import argparse
+import functools
 import sys
 
+from vdsm.client import ServerError
 
 from ovirt_hosted_engine_ha.lib import util as ohautil
 from ovirt_hosted_engine_setup import vmconf
 
 
-def _check_errors(status):
-    if status['status']['code'] != 0:
-        sys.stderr.write(status['status']['message'] + '\n')
-        sys.exit(1)
+def handle_server_error(f):
+    @functools.wraps(f)
+    def func(*args, **kwargs):
+        try:
+            f(*args, **kwargs)
+        except ServerError as e:
+            sys.stderr.write(str(e) + '\n')
+            sys.exit(1)
+
+    return func
 
 
+@handle_server_error
 def create(args):
     vm_params = vmconf.parseVmConfFile(args.filename)
-    cli = ohautil.connect_vdsm_json_rpc()
-    status = cli.create(vm_params)
-    _check_errors(status)
+    cli = ohautil.connect_vdsm_json_rpc_new()
+    cli.VM.create(
+        vmID=vm_params['vmId'],
+        vmParams=vm_params
+    )
 
 
+@handle_server_error
 def destroy(args):
-    cli = ohautil.connect_vdsm_json_rpc()
-    status = cli.destroy(args.vmid)
-    _check_errors(status)
+    cli = ohautil.connect_vdsm_json_rpc_new()
+    cli.VM.destroy(vmID=args.vmid)
 
 
+@handle_server_error
 def shutdown(args):
-    cli = ohautil.connect_vdsm_json_rpc()
-    status = cli.shutdown(
+    cli = ohautil.connect_vdsm_json_rpc_new()
+    cli.VM.shutdown(
         vmID=args.vmid,
         delay=args.delay,
         message=args.message,
     )
-    _check_errors(status)
 
 
+@handle_server_error
 def checkVmStatus(args):
-    cli = ohautil.connect_vdsm_json_rpc()
-    status = cli.getVmStats(args.vmid)
-    _check_errors(status)
-    vmstats = status['items'][0]
+    cli = ohautil.connect_vdsm_json_rpc_new()
+    vmstats = cli.VM.getStats(vmID=args.vmid)[0]
     print(vmstats['status'])
 
 
+@handle_server_error
 def setVmTicket(args):
-    cli = ohautil.connect_vdsm_json_rpc()
-    status = cli.setVmTicket(
+    cli = ohautil.connect_vdsm_json_rpc_new()
+    cli.VM.setTicket(
         vmID=args.vmid,
         password=args.password,
         ttl=args.ttl,
         existingConnAction='keep',
         params={},
     )
-    _check_errors(status)
 
 
 def _add_vmid_argument(parser):
