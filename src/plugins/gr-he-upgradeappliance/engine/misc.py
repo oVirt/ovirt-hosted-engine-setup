@@ -35,6 +35,7 @@ from ovirt_setup_lib import dialog
 from ovirt_hosted_engine_ha.lib import upgrade
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import engineapi
+from ovirt_hosted_engine_setup import vm_status
 
 from ovirtsdk.infrastructure import brokers
 from ovirtsdk.xml import params
@@ -307,6 +308,31 @@ class Plugin(plugin.PluginBase):
             )
             raise RuntimeError(
                 _('Unsupported hosted-engine configuration level')
+            )
+        self.logger.info(
+            _('Checking metadata area')
+        )
+        vmstatus = vm_status.VmStatus()
+        status = vmstatus.get_status()
+        self.logger.debug('hosted-engine-status: {s}'.format(s=status))
+        old_metadata = False
+        for h in status['all_host_stats']:
+            if 'stopped' not in status['all_host_stats'][h]:
+                self.logger.error(_(
+                    'Metadata for host {h} is incompatible with this tool.\n'
+                    'Before proceeding with this upgrade, '
+                    'please correctly upgrade it to 3.6 '
+                    'or clean its metadata area with\n'
+                    ' \'hosted-engine --clean-metadata --host-id={id}\'\n'
+                    'if decommissioned or not anymore involved in HE.'
+                ).format(
+                    h=status['all_host_stats'][h]['hostname'],
+                    id=status['all_host_stats'][h]['host-id'],
+                ))
+                old_metadata = True
+        if old_metadata:
+            raise RuntimeError(
+                _('Host with unsupported metadata area')
             )
         self.logger.info(
             _('Hosted-engine configuration is at a compatible level')
