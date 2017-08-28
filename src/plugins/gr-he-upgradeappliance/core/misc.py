@@ -164,7 +164,7 @@ class Plugin(plugin.PluginBase):
             not self.environment[ohostedcons.StorageEnv.METADATA_VOLUME_UUID]
         ),
     )
-    def _validata_lm_volumes(self):
+    def _validate_lm_volumes(self):
         """
         This method, if the relevant uuids aren't in the initial answerfile,
         will look for lockspace and metadata volumes on the shared
@@ -300,21 +300,32 @@ class Plugin(plugin.PluginBase):
             self.logger.debug('hosted-engine-status: {s}'.format(s=status))
             for h in status['all_host_stats']:
                 host_id = status['all_host_stats'][h]['host-id']
-                stopped = status['all_host_stats'][h]['stopped']
                 hostname = status['all_host_stats'][h]['hostname']
-                if host_id == self.environment[ohostedcons.StorageEnv.HOST_ID]:
-                    if stopped:
-                        self.logger.warning(_(
-                            'Please keep ovirt-ha-agent running on this host'
-                        ))
-                        ready = False
+                if 'stopped' in status['all_host_stats'][h]:
+                    stopped = status['all_host_stats'][h]['stopped']
+                    if host_id == self.environment[
+                        ohostedcons.StorageEnv.HOST_ID
+                    ]:
+                        if stopped:
+                            self.logger.warning(_(
+                                'Please keep ovirt-ha-agent running '
+                                'on this host'
+                            ))
+                            ready = False
+                    else:
+                        if not stopped:
+                            self.logger.warning(_(
+                                'ovirt-ha-agent is still active on host {h}, '
+                                'please stop it '
+                                '(it can require a few seconds).'
+                            ).format(h=hostname))
+                            ready = False
                 else:
-                    if not stopped:
-                        self.logger.warning(_(
-                            'ovirt-ha-agent is still active on host {h}, '
-                            'please stop it (it can require a few seconds).'
-                        ).format(h=hostname))
-                        ready = False
+                    self.logger.warning(_(
+                        "Ignoring inconsistent info for host {h}".format(
+                            h=hostname,
+                        )
+                    ))
             if not ready:
                 time.sleep(2)
 
