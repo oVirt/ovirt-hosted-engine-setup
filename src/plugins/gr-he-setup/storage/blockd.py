@@ -594,7 +594,10 @@ class Plugin(plugin.PluginBase):
                         password,
                     )
                     valid_targets = [x['iqn'] for x in valid_targets_dict]
-                    valid_access = True
+                    if valid_targets:
+                        valid_access = True
+                    else:
+                        self.logger.error(_('No valid target'))
                 except RuntimeError as e:
                     self.logger.debug('exception', exc_info=True)
                     self.logger.error(e)
