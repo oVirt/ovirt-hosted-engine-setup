@@ -29,6 +29,7 @@ from otopi import plugin
 from otopi import util
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
+from ovirt_hosted_engine_setup import vds_info
 
 
 def _(m):
@@ -45,10 +46,9 @@ class Plugin(plugin.PluginBase):
         super(Plugin, self).__init__(context=context)
 
     def _getMaxVCpus(self):
-        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        caps = cli.getVdsCapabilities()
-        if caps['status']['code'] != 0:
-            raise RuntimeError(caps['status']['message'])
+        caps = vds_info.capabilities(
+            self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        )
         return caps['cpuCores']
 
     @plugin.event(

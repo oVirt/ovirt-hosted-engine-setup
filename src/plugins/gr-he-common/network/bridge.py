@@ -244,8 +244,9 @@ class Plugin(plugin.PluginBase):
         ),
     )
     def _get_existing_bridge_interface(self):
-        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        caps = cli.getVdsCapabilities()
+        caps = vds_info.capabilities(
+            self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        )
         bridge_name = self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME]
         bridge_network = caps['networks'].get(bridge_name)
         bridge_ifs = bridge_network['ports'] if bridge_network else []
@@ -300,15 +301,9 @@ class Plugin(plugin.PluginBase):
             ipaddr = status['ipaddr']
         else:
             # acquiring bridge address
-            cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-            caps = cli.getVdsCapabilities()
-            self.logger.debug(caps)
-            if caps['status']['code'] != 0:
-                raise RuntimeError(
-                    _('Failed getting VDSM capabilities: {msg}').format(
-                        msg=caps['status']['message'],
-                    )
-                )
+            caps = vds_info.capabilities(
+                self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+            )
 
             if 'networks' in caps:
                 networks = caps['networks']
