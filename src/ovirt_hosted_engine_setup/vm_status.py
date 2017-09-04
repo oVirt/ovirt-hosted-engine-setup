@@ -25,9 +25,11 @@ import gettext
 import json
 import socket
 import sys
+import time
 
 from ovirt_hosted_engine_ha.client import client
-from ovirt_hosted_engine_ha.lib.exceptions import BrokerConnectionError, DisconnectionError
+from ovirt_hosted_engine_ha.lib.exceptions import \
+    BrokerConnectionError, DisconnectionError
 
 
 def _(m):
@@ -78,9 +80,8 @@ class VmStatus(object):
                     'please check the logs.\n'
                     ).format(str(e))
             )
-
             # there is no reason to continue if we can't connect to the daemon
-            return
+            raise RuntimeError(_('Unable to connect the HA Broker '))
         return all_host_stats
 
     def _get_cluster_stats(self):
@@ -92,11 +93,16 @@ class VmStatus(object):
             # Stats were retrieved but the global section is missing.
             # This is not an error.
             cluster_stats = {}
-        except (socket.error, AttributeError, IndexError):
+        except (
+            socket.error,
+            AttributeError,
+            IndexError,
+            BrokerConnectionError
+        ):
             self.log_error(
                 _('Cannot connect to the HA daemon, please check the logs.\n')
             )
-            cluster_stats = {}
+            raise RuntimeError(_('Unable to connect the HA Broker '))
         return cluster_stats
 
     def print_status(self):
@@ -117,8 +123,13 @@ class VmStatus(object):
                 return all_host_stats
 
             glb_msg = ''
-            if cluster_stats.get(client.HAClient.GlobalMdFlags.MAINTENANCE, False):
-                glb_msg = _('\n\n!! Cluster is in GLOBAL MAINTENANCE mode !!\n')
+            if cluster_stats.get(
+                client.HAClient.GlobalMdFlags.MAINTENANCE,
+                False
+            ):
+                glb_msg = _(
+                    '\n\n!! Cluster is in GLOBAL MAINTENANCE mode !!\n'
+                )
                 print(glb_msg)
 
             for host_id, host_stats in all_host_stats.items():
@@ -151,28 +162,50 @@ class VmStatus(object):
                 print(glb_msg)
             return all_host_stats
         except DisconnectionError as e:
-            sys.stderr.write(
-                    _('An error occured while retrieving vm status, please make sure your storage is reachable.\n')
-            )
+            sys.stderr.write(_(
+                'An error occured while retrieving vm status, '
+                'please make sure your storage is reachable.\n'
+            ))
+            sys.stderr.write(str(e) + '\n')
+            return None
+        except RuntimeError as e:
+            sys.stderr.write(_(
+                'An error occured while retrieving vm status, '
+                'please make sure the HA daemon is ready and reachable.\n'
+            ))
             sys.stderr.write(str(e) + '\n')
             return None
 
-    def get_status(self):
+    def get_status(self, timeout=30):
+        RETRY_DELAY = 3
         status = {}
-        cluster_stats = self._get_cluster_stats()
-        status['global_maintenance'] = cluster_stats.get(
-            client.HAClient.GlobalMdFlags.MAINTENANCE,
-            False
+        while timeout > 0:
+            try:
+                cluster_stats = self._get_cluster_stats()
+                status['global_maintenance'] = cluster_stats.get(
+                    client.HAClient.GlobalMdFlags.MAINTENANCE,
+                    False
+                )
+                status['all_host_stats'] = self._get_all_host_stats()
+                status['engine_vm_up'] = False
+                status['engine_vm_host'] = None
+                for host in status['all_host_stats'].values():
+                    if 'engine-status' in host and 'live-data' in host:
+                        if '"vm": "up"' in host[
+                            'engine-status'
+                        ] and host['live-data']:
+                            status['engine_vm_up'] = True
+                            status['engine_vm_host'] = host['hostname']
+                return status
+            except RuntimeError:
+                if timeout >= RETRY_DELAY:
+                    time.sleep(RETRY_DELAY)
+                timeout -= RETRY_DELAY
+        raise RuntimeError(
+            _('Unable to connect the HA Broker within {t} seconds').format(
+                t=timeout,
+            )
         )
-        status['all_host_stats'] = self._get_all_host_stats()
-        status['engine_vm_up'] = False
-        status['engine_vm_host'] = None
-        for host in status['all_host_stats'].values():
-            if 'engine-status' in host and 'live-data' in host:
-                if '"vm": "up"' in host['engine-status'] and host['live-data']:
-                    status['engine_vm_up'] = True
-                    status['engine_vm_host'] = host['hostname']
-        return status
 
 
 if __name__ == "__main__":
