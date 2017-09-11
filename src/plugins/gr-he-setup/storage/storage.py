@@ -874,6 +874,10 @@ class Plugin(plugin.PluginBase):
             None
         )
         self.environment.setdefault(
+            ohostedcons.StorageEnv.ENABLE_LIBGFAPI,
+            None
+        )
+        self.environment.setdefault(
             ohostedcons.StorageEnv.DOMAIN_TYPE,
             None
         )

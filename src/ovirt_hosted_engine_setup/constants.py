@@ -624,6 +624,8 @@ class StorageEnv(object):
     def ENABLE_HC_GLUSTER_SERVICE(self):
         return 'OVEHOSTED_ENGINE/enableHcGlusterService'
 
+    ENABLE_LIBGFAPI = 'OVEHOSTED_ENGINE/enableLibgfapi'
+
     @ohostedattrs(
         answerfile=True,
         summary=True,
