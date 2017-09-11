@@ -195,7 +195,7 @@ class Plugin(plugin.PluginBase):
 
             # for lv_based storage (like iscsi) creates symlinks in /rhev/..
             # for nfs does nothing (the real files are already in /rhev/..)
-            backend.connect()
+            backend.connect(initialize=False)
 
             # Get the path to sanlock lockspace area
             lease_file, offset = backend.filename(lockspace + '.lockspace')
