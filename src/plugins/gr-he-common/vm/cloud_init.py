@@ -1015,6 +1015,14 @@ class Plugin(plugin.PluginBase):
                 adminPwd = ''
             self.logger.debug('engine_restore: {er}'.format(er=engine_restore))
 
+            libgfapi_enable = ''
+            if self.environment[ohostedcons.StorageEnv.ENABLE_LIBGFAPI]:
+                libgfapi_enable = (
+                    '&& engine-config  -s LibgfApiSupported=true --cver=4.1 '
+                    '&& engine-config  -s LibgfApiSupported=true --cver=4.2 '
+                    '&& systemctl restart ovirt-engine'
+                )
+
             user_data += (
                 'write_files:\n'
                 ' - content: |\n'
@@ -1036,7 +1044,7 @@ class Plugin(plugin.PluginBase):
                 ' --config-append={applianceanswers}'
                 ' --config-append={heanswers}'
                 ' 1>{port}'
-                ' 2>&1\n'
+                ' 2>&1 {libgfapi_enable}\n'
                 ' - if [ $? -eq 0 ];'
                 ' then echo "{success_string}" >{port};'
                 ' else echo "{fail_string}" >{port};'
@@ -1057,6 +1065,7 @@ class Plugin(plugin.PluginBase):
                 success_string=ohostedcons.Const.E_SETUP_SUCCESS_STRING,
                 fail_string=ohostedcons.Const.E_SETUP_FAIL_STRING,
                 engine_restore=engine_restore,
+                libgfapi_enable=libgfapi_enable
             )
 
         if 'runcmd:\n' not in user_data:
