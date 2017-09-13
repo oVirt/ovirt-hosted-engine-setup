@@ -1,0 +1,339 @@
+---
+- name: create hosted engine local vm
+  hosts: localhost
+  connection: local
+  vars_files:
+    - vars/vars.yml
+  tasks:
+  - name: install packages
+    yum:
+      name: "{{ item }}"
+      state: latest
+    with_items:
+      - libvirt
+      - ovirt-engine-appliance
+      - virt-install
+      - python-ovirt-engine-sdk4
+  - name: create dir for local vm
+    file:
+      path: "{{ LOCAL_VM_DIR }}"
+      state: directory
+  - name: find the appliance ova file
+    find:
+      paths: /usr/share/ovirt-engine-appliance
+      patterns: 'ovirt-engine-appliance*.ova'
+    register: appliance
+  - name: extract appliance to local vm dir
+    unarchive:
+      src: "{{ appliance.files[0].path }}"
+      dest: "{{ LOCAL_VM_DIR }}"
+  - name: find the appliance image
+    find:
+      paths: "{{ LOCAL_VM_DIR }}/images"
+      recurse: true
+      patterns: ^.*.(?<!meta)$
+      use_regex: true
+    register: app_img
+  - name: create cloud init user-data file #need to see if there could be different structures according to user answers
+    template:
+      src: templates/user-data.j2
+      dest: "{{ LOCAL_VM_DIR }}/user-data"
+  - name: create cloud init meta-data file
+    template:
+      src: templates/meta-data.j2
+      dest: "{{ LOCAL_VM_DIR }}/meta-data"
+  - name: create iso disk
+    shell: mkisofs -output {{ LOCAL_VM_DIR }}/seed.iso -volid cidata -joliet -rock -input-charset utf-8 {{ LOCAL_VM_DIR }}/meta-data {{ LOCAL_VM_DIR }}/user-data
+  - name: start libvirt
+    service:
+      name: libvirtd
+      state: started
+      enabled: yes
+  - name: create local vm #also, should get the parameters from the user
+    command: virt-install -n localvm1 -r {{ MEM_SIZE }} --network default,mac={{ VM_MAC_ADDR }} --disk {{ app_img.files[0].path }} --import --disk path={{ LOCAL_VM_DIR }}/seed.iso,device=cdrom --noautoconsole
+    async: 60
+    poll: 0
+  - name: wait a bit #needs to be changed
+    pause:
+      seconds: 60
+      prompt: "Waiting for the vm to get an ip"
+  - name: get local vm ip
+    shell: virsh net-dhcp-leases default | sed -n '3p' | awk '{ print $5 }' | cut -f1 -d'/'
+    register: local_vm_ip
+  - name: create entry in hosts
+    lineinfile:
+      dest: /etc/hosts
+      line: "{{ local_vm_ip.stdout_lines[0] }} {{ FQDN }}"
+  - name: wait for engine deployment to finish
+    uri:
+      url: http://{{ FQDN }}/ovirt-engine/services/health
+      return_content: yes
+    register: engine_status
+    until: "'DB Up!Welcome to Health Status!' in engine_status.content"
+    retries: 30
+    delay: 20
+  - name: add host
+    ovirt_hosts:
+      name: "{{ HOST_NAME }}"
+      state: present
+      password: "{{ HOST_PASSWORD }}"
+      address: "{{ HOST_ADDRESS }}"
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    async: 1
+    poll: 0
+  # all of the next is a workaroud for the network issue, vdsm installation breaks the routing and it needs to be fixed
+  # once we'll fix the host installation it could be removed
+  - name: wait for the host to appear
+    pause:
+      seconds: 10
+  - name: wait for the host to become non operational
+    ovirt_hosts_facts:
+      pattern: name={{ HOST_NAME }}
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: host_result
+    until: "'non_operational' in host_result.ansible_facts.ovirt_hosts[0].status"
+    retries: 50
+    delay: 10
+  - name: get virbr0 routing configuration
+    shell: ip route | grep virbr0
+    register: virbr0_route_config
+  - name: get ovirtmgmt route table id
+    shell: ip rule list | grep ovirtmgmt | awk '{ print $9 }'
+    register: ovirtmgmt_table_id
+  - name: restore network configuration
+    shell: ip route add {{ virbr0_route_config.stdout_lines[0] }} table {{ ovirtmgmt_table_id.stdout_lines[0] }}
+  - name: wait for the host to be up
+    ovirt_hosts_facts:
+      pattern: name={{ HOST_NAME }}
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: host_result
+    until: "'up' in host_result.ansible_facts.ovirt_hosts[0].status"
+    retries: 10
+    delay: 10
+  - name: persist ovirtmngmt network configuration
+    shell: vdsm-client Host setSafeNetworkConfig
+  - name: add nfs storage domain
+    ovirt_storage_domains:
+      name: "{{ STORAGE_DOMAIN_NAME }}"
+      host: "{{ HOST_NAME }}"
+      data_center: default
+      nfs:
+        address: "{{ STORAGE_DOMAIN_ADDR }}"
+        path: "{{ STORAGE_DOMAIN_PATH}}"
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: storage_domain_details
+    when: NFS_STORAGE
+  - name: add iscsi storage domain
+    ovirt_storage_domains:
+      name: "{{ STORAGE_DOMAIN_NAME }}"
+      host: "{{ HOST_NAME }}"
+      data_center: default
+      iscsi:
+        address: "{{ STORAGE_DOMAIN_ADDR }}"
+        port: "{{ ISCSI_PORT }}"
+        target: "{{ ISCSI_TARGET }}"
+        lun_id: "{{ LUN_ID }}"
+        username: "{{ ISCSI_USERNAME }}"
+        password: "{{ ISCSI_PASSWORD }}"
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: storage_domain_details
+    when: ISCSI_STORAGE
+  - name: add he sanlock disk
+    ovirt_disks:
+      name: he_sanlock
+      size: 1GiB
+      format: raw
+      interface: virtio
+      storage_domain: he_storage
+      timeout: 600
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: he_sanlock_disk_details
+  - name: add he conf disk
+    ovirt_disks:
+      name: he_conf
+      size: 1GiB
+      format: raw
+      interface: virtio
+      storage_domain: he_storage
+      timeout: 600
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: he_conf_disk_details
+  - name: add he metadata disk
+    ovirt_disks:
+      name: he_metadata
+      size: 1GiB
+      format: raw
+      interface: virtio
+      storage_domain: he_storage
+      timeout: 600
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: he_metadata_disk_details
+  - name: add he disk # takes a very long time, hence the long timeout. need to figure out why.
+    ovirt_disks:
+      name: he_virtio_disk
+      size: 60GiB
+      format: raw
+      interface: virtio
+      storage_domain: he_storage
+      bootable: true
+      timeout: 7200
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: he_virtio_disk_details
+  - name: add vm
+    ovirt_vms:
+      state: present
+      cluster: Default
+      name: "{{ VM_NAME }}"
+      memory: "{{ MEM_SIZE }}Mib"
+      cpu_cores: "{{ VCPUS }}"
+      cpu_sockets: "{{ CPU_SOCKETS }}"
+      operating_system: rhel_7x64
+      timezone: "{{ TIME_ZONE }}"
+      disks:
+      - name: he_virtio_disk
+      nics:
+      - name: vnet0
+        profile_name: "{{ BRIDGE }}"
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: he_vm_details
+  - name: configure libvirt to listen to tls
+    lineinfile:
+      path: /etc/sysconfig/libvirtd
+      line:  LIBVIRTD_ARGS="--listen"
+      insertafter: '^#LIBVIRTD_ARGS '
+  - name: restart libvirtd
+    service:
+      name: libvirtd
+      state: restarted
+  - name: destroy local vm
+    virt:
+      name: localvm1
+      command: destroy
+      uri: 'qemu+tls://{{ HOST_ADDRESS }}/system'
+  - name: undefine local vm
+    virt:
+      name: localvm1
+      command: undefine
+      uri: 'qemu+tls://{{ HOST_ADDRESS }}/system'
+  - name: create temp vm conf
+    template:
+      src: templates/vm.conf.j2
+      dest: "{{ LOCAL_VM_DIR }}/vm.conf"
+  - name: create temp broker conf
+    template:
+      src: templates/broker.conf.j2
+      dest: "{{ LOCAL_VM_DIR }}/broker.conf"
+  - name: create version file
+    template:
+      src: templates/version.j2
+      dest: "{{ LOCAL_VM_DIR }}/version"
+  - name: create he answers
+    template:
+      src: templates/fhanswers.conf.j2
+      dest: "{{ LOCAL_VM_DIR }}/fhanswers.conf"
+  - name: create hosted engine conf
+    template:
+      src: templates/hosted-engine.conf.j2
+      dest: "{{ LOCAL_VM_DIR }}/hosted-engine.conf"
+  - name: create configuration archive #creates compressed archive that the agent can't read
+    archive:
+      path:
+        - "{{ LOCAL_VM_DIR }}/vm.conf"
+        - "{{ LOCAL_VM_DIR }}/broker.conf"
+        - "{{ LOCAL_VM_DIR }}/version"
+        - "{{ LOCAL_VM_DIR }}/fhanswers"
+        - "{{ LOCAL_VM_DIR }}/hosted-engine.conf"
+      dest: "{{ LOCAL_VM_DIR }}/{{ he_conf_disk_details.disk.image_id }}"
+    when: false
+  - name: create configuration archive
+    command: tar -cvf {{ he_conf_disk_details.disk.image_id }}  vm.conf broker.conf version fhanswers.conf hosted-engine.conf
+    args:
+      chdir: "{{ LOCAL_VM_DIR }}"
+  - name: create ovirt-hosted-engine-ha run directory
+    file:
+      path: /var/run/ovirt-hosted-engine-ha
+      state: directory
+  - name: copy vm.conf to the right location on host
+    copy:
+      src: "{{ LOCAL_VM_DIR }}/vm.conf"
+      dest: /var/run/ovirt-hosted-engine-ha
+  - name: copy hosted-engine.conf to the right location on host
+    copy:
+      src: "{{ LOCAL_VM_DIR }}/hosted-engine.conf"
+      dest: /etc/ovirt-hosted-engine/
+  - name: find storage domain mount point
+    shell: df -h | grep {{ STORAGE_DOMAIN_ADDR }}:{{ STORAGE_DOMAIN_PATH }} | awk '{ print $6 }'
+    register: storage_mount_point
+    when: NFS_STORAGE
+  - name: copy configuration archive to storage
+    copy:
+      src: "{{ LOCAL_VM_DIR }}/{{ he_conf_disk_details.disk.image_id }}"
+      dest: "{{ storage_mount_point.stdout_lines[0] }}/{{ storage_domain_details.storagedomain.id }}/images/{{ he_conf_disk_details.disk.id }}/{{ he_conf_disk_details.disk.image_id }}"
+    become: true
+    become_user: vdsm
+  - name: copy local vm disk to nfs storage
+    shell: qemu-img convert -n -O raw {{ app_img.files[0].path }} {{ storage_mount_point.stdout_lines[0] }}/{{ storage_domain_details.storagedomain.id }}/images/{{ he_virtio_disk_details.disk.id }}/{{ he_virtio_disk_details.disk.image_id }}
+    become: true
+    become_user: vdsm
+    when: NFS_STORAGE
+  - name: copy local vm disk to iscsi storage
+    shell: qemu-img convert -n -O raw {{ app_img.files[0].path }} /rhev/data-center/mnt/blockSD/{{ storage_domain_details.storagedomain.id }}/images/{{ he_virtio_disk_details.disk.id }}/{{ he_virtio_disk_details.disk.image_id }}
+    become: true
+    become_user: vdsm
+    when: ISCSI_STORAGE
+  - name: clean /etc/hosts
+    lineinfile:
+      dest: /etc/hosts
+      line: "{{ local_vm_ip.stdout_lines[0] }} {{ FQDN }}"
+      state: absent
+  - name: start broker
+    service:
+      name: ovirt-ha-broker
+      state: started
+      enabled: true
+  - name: start agent
+    service:
+      name: ovirt-ha-agent
+      state: started
+      enabled: true
+...

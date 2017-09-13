@@ -1,0 +1,31 @@
+fqdn={{ FQDN }}
+vm_disk_id={{ he_virtio_disk_details.disk.id }}
+vm_disk_vol_id={{ he_virtio_disk_details.disk.image_id }}
+vmid={{ he_vm_details.vm.id }}
+storage={{ STORAGE }}
+mnt_options=
+conf=/var/run/ovirt-hosted-engine-ha/vm.conf
+host_id=1
+console=vnc
+domainType={{ DOMAIN_TYPE }}
+spUUID=00000000-0000-0000-0000-000000000000
+sdUUID={{ storage_domain_details.storagedomain.id }}
+connectionUUID=e29cf818-5ee5-46e1-85c1-8aeefa33e95d
+ca_cert=/etc/pki/vdsm/libvirt-spice/ca-cert.pem
+ca_subject="C=EN, L=Test, O=Test, CN=Test"
+vdsm_use_ssl=true
+gateway={{ GATEWAY }}
+bridge={{ BRIDGE }}
+metadata_volume_UUID={{ he_metadata_disk_details.disk.image_id }}
+metadata_image_UUID={{ he_metadata_disk_details.disk.id }}
+lockspace_volume_UUID={{ he_sanlock_disk_details.disk.image_id }}
+lockspace_image_UUID={{ he_sanlock_disk_details.disk.id }}
+conf_volume_UUID={{ he_conf_disk_details.disk.image_id }}
+conf_image_UUID={{ he_conf_disk_details.disk.id }}
+
+# The following are used only for iSCSI storage
+iqn={{ ISCSI_TARGET }}
+portal=1
+user={{ ISCSI_USERNAME }}
+password={{ ISCSI_PASSWORD }}
+port={{ ISCSI_PORT }}

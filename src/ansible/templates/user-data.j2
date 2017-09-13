@@ -1,0 +1,27 @@
+#cloud-config
+# vim: syntax=yaml
+disable_root: false
+ssh_pwauth: True
+chpasswd:
+  list: |
+    root:{{ APPLIANCE_PASSWORD }}
+  expire: False
+timezone: {{ TIME_ZONE }}
+write_files:
+  - content: |
+      [environment:init]
+      DIALOG/autoAcceptDefault=bool:True
+      [environment:default]
+      OVESETUP_CONFIG/adminPassword=str:{{ ADMIN_PASSWORD}}
+      OVESETUP_CONFIG/fqdn=str:{{ FQDN }}
+      OVESETUP_PKI/organization=str:{{ CLOUD_INIT_DOMAIN_NAME }}
+    path: /root/heanswers.conf
+    owner: root:root
+    permissions: '0640'
+runcmd:
+  - if grep -Gq "^\s*PermitRootLogin" /etc/ssh/sshd_config; then sed -re "s/^\s*(PermitRootLogin)\s+(yes|no|without-password)/ \1 yes/" -i.$(date -u +%Y%m%d%H%M%S) /etc/ssh/sshd_config; else echo "PermitRootLogin yes" >> /etc/ssh/sshd_config; fi
+  - systemctl restart sshd &
+  - /usr/bin/engine-setup --offline --config-append=/root/ovirt-engine-answers --config-append=/root/heanswers.conf
+  - rm /root/heanswers.conf
+  - systemctl mask cloud-init-local ||  chkconfig cloud-init-local off
+  - systemctl mask cloud-init || ( chkconfig cloud-init off && chkconfig cloud-config off && chkconfig cloud-final off )
