@@ -46,7 +46,7 @@ def handle_server_error(f):
 @handle_server_error
 def create(args):
     vm_params = vmconf.parseVmConfFile(args.filename)
-    cli = ohautil.connect_vdsm_json_rpc_new()
+    cli = ohautil.connect_vdsm_json_rpc()
     cli.VM.create(
         vmID=vm_params['vmId'],
         vmParams=vm_params
@@ -55,13 +55,13 @@ def create(args):
 
 @handle_server_error
 def destroy(args):
-    cli = ohautil.connect_vdsm_json_rpc_new()
+    cli = ohautil.connect_vdsm_json_rpc()
     cli.VM.destroy(vmID=args.vmid)
 
 
 @handle_server_error
 def shutdown(args):
-    cli = ohautil.connect_vdsm_json_rpc_new()
+    cli = ohautil.connect_vdsm_json_rpc()
     cli.VM.shutdown(
         vmID=args.vmid,
         delay=args.delay,
@@ -71,14 +71,14 @@ def shutdown(args):
 
 @handle_server_error
 def checkVmStatus(args):
-    cli = ohautil.connect_vdsm_json_rpc_new()
+    cli = ohautil.connect_vdsm_json_rpc()
     vmstats = cli.VM.getStats(vmID=args.vmid)[0]
     print(vmstats['status'])
 
 
 @handle_server_error
 def setVmTicket(args):
-    cli = ohautil.connect_vdsm_json_rpc_new()
+    cli = ohautil.connect_vdsm_json_rpc()
     cli.VM.setTicket(
         vmID=args.vmid,
         password=args.password,

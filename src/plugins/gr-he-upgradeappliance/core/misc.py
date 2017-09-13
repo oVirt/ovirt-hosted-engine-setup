@@ -140,7 +140,7 @@ class Plugin(plugin.PluginBase):
 
         self.environment[
             ohostedcons.VDSMEnv.VDS_CLI
-        ] = ohautil.connect_vdsm_json_rpc_new(
+        ] = ohautil.connect_vdsm_json_rpc(
             logger=self.logger,
             timeout=ohostedcons.Const.VDSCLI_SSL_TIMEOUT,
         )
