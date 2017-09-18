@@ -911,13 +911,13 @@ class Plugin(plugin.PluginBase):
             if self.environment[
                 ohostedcons.CloudInit.VM_STATIC_CIDR
             ]:
+                fname = (
+                    '/etc/sysconfig/network-scripts/ifcfg-{iname}'.format(
+                        iname=_interface_name
+                    )
+                )
 
                 if self.environment[ohostedcons.CloudInit.VM_DNS]:
-                    fname = (
-                        '/etc/sysconfig/network-scripts/ifcfg-{iname}'.format(
-                            iname=_interface_name
-                        )
-                    )
                     dnslist = [
                         d.strip()
                         for d
@@ -942,6 +942,29 @@ class Plugin(plugin.PluginBase):
                             ],
                             f=fname,
                         )
+
+                # Due to another cloud-init bug we have now also to force
+                # the gataway address:
+                # https://bugs.launchpad.net/cloud-init/+bug/1686856
+                # https://bugzilla.redhat.com/show_bug.cgi?id=1492726
+                # TODO: remove ASAP once fixed on cloud-init side
+                if self.environment[ohostedcons.NetworkEnv.GATEWAY]:
+                    bootcmd += (
+                        ' - if ! grep -Gq "^GATEWAY" {f}; '
+                        'then echo "GATEWAY={g}" >> {f}; '
+                        'fi\n'
+                    ).format(
+                        g=self.environment[ohostedcons.NetworkEnv.GATEWAY],
+                        f=fname,
+                    )
+                    bootcmd += (
+                        ' - if ! grep -Gq "^DEFROUTE" {f}; '
+                        'then echo "DEFROUTE=yes" >> {f}; '
+                        'fi\n'
+                    ).format(
+                        f=fname,
+                    )
+
                 bootcmd += (
                     ' - ifdown {iname}\n'
                     ' - ifup {iname}\n'
