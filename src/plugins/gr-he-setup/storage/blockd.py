@@ -76,13 +76,18 @@ class Plugin(plugin.PluginBase):
                 )
             try:
                 if address:
-                    match = self._IPADDR_RE.match(address)
-                    if match:
-                        # TODO: figure out a better regexp avoiding this check
-                        valid = True
-                        for i in match.groups():
-                            valid &= int(i) >= 0
-                            valid &= int(i) < 255
+                    valid = True
+                    for a in address.split(','):
+                        match = self._IPADDR_RE.match(a)
+                        if match:
+                            # TODO: figure out a better regexp
+                            # avoiding this check
+                            valid &= True
+                            for i in match.groups():
+                                valid &= int(i) >= 0
+                                valid &= int(i) < 255
+                        else:
+                            valid = False
                 if not valid:
                     raise ValueError(_('Address must be a valid IP address'))
             except ValueError as e:
@@ -112,11 +117,12 @@ class Plugin(plugin.PluginBase):
                     default=ohostedcons.Defaults.DEFAULT_ISCSI_PORT,
                 )
             try:
-                int_port = int(port)
-                if int_port > 0 and int_port < 65536:
-                    valid = True
-                else:
-                    raise ValueError(_('Port must be a valid port number'))
+                for p in port.split(','):
+                    int_port = int(p)
+                    if int_port > 0 and int_port < 65536:
+                        valid = True
+                    else:
+                        raise ValueError(_('Port must be a valid port number'))
             except ValueError as e:
                 if self.environment[ohostedcons.StorageEnv.ISCSI_PORT] is None:
                     self.logger.debug('exception', exc_info=True)
@@ -181,28 +187,68 @@ class Plugin(plugin.PluginBase):
             store=False,
         )
 
-    def _customize_target(self, values, default):
+    def _customize_target(self, values):
         target = self.environment[ohostedcons.StorageEnv.ISCSI_TARGET]
         if target is None:
             self._interactive = True
-            target = self.dialog.queryString(
+            f_targets = []
+            for target in values:
+                for tpgt in values[target]:
+                    f_targets.append(
+                        {
+                            'index': str(len(f_targets)+1),
+                            'target': target,
+                            'tpgt': tpgt,
+                        }
+                    )
+            target_list = ''
+            for entry in f_targets:
+                target_list += _(
+                    '\t[{index}]\t{target}\n\t\tTPGT: {tpgt}, portals:\n'
+                ).format(
+                    index=entry['index'],
+                    target=entry['target'],
+                    tpgt=entry['tpgt'],
+                )
+                for portal in values[entry['target']][entry['tpgt']]:
+                    target_list += _(
+                        '\t\t\t{portal}:{port}\n'
+                    ).format(
+                        portal=portal['ip'],
+                        port=portal['port'],
+                    )
+                target_list += '\n'
+
+            self.dialog.note(
+                _(
+                    'The following targets have been found:\n'
+                    '{target_list}'
+                ).format(
+                    target_list=target_list,
+                )
+            )
+
+            s_target = self.dialog.queryString(
                 name='OVEHOSTED_STORAGE_ISCSI_TARGET',
                 note=_(
-                    'Please specify the target name '
+                    'Please select a target '
                     '(@VALUES@) [@DEFAULT@]: '
                 ),
                 prompt=True,
                 caseSensitive=True,
-                default=default,
-                validValues=values,
+                default='1',
+                validValues=[i['index'] for i in f_targets],
             )
-        return target
+        return (
+            f_targets[int(s_target)-1]['target'],
+            f_targets[int(s_target)-1]['tpgt']
+        )
 
-    def _customize_lun(self, domainType, target):
+    def _customize_lun(self, domainType, target, ip_port_list=None, tpgt=None):
         if domainType == ohostedcons.DomainTypes.ISCSI:
             available_luns = self._iscsi_get_lun_list(
-                ip=self.environment[ohostedcons.StorageEnv.ISCSI_IP_ADDR],
-                port=self.environment[ohostedcons.StorageEnv.ISCSI_PORT],
+                ip_port_list=ip_port_list,
+                tpgt=tpgt,
                 user=self.environment[ohostedcons.StorageEnv.ISCSI_USER],
                 password=self.environment[
                     ohostedcons.StorageEnv.ISCSI_PASSWORD
@@ -316,62 +362,51 @@ class Plugin(plugin.PluginBase):
 
         full_target_template = (
             '^(?P<portal_hostname>[\w\d\-\.]+):(?P<portal_port>\d+),'
-            '(?P<tgpt>-?\d+) (?P<iqn>[\w\d\-\.:]+)$'
+            '(?P<tpgt>-?\d+) (?P<iqn>[\w\d\-\.:]+)$'
         )
         full_target_template_re = re.compile(full_target_template)
-        found = []
+        found = {}
         for t in targets:
             m = full_target_template_re.match(t)
             mg = m.groupdict()
-            if (
-                mg['portal_hostname'] == address and
-                mg['portal_port'] == port
-            ):
-                found.append(mg)
+            if mg['iqn'] not in found:
+                found[mg['iqn']] = {}
+            if mg['tpgt'] not in found[mg['iqn']]:
+                found[mg['iqn']][mg['tpgt']] = []
+            found[mg['iqn']][mg['tpgt']].append(
+                {
+                    'ip': mg['portal_hostname'],
+                    'port': mg['portal_port']
+                }
+            )
         self.logger.debug('found: {f}'.format(f=found))
         return found
 
-    def _iscsi_get_lun_list(self, ip, port, user, password, iqn):
+    def _iscsi_get_lun_list(
+        self,
+        ip_port_list,
+        tpgt,
+        user,
+        password,
+        iqn
+    ):
         retry = self._MAXRETRY
         iscsi_lun_list = []
         for _try in range(0, retry):
-            try:
-                devices = self.cli.Host.getDeviceList(
-                    storageType=ohostedcons.VDSMConstants.ISCSI_DOMAIN
-                )
-                self.logger.debug(devices)
-            except ServerError as e:
-                raise RuntimeError(str(e))
-
-            for device in devices:
-                for path in device['pathlist']:
-                    if path['iqn'] == iqn:
-                        if device not in iscsi_lun_list:
-                            iscsi_lun_list.append(device)
-
-            if iscsi_lun_list:
-                break
-
-            self.logger.info('Discovering iSCSI node')
-            self._iscsi_discovery(
-                ip,
-                port,
-                user,
-                password,
-            )
             self.logger.info('Connecting to the storage server')
-            connectionParams = [
-                {
-                    'connection': ip,
-                    'iqn': iqn,
-                    # FIXME!
-                    'portal': '0',
-                    'user': user,
-                    'password': password,
-                    'port': port,
-                    'id': ohostedcons.Const.BLANK_UUID,
-                }
-            ]
+            connectionParams = []
+            for entry in ip_port_list:
+                connectionParams.append(
+                    {
+                        'connection': entry['ip'],
+                        'iqn': iqn,
+                        'user': user,
+                        'password': password,
+                        'port': entry['port'],
+                        'id': ohostedcons.Const.BLANK_UUID,
+                        'tpgt': tpgt,
+                    }
+                )
             try:
                 self.cli.StoragePool.connectStorageServer(
                     storagepoolID=ohostedcons.Const.BLANK_UUID,
@@ -380,6 +415,23 @@ class Plugin(plugin.PluginBase):
                 )
             except ServerError as e:
                 raise RuntimeError(str(e))
+
+            try:
+                devices = self.cli.Host.getDeviceList(
+                    storageType=ohostedcons.VDSMConstants.ISCSI_DOMAIN
+                )
+                self.logger.debug(devices)
+            except ServerError as e:
+                self.logger.debug(devices)
+                raise RuntimeError(str(e))
+            for device in devices:
+                for path in device['pathlist']:
+                    if path['iqn'] == iqn:
+                        if device not in iscsi_lun_list:
+                            iscsi_lun_list.append(device)
+
+            if iscsi_lun_list:
+                break
 
             retry -= 1
             time.sleep(self._RETRY_DELAY)
@@ -403,9 +455,16 @@ class Plugin(plugin.PluginBase):
             fc_lun_list.append(device)
         return fc_lun_list
 
-    def _iscsi_get_device(self, ip, port, user, password, iqn, lunGUID):
+    def _iscsi_get_device(
+            self,
+            ip_port_list,
+            tpgt,
+            user, password,
+            iqn,
+            lunGUID
+    ):
         available_luns = self._iscsi_get_lun_list(
-            ip, port, user, password, iqn
+            ip_port_list, tpgt, user, password, iqn
         )
         for iscsi_device in available_luns:
             if iscsi_device['GUID'] == lunGUID:
@@ -419,11 +478,21 @@ class Plugin(plugin.PluginBase):
                     return fc_device
         return None
 
-    def _validate_domain(self, domainType, target, lunGUID):
+    def _validate_domain(self, domainType, target, tpgt, lunGUID):
         if domainType == ohostedcons.DomainTypes.ISCSI:
+            ip_port_list = [
+                {'ip': x[0], 'port': x[1]} for x in zip(
+                    self.environment[
+                        ohostedcons.StorageEnv.ISCSI_IP_ADDR
+                    ].split(','),
+                    self.environment[
+                        ohostedcons.StorageEnv.ISCSI_PORT
+                    ].split(',')
+                )
+            ]
             device = self._iscsi_get_device(
-                ip=self.environment[ohostedcons.StorageEnv.ISCSI_IP_ADDR],
-                port=self.environment[ohostedcons.StorageEnv.ISCSI_PORT],
+                ip_port_list=ip_port_list,
+                tpgt=tpgt,
                 user=self.environment[ohostedcons.StorageEnv.ISCSI_USER],
                 password=self.environment[
                     ohostedcons.StorageEnv.ISCSI_PASSWORD
@@ -563,6 +632,7 @@ class Plugin(plugin.PluginBase):
         lunGUID = None
         valid_lun = False
         target = None
+        valid_targets_dict = {}
         if self.environment[ohostedcons.StorageEnv.MNT_OPTIONS]:
             msg = _(
                 'Custom mount options are not supported on {type} devices.'
@@ -577,7 +647,6 @@ class Plugin(plugin.PluginBase):
             port = None
             user = None
             password = None
-            valid_targets = []
             while not valid_access:
                 address = self._customize_ip_address()
                 port = self._customize_port()
@@ -592,8 +661,7 @@ class Plugin(plugin.PluginBase):
                         user,
                         password,
                     )
-                    valid_targets = [x['iqn'] for x in valid_targets_dict]
-                    if valid_targets:
+                    if valid_targets_dict:
                         valid_access = True
                     else:
                         self.logger.error(_('No valid target'))
@@ -609,16 +677,34 @@ class Plugin(plugin.PluginBase):
 
         while not valid_lun:
             if self.domainType == ohostedcons.DomainTypes.ISCSI:
-                target = self._customize_target(
-                    values=valid_targets,
-                    default=valid_targets[0]
+                target, tpgt = self._customize_target(
+                    values=valid_targets_dict,
                 )
+                self.logger.debug(
+                    "target: {target}, tpgt: {tpgt}".format(
+                        target=target,
+                        tpgt=tpgt,
+                    )
+                )
+                ip_port_list = valid_targets_dict[target][tpgt]
             else:
                 target = None
-            lunGUID = self._customize_lun(self.domainType, target)
+                ip_port_list = None
+                tpgt = None
+            lunGUID = self._customize_lun(
+                self.domainType,
+                target,
+                ip_port_list,
+                tpgt
+            )
             if lunGUID is not None:
                 try:
-                    self._validate_domain(self.domainType, target, lunGUID)
+                    self._validate_domain(
+                        self.domainType,
+                        target,
+                        tpgt,
+                        lunGUID
+                    )
                     valid_lun = True
                 except Exception as e:
                     self.logger.debug('exception', exc_info=True)
@@ -631,6 +717,13 @@ class Plugin(plugin.PluginBase):
                 )
         if self.domainType == ohostedcons.DomainTypes.ISCSI:
             self.environment[ohostedcons.StorageEnv.ISCSI_TARGET] = target
+            self.environment[
+                ohostedcons.StorageEnv.ISCSI_IP_ADDR
+            ] = ','.join([x['ip'] for x in ip_port_list])
+            self.environment[
+                ohostedcons.StorageEnv.ISCSI_PORT
+            ] = ','.join([x['port'] for x in ip_port_list])
+            self.environment[ohostedcons.StorageEnv.ISCSI_PORTAL] = tpgt
         self.environment[ohostedcons.StorageEnv.LUN_ID] = lunGUID
 
     @plugin.event(
@@ -707,25 +800,6 @@ class Plugin(plugin.PluginBase):
             self.logger.debug(vginfo)
         except ServerError as e:
             raise RuntimeError(str(e))
-
-        if (
-            self.domainType == ohostedcons.DomainTypes.ISCSI and
-            self.environment[ohostedcons.StorageEnv.ISCSI_PORTAL] is None
-        ):
-            try:
-                for pv in vginfo['pvlist']:
-                    for path in pv['pathlist']:
-                        if path['iqn'] == self.environment[
-                            ohostedcons.StorageEnv.ISCSI_TARGET
-                        ]:
-                            self.environment[
-                                ohostedcons.StorageEnv.ISCSI_PORTAL
-                            ] = path['portal']
-                            break
-            except (ValueError, KeyError) as e:
-                self.logger.debug('exception', exc_info=True)
-                self.logger.error(_('Cannot detect iSCSI portal'))
-                raise e
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

@@ -647,7 +647,7 @@ class StorageEnv(object):
     @ohostedattrs(
         answerfile=True,
         summary=True,
-        description=_('iSCSI Portal'),
+        description=_('iSCSI Target Portal Group Tag'),
     )
     def ISCSI_PORTAL(self):
         return 'OVEHOSTED_STORAGE/iSCSIPortal'

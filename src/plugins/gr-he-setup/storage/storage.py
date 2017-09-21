@@ -450,31 +450,39 @@ class Plugin(plugin.PluginBase):
         elif self.storageType in (
             ohostedcons.VDSMConstants.ISCSI_DOMAIN,
         ):
-            conList = [
-                {
-                    'connection': self.environment[
+            conList = []
+            ip_port_list = [
+                {'ip': x[0], 'port': x[1]} for x in zip(
+                    self.environment[
                         ohostedcons.StorageEnv.ISCSI_IP_ADDR
-                    ],
-                    'iqn': self.environment[
-                        ohostedcons.StorageEnv.ISCSI_TARGET
-                    ],
-                    'portal': self.environment[
-                        ohostedcons.StorageEnv.ISCSI_PORTAL
-                    ],
-                    'user': self.environment[
-                        ohostedcons.StorageEnv.ISCSI_USER
-                    ],
-                    'password': self.environment[
-                        ohostedcons.StorageEnv.ISCSI_PASSWORD
-                    ],
-                    'id': self.environment[
-                        ohostedcons.StorageEnv.CONNECTION_UUID
-                    ],
-                    'port': self.environment[
+                    ].split(','),
+                    self.environment[
                         ohostedcons.StorageEnv.ISCSI_PORT
-                    ],
-                }
+                    ].split(',')
+                )
             ]
+            for x in ip_port_list:
+                conList.append(
+                    {
+                        'connection': x['ip'],
+                        'iqn': self.environment[
+                            ohostedcons.StorageEnv.ISCSI_TARGET
+                        ],
+                        'tpgt': self.environment[
+                            ohostedcons.StorageEnv.ISCSI_PORTAL
+                        ],
+                        'user': self.environment[
+                            ohostedcons.StorageEnv.ISCSI_USER
+                        ],
+                        'password': self.environment[
+                            ohostedcons.StorageEnv.ISCSI_PASSWORD
+                        ],
+                        'id': self.environment[
+                            ohostedcons.StorageEnv.CONNECTION_UUID
+                        ],
+                        'port': x['port'],
+                    }
+                )
         elif self.storageType in (
                 ohostedcons.VDSMConstants.FC_DOMAIN,
         ):
