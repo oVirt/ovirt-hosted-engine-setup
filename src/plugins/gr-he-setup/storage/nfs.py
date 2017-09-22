@@ -28,6 +28,7 @@ import tempfile
 import time
 import xml.dom.minidom
 
+from otopi import context as otopicontext
 from otopi import plugin
 from otopi import util
 
@@ -229,13 +230,43 @@ class Plugin(plugin.PluginBase):
         replicaCount = (
             volume.getElementsByTagName('replicaCount')[0]
         ).firstChild.nodeValue
-        if replicaCount != '3':
+        if replicaCount not in ('3', '1'):
             raise RuntimeError(
                 _(
-                    'GlusterFS Volume is not using replica 3'
+                    'GlusterFS Volume is not using replica 1 or 3'
                 )
             )
-        self.logger.info(_('GlusterFS replica 3 Volume detected'))
+        self.logger.info(
+            _('GlusterFS replica {replicaCount} Volume detected').format(
+                replicaCount=replicaCount,
+            )
+        )
+
+        if replicaCount == '1':
+            interactive = self.environment[
+                ohostedcons.StorageEnv.ALLOW_GLUSTER_REPLICA_ONE
+            ] is None
+            if interactive:
+                self.environment[
+                    ohostedcons.StorageEnv.ALLOW_GLUSTER_REPLICA_ONE
+                ] = dialog.queryBoolean(
+                    dialog=self.dialog,
+                    name='ALLOW_GLUSTER_REPLICA_ONE',
+                    note=_(
+                        'GlusterFS in replica 1 does not provide full feature '
+                        'set like high availability, ease of maintenance '
+                        'operations.\n'
+                        'Are you sure you want to continue? '
+                        '(@VALUES@)[@DEFAULT@]: '
+                    ),
+                    prompt=True,
+                    default=False,
+                )
+            if not self.environment[
+                ohostedcons.StorageEnv.ALLOW_GLUSTER_REPLICA_ONE
+            ]:
+                raise otopicontext.Abort('Aborted by user')
+
         host_list = []
         for brickE in volume.getElementsByTagName('brick'):
             host_list.append(
@@ -335,6 +366,15 @@ class Plugin(plugin.PluginBase):
                 )
 
     @plugin.event(
+        stage=plugin.Stages.STAGE_INIT,
+    )
+    def _init(self):
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.ALLOW_GLUSTER_REPLICA_ONE,
+            None
+        )
+
+    @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
     )
     def _setup(self):
@@ -367,8 +407,8 @@ class Plugin(plugin.PluginBase):
         ] == ohostedcons.DomainTypes.GLUSTERFS:
             self.logger.info(
                 _(
-                    'Please note that Replica 3 support is required for '
-                    'the shared storage.'
+                    'Please note that replica 3 or 1 is required for '
+                    'shared storage.'
                 )
             )
             self.query_for_additional_mnt_options = True
