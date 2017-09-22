@@ -673,6 +673,12 @@ class StorageEnv(object):
     def ENABLE_HC_GLUSTER_SERVICE(self):
         return 'OVEHOSTED_ENGINE/enableHcGlusterService'
 
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def ALLOW_GLUSTER_REPLICA_ONE(self):
+        return 'OVEHOSTED_ENGINE/allowGlusterReplicaOne'
+
     ENABLE_LIBGFAPI = 'OVEHOSTED_ENGINE/enableLibgfapi'
 
     @ohostedattrs(
