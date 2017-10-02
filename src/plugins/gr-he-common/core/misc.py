@@ -161,12 +161,20 @@ class Plugin(plugin.PluginBase):
         self.logger.info('Waiting for engine to start...')
         while timeout >= 0:
             try:
-                if vmstatus.get_status()['engine_vm_up']:
-                    self.logger.info('Engine vm is up')
-                    break
+                status = vmstatus.get_status()
+                health_good = False
+                for host in status['all_host_stats'].values():
+                    if 'engine-status' in host:
+                        if '"health": "good"' in host['engine-status']:
+                            health_good = True
+                            break
 
             except BrokerConnectionError as e:
                 self.logger.debug(str(e))
+
+            if health_good:
+                self.logger.info('Engine is up')
+                break
 
             time.sleep(5)
             timeout -= 5
