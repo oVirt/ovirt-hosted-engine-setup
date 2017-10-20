@@ -1,0 +1,59 @@
+---
+- name: iSCSI related tasks
+  hosts: localhost
+  connection: local
+  vars_files:
+    - vars/vars.yml
+    - vars/vars_iscsi.yml
+  tasks:
+  # After host is active
+  - name: iSCSI discover
+    ovirt_hosts:
+      name: "{{ HOST_NAME }}"
+      state: iscsidiscover
+      iscsi:
+        username: "{{ ISCSI_USERNAME }}"
+        password: "{{ ISCSI_PASSWORD }}"
+        address: "{{ ISCSI_PORTAL_ADDR }}"
+        port: "{{ ISCSI_PORTAL_PORT }}"
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: h_iscsidiscover
+  - debug: var=h_iscsidiscover
+  - name: iSCSI login
+    ovirt_hosts:
+      name: "{{ HOST_NAME }}"
+      state: iscsilogin
+      iscsi:
+        username: "{{ ISCSI_USERNAME }}"
+        password: "{{ ISCSI_PASSWORD }}"
+        address: "{{ ISCSI_PORTAL_ADDR }}"
+        port: "{{ ISCSI_PORTAL_PORT }}"
+        target: "{{ h_iscsidiscover['iscsi_targets'][0] }}" # TODO: let the user choose!
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    when:
+      h_iscsidiscover['iscsi_targets']
+  - name: get iSCSI LUNs
+    ovirt_host_storage_facts:
+      host: "{{ HOST_NAME }}"
+      iscsi:
+        username: "{{ ISCSI_USERNAME }}"
+        password: "{{ ISCSI_PASSWORD }}"
+        address: "{{ ISCSI_PORTAL_ADDR }}"
+        port: "{{ ISCSI_PORTAL_PORT }}"
+        target: "{{ h_iscsidiscover['iscsi_targets'][0] }}" # TODO: let the user choose!
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    when:
+      h_iscsidiscover['iscsi_targets']
+  - debug: var=ovirt_host_storages
