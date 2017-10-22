@@ -22,6 +22,7 @@
 
 
 import gettext
+import os
 import time
 
 from otopi import constants as otopicons
@@ -60,6 +61,18 @@ class Plugin(plugin.PluginBase):
         self.environment.setdefault(
             otopicons.CoreEnv.LOG_DIR,
             ohostedcons.FileLocations.OVIRT_HOSTED_ENGINE_SETUP_LOGDIR
+        )
+        self.environment.setdefault(
+            otopicons.CoreEnv.CONFIG_FILE_NAME,
+            self.resolveFile(
+                os.environ.get(
+                    otopicons.SystemEnvironment.CONFIG,
+                    self.resolveFile(
+                        ohostedcons.
+                        FileLocations.OVIRT_HOSTED_ENGINE_SETUP_CONFIG_FILE
+                    )
+                )
+            )
         )
 
     @plugin.event(
