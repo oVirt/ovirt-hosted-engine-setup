@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2015 Red Hat, Inc.
+# Copyright (C) 2013-2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -25,6 +25,7 @@ VM machine configuration plugin.
 
 import gettext
 import platform
+import uuid
 
 from otopi import plugin
 from otopi import util
@@ -52,12 +53,24 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_INIT,
     )
     def _init(self):
+        self.environment.setdefault(
+            ohostedcons.VMEnv.CDROM_UUID,
+            str(uuid.uuid4())
+        )
+        self.environment.setdefault(
+            ohostedcons.VMEnv.NIC_UUID,
+            str(uuid.uuid4())
+        )
+        self.environment.setdefault(
+            ohostedcons.VMEnv.CONSOLE_UUID,
+            str(uuid.uuid4())
+        )
         if self._distribution in (
             'redhat',
         ):
             self.environment.setdefault(
                 ohostedcons.VMEnv.EMULATED_MACHINE,
-                ohostedcons.Defaults.DEAFULT_RHEL_EMULATED_MACHINE
+                ohostedcons.Defaults.DEFAULT_RHEL_EMULATED_MACHINE
             )
         else:
             self.environment.setdefault(

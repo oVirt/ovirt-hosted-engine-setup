@@ -53,6 +53,10 @@ Requires:       sanlock-python >= 2.8
 Requires:       sudo
 Requires:       libvirt-client
 Requires:       m2crypto
+Requires:       virt-install
+Requires:       python-ovirt-engine-sdk4
+# default libvirt network
+Requires:       libvirt-daemon-config-network
 
 BuildRequires:  gettext >= 0.18.2
 BuildRequires:  python2-devel

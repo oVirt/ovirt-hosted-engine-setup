@@ -1,6 +1,6 @@
 dnl
 dnl ovirt-hosted-engine-setup -- ovirt with a manager in a VM
-dnl Copyright (C) 2013-2015 Red Hat, Inc.
+dnl Copyright (C) 2013-2017 Red Hat, Inc.
 dnl
 dnl This library is free software; you can redistribute it and/or
 dnl modify it under the terms of the GNU Lesser General Public
@@ -81,6 +81,7 @@ otopiplugindir="\$(datadir)/otopi/plugins"
 ovirthostedengineplugindir="\$(pkgdatadir)/plugins"
 ovirthostedenginetemplatedir="\$(pkgdatadir)/templates"
 ovirthostedenginescriptsdir="\$(pkgdatadir)/scripts"
+ovirthostedengineansibledir="\$(pkgdatadir)/ansible"
 ovirthostedenginelibdir="\$(pythondir)/ovirt_hosted_engine_setup"
 vdsmhooksdir="\$(libexecdir)/vdsm/hooks"
 APPLIANCE_RPM_PREFIX="ovirt-engine"
@@ -89,6 +90,7 @@ AC_SUBST([otopiplugindir])
 AC_SUBST([ovirthostedengineplugindir])
 AC_SUBST([ovirthostedenginetemplatedir])
 AC_SUBST([ovirthostedenginescriptsdir])
+AC_SUBST([ovirthostedengineansibledir])
 AC_SUBST([ovirthostedenginelibdir])
 AC_SUBST([vdsmhooksdir])
 AC_SUBST([APPLIANCE_RPM_PREFIX])
@@ -123,6 +125,8 @@ AC_CONFIG_FILES([
 	src/plugins/gr-he-setup/libvirt/Makefile
 	src/plugins/gr-he-setup/vdsmd/Makefile
 	src/plugins/gr-he-setup/engine/Makefile
+	src/plugins/gr-he-ansiblesetup/Makefile
+	src/plugins/gr-he-ansiblesetup/core/Makefile
 	src/plugins/gr-he-rollbackupgrade/Makefile
 	src/plugins/gr-he-rollbackupgrade/core/Makefile
 	src/plugins/gr-he-upgradeappliance/Makefile
@@ -130,6 +134,8 @@ AC_CONFIG_FILES([
 	src/plugins/gr-he-upgradeappliance/engine/Makefile
 	src/plugins/gr-he-upgradeappliance/vm/Makefile
 	src/vdsm_hooks/Makefile
+	src/ansible/Makefile
+	src/ansible/templates/Makefile
 	templates/Makefile
 	tests/Makefile
 ])

@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -35,6 +35,8 @@ Usage: $0
 		Upgrade the engine-appliance
 	--rollback-upgrade
 		Rollback using a backup saved in a previous upgrade attempt.
+	--ansible
+		Deploy hosted-engine using ansible.
 
 __EOF__
 	exit 1
@@ -67,6 +69,12 @@ while [ -n "$1" ]; do
 		--rollback-upgrade)
  			plugingroups="gr-he-common:gr-he-rollbackupgrade"
 		;;
+		--ansible)
+ 			plugingroups="gr-he-common:gr-he-ansiblesetup"
+ 		;;
+ 		--noansible)
+  			plugingroups="gr-he-common:gr-he-setup"
+  		;;
 		*)
 			die "Invalid option '${x}'"
 		;;

@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2016 Red Hat, Inc.
+# Copyright (C) 2013-2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -71,7 +71,8 @@ class Plugin(
         ),
         name=ohostedcons.Stages.ENGINE_ALIVE,
         condition=lambda self: (
-            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
+            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE] and
+            not self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]
         ),
     )
     def _closeup(self):

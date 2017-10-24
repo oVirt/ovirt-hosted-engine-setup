@@ -1,0 +1,143 @@
+---
+- name: create hosted engine local vm
+  hosts: localhost
+  connection: local
+  tasks:
+  - name: create dir for local vm
+    file:
+      path: "{{ LOCAL_VM_DIR }}"
+      state: directory
+  - name: extract appliance to local vm dir
+    unarchive:
+      src: "{{ APPLIANCE_OVA }}" # FIX
+      dest: "{{ LOCAL_VM_DIR }}"
+      extra_opts: ['--sparse']
+  - name: find the appliance image
+    find:
+      paths: "{{ LOCAL_VM_DIR }}/images"
+      recurse: true
+      patterns: ^.*.(?<!meta)$
+      use_regex: true
+    register: app_img
+  - name: create cloud init user-data file #need to see if there could be different structures according to user answers
+    template:
+      src: templates/user-data.j2
+      dest: "{{ LOCAL_VM_DIR }}/user-data"
+  - name: create cloud init meta-data file
+    template:
+      src: templates/meta-data.j2
+      dest: "{{ LOCAL_VM_DIR }}/meta-data"
+  - name: create iso disk
+    shell: mkisofs -output {{ LOCAL_VM_DIR }}/seed.iso -volid cidata -joliet -rock -input-charset utf-8 {{ LOCAL_VM_DIR }}/meta-data {{ LOCAL_VM_DIR }}/user-data
+  - name: start libvirt
+    service:
+      name: libvirtd
+      state: started
+      enabled: yes
+  - name: create local vm #also, should get the parameters from the user
+    command: virt-install -n {{ VM_NAME }} --os-variant rhel7 --virt-type kvm --memory {{ MEM_SIZE }} --vcpus {{ VCPUS }}  --network default,mac={{ VM_MAC_ADDR }} --disk {{ app_img.files[0].path }} --import --disk path={{ LOCAL_VM_DIR }}/seed.iso,device=cdrom --noautoconsole --rng /dev/random
+    async: 60
+    poll: 0
+  - name: wait a bit #needs to be changed
+    pause:
+      seconds: 60
+      prompt: "Waiting for the vm to get an ip"
+  - name: get local vm ip
+    shell: virsh -r net-dhcp-leases default | grep {{ VM_MAC_ADDR }} | awk '{ print $5 }' | cut -f1 -d'/'
+    register: local_vm_ip
+  - name: remove the entry in /etc/hosts for the local VM  # TODO: add back at the end if removed
+    lineinfile:
+      dest: /etc/hosts
+      regexp: "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3} .*{{ FQDN }}[ .*]*"
+      state: absent
+  - name: create an entry in /etc/hosts for the local VM
+    lineinfile:
+      dest: /etc/hosts
+      line: "{{ local_vm_ip.stdout_lines[0] }} {{ FQDN }}"
+      insertbefore: BOF
+  - name: wait for engine deployment to finish  # TODO: execute engine-setup via ansible instead of cloud-init to gather outputs
+    uri:
+      url: http://{{ FQDN }}/ovirt-engine/services/health
+      return_content: yes
+    register: engine_status
+    until: "'DB Up!Welcome to Health Status!' in engine_status.content"
+    retries: 30
+    delay: 20
+  - name: Set engine pub key as authorized key without validating the TLS/SSL certificates
+    authorized_key:
+      user: root
+      state: present
+      key: https://{{ FQDN }}/ovirt-engine/services/pki-resource?resource=engine-certificate&format=OPENSSH-PUBKEY
+      validate_certs: False
+  - name: Force host-deploy in offline mode
+    template:
+      src: templates/70-hosted-engine-setup.conf.j2
+      dest: /etc/ovirt-host-deploy.conf.d/70-hosted-engine-setup.conf
+  - name: add host
+    ovirt_hosts:
+      name: "{{ HOST_NAME }}"
+      state: present
+      public_key: true
+      address: "{{ HOST_ADDRESS }}"
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    async: 1
+    poll: 0
+  # all of the next is a workaroud for the network issue, vdsm installation breaks the routing and it needs to be fixed
+  # once we'll fix the host installation it could be removed
+  - name: wait for the host to become non operational
+    ovirt_hosts_facts:
+      pattern: name={{ HOST_NAME }}
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: host_result
+    until: host_result.ansible_facts.ovirt_hosts|length >= 1 and ("'non_operational' in host_result.ansible_facts.ovirt_hosts[0].status" or "'up' in host_result.ansible_facts.ovirt_hosts[0].status")
+    retries: 50
+    delay: 10
+  - name: get virbr0 routing configuration
+    shell: ip route | grep virbr0
+    register: virbr0_route_config
+    until: virbr0_route_config.stdout_lines|length >= 1
+    retries: 50
+    delay: 10
+  - name: get ovirtmgmt route table id
+    shell: ip rule list | grep ovirtmgmt | sed s/\\[.*\\]\ //g | awk '{ print $9 }'
+    register: ovirtmgmt_table_id
+    until: ovirtmgmt_table_id.stdout_lines|length >= 1
+    retries: 50
+    delay: 10
+  - name: restore network configuration
+    shell: ip route add {{ virbr0_route_config.stdout_lines[0] }} table {{ ovirtmgmt_table_id.stdout_lines[0] }}
+    register: result
+    until: result.rc == 0
+    retries: 50
+    delay: 10
+  - name: wait for the host to be up
+    ovirt_hosts_facts:
+      pattern: name={{ HOST_NAME }}
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: host_result
+    until: host_result.ansible_facts.ovirt_hosts|length >= 1 and "'up' in host_result.ansible_facts.ovirt_hosts[0].status"
+    retries: 50
+    delay: 10
+  - name: persist ovirtmngmt network configuration
+    shell: vdsm-client Host setSafeNetworkConfig
+    register: result
+    until: result.rc == 0
+    retries: 50
+    delay: 10
+  - name: Remove host-deploy configuration file
+    file:
+      state: absent
+      path: /etc/ovirt-host-deploy.conf.d/70-hosted-engine-setup.conf
+...

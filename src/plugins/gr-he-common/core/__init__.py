@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2016 Red Hat, Inc.
+# Copyright (C) 2016-2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,7 @@ from otopi import util
 
 from . import misc
 from . import remote_answerfile
+from . import titles
 from . import vdsmconf
 
 
@@ -32,6 +33,7 @@ def createPlugins(context):
     misc.Plugin(context=context)
     remote_answerfile.Plugin(context=context)
     vdsmconf.Plugin(context=context)
+    titles.Plugin(context=context)
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

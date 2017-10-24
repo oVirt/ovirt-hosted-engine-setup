@@ -1,0 +1,20 @@
+---
+- name: iSCSI related tasks
+  hosts: localhost
+  connection: local
+  tasks:
+  - name: iSCSI discover
+    ovirt_hosts:
+      name: "{{ HOST_NAME }}"
+      state: iscsidiscover
+      iscsi:
+        username: "{{ ISCSI_USERNAME }}"
+        password: "{{ ISCSI_PASSWORD }}"
+        address: "{{ ISCSI_PORTAL_ADDR }}"
+        port: "{{ ISCSI_PORTAL_PORT }}"
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: otopi_iscsi_targets

@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2017 Red Hat, Inc.
+# Copyright (C) 2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,18 +18,20 @@
 #
 
 
-"""hosted engine engine plugin."""
+"""hosted engine ansible core plugin."""
 
 from otopi import util
 
-from . import add_host
-from . import os_install
+from . import misc
+from . import storage_domain
+from . import target_vm
 
 
 @util.export
 def createPlugins(context):
-    os_install.Plugin(context=context)
-    add_host.Plugin(context=context)
+    misc.Plugin(context=context)
+    storage_domain.Plugin(context=context)
+    target_vm.Plugin(context=context)
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

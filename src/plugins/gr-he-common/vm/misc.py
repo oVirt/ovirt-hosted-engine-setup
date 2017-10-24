@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2016 Red Hat, Inc.
+# Copyright (C) 2016-2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -113,7 +113,8 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.UPGRADE_BACKUP_DISK_REGISTERED,
         ),
         condition=lambda self: (
-            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
+            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE] and
+            not self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]
         ),
         name=ohostedcons.Stages.VM_SHUTDOWN,
     )

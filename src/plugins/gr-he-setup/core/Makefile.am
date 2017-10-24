@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt with a manager in a VM
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -31,7 +31,6 @@ dist_my_PYTHON = \
 	answerfile.py \
 	preview.py \
 	shell.py \
-	titles.py \
 	$(NULL)
 
 clean-local: \

@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2016 Red Hat, Inc.
+# Copyright (C) 2016-2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -24,7 +24,11 @@ from otopi import util
 
 from . import boot_disk
 from . import cloud_init
+from . import cpu
 from . import image
+from . import mac
+from . import machine
+from . import memory
 from . import misc
 
 
@@ -32,7 +36,11 @@ from . import misc
 def createPlugins(context):
     boot_disk.Plugin(context=context)
     cloud_init.Plugin(context=context)
+    cpu.Plugin(context=context)
     image.Plugin(context=context)
+    mac.Plugin(context=context)
+    machine.Plugin(context=context)
+    memory.Plugin(context=context)
     misc.Plugin(context=context)
 
 

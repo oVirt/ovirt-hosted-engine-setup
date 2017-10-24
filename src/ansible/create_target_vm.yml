@@ -1,0 +1,241 @@
+---
+- name: create hosted engine local vm
+  hosts: localhost
+  connection: local
+  tasks:
+  - name: get local vm ip
+    shell: virsh -r net-dhcp-leases default | grep {{ VM_MAC_ADDR }} | awk '{ print $5 }' | cut -f1 -d'/'
+    register: local_vm_ip
+  - name: fetch host facts
+    ovirt_hosts_facts:
+      pattern: name={{ HOST_NAME }}
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: host_result
+    until: host_result.ansible_facts.ovirt_hosts|length >= 1 and 'up' in host_result.ansible_facts.ovirt_hosts[0].status
+    retries: 50
+    delay: 10
+  - name: fetch cluster id
+    set_fact: cluster_id="{{ host_result.ansible_facts.ovirt_hosts[0].cluster.id }}"
+  - name: fetch cluster facts
+    ovirt_cluster_facts:
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: cluster_facts
+  - name: fetch datacenter facts
+    ovirt_datacenter_facts:
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: datacenter_facts
+  - name: fetch cluster_name
+    set_fact: cluster_name="{{ cluster_facts.ansible_facts.ovirt_clusters|json_query(\"[?id=='" + cluster_id + "'].name\")|first }}"
+  - name: fetch datacenter id
+    set_fact: datacenter_id="{{ cluster_facts.ansible_facts.ovirt_clusters|json_query(\"[?id=='" + cluster_id + "'].data_center.id\")|first }}"
+  - name: fetch datacenter_name
+    set_fact: datacenter_name="{{ datacenter_facts.ansible_facts.ovirt_datacenters|json_query(\"[?id=='" + datacenter_id + "'].name\")|first }}"
+  - name: get storage domain details
+    ovirt_storage_domains_facts:
+      pattern: name={{ STORAGE_DOMAIN_NAME }} and datacenter={{ datacenter_name }}
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: storage_domain_details
+  - name: add he sanlock disk
+    ovirt_disk:
+      name: he_sanlock
+      size: 1GiB
+      format: raw
+      interface: virtio
+      storage_domain: "{{ STORAGE_DOMAIN_NAME }}"
+      timeout: 600
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: he_sanlock_disk_details
+  - name: add he conf disk
+    ovirt_disk:
+      name: he_conf
+      size: 1GiB
+      format: raw
+      interface: virtio
+      storage_domain: "{{ STORAGE_DOMAIN_NAME }}"
+      timeout: 600
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: he_conf_disk_details
+  - name: add he metadata disk
+    ovirt_disk:
+      name: he_metadata
+      size: 1GiB
+      format: raw
+      interface: virtio
+      storage_domain: "{{ STORAGE_DOMAIN_NAME }}"
+      timeout: 600
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: he_metadata_disk_details
+# TODO: initialize it with zeros somehow (dd?)
+  - name: add he disk # takes a very long time, hence the long timeout. need to figure out why.
+    ovirt_disk:
+      name: he_virtio_disk
+      size: 60GiB #TODO: make it parametric
+      format: cow
+      interface: virtio
+      storage_domain: "{{ STORAGE_DOMAIN_NAME }}"
+      bootable: true
+      timeout: 7200
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: he_virtio_disk_details
+  - name: add vm
+    ovirt_vms:
+      state: stopped
+      cluster: "{{ cluster_name }}"
+      name: "{{ VM_NAME }}"
+      memory: "{{ MEM_SIZE }}Mib"
+      cpu_cores: "{{ VCPUS }}"
+      cpu_sockets: 1
+      operating_system: rhel_7x64
+      type: server
+#      timezone: "{{ TIME_ZONE }}" # TODO: fix with the right parameter syntax
+      storage_domain: "{{ STORAGE_DOMAIN_NAME }}"
+      disks:
+      - name: he_virtio_disk
+      nics:
+      - name: vnet0
+        profile_name: "{{ BRIDGE }}"
+        interface: virtio
+        mac_address: "{{ VM_MAC_ADDR }}"
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: he_vm_details
+  - name: prepare images
+    shell: vdsm-client Image prepare storagepoolID={{ datacenter_id }} storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }} imageID={{ item.disk.id }} volumeID={{ item.disk.image_id  }}
+    with_items:
+      - "{{ he_virtio_disk_details }}"
+      - "{{ he_conf_disk_details }}"
+      - "{{ he_metadata_disk_details }}"
+      - "{{ he_sanlock_disk_details }}"
+    register: prepareimage_results
+  - name: fetch he conf disk path
+    set_fact: he_conf_disk_path="{{ (prepareimage_results.results|json_query(\"[?item.id=='" + he_conf_disk_details.id + "'].stdout\")|first|from_json).path }}"
+  - name: fetch he virtio disk path
+    set_fact: he_virtio_disk_path="{{ (prepareimage_results.results|json_query(\"[?item.id=='" + he_virtio_disk_details.id + "'].stdout\")|first|from_json).path }}"
+  - name: fetch he virtio metadata path
+    set_fact: he_metadata_disk_path="{{ (prepareimage_results.results|json_query(\"[?item.id=='" + he_metadata_disk_details.id + "'].stdout\")|first|from_json).path }}"
+  - debug: var=he_conf_disk_path
+  - debug: var=he_virtio_disk_path
+  - debug: var=he_metadata_disk_path
+  - name: destroy local vm
+    virt:
+      name: "{{ VM_NAME }}"
+      command: destroy
+      uri: 'qemu+tls://{{ HOST_ADDRESS }}/system'
+  - name: undefine local vm
+    virt:
+      name: "{{ VM_NAME }}"
+      command: undefine
+      uri: 'qemu+tls://{{ HOST_ADDRESS }}/system'
+  - name: create temp vm conf
+    template:
+      src: templates/vm.conf.j2
+      dest: "{{ LOCAL_VM_DIR }}/vm.conf"
+  - name: create temp broker conf
+    template:
+      src: templates/broker.conf.j2
+      dest: "{{ LOCAL_VM_DIR }}/broker.conf"
+  - name: create version file
+    template:
+      src: templates/version.j2
+      dest: "{{ LOCAL_VM_DIR }}/version"
+  - name: create he answers
+    template:
+      src: templates/fhanswers.conf.j2
+      dest: "{{ LOCAL_VM_DIR }}/fhanswers.conf"
+  - name: create hosted engine conf
+    template:
+      src: templates/hosted-engine.conf.j2
+      dest: "{{ LOCAL_VM_DIR }}/hosted-engine.conf"
+  - name: create configuration archive
+    command: tar --record-size=20480 -cvf {{ he_conf_disk_details.disk.image_id }} vm.conf broker.conf version fhanswers.conf hosted-engine.conf
+    args:
+      chdir: "{{ LOCAL_VM_DIR }}"
+  - name: create ovirt-hosted-engine-ha run directory
+    file:
+      path: /var/run/ovirt-hosted-engine-ha
+      state: directory
+  - name: copy vm.conf to the right location on host
+    copy:
+      src: "{{ LOCAL_VM_DIR }}/vm.conf"
+      dest: /var/run/ovirt-hosted-engine-ha
+  - name: copy hosted-engine.conf to the right location on host
+    copy:
+      src: "{{ LOCAL_VM_DIR }}/hosted-engine.conf"
+      dest: /etc/ovirt-hosted-engine/
+  - name: copy configuration archive to storage
+    shell: dd bs=20480 count=1 oflag=direct if="{{ LOCAL_VM_DIR }}/{{ he_conf_disk_details.disk.image_id }}" of="{{ he_conf_disk_path }}"
+    become_user: vdsm
+    become_method: sudo
+  - name: initialize metadata volume
+    shell: dd bs=1M count=1024 oflag=direct if=/dev/zero of="{{ he_metadata_disk_path }}"
+    become_user: vdsm
+    become_method: sudo
+  - name: find the local appliance image
+    find:
+      paths: "{{ LOCAL_VM_DIR }}/images"
+      recurse: true
+      patterns: ^.*.(?<!meta)$
+      use_regex: true
+    register: app_img
+  - name: copy local vm disk to shared storage
+    shell: qemu-img convert -n -O qcow2 {{ app_img.files[0].path }} {{ he_virtio_disk_path }}
+    become_user: vdsm
+    become_method: sudo
+  - name: clean /etc/hosts
+    lineinfile:
+      dest: /etc/hosts
+      line: "{{ local_vm_ip.stdout_lines[0] }} {{ FQDN }}"
+      state: absent
+  - name: start broker
+    service:
+      name: ovirt-ha-broker
+      state: started
+      enabled: true
+# TODO: Let's see if we have to reinitialize also the metadata one
+  - name: initialize lockspace volume
+    shell: hosted-engine --reinitialize-lockspace --force
+    register: result
+    until: result.rc == 0
+    retries: 5
+    delay: 10
+  - name: start agent
+    service:
+      name: ovirt-ha-agent
+      state: started
+      enabled: true
+...

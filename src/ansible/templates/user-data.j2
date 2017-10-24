@@ -1,12 +1,26 @@
 #cloud-config
 # vim: syntax=yaml
 disable_root: false
+{% if ROOT_SSH_PUBKEY|length > 1 %}
+ssh_authorized_keys:
+  - {{ROOT_SSH_PUBKEY}}
+{% endif %}
+{% if APPLIANCE_PASSWORD|length > 1 %}
 ssh_pwauth: True
 chpasswd:
   list: |
     root:{{ APPLIANCE_PASSWORD }}
   expire: False
+{% endif %}
+{% if TIME_ZONE is defined %}
 timezone: {{ TIME_ZONE }}
+{% endif %}
+bootcmd:
+  - if grep -Gq "^\s*PermitRootLogin" /etc/ssh/sshd_config; then sed -re "s/^\s*(PermitRootLogin)\s+(yes|no|without-password)/ \1 {{ ROOT_SSH_ACCESS }}/" -i.$(date -u +%Y%m%d%H%M%S) /etc/ssh/sshd_config; else echo "PermitRootLogin {{ ROOT_SSH_ACCESS }}" >> /etc/ssh/sshd_config; fi
+{% if VM_ETC_HOSTS %}
+  - sed -i 's/127\.0\.0\.1[ ]*localhost localhost.localdomain localhost4 localhost4.localdomain4$/127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4 {{ FQDN }}/g' /etc/hosts
+  - echo "{{ HOST_IP }} {{ HOST_ADDRESS }}" >> /etc/hosts
+{% endif %}
 write_files:
   - content: |
       [environment:init]
@@ -19,9 +33,8 @@ write_files:
     owner: root:root
     permissions: '0640'
 runcmd:
-  - if grep -Gq "^\s*PermitRootLogin" /etc/ssh/sshd_config; then sed -re "s/^\s*(PermitRootLogin)\s+(yes|no|without-password)/ \1 yes/" -i.$(date -u +%Y%m%d%H%M%S) /etc/ssh/sshd_config; else echo "PermitRootLogin yes" >> /etc/ssh/sshd_config; fi
+  - semanage permissive -a cloud_init_t
   - systemctl restart sshd &
-  - /usr/bin/engine-setup --offline --config-append=/root/ovirt-engine-answers --config-append=/root/heanswers.conf
+  - /usr/bin/engine-setup --offline --config-append=/root/ovirt-engine-answers --config-append=/root/heanswers.conf {% if ENABLE_LIBGFAPI %} && engine-config -s LibgfApiSupported=true --cver=4.1 && engine-config -s LibgfApiSupported=true --cver=4.2 && systemctl restart ovirt-engine {% endif %} ;
   - rm /root/heanswers.conf
-  - systemctl mask cloud-init-local ||  chkconfig cloud-init-local off
-  - systemctl mask cloud-init || ( chkconfig cloud-init off && chkconfig cloud-config off && chkconfig cloud-final off )
+  - semanage permissive -d cloud_init_t

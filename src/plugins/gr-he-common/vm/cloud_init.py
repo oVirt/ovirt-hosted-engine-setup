@@ -433,7 +433,15 @@ class Plugin(plugin.PluginBase):
             None
         )
         self.environment.setdefault(
+            ohostedcons.CloudInit.HOST_IP,
+            None
+        )
+        self.environment.setdefault(
             ohostedcons.VMEnv.AUTOMATE_VM_SHUTDOWN,
+            None
+        )
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.ENABLE_LIBGFAPI,
             None
         )
 
@@ -813,10 +821,20 @@ class Plugin(plugin.PluginBase):
                 'If in the past you added other entries there, recovering '
                 'them is up to you.'
             ))
+        if self.environment[
+            ohostedcons.CloudInit.VM_ETC_HOSTS
+        ]:
+            self.environment[
+                ohostedcons.CloudInit.HOST_IP
+            ] = self._getMyIPAddress().ip
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
-        condition=lambda self: self._enable,
+        condition=lambda self: (
+            self._enable and
+            not self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]
+            # TODO: backport all the fixes here to ansible deployment
+        ),
     )
     def _misc(self):
         # TODO: find a way to properly get this at runtime
@@ -882,7 +900,9 @@ class Plugin(plugin.PluginBase):
                 bootcmd += (
                     ' - echo "{myip} {myfqdn}" >> /etc/hosts\n'
                 ).format(
-                    myip=self._getMyIPAddress().ip,
+                    myip=self.environment[
+                        ohostedcons.CloudInit.HOST_IP
+                    ],
                     myfqdn=self.environment[
                         ohostedcons.NetworkEnv.HOST_NAME
                     ],
@@ -1189,7 +1209,10 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLEANUP,
-        condition=lambda self: self._enable,
+        condition=lambda self: (
+            self._enable and
+            not self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]
+        ),
     )
     def _cleanup(self):
         if self._directory_name is not None:

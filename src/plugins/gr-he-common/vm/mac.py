@@ -65,6 +65,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.DIALOG_TITLES_E_VM,
         ),
         name=ohostedcons.Stages.CUSTOMIZATION_MAC_ADDRESS,
+        condition=lambda self: (
+            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE] and
+            not self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE]
+        ),
     )
     def _customization(self):
         interactive = self.environment[

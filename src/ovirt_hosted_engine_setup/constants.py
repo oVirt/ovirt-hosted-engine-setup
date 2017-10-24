@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2016 Red Hat, Inc.
+# Copyright (C) 2013-2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -72,11 +72,22 @@ class FileSystemTypes(object):
 @util.export
 @util.codegen
 class DomainTypes(object):
+    NFS = 'nfs'
     NFS3 = 'nfs3'
     NFS4 = 'nfs4'
     GLUSTERFS = 'glusterfs'
     ISCSI = 'iscsi'
     FC = 'fc'
+
+
+@util.export
+@util.codegen
+class NfsVersions(object):
+    AUTO = 'auto'
+    V3 = 'v3'
+    V4 = 'v4'
+    V4_1 = 'v4_1'
+    V4_2 = 'v4_2'
 
 
 @util.export
@@ -330,6 +341,20 @@ class FileLocations(object):
     HECONFD_BROKER_CONF = 'broker.conf'
     HECONFD_VM_CONF = 'vm.conf'
 
+    LOCAL_VM_DIR = '/var/tmp/localvm'
+
+    HOSTED_ENGINE_ANSIBLE_PATH = os.path.join(
+        config.DATADIR,
+        OVIRT_HOSTED_ENGINE_SETUP,
+        'ansible',
+    )
+
+    HE_AP_BOOTSTRAP_LOCAL_VM = 'bootstrap_local_vm.yml'
+    HE_AP_CREATE_SD = 'create_storage_domain.yml'
+    HE_AP_CREATE_VM = 'create_target_vm.yml'
+    HE_AP_ISCSI_DISCOVER = 'iscsi_discover.yml'
+    HE_AP_ISCSI_GETDEVICES = 'iscsi_getdevices.yml'
+
 
 @util.export
 @util.codegen
@@ -378,6 +403,7 @@ class Const(object):
     APPLIANCE_RPM_NAME = '%s-appliance' % config.APPLIANCE_RPM_PREFIX
     APPLIANCE40_RPM_NAME = '%s-appliance' % config.APPLIANCE40_RPM_PREFIX
     VM_LIVELINESS_CHECK_TIMEOUT = 600
+    ANSIBLE_R_OTOPI_PREFIX = 'otopi_'
 
 
 @util.export
@@ -388,6 +414,7 @@ class CoreEnv(object):
     ETC_ANSWER_FILE = 'OVEHOSTED_CORE/etcAnswerFile'
     REQUIREMENTS_CHECK_ENABLED = 'OVEHOSTED_CORE/checkRequirements'
     UPGRADING_APPLIANCE = 'OVEHOSTED_CORE/upgradingAppliance'
+    ANSIBLE_DEPLOYMENT = 'OVEHOSTED_CORE/ansibleDeployment'
     ROLLBACK_UPGRADE = 'OVEHOSTED_CORE/rollbackUpgrade'
     TEMPDIR = 'OVEHOSTED_CORE/tempDir'
 
@@ -621,6 +648,14 @@ class StorageEnv(object):
 
     @ohostedattrs(
         answerfile=True,
+        summary=True,
+        description=_('NFS Version'),
+    )
+    def NFS_VERSION(self):
+        return 'OVEHOSTED_STORAGE/nfsVersion'
+
+    @ohostedattrs(
+        answerfile=True,
     )
     def MNT_OPTIONS(self):
         return 'OVEHOSTED_STORAGE/mntOptions'
@@ -740,6 +775,8 @@ class VMEnv(object):
     def VM_UUID(self):
         return 'OVEHOSTED_VM/vmUUID'
 
+    LOCAL_VM_UUID = 'OVEHOSTED_VM/localVmUUID'
+
     @ohostedattrs(
         answerfile=True,
         summary=True,
@@ -837,6 +874,8 @@ class VMEnv(object):
     def AUTOMATE_VM_SHUTDOWN(self):
         return 'OVEHOSTED_VM/automateVMShutdown'
 
+    ACCEPT_DOWNLOAD_EAPPLIANCE_RPM = 'OVEHOSTED_VM/acceptDownloadEApplianceRPM'
+
 
 @util.export
 @util.codegen
@@ -849,6 +888,7 @@ class CloudInit(object):
         return 'OVEHOSTED_VM/cloudInitISO'
 
     ROOTPWD = 'OVEHOSTED_VM/cloudinitRootPwd'
+    HOST_IP = 'OVEHOSTED_VM/cloudinitHostIP'
 
     @ohostedattrs(
         answerfile=True,
@@ -1071,6 +1111,10 @@ class Stages(object):
     DIALOG_TITLES_S_STORAGE = 'ohosted.dialog.titles.storage.start'
     DIALOG_TITLES_E_STORAGE = 'ohosted.dialog.titles.storage.end'
 
+    ANSIBLE_BOOTSTRAP_LOCAL_VM = 'ohosted.ansible.bootstrap.local.vm'
+    ANSIBLE_CREATE_SD = 'ohosted.ansible.create.storage.domain'
+    ANSIBLE_CREATE_TARGET_VM = 'ohosted.ansible.create.target.vm'
+
 
 @util.export
 @util.codegen
@@ -1095,7 +1139,7 @@ class Defaults(object):
     DEFAULT_VM_VCPUS = 2  # based on minimum requirements.
     DEFAULT_SSHD_PORT = 22
     DEFAULT_EMULATED_MACHINE = 'pc'
-    DEAFULT_RHEL_EMULATED_MACHINE = 'pc-i440fx-rhel7.3.0'
+    DEFAULT_RHEL_EMULATED_MACHINE = 'pc-i440fx-rhel7.3.0'
     DEFAULT_ISCSI_PORT = 3260
     DEFAULT_ENGINE_SETUP_TIMEOUT = 1800
     DEFAULT_ENGINE_API_TIMEOUT = 30

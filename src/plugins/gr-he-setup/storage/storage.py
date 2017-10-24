@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2015 Red Hat, Inc.
+# Copyright (C) 2013-2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -932,10 +932,6 @@ class Plugin(plugin.PluginBase):
         )
         self.environment.setdefault(
             ohostedcons.StorageEnv.ENABLE_HC_GLUSTER_SERVICE,
-            None
-        )
-        self.environment.setdefault(
-            ohostedcons.StorageEnv.ENABLE_LIBGFAPI,
             None
         )
         self.environment.setdefault(

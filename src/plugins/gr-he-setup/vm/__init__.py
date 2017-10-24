@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2016 Red Hat, Inc.
+# Copyright (C) 2013-2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -24,10 +24,6 @@ from otopi import util
 
 from . import cdrom
 from . import configurevm
-from . import cpu
-from . import mac
-from . import machine
-from . import memory
 from . import runvm
 
 
@@ -35,10 +31,6 @@ from . import runvm
 def createPlugins(context):
     cdrom.Plugin(context=context)
     configurevm.Plugin(context=context)
-    cpu.Plugin(context=context)
-    mac.Plugin(context=context)
-    machine.Plugin(context=context)
-    memory.Plugin(context=context)
     runvm.Plugin(context=context)
 
 

@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2017 Red Hat, Inc.
+# Copyright (C) 2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,19 +17,18 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
+MAINTAINERCLEANFILES = \
+	$(srcdir)/Makefile.in \
+	$(NULL)
 
-"""hosted engine engine plugin."""
-
-from otopi import util
-
-from . import add_host
-from . import os_install
-
-
-@util.export
-def createPlugins(context):
-    os_install.Plugin(context=context)
-    add_host.Plugin(context=context)
-
-
-# vim: expandtab tabstop=4 shiftwidth=4
+ansibletemplatesdir=$(ovirthostedengineansibledir)/templates
+dist_ansibletemplates_DATA = \
+	70-hosted-engine-setup.conf.j2 \
+	broker.conf.j2 \
+	fhanswers.conf.j2 \
+	hosted-engine.conf.j2 \
+	meta-data.j2 \
+	user-data.j2 \
+	version.j2 \
+	vm.conf.j2 \
+	$(NULL)

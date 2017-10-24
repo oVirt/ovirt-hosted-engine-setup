@@ -59,18 +59,6 @@ class Plugin(plugin.PluginBase):
             str(uuid.uuid4())
         )
         self.environment[ohostedcons.VMEnv.SUBST] = {}
-        self.environment.setdefault(
-            ohostedcons.VMEnv.CDROM_UUID,
-            str(uuid.uuid4())
-        )
-        self.environment.setdefault(
-            ohostedcons.VMEnv.NIC_UUID,
-            str(uuid.uuid4())
-        )
-        self.environment.setdefault(
-            ohostedcons.VMEnv.CONSOLE_UUID,
-            str(uuid.uuid4())
-        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,

@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt with a manager in a VM
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -26,4 +26,5 @@ SUBDIRS = \
 	ovirt_hosted_engine_setup \
 	plugins \
 	vdsm_hooks \
+	ansible \
 	$(NULL)

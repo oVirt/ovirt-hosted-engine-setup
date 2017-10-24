@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2016 Red Hat, Inc.
+# Copyright (C) 2013-2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -518,6 +518,10 @@ class Plugin(plugin.PluginBase):
             None
         )
         self.environment.setdefault(
+            ohostedcons.VMEnv.ACCEPT_DOWNLOAD_EAPPLIANCE_RPM,
+            None
+        )
+        self.environment.setdefault(
             ohostedcons.CoreEnv.TEMPDIR,
             os.getenv('TMPDIR', ohostedcons.Defaults.DEFAULT_TEMPDIR)
         )
@@ -569,18 +573,25 @@ class Plugin(plugin.PluginBase):
                     appliance_rpm_name=self._appliance_rpm_name,
                 )
             )
-            self._install_appliance = dialog.queryBoolean(
-                dialog=self.dialog,
-                name='OVEHOSTED_INSTALL_OVIRT_ENGINE_APPLIANCE',
-                note=_(
-                    'Do you want to install {appliance_rpm_name} rpm? '
-                    '(@VALUES@) [@DEFAULT@]: '
-                ).format(
-                    appliance_rpm_name=self._appliance_rpm_name,
-                ),
-                prompt=True,
-                default=True,
-            )
+            if self.environment[
+                ohostedcons.VMEnv.ACCEPT_DOWNLOAD_EAPPLIANCE_RPM
+            ] is not None:
+                self._install_appliance = self.environment[
+                    ohostedcons.VMEnv.ACCEPT_DOWNLOAD_EAPPLIANCE_RPM
+                ]
+            else:
+                self._install_appliance = dialog.queryBoolean(
+                    dialog=self.dialog,
+                    name='OVEHOSTED_INSTALL_OVIRT_ENGINE_APPLIANCE',
+                    note=_(
+                        'Do you want to install {appliance_rpm_name} rpm? '
+                        '(@VALUES@) [@DEFAULT@]: '
+                    ).format(
+                        appliance_rpm_name=self._appliance_rpm_name,
+                    ),
+                    prompt=True,
+                    default=True,
+                )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INTERNAL_PACKAGES,
@@ -812,7 +823,8 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.UPGRADE_DISK_EXTENDED,
         ),
         condition=lambda self: (
-            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
+            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE] and
+            not self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]
         ),
     )
     def _misc(self):

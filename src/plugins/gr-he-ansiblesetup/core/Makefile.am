@@ -1,6 +1,6 @@
 #
-# ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2017 Red Hat, Inc.
+# ovirt-hosted-engine-setup -- ovirt with a manager in a VM
+# Copyright (C) 2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,19 +17,24 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
+include $(top_srcdir)/build/python.inc
 
-"""hosted engine engine plugin."""
+MAINTAINERCLEANFILES = \
+	$(srcdir)/Makefile.in \
+	$(NULL)
 
-from otopi import util
+mydir=$(ovirthostedengineplugindir)/gr-he-ansiblesetup/core
+dist_my_PYTHON = \
+	__init__.py \
+	misc.py \
+	storage_domain.py \
+	target_vm.py \
+	$(NULL)
 
-from . import add_host
-from . import os_install
+clean-local: \
+	python-clean \
+	$(NULL)
 
-
-@util.export
-def createPlugins(context):
-    os_install.Plugin(context=context)
-    add_host.Plugin(context=context)
-
-
-# vim: expandtab tabstop=4 shiftwidth=4
+all-local: \
+	python-syntax-check \
+	$(NULL)

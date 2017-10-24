@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2015 Red Hat, Inc.
+# Copyright (C) 2013-2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,7 @@ VM cpu configuration plugin.
 
 
 import gettext
+import multiprocessing
 
 from otopi import plugin
 from otopi import util
@@ -46,6 +47,8 @@ class Plugin(plugin.PluginBase):
         super(Plugin, self).__init__(context=context)
 
     def _getMaxVCpus(self):
+        if self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]:
+            return str(multiprocessing.cpu_count())
         caps = vds_info.capabilities(
             self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         )
@@ -83,6 +86,10 @@ class Plugin(plugin.PluginBase):
         ),
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_VM,
+        ),
+        condition=lambda self: (
+            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE] and
+            not self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE]
         ),
     )
     def _customization(self):

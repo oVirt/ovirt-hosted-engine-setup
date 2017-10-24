@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2016 Red Hat, Inc.
+# Copyright (C) 2016-2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -302,18 +302,6 @@ class Plugin(plugin.PluginBase):
     def _init(self):
         self.environment.setdefault(
             ohostedcons.NetworkEnv.BRIDGE_NAME,
-            None,
-        )
-        self.environment.setdefault(
-            ohostedcons.NetworkEnv.GATEWAY,
-            None,
-        )
-        self.environment.setdefault(
-            ohostedcons.NetworkEnv.HOST_NAME,
-            None
-        )
-        self.environment.setdefault(
-            ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN,
             None,
         )
         self.environment.setdefault(

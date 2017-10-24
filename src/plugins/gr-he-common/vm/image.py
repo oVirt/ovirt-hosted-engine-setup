@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2015 Red Hat, Inc.
+# Copyright (C) 2013-2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -86,7 +86,10 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         condition=lambda self: (
-            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
+            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE] and
+            not self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]
+            # TODO: check what will append on ansible
+            # deployment changing disk size
         ),
         after=(
             ohostedcons.Stages.DIALOG_TITLES_S_VM,
@@ -248,7 +251,8 @@ class Plugin(plugin.PluginBase):
         name=ohostedcons.Stages.VM_IMAGE_AVAILABLE,
         condition=lambda self: (
             not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE] and
-            not self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE]
+            not self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE] and
+            not self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]
         ),
     )
     def _misc(self):

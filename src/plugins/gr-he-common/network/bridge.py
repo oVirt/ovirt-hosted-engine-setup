@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2016 Red Hat, Inc.
+# Copyright (C) 2013-2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -76,6 +76,14 @@ class Plugin(plugin.PluginBase):
             ohostedcons.NetworkEnv.ALLOW_INVALID_BOND_MODES,
             False
         )
+        self.environment.setdefault(
+            ohostedcons.NetworkEnv.HOST_NAME,
+            None
+        )
+        self.environment.setdefault(
+            ohostedcons.EngineEnv.APP_HOST_NAME,
+            None
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -139,61 +147,68 @@ class Plugin(plugin.PluginBase):
         ),
     )
     def _customization(self):
-        INVALID_BOND_MODES = ('0', '5', '6')
-        ALLOW_INVALID_BOND_MODES =  \
-            ohostedcons.NetworkEnv.ALLOW_INVALID_BOND_MODES
-
-        caps = vds_info.capabilities(
-            self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        )
-        interfaces = set(
-            caps['nics'].keys() +
-            caps['bondings'].keys() +
-            caps['vlans'].keys()
-        )
         validValues = []
-        enslaved = set()
-        inv_bond = set()
+        if self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]:
+            # TODO: fix for bond and vlan with ansible
+            validValues = ethtool.get_devices()
+            if 'lo' in validValues:
+                validValues.remove('lo')
+        else:
+            INVALID_BOND_MODES = ('0', '5', '6')
+            ALLOW_INVALID_BOND_MODES =  \
+                ohostedcons.NetworkEnv.ALLOW_INVALID_BOND_MODES
 
-        for bridge in caps['bridges'].keys():
-            enslaved.update(set(caps['bridges'][bridge]['ports']))
-        for bond in caps['bondings'].keys():
-            bondMode = caps['bondings'][bond]['opts']['mode']
-            if (bondMode in INVALID_BOND_MODES):
-                self.logger.warning(
-                    _(
-                        "Bond {bondname} is on mode {bondmode}, "
-                        "modes {invalid} are not supported"
-                    ).format(
-                        bondname=bond,
-                        bondmode=bondMode,
-                        invalid=INVALID_BOND_MODES
-                    )
-                )
-                if not self.environment[ALLOW_INVALID_BOND_MODES]:
-                    inv_bond.update(set([bond]))
-                else:
+            caps = vds_info.capabilities(
+                self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+            )
+            interfaces = set(
+                caps['nics'].keys() +
+                caps['bondings'].keys() +
+                caps['vlans'].keys()
+            )
+            validValues = []
+            enslaved = set()
+            inv_bond = set()
+
+            for bridge in caps['bridges'].keys():
+                enslaved.update(set(caps['bridges'][bridge]['ports']))
+            for bond in caps['bondings'].keys():
+                bondMode = caps['bondings'][bond]['opts']['mode']
+                if (bondMode in INVALID_BOND_MODES):
                     self.logger.warning(
                         _(
-                            "Allowing anyway, as enforced by {key}={val}"
+                            "Bond {bondname} is on mode {bondmode}, "
+                            "modes {invalid} are not supported"
                         ).format(
-                            key=ALLOW_INVALID_BOND_MODES,
-                            val=self.environment[ALLOW_INVALID_BOND_MODES]
+                            bondname=bond,
+                            bondmode=bondMode,
+                            invalid=INVALID_BOND_MODES
                         )
                     )
-            slaves = set(caps['bondings'][bond]['slaves'])
-            if slaves:
-                enslaved.update(slaves)
-            else:
-                self.logger.debug(
-                    'Detected bond device %s without slaves' % bond
-                )
-                inv_bond.update(set([bond]))
+                    if not self.environment[ALLOW_INVALID_BOND_MODES]:
+                        inv_bond.update(set([bond]))
+                    else:
+                        self.logger.warning(
+                            _(
+                                "Allowing anyway, as enforced by {key}={val}"
+                            ).format(
+                                key=ALLOW_INVALID_BOND_MODES,
+                                val=self.environment[ALLOW_INVALID_BOND_MODES]
+                            )
+                        )
+                slaves = set(caps['bondings'][bond]['slaves'])
+                if slaves:
+                    enslaved.update(slaves)
+                else:
+                    self.logger.debug(
+                        'Detected bond device %s without slaves' % bond
+                    )
+                    inv_bond.update(set([bond]))
 
-        validValues = list(interfaces - enslaved - inv_bond)
-        self.logger.debug('Nics detected: %s' % ','.join(interfaces))
-        self.logger.debug('Nics enslaved: %s' % ','.join(enslaved))
-        self.logger.debug('Nics valid: %s' % ','.join(validValues))
+            validValues = list(interfaces - enslaved - inv_bond)
+            self.logger.debug('Nics detected: %s' % ','.join(interfaces))
+            self.logger.debug('Nics enslaved: %s' % ','.join(enslaved))
+            self.logger.debug('Nics valid: %s' % ','.join(validValues))
         if not validValues:
             if enslaved:
                 raise RuntimeError(
@@ -235,7 +250,9 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
         condition=lambda self: (
-            not self._enabled
+            not self._enabled and
+            # TODO: properly handle it without vdsm
+            not self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]
         ),
         after=(
             ohostedcons.Stages.DIALOG_TITLES_S_NETWORK,
@@ -286,69 +303,86 @@ class Plugin(plugin.PluginBase):
         name=ohostedcons.Stages.GOT_HOSTNAME_FIRST_HOST,
     )
     def _get_hostname_from_bridge_if(self):
-        ipaddr = None
-        if self._enabled:
-            # acquiring interface address
-            configuration, status = vds_info.network(
-                vds_info.capabilities(
-                    self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-                ),
+        if self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]:
+            # TODO: properly handle it without vdsm
+            if not self.environment[
+                ohostedcons.NetworkEnv.HOST_NAME
+            ]:
                 self.environment[
-                    ohostedcons.NetworkEnv.BRIDGE_IF
-                ],
-            )
-            self.logger.debug('Network info: {info}'.format(info=status))
-            if 'ipaddr' not in status:
-                raise RuntimeError(_('Cannot acquire nic/bond/vlan address'))
-            ipaddr = status['ipaddr']
+                    ohostedcons.NetworkEnv.HOST_NAME
+                ] = socket.gethostname()
+            if not self.environment[
+                ohostedcons.EngineEnv.APP_HOST_NAME
+            ]:
+                self.environment[
+                    ohostedcons.EngineEnv.APP_HOST_NAME
+                ] = socket.gethostname()
         else:
-            # acquiring bridge address
-            caps = vds_info.capabilities(
-                self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-            )
+            ipaddr = None
+            if self._enabled:
+                # acquiring interface address
+                configuration, status = vds_info.network(
+                    vds_info.capabilities(
+                        self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+                    ),
+                    self.environment[
+                        ohostedcons.NetworkEnv.BRIDGE_IF
+                    ],
+                )
+                self.logger.debug('Network info: {info}'.format(info=status))
+                if 'ipaddr' not in status:
+                    raise RuntimeError(_(
+                        'Cannot acquire nic/bond/vlan address'
+                    ))
+                ipaddr = status['ipaddr']
+            else:
+                # acquiring bridge address
+                caps = vds_info.capabilities(
+                    self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+                )
 
-            if 'networks' in caps:
-                networks = caps['networks']
-                if self.environment[
-                    ohostedcons.NetworkEnv.BRIDGE_NAME
-                ] in networks:
-                    bridge = networks[
-                        self.environment[
-                            ohostedcons.NetworkEnv.BRIDGE_NAME
+                if 'networks' in caps:
+                    networks = caps['networks']
+                    if self.environment[
+                        ohostedcons.NetworkEnv.BRIDGE_NAME
+                    ] in networks:
+                        bridge = networks[
+                            self.environment[
+                                ohostedcons.NetworkEnv.BRIDGE_NAME
+                            ]
                         ]
-                    ]
-                    if 'addr' in bridge:
-                        ipaddr = bridge['addr']
-            if not ipaddr:
-                raise RuntimeError(_('Cannot acquire bridge address'))
+                        if 'addr' in bridge:
+                            ipaddr = bridge['addr']
+                if not ipaddr:
+                    raise RuntimeError(_('Cannot acquire bridge address'))
 
-        hostname, aliaslist, ipaddrlist = socket.gethostbyaddr(ipaddr)
-        self.logger.debug(
-            "hostname: '{h}', aliaslist: '{a}', ipaddrlist: '{i}'".format(
-                h=hostname,
-                a=aliaslist,
-                i=ipaddrlist,
+            hostname, aliaslist, ipaddrlist = socket.gethostbyaddr(ipaddr)
+            self.logger.debug(
+                "hostname: '{h}', aliaslist: '{a}', ipaddrlist: '{i}'".format(
+                    h=hostname,
+                    a=aliaslist,
+                    i=ipaddrlist,
+                )
             )
-        )
-        if len(ipaddrlist) > 1:
-            other_ip = set(ipaddrlist) - set([ipaddr])
-            raise RuntimeError(_(
-                "hostname '{h}' doesn't uniquely match the interface "
-                "'{i}' selected for the management bridge; "
-                "it matches also interface with IP {o}. "
-                "Please make sure that the hostname got from "
-                "the interface for the management network resolves "
-                "only there."
-            ).format(
-                h=hostname,
-                i=self.environment[
-                    ohostedcons.NetworkEnv.BRIDGE_IF
-                ],
-                o=other_ip,
-            ))
-        self.environment[
-            ohostedcons.NetworkEnv.HOST_NAME
-        ] = hostname
+            if len(ipaddrlist) > 1:
+                other_ip = set(ipaddrlist) - set([ipaddr])
+                raise RuntimeError(_(
+                    "hostname '{h}' doesn't uniquely match the interface "
+                    "'{i}' selected for the management bridge; "
+                    "it matches also interface with IP {o}. "
+                    "Please make sure that the hostname got from "
+                    "the interface for the management network resolves "
+                    "only there."
+                ).format(
+                    h=hostname,
+                    i=self.environment[
+                        ohostedcons.NetworkEnv.BRIDGE_IF
+                    ],
+                    o=other_ip,
+                ))
+            self.environment[
+                ohostedcons.NetworkEnv.HOST_NAME
+            ] = hostname
 
     @plugin.event(
         stage=plugin.Stages.STAGE_VALIDATION,
@@ -376,7 +410,8 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_MISC,
         name=ohostedcons.Stages.BRIDGE_AVAILABLE,
         condition=lambda self: (
-            self._enabled
+            self._enabled and
+            not self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]
         ),
         after=(
             ohostedcons.Stages.VDSMD_START,
@@ -403,6 +438,9 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
+        condition=lambda self: (
+            not self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]
+        ),
     )
     def _closeup(self):
         self.services.startup('network', True)

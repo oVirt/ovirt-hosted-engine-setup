@@ -1,0 +1,78 @@
+---
+- name: create hosted engine local vm
+  hosts: localhost
+  connection: local
+  tasks:
+  - name: fetch host facts
+    ovirt_hosts_facts:
+      pattern: name={{ HOST_NAME }}
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: host_result
+    until: host_result.ansible_facts.ovirt_hosts|length >= 1 and 'up' in host_result.ansible_facts.ovirt_hosts[0].status
+    retries: 50
+    delay: 10
+  - name: fetch cluster id
+    set_fact: cluster_id="{{ host_result.ansible_facts.ovirt_hosts[0].cluster.id }}"
+  - name: fetch cluster facts
+    ovirt_cluster_facts:
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: cluster_facts
+  - name: fetch datacenter facts
+    ovirt_datacenter_facts:
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: datacenter_facts
+  - name: fetch datacenter id
+    set_fact: datacenter_id="{{ cluster_facts.ansible_facts.ovirt_clusters|json_query(\"[?id=='" + cluster_id + "'].data_center.id\")|first }}"
+  - name: fetch datacenter_name
+    set_fact: datacenter_name="{{ datacenter_facts.ansible_facts.ovirt_datacenters|json_query(\"[?id=='" + datacenter_id + "'].name\")|first }}"
+  - name: add nfs storage domain
+    ovirt_storage_domains:
+      name: "{{ STORAGE_DOMAIN_NAME }}"
+      host: "{{ HOST_NAME }}"
+      data_center: "{{ datacenter_name }}"
+      wait: True
+      nfs:
+        address: "{{ STORAGE_DOMAIN_ADDR }}"
+        path: "{{ STORAGE_DOMAIN_PATH }}"
+#       mount_options: "{{ MOUNT_OPTIONS }}"  # TODO: investigate 404 error
+        version: "{{ NFS_VERSION }}"
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: otopi_storage_domain_details
+    when: DOMAIN_TYPE == "nfs"
+  - name: add iscsi storage domain
+    ovirt_storage_domains:
+      name: "{{ STORAGE_DOMAIN_NAME }}"
+      host: "{{ HOST_NAME }}"
+      data_center: "{{ datacenter_name }}"
+      wait: True
+      iscsi:
+        address: "{{ STORAGE_DOMAIN_ADDR }}"
+        port: "{{ ISCSI_PORT }}"
+        target: "{{ ISCSI_TARGET }}"
+        lun_id: "{{ LUN_ID }}"
+        username: "{{ ISCSI_USERNAME }}"
+        password: "{{ ISCSI_PASSWORD }}"
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: otopi_storage_domain_details
+    when: DOMAIN_TYPE == "iscsi"
+...

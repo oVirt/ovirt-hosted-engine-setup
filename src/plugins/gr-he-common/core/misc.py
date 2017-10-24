@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2016 Red Hat, Inc.
+# Copyright (C) 2016-2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -100,6 +100,10 @@ class Plugin(plugin.PluginBase):
             False
         )
         self.environment.setdefault(
+            ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT,
+            False
+        )
+        self.environment.setdefault(
             ohostedcons.EngineEnv.HOST_CLUSTER_NAME,
             None
         )
@@ -167,6 +171,9 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.HA_START,
         ),
         name=ohostedcons.Stages.ENGINE_VM_UP_CHECK,
+        condition=lambda self: (
+            not self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]
+        ),
     )
     def engine_vm_up_check(self):
         timeout = ohostedcons.Const.VM_LIVELINESS_CHECK_TIMEOUT

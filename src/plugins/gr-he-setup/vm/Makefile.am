@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt with a manager in a VM
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -27,11 +27,7 @@ mydir=$(ovirthostedengineplugindir)/gr-he-setup/vm
 dist_my_PYTHON = \
 	__init__.py \
 	cdrom.py \
-	cpu.py \
 	configurevm.py \
-	mac.py \
-	machine.py \
-	memory.py \
 	runvm.py \
 	$(NULL)
 

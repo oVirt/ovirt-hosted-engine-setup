@@ -27,7 +27,7 @@ MAINTAINERCLEANFILES = \
 	$(srcdir)/Makefile.in \
 	$(NULL)
 
-PYTHON_SYNTAX_CHECK_FILES := \
+PYTHON_SYNTAX_CHECK_FILES += \
 	$(srcdir)/__init__.py \
 	$(srcdir)/vmconf.py \
 	$(srcdir)/vmconf_test.py \
@@ -71,6 +71,7 @@ dist_ovirthostedenginelib_PYTHON = \
 	pkissh.py \
 	vdsm_helper.py \
 	vmconf.py \
+	ansible_utils.py \
 	$(NULL)
 
 nodist_ovirthostedenginelib_PYTHON = \
