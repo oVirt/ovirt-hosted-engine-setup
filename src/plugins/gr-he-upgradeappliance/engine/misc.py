@@ -35,6 +35,7 @@ from vdsm.client import ServerError
 from ovirt_setup_lib import dialog
 
 from ovirt_hosted_engine_ha.lib import upgrade
+
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import engineapi
 from ovirt_hosted_engine_setup import vm_status

@@ -288,9 +288,8 @@ class VmOperations(object):
             )
         except ServerError as e:
             raise RuntimeError(_('Cannot create the VM: {message}').format(
-                    message=str(e)
-                )
-            )
+                message=str(e)
+            ))
         # Now it's in WaitForLaunch, need to be on powering up
         powering = False
         tries = self.POWER_MAX_TRIES

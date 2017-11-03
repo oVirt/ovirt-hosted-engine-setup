@@ -28,6 +28,7 @@ import sys
 from vdsm.client import ServerError
 
 from ovirt_hosted_engine_ha.lib import util as ohautil
+
 from ovirt_hosted_engine_setup import vmconf
 
 

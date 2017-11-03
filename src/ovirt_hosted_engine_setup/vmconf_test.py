@@ -18,6 +18,7 @@
 #
 
 import os
+
 import vmconf
 
 TEST_FILE = os.path.join(

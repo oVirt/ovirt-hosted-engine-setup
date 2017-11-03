@@ -28,8 +28,8 @@ import sys
 import time
 
 from ovirt_hosted_engine_ha.client import client
-from ovirt_hosted_engine_ha.lib.exceptions import \
-    BrokerConnectionError, DisconnectionError
+from ovirt_hosted_engine_ha.lib.exceptions import BrokerConnectionError
+from ovirt_hosted_engine_ha.lib.exceptions import DisconnectionError
 
 
 def _(m):
