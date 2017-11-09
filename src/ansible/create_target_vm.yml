@@ -216,11 +216,30 @@
     shell: qemu-img convert -n -O qcow2 {{ app_img.files[0].path }} {{ he_virtio_disk_path }}
     become_user: vdsm
     become_method: sudo
+  - name: Generate network configuration for the engine VM
+    template:
+      src: templates/ifcfg-eth0-static.j2
+      dest: "{{ LOCAL_VM_DIR }}/ifcfg-eth0"
+      owner: root
+      group: root
+      mode: 0644
+    when: VM_IP_ADDR|length >= 8
+  - name: Inject network configuration with guestfish
+    shell: LIBGUESTFS_BACKEND=direct virt-copy-in -a {{ he_virtio_disk_path }} "{{ LOCAL_VM_DIR }}/ifcfg-eth0" /etc/sysconfig/network-scripts
+    become_user: vdsm
+    become_method: sudo
+    when: VM_IP_ADDR|length >= 8
   - name: clean /etc/hosts
     lineinfile:
       dest: /etc/hosts
       line: "{{ local_vm_ip.stdout_lines[0] }} {{ FQDN }}"
       state: absent
+  - name: add an entry in /etc/hosts for the target VM
+    lineinfile:
+      dest: /etc/hosts
+      line: "{{ VM_IP_ADDR }} {{ FQDN }}"
+      state: present
+    when: VM_ETC_HOSTS and VM_IP_ADDR|length >= 8
   - name: start broker
     service:
       name: ovirt-ha-broker

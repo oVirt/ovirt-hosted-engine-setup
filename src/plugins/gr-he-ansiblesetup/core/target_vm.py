@@ -22,6 +22,7 @@
 
 
 import gettext
+import netaddr
 
 from otopi import plugin
 from otopi import util
@@ -49,6 +50,26 @@ class Plugin(plugin.PluginBase):
         ],
     )
     def _closeup(self):
+        ip_addr = ''
+        prefix = ''
+        dnslist = ''
+        if self.environment[ohostedcons.CloudInit.VM_STATIC_CIDR]:
+            ip = netaddr.IPNetwork(
+                self.environment[ohostedcons.CloudInit.VM_STATIC_CIDR]
+            )
+            ip_addr = str(ip.ip)
+            prefix = str(ip.prefixlen)
+            if self.environment[
+                ohostedcons.CloudInit.VM_DNS
+            ]:
+                dnslist = [
+                    d.strip()
+                    for d
+                    in self.environment[
+                        ohostedcons.CloudInit.VM_DNS
+                    ].split(',')
+                ]
+
         target_vm_vars = {
             'FQDN': self.environment[
                 ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
@@ -113,13 +134,18 @@ class Plugin(plugin.PluginBase):
             'NFS_VERSION': self.environment[
                 ohostedcons.StorageEnv.NFS_VERSION
             ],
+            'VM_IP_ADDR': ip_addr,
+            'VM_IP_PREFIX': prefix,
+            'DNS_ADDR': dnslist,
+            'VM_ETC_HOSTS': self.environment[
+                ohostedcons.CloudInit.VM_ETC_HOSTS
+            ],
         }
         ah = ansible_utils.AnsibleHelper(
             playbook_name=ohostedcons.FileLocations.HE_AP_CREATE_VM,
             extra_vars=target_vm_vars,
         )
         self.logger.info(_('Creating Target VM'))
-
         r = ah.run()
         self.logger.debug(r)
 

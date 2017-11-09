@@ -26,6 +26,7 @@ dist_ansibletemplates_DATA = \
 	70-hosted-engine-setup.conf.j2 \
 	broker.conf.j2 \
 	fhanswers.conf.j2 \
+	ifcfg-eth0-static.j2 \
 	hosted-engine.conf.j2 \
 	meta-data.j2 \
 	user-data.j2 \

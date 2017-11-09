@@ -37,4 +37,6 @@ runcmd:
   - systemctl restart sshd &
   - /usr/bin/engine-setup --offline --config-append=/root/ovirt-engine-answers --config-append=/root/heanswers.conf {% if ENABLE_LIBGFAPI %} && engine-config -s LibgfApiSupported=true --cver=4.1 && engine-config -s LibgfApiSupported=true --cver=4.2 && systemctl restart ovirt-engine {% endif %} ;
   - rm /root/heanswers.conf
+  - systemctl mask cloud-init-local
+  - systemctl mask cloud-init
   - semanage permissive -d cloud_init_t
