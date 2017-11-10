@@ -107,7 +107,17 @@ class ResultCallback(CallbackBase):
         if result._task.loop and 'results' in result._result:
             self._process_items(result)
         else:
-            self.logger.debug(msg)
+            if result.task_name == 'debug':
+                for i in result._result:
+                    if not i.startswith('_'):
+                        self.logger.debug(
+                            '{i}: {v}'.format(
+                                i=i,
+                                v=result._result[i]
+                            )
+                        )
+            else:
+                self.logger.info(msg)
 
         register = result._task_fields['register']
         if register and register.startswith(
@@ -122,7 +132,7 @@ class ResultCallback(CallbackBase):
             self._process_items(result)
         else:
             msg = "skipping: [{h}]".format(h=result._host.get_name())
-            self.logger.debug(msg)
+            self.logger.info(msg)
 
     def v2_runner_on_unreachable(self, result):
         delegated_vars = result._result.get(
@@ -148,9 +158,15 @@ class ResultCallback(CallbackBase):
         self.logger.debug("skipping: no hosts matched")
 
     def v2_playbook_on_task_start(self, task, is_conditional):
-        self.logger.info("TASK [{t}]".format(
-            t=task.get_name().strip())
-        )
+        task_name = task.get_name().strip()
+        if task_name != 'debug':
+            self.logger.info("TASK [{t}]".format(
+                t=task_name)
+            )
+        else:
+            self.logger.debug("TASK [{t}]".format(
+                t=task_name)
+            )
 
     def v2_playbook_on_play_start(self, play):
         name = play.get_name().strip()
@@ -187,7 +203,7 @@ class ResultCallback(CallbackBase):
 
         msg += " => (item={i})".format(i=result._result['item'])
 
-        self.logger.debug(msg)
+        self.logger.info(msg)
 
     def v2_playbook_item_on_failed(self, result):
         delegated_vars = result._result.get(
@@ -199,7 +215,7 @@ class ResultCallback(CallbackBase):
             self.logger.debug(error)
             del result._result['exception']
         if delegated_vars:
-            self.logger.debug(
+            self.logger.error(
                 "failed: [{h1} -> {h2}] => (item={i}) => {r}".format(
                     h1=result._host.get_name(),
                     h2=delegated_vars['ansible_host'],
@@ -208,7 +224,7 @@ class ResultCallback(CallbackBase):
                 )
             )
         else:
-            self.logger.debug(
+            self.logger.error(
                 "failed: [{h}] => (item={i}) => {r}".format(
                     h=result._host.get_name(),
                     i=result._result['item'],
@@ -221,7 +237,7 @@ class ResultCallback(CallbackBase):
             h=result._host.get_name(),
             i=result._result['item']
         )
-        self.logger.debug(msg)
+        self.logger.info(msg)
 
     def v2_playbook_on_stats(self, stats):
         hosts = sorted(stats.processed.keys())
@@ -280,6 +296,7 @@ class AnsibleHelper(base.Base):
             loader=self._loader,
             inventory=self._inventory
         )
+        self.logger.debug('extra_vars: {ev}'.format(ev=extra_vars))
         if extra_vars:
             self._variable_manager.extra_vars = extra_vars
         self._pb = Playbook.load(
