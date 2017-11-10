@@ -1,9 +1,9 @@
 ---
-- name: create hosted engine local vm
+- name: Create hosted engine local vm
   hosts: localhost
   connection: local
   tasks:
-  - name: fetch host facts
+  - name: Fetch host facts
     ovirt_hosts_facts:
       pattern: name={{ HOST_NAME }}
       auth:
@@ -15,9 +15,9 @@
     until: host_result.ansible_facts.ovirt_hosts|length >= 1 and 'up' in host_result.ansible_facts.ovirt_hosts[0].status
     retries: 50
     delay: 10
-  - name: fetch cluster id
+  - name: Fetch cluster id
     set_fact: cluster_id="{{ host_result.ansible_facts.ovirt_hosts[0].cluster.id }}"
-  - name: fetch cluster facts
+  - name: Fetch cluster facts
     ovirt_cluster_facts:
       auth:
         username: admin@internal
@@ -25,7 +25,7 @@
         url: https://{{ FQDN }}/ovirt-engine/api
         insecure: true
     register: cluster_facts
-  - name: fetch datacenter facts
+  - name: Fetch datacenter facts
     ovirt_datacenter_facts:
       auth:
         username: admin@internal
@@ -33,11 +33,11 @@
         url: https://{{ FQDN }}/ovirt-engine/api
         insecure: true
     register: datacenter_facts
-  - name: fetch datacenter id
+  - name: Fetch datacenter id
     set_fact: datacenter_id="{{ cluster_facts.ansible_facts.ovirt_clusters|json_query(\"[?id=='" + cluster_id + "'].data_center.id\")|first }}"
-  - name: fetch datacenter_name
+  - name: Fetch datacenter_name
     set_fact: datacenter_name="{{ datacenter_facts.ansible_facts.ovirt_datacenters|json_query(\"[?id=='" + datacenter_id + "'].name\")|first }}"
-  - name: add nfs storage domain
+  - name: Add nfs storage domain
     ovirt_storage_domains:
       name: "{{ STORAGE_DOMAIN_NAME }}"
       host: "{{ HOST_NAME }}"
@@ -55,7 +55,7 @@
         insecure: true
     register: otopi_storage_domain_details
     when: DOMAIN_TYPE == "nfs"
-  - name: add iscsi storage domain
+  - name: Add iSCSI storage domain
     ovirt_storage_domains:
       name: "{{ STORAGE_DOMAIN_NAME }}"
       host: "{{ HOST_NAME }}"

@@ -1,12 +1,12 @@
 ---
-- name: create hosted engine local vm
+- name: Create hosted engine local vm
   hosts: localhost
   connection: local
   tasks:
-  - name: get local vm ip
+  - name: Get local vm ip
     shell: virsh -r net-dhcp-leases default | grep {{ VM_MAC_ADDR }} | awk '{ print $5 }' | cut -f1 -d'/'
     register: local_vm_ip
-  - name: fetch host facts
+  - name: Fetch host facts
     ovirt_hosts_facts:
       pattern: name={{ HOST_NAME }}
       auth:
@@ -18,9 +18,9 @@
     until: host_result.ansible_facts.ovirt_hosts|length >= 1 and 'up' in host_result.ansible_facts.ovirt_hosts[0].status
     retries: 50
     delay: 10
-  - name: fetch cluster id
+  - name: Fetch cluster id
     set_fact: cluster_id="{{ host_result.ansible_facts.ovirt_hosts[0].cluster.id }}"
-  - name: fetch cluster facts
+  - name: Fetch cluster facts
     ovirt_cluster_facts:
       auth:
         username: admin@internal
@@ -28,7 +28,7 @@
         url: https://{{ FQDN }}/ovirt-engine/api
         insecure: true
     register: cluster_facts
-  - name: fetch datacenter facts
+  - name: Fetch datacenter facts
     ovirt_datacenter_facts:
       auth:
         username: admin@internal
@@ -36,13 +36,13 @@
         url: https://{{ FQDN }}/ovirt-engine/api
         insecure: true
     register: datacenter_facts
-  - name: fetch cluster_name
+  - name: Fetch cluster_name
     set_fact: cluster_name="{{ cluster_facts.ansible_facts.ovirt_clusters|json_query(\"[?id=='" + cluster_id + "'].name\")|first }}"
-  - name: fetch datacenter id
+  - name: Fetch datacenter id
     set_fact: datacenter_id="{{ cluster_facts.ansible_facts.ovirt_clusters|json_query(\"[?id=='" + cluster_id + "'].data_center.id\")|first }}"
-  - name: fetch datacenter_name
+  - name: Fetch datacenter_name
     set_fact: datacenter_name="{{ datacenter_facts.ansible_facts.ovirt_datacenters|json_query(\"[?id=='" + datacenter_id + "'].name\")|first }}"
-  - name: get storage domain details
+  - name: Get storage domain details
     ovirt_storage_domains_facts:
       pattern: name={{ STORAGE_DOMAIN_NAME }} and datacenter={{ datacenter_name }}
       auth:
@@ -51,7 +51,7 @@
         url: https://{{ FQDN }}/ovirt-engine/api
         insecure: true
     register: storage_domain_details
-  - name: add he sanlock disk
+  - name: Add he sanlock disk
     ovirt_disk:
       name: he_sanlock
       size: 1GiB
@@ -65,7 +65,7 @@
         url: https://{{ FQDN }}/ovirt-engine/api
         insecure: true
     register: he_sanlock_disk_details
-  - name: add he conf disk
+  - name: Add he conf disk
     ovirt_disk:
       name: he_conf
       size: 1GiB
@@ -79,7 +79,7 @@
         url: https://{{ FQDN }}/ovirt-engine/api
         insecure: true
     register: he_conf_disk_details
-  - name: add he metadata disk
+  - name: Add he metadata disk
     ovirt_disk:
       name: he_metadata
       size: 1GiB
@@ -93,11 +93,10 @@
         url: https://{{ FQDN }}/ovirt-engine/api
         insecure: true
     register: he_metadata_disk_details
-# TODO: initialize it with zeros somehow (dd?)
-  - name: add he disk # takes a very long time, hence the long timeout. need to figure out why.
+  - name: Add he disk
     ovirt_disk:
       name: he_virtio_disk
-      size: 60GiB #TODO: make it parametric
+      size: 60GiB # TODO: make it parametric
       format: cow
       interface: virtio
       storage_domain: "{{ STORAGE_DOMAIN_NAME }}"
@@ -109,7 +108,7 @@
         url: https://{{ FQDN }}/ovirt-engine/api
         insecure: true
     register: he_virtio_disk_details
-  - name: add vm
+  - name: Add VM
     ovirt_vms:
       state: stopped
       cluster: "{{ cluster_name }}"
@@ -134,7 +133,7 @@
         url: https://{{ FQDN }}/ovirt-engine/api
         insecure: true
     register: he_vm_details
-  - name: prepare images
+  - name: Prepare images
     shell: vdsm-client Image prepare storagepoolID={{ datacenter_id }} storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }} imageID={{ item.disk.id }} volumeID={{ item.disk.image_id  }}
     with_items:
       - "{{ he_virtio_disk_details }}"
@@ -142,77 +141,77 @@
       - "{{ he_metadata_disk_details }}"
       - "{{ he_sanlock_disk_details }}"
     register: prepareimage_results
-  - name: fetch he conf disk path
+  - name: Fetch he conf disk path
     set_fact: he_conf_disk_path="{{ (prepareimage_results.results|json_query(\"[?item.id=='" + he_conf_disk_details.id + "'].stdout\")|first|from_json).path }}"
-  - name: fetch he virtio disk path
+  - name: Fetch he virtio disk path
     set_fact: he_virtio_disk_path="{{ (prepareimage_results.results|json_query(\"[?item.id=='" + he_virtio_disk_details.id + "'].stdout\")|first|from_json).path }}"
-  - name: fetch he virtio metadata path
+  - name: Fetch he virtio metadata path
     set_fact: he_metadata_disk_path="{{ (prepareimage_results.results|json_query(\"[?item.id=='" + he_metadata_disk_details.id + "'].stdout\")|first|from_json).path }}"
   - debug: var=he_conf_disk_path
   - debug: var=he_virtio_disk_path
   - debug: var=he_metadata_disk_path
-  - name: destroy local vm
+  - name: Destroy local vm
     virt:
       name: "{{ VM_NAME }}"
       command: destroy
       uri: 'qemu+tls://{{ HOST_ADDRESS }}/system'
-  - name: undefine local vm
+  - name: Undefine local vm
     virt:
       name: "{{ VM_NAME }}"
       command: undefine
       uri: 'qemu+tls://{{ HOST_ADDRESS }}/system'
-  - name: create temp vm conf
+  - name: Create temp vm conf
     template:
       src: templates/vm.conf.j2
       dest: "{{ LOCAL_VM_DIR }}/vm.conf"
-  - name: create temp broker conf
+  - name: Create temp broker conf
     template:
       src: templates/broker.conf.j2
       dest: "{{ LOCAL_VM_DIR }}/broker.conf"
-  - name: create version file
+  - name: Create version file
     template:
       src: templates/version.j2
       dest: "{{ LOCAL_VM_DIR }}/version"
-  - name: create he answers
+  - name: Create he answers
     template:
       src: templates/fhanswers.conf.j2
       dest: "{{ LOCAL_VM_DIR }}/fhanswers.conf"
-  - name: create hosted engine conf
+  - name: Create hosted engine conf
     template:
       src: templates/hosted-engine.conf.j2
       dest: "{{ LOCAL_VM_DIR }}/hosted-engine.conf"
-  - name: create configuration archive
+  - name: Create configuration archive
     command: tar --record-size=20480 -cvf {{ he_conf_disk_details.disk.image_id }} vm.conf broker.conf version fhanswers.conf hosted-engine.conf
     args:
       chdir: "{{ LOCAL_VM_DIR }}"
-  - name: create ovirt-hosted-engine-ha run directory
+  - name: Create ovirt-hosted-engine-ha run directory
     file:
       path: /var/run/ovirt-hosted-engine-ha
       state: directory
-  - name: copy vm.conf to the right location on host
+  - name: Copy vm.conf to the right location on host
     copy:
       src: "{{ LOCAL_VM_DIR }}/vm.conf"
       dest: /var/run/ovirt-hosted-engine-ha
-  - name: copy hosted-engine.conf to the right location on host
+  - name: Copy hosted-engine.conf to the right location on host
     copy:
       src: "{{ LOCAL_VM_DIR }}/hosted-engine.conf"
       dest: /etc/ovirt-hosted-engine/
-  - name: copy configuration archive to storage
+  - name: Copy configuration archive to storage
     shell: dd bs=20480 count=1 oflag=direct if="{{ LOCAL_VM_DIR }}/{{ he_conf_disk_details.disk.image_id }}" of="{{ he_conf_disk_path }}"
     become_user: vdsm
     become_method: sudo
-  - name: initialize metadata volume
+  - name: Initialize metadata volume
     shell: dd bs=1M count=1024 oflag=direct if=/dev/zero of="{{ he_metadata_disk_path }}"
     become_user: vdsm
     become_method: sudo
-  - name: find the local appliance image
+  - name: Find the local appliance image
     find:
       paths: "{{ LOCAL_VM_DIR }}/images"
       recurse: true
       patterns: ^.*.(?<!meta)$
       use_regex: true
     register: app_img
-  - name: copy local vm disk to shared storage
+  - name: Copy local vm disk to shared storage
     shell: qemu-img convert -n -O qcow2 {{ app_img.files[0].path }} {{ he_virtio_disk_path }}
     become_user: vdsm
     become_method: sudo
@@ -229,30 +228,29 @@
     become_user: vdsm
     become_method: sudo
     when: VM_IP_ADDR|length >= 8
-  - name: clean /etc/hosts
+  - name: Clean /etc/hosts
     lineinfile:
       dest: /etc/hosts
       line: "{{ local_vm_ip.stdout_lines[0] }} {{ FQDN }}"
       state: absent
-  - name: add an entry in /etc/hosts for the target VM
+  - name: Add an entry in /etc/hosts for the target VM
     lineinfile:
       dest: /etc/hosts
       line: "{{ VM_IP_ADDR }} {{ FQDN }}"
       state: present
     when: VM_ETC_HOSTS and VM_IP_ADDR|length >= 8
-  - name: start broker
+  - name: Start broker
     service:
       name: ovirt-ha-broker
       state: started
       enabled: true
-# TODO: Let's see if we have to reinitialize also the metadata one
-  - name: initialize lockspace volume
+  - name: Initialize lockspace volume
     shell: hosted-engine --reinitialize-lockspace --force
     register: result
     until: result.rc == 0
     retries: 5
     delay: 10
-  - name: start agent
+  - name: Start agent
     service:
       name: ovirt-ha-agent
       state: started

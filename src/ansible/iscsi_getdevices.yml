@@ -18,7 +18,7 @@
         password: "{{ ADMIN_PASSWORD }}"
         url: https://{{ FQDN }}/ovirt-engine/api
         insecure: true
-  - name: get iSCSI LUNs
+  - name: Get iSCSI LUNs
     ovirt_host_storage_facts:
       host: "{{ HOST_NAME }}"
       iscsi:
