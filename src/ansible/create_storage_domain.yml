@@ -15,6 +15,7 @@
     until: host_result.ansible_facts.ovirt_hosts|length >= 1 and 'up' in host_result.ansible_facts.ovirt_hosts[0].status
     retries: 50
     delay: 10
+  - debug: var=host_result
   - name: Fetch cluster id
     set_fact: cluster_id="{{ host_result.ansible_facts.ovirt_hosts[0].cluster.id }}"
   - name: Fetch cluster facts
@@ -25,6 +26,7 @@
         url: https://{{ FQDN }}/ovirt-engine/api
         insecure: true
     register: cluster_facts
+  - debug: var=cluster_facts
   - name: Fetch datacenter facts
     ovirt_datacenter_facts:
       auth:
@@ -33,6 +35,7 @@
         url: https://{{ FQDN }}/ovirt-engine/api
         insecure: true
     register: datacenter_facts
+  - debug: var=datacenter_facts
   - name: Fetch datacenter id
     set_fact: datacenter_id="{{ cluster_facts.ansible_facts.ovirt_clusters|json_query(\"[?id=='" + cluster_id + "'].data_center.id\")|first }}"
   - name: Fetch datacenter_name
@@ -75,4 +78,5 @@
         insecure: true
     register: otopi_storage_domain_details
     when: DOMAIN_TYPE == "iscsi"
+  - debug: var=otopi_storage_domain_details
 ...

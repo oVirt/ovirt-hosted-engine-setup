@@ -33,3 +33,5 @@
         url: https://{{ FQDN }}/ovirt-engine/api
         insecure: true
     register: otopi_iscsi_devices
+  - debug: var=otopi_iscsi_devices
+...

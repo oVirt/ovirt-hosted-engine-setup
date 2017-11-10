@@ -19,6 +19,7 @@
       patterns: ^.*.(?<!meta)$
       use_regex: true
     register: app_img
+  - debug: var=app_img
   - name: Create cloud init user-data file
     template:
       src: templates/user-data.j2
@@ -64,6 +65,7 @@
     until: "'DB Up!Welcome to Health Status!' in engine_status.content"
     retries: 30
     delay: 20
+  - debug: var=engine_status
   - name: Set engine pub key as authorized key without validating the TLS/SSL certificates
     authorized_key:
       user: root
@@ -101,24 +103,28 @@
     until: host_result.ansible_facts.ovirt_hosts|length >= 1 and ("'non_operational' in host_result.ansible_facts.ovirt_hosts[0].status" or "'up' in host_result.ansible_facts.ovirt_hosts[0].status")
     retries: 50
     delay: 10
+  - debug: var=host_result
   - name: Get virbr0 routing configuration
     shell: ip route | grep virbr0
     register: virbr0_route_config
     until: virbr0_route_config.stdout_lines|length >= 1
     retries: 50
     delay: 10
+  - debug: var=virbr0_route_config
   - name: Get ovirtmgmt route table id
     shell: ip rule list | grep ovirtmgmt | sed s/\\[.*\\]\ //g | awk '{ print $9 }'
     register: ovirtmgmt_table_id
     until: ovirtmgmt_table_id.stdout_lines|length >= 1
     retries: 50
     delay: 10
+  - debug: var=ovirtmgmt_table_id
   - name: Restore network configuration
     shell: ip route add {{ virbr0_route_config.stdout_lines[0] }} table {{ ovirtmgmt_table_id.stdout_lines[0] }}
     register: result
     until: result.rc == 0
     retries: 50
     delay: 10
+  - debug: var=result
   - name: Wait for the host to be up
     ovirt_hosts_facts:
       pattern: name={{ HOST_NAME }}
@@ -131,12 +137,14 @@
     until: host_result.ansible_facts.ovirt_hosts|length >= 1 and "'up' in host_result.ansible_facts.ovirt_hosts[0].status"
     retries: 50
     delay: 10
+  - debug: var=host_result
   - name: Persist ovirtmngmt network configuration
     shell: vdsm-client Host setSafeNetworkConfig
     register: result
     until: result.rc == 0
     retries: 50
     delay: 10
+  - debug: var=result
   - name: Remove host-deploy configuration file
     file:
       state: absent
