@@ -36,7 +36,9 @@ Usage: $0
 	--rollback-upgrade
 		Rollback using a backup saved in a previous upgrade attempt.
 	--ansible
-		Deploy hosted-engine using ansible.
+		Deploy using node-zero ansible flow (default)
+	--noansible
+		Deploy using deprecated python
 
 __EOF__
 	exit 1
@@ -44,7 +46,9 @@ __EOF__
 
 environment=
 
-plugingroups="gr-he-common:gr-he-setup"
+plugingroups="gr-he-common:gr-he-ansiblesetup"
+
+ansible_noansible=
 
 while [ -n "$1" ]; do
 	x="$1"
@@ -64,17 +68,25 @@ while [ -n "$1" ]; do
 			usage
 		;;
 		--upgrade-appliance)
- 			plugingroups="gr-he-common:gr-he-upgradeappliance"
+			plugingroups="gr-he-common:gr-he-upgradeappliance"
 		;;
 		--rollback-upgrade)
- 			plugingroups="gr-he-common:gr-he-rollbackupgrade"
+			plugingroups="gr-he-common:gr-he-rollbackupgrade"
 		;;
 		--ansible)
- 			plugingroups="gr-he-common:gr-he-ansiblesetup"
- 		;;
- 		--noansible)
-  			plugingroups="gr-he-common:gr-he-setup"
-  		;;
+			if [ ! -z $ansible_noansible ]; then
+				die "--ansible and --noansible are alternative"
+			fi
+			ansible_noansible="ansible"
+			plugingroups="gr-he-common:gr-he-ansiblesetup"
+		;;
+		--noansible)
+			if [ ! -z $ansible_noansible ]; then
+				die "--ansible and --noansible are alternative"
+			fi
+			ansible_noansible="noansible"
+			plugingroups="gr-he-common:gr-he-setup"
+		;;
 		*)
 			die "Invalid option '${x}'"
 		;;

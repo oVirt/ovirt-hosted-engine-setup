@@ -134,13 +134,17 @@ __EOF__
 
 cmd_deploy() {
     [ "$1" == "--help" ] && { cat << __EOF__
-Usage: $0 --deploy [args]
+Usage: $0 --deploy [args] [--ansible|--noansible]
     Run ovirt-hosted-engine deployment.
 
     --config-append=<file>
         Load extra configuration files.
     --generate-answer=<file>
         Generate answer file.
+    --ansible
+        Deploy using node-zero ansible flow (default)
+    --noansible
+        Deploy using deprecated python flow
 __EOF__
 return ;}
 
