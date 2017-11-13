@@ -55,7 +55,9 @@
     command: virt-install -n {{ VM_NAME }} --os-variant rhel7 --virt-type kvm --memory {{ MEM_SIZE }} --vcpus {{ VCPUS }}  --network default,mac={{ VM_MAC_ADDR }} --disk {{ app_img.files[0].path }} --import --disk path={{ LOCAL_VM_DIR }}/seed.iso,device=cdrom --noautoconsole --rng /dev/random
     async: 60
     poll: 0
+    register: create_local_vm
     changed_when: True
+  - debug: var=create_local_vm
   - name: Get local vm ip
     shell: virsh -r net-dhcp-leases default | grep {{ VM_MAC_ADDR }} | awk '{ print $5 }' | cut -f1 -d'/'
     register: local_vm_ip
