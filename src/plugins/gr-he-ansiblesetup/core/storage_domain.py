@@ -641,7 +641,7 @@ class Plugin(plugin.PluginBase):
                     if self.environment[
                         ohostedcons.StorageEnv.DOMAIN_TYPE
                     ] == ohostedcons.DomainTypes.NFS:
-                        # TODO: implement fc and gluster
+                        # TODO: implement fc
                         self.environment[
                             ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
                         ] = '{address}:{path}'.format(
@@ -655,6 +655,18 @@ class Plugin(plugin.PluginBase):
                         self.environment[
                             ohostedcons.StorageEnv.NFS_VERSION
                         ] = storage['nfs_version']
+                    if self.environment[
+                        ohostedcons.StorageEnv.DOMAIN_TYPE
+                    ] == ohostedcons.DomainTypes.GLUSTERFS:
+                        self.environment[
+                            ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
+                        ] = '{address}:{path}'.format(
+                            address=storage['address'],
+                            path=storage['path'],
+                        )
+                        self.environment[
+                            ohostedcons.StorageEnv.MNT_OPTIONS
+                        ] = mnt_options
                     if self.environment[
                         ohostedcons.StorageEnv.DOMAIN_TYPE
                     ] == ohostedcons.DomainTypes.ISCSI:

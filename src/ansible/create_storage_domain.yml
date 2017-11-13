@@ -52,6 +52,23 @@
       auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
     register: otopi_storage_domain_details
     when: DOMAIN_TYPE == "nfs"
+  - name: Add glusterfs storage domain
+    ovirt_storage_domains:
+      name: "{{ STORAGE_DOMAIN_NAME }}"
+      host: "{{ HOST_NAME }}"
+      data_center: "{{ datacenter_name }}"
+      wait: True
+      glusterfs:
+        address: "{{ STORAGE_DOMAIN_ADDR }}"
+        path: "{{ STORAGE_DOMAIN_PATH }}"
+        mount_options: "{{ MOUNT_OPTIONS }}"
+      auth:
+        username: admin@internal
+        password: "{{ ADMIN_PASSWORD }}"
+        url: https://{{ FQDN }}/ovirt-engine/api
+        insecure: true
+    register: otopi_storage_domain_details
+    when: DOMAIN_TYPE == "glusterfs"
   - name: Add iSCSI storage domain
     ovirt_storage_domains:
       name: "{{ STORAGE_DOMAIN_NAME }}"
