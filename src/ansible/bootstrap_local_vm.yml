@@ -7,6 +7,16 @@
     file:
       path: "{{ LOCAL_VM_DIR }}"
       state: directory
+  - name: Check for leftover local engine VM
+    shell: virsh list | grep {{ VM_NAME }} | cat
+    changed_when: True
+    register: local_vm_list
+  - name: Destroy leftover local engine VM
+    command: virsh destroy {{ VM_NAME }}
+    when: local_vm_list.stdout_lines|length >= 1
+  - name: Undefine leftover local engine VM
+    command: virsh undefine {{ VM_NAME }}
+    when: local_vm_list.stdout_lines|length >= 1
   - name: Extract appliance to local vm dir
     unarchive:
       src: "{{ APPLIANCE_OVA }}" # FIX
