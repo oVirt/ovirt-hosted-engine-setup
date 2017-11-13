@@ -6,6 +6,7 @@
   - name: Get local vm ip
     shell: virsh -r net-dhcp-leases default | grep {{ VM_MAC_ADDR }} | awk '{ print $5 }' | cut -f1 -d'/'
     register: local_vm_ip
+    changed_when: True
   - debug: var=local_vm_ip
   - name: Fetch host facts
     ovirt_hosts_facts:
@@ -144,13 +145,14 @@
     register: he_vm_details
   - debug: var=he_vm_details
   - name: Prepare images
-    shell: vdsm-client Image prepare storagepoolID={{ datacenter_id }} storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }} imageID={{ item.disk.id }} volumeID={{ item.disk.image_id  }}
+    command: vdsm-client Image prepare storagepoolID={{ datacenter_id }} storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }} imageID={{ item.disk.id }} volumeID={{ item.disk.image_id  }}
     with_items:
       - "{{ he_virtio_disk_details }}"
       - "{{ he_conf_disk_details }}"
       - "{{ he_metadata_disk_details }}"
       - "{{ he_sanlock_disk_details }}"
     register: prepareimage_results
+    changed_when: True
   - debug: var=prepareimage_results
   - name: Fetch he conf disk path
     set_fact: he_conf_disk_path="{{ (prepareimage_results.results|json_query(\"[?item.id=='" + he_conf_disk_details.id + "'].stdout\")|first|from_json).path }}"
@@ -195,6 +197,8 @@
     command: tar --record-size=20480 -cvf {{ he_conf_disk_details.disk.image_id }} vm.conf broker.conf version fhanswers.conf hosted-engine.conf
     args:
       chdir: "{{ LOCAL_VM_DIR }}"
+    changed_when: True
+    tags: [ 'skip_ansible_lint' ]
   - name: Create ovirt-hosted-engine-ha run directory
     file:
       path: /var/run/ovirt-hosted-engine-ha
@@ -208,13 +212,17 @@
       src: "{{ LOCAL_VM_DIR }}/hosted-engine.conf"
       dest: /etc/ovirt-hosted-engine/
   - name: Copy configuration archive to storage
-    shell: dd bs=20480 count=1 oflag=direct if="{{ LOCAL_VM_DIR }}/{{ he_conf_disk_details.disk.image_id }}" of="{{ he_conf_disk_path }}"
+    command: dd bs=20480 count=1 oflag=direct if="{{ LOCAL_VM_DIR }}/{{ he_conf_disk_details.disk.image_id }}" of="{{ he_conf_disk_path }}"
     become_user: vdsm
     become_method: sudo
+    changed_when: True
+    tags: [ 'skip_ansible_lint' ]
   - name: Initialize metadata volume
-    shell: dd bs=1M count=1024 oflag=direct if=/dev/zero of="{{ he_metadata_disk_path }}"
+    command: dd bs=1M count=1024 oflag=direct if=/dev/zero of="{{ he_metadata_disk_path }}"
     become_user: vdsm
     become_method: sudo
+    changed_when: True
+    tags: [ 'skip_ansible_lint' ]
   - name: Find the local appliance image
     find:
       paths: "{{ LOCAL_VM_DIR }}/images"
@@ -224,9 +232,11 @@
     register: app_img
   - debug: var=app_img
   - name: Copy local vm disk to shared storage
-    shell: qemu-img convert -n -O qcow2 {{ app_img.files[0].path }} {{ he_virtio_disk_path }}
+    command: qemu-img convert -n -O qcow2 {{ app_img.files[0].path }} {{ he_virtio_disk_path }}
     become_user: vdsm
     become_method: sudo
+    changed_when: True
+    tags: [ 'skip_ansible_lint' ]
   - name: Generate network configuration for the engine VM
     template:
       src: templates/ifcfg-eth0-static.j2
@@ -240,6 +250,7 @@
     become_user: vdsm
     become_method: sudo
     when: VM_IP_ADDR|length >= 8
+    tags: [ 'skip_ansible_lint' ]
   - name: Clean /etc/hosts
     lineinfile:
       dest: /etc/hosts
@@ -257,11 +268,12 @@
       state: started
       enabled: true
   - name: Initialize lockspace volume
-    shell: hosted-engine --reinitialize-lockspace --force
+    command: hosted-engine --reinitialize-lockspace --force
     register: result
     until: result.rc == 0
     retries: 5
     delay: 10
+    changed_when: True
   - debug: var=result
   - name: Start agent
     service:

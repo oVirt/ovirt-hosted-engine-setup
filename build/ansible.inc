@@ -17,21 +17,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
-include $(top_srcdir)/build/ansible.inc
+ANSIBLE_SYNTAX_CHECK_FILES = $(srcdir)/*.yml
 
-MAINTAINERCLEANFILES = \
-	$(srcdir)/Makefile.in \
-	$(NULL)
-
-ansibletemplatesdir=$(ovirthostedengineansibledir)/templates
-dist_ansibletemplates_DATA = \
-	70-hosted-engine-setup.conf.j2 \
-	broker.conf.j2 \
-	fhanswers.conf.j2 \
-	ifcfg-eth0-static.j2 \
-	hosted-engine.conf.j2 \
-	meta-data.j2 \
-	user-data.j2 \
-	version.j2 \
-	vm.conf.j2 \
-	$(NULL)
+python-syntax-check:
+if ANSIBLE_SYNTAX_CHECK
+	if [ -n "$(ANSIBLE_LINT)" ]; then \
+		$(ANSIBLE_LINT) $(ANSIBLE_SYNTAX_CHECK_FILES); \
+	fi
+endif

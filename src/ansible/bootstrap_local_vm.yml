@@ -29,26 +29,30 @@
       src: templates/meta-data.j2
       dest: "{{ LOCAL_VM_DIR }}/meta-data"
   - name: Create iso disk
-    shell: mkisofs -output {{ LOCAL_VM_DIR }}/seed.iso -volid cidata -joliet -rock -input-charset utf-8 {{ LOCAL_VM_DIR }}/meta-data {{ LOCAL_VM_DIR }}/user-data
+    command: mkisofs -output {{ LOCAL_VM_DIR }}/seed.iso -volid cidata -joliet -rock -input-charset utf-8 {{ LOCAL_VM_DIR }}/meta-data {{ LOCAL_VM_DIR }}/user-data
+    changed_when: True
   - name: Start libvirt
     service:
       name: libvirtd
       state: started
       enabled: yes
   - name: Get libvirt default network info
-    shell: virsh -r net-info default
+    command: virsh -r net-info default
     register: default_net_info
+    changed_when: True
   - debug: var=default_net_info
   - name: Create local vm
     command: virt-install -n {{ VM_NAME }} --os-variant rhel7 --virt-type kvm --memory {{ MEM_SIZE }} --vcpus {{ VCPUS }}  --network default,mac={{ VM_MAC_ADDR }} --disk {{ app_img.files[0].path }} --import --disk path={{ LOCAL_VM_DIR }}/seed.iso,device=cdrom --noautoconsole --rng /dev/random
     async: 60
     poll: 0
+    changed_when: True
   - name: Get local vm ip
     shell: virsh -r net-dhcp-leases default | grep {{ VM_MAC_ADDR }} | awk '{ print $5 }' | cut -f1 -d'/'
     register: local_vm_ip
     until: local_vm_ip.stdout_lines|length >= 1
     retries: 50
     delay: 10
+    changed_when: True
   - debug: var=local_vm_ip
   - name: Remove eventually entries for the local VM from /etc/hosts
     lineinfile:
@@ -114,6 +118,7 @@
     until: virbr0_route_config.stdout_lines|length >= 1
     retries: 50
     delay: 10
+    changed_when: True
   - debug: var=virbr0_route_config
   - name: Get ovirtmgmt route table id
     shell: ip rule list | grep ovirtmgmt | sed s/\\[.*\\]\ //g | awk '{ print $9 }'
@@ -121,13 +126,15 @@
     until: ovirtmgmt_table_id.stdout_lines|length >= 1
     retries: 50
     delay: 10
+    changed_when: True
   - debug: var=ovirtmgmt_table_id
   - name: Restore network configuration
-    shell: ip route add {{ virbr0_route_config.stdout_lines[0] }} table {{ ovirtmgmt_table_id.stdout_lines[0] }}
+    command: ip route add {{ virbr0_route_config.stdout_lines[0] }} table {{ ovirtmgmt_table_id.stdout_lines[0] }}
     register: result
     until: result.rc == 0
     retries: 50
     delay: 10
+    changed_when: True
   - debug: var=result
   - name: Wait for the host to be up
     ovirt_hosts_facts:
@@ -143,11 +150,12 @@
     delay: 10
   - debug: var=host_result
   - name: Persist ovirtmngmt network configuration
-    shell: vdsm-client Host setSafeNetworkConfig
+    command: vdsm-client Host setSafeNetworkConfig
     register: result
     until: result.rc == 0
     retries: 50
     delay: 10
+    changed_when: True
   - debug: var=result
   - name: Remove host-deploy configuration file
     file:

@@ -59,6 +59,13 @@ AC_ARG_ENABLE(
 	[enable_python_syntax_check="yes"]
 )
 
+AC_ARG_ENABLE(
+	[ansible-syntax-check],
+	[AS_HELP_STRING([--disable-ansible-syntax-check], [disable ansible syntax check @<:@default=enabled@:>@])],
+	,
+	[enable_ansible_syntax_check="yes"]
+)
+
 AC_PROG_INSTALL
 AC_PROG_SED
 AC_PROG_MAKE_SET
@@ -74,7 +81,8 @@ AC_ARG_VAR([ISORT], [path to isort utility])
 AC_CHECK_PROGS([ISORT], [isort])
 AC_ARG_VAR([RPMBUILD], [path to rpmbuild utility])
 AC_CHECK_PROGS([RPMBUILD], [rpmbuild])
-
+AC_ARG_VAR([ANSIBLE_LINT], [path to ansible-lint utility])
+AC_CHECK_PROGS([ANSIBLE_LINT], [ansible-lint])
 AM_PATH_PYTHON([2.6],, [AC_MSG_ERROR([Cannot find python])])
 
 otopiplugindir="\$(datadir)/otopi/plugins"
@@ -96,6 +104,7 @@ AC_SUBST([vdsmhooksdir])
 AC_SUBST([APPLIANCE_RPM_PREFIX])
 AC_SUBST([APPLIANCE40_RPM_PREFIX])
 AM_CONDITIONAL([PYTHON_SYNTAX_CHECK], [test "${enable_python_syntax_check}" = "yes"])
+AM_CONDITIONAL([ANSIBLE_SYNTAX_CHECK], [test "${enable_ansible_syntax_check}" = "yes"])
 
 AC_CONFIG_FILES([
 	Makefile
