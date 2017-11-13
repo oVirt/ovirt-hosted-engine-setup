@@ -35,6 +35,10 @@
       name: libvirtd
       state: started
       enabled: yes
+  - name: Get libvirt default network info
+    shell: virsh -r net-info default
+    register: default_net_info
+  - debug: var=default_net_info
   - name: Create local vm
     command: virt-install -n {{ VM_NAME }} --os-variant rhel7 --virt-type kvm --memory {{ MEM_SIZE }} --vcpus {{ VCPUS }}  --network default,mac={{ VM_MAC_ADDR }} --disk {{ app_img.files[0].path }} --import --disk path={{ LOCAL_VM_DIR }}/seed.iso,device=cdrom --noautoconsole --rng /dev/random
     async: 60
