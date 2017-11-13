@@ -104,7 +104,7 @@
         url: https://{{ FQDN }}/ovirt-engine/api
         insecure: true
     register: host_result
-    until: host_result.ansible_facts.ovirt_hosts|length >= 1 and ("'non_operational' in host_result.ansible_facts.ovirt_hosts[0].status" or "'up' in host_result.ansible_facts.ovirt_hosts[0].status")
+    until: host_result and 'ansible_facts' in host_result and 'ovirt_hosts' in host_result.ansible_facts and host_result.ansible_facts.ovirt_hosts|length >= 1 and ("'non_operational' in host_result.ansible_facts.ovirt_hosts[0].status" or "'up' in host_result.ansible_facts.ovirt_hosts[0].status")
     retries: 50
     delay: 10
   - debug: var=host_result
@@ -138,7 +138,7 @@
         url: https://{{ FQDN }}/ovirt-engine/api
         insecure: true
     register: host_result
-    until: host_result.ansible_facts.ovirt_hosts|length >= 1 and "'up' in host_result.ansible_facts.ovirt_hosts[0].status"
+    until: host_result and 'ansible_facts' in host_result and 'ovirt_hosts' in host_result.ansible_facts and host_result.ansible_facts.ovirt_hosts|length >= 1 and "'up' in host_result.ansible_facts.ovirt_hosts[0].status"
     retries: 50
     delay: 10
   - debug: var=host_result
