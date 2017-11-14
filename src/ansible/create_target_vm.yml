@@ -163,10 +163,10 @@
   - debug: var=he_conf_disk_path
   - debug: var=he_virtio_disk_path
   - debug: var=he_metadata_disk_path
-  - name: Destroy local vm
+  - name: Shutdown local vm
     virt:
       name: "{{ VM_NAME }}"
-      command: destroy
+      command: shutdown
       uri: 'qemu+tls://{{ HOST_ADDRESS }}/system'
   - name: Undefine local vm
     virt:
