@@ -20,10 +20,10 @@
   - debug: var=local_vm_ip
   - name: Fetch host facts
     ovirt_hosts_facts:
-      pattern: name={{ HOST_NAME }}
+      pattern: name={{ HOST_NAME }} status=up
       auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
     register: host_result
-    until: host_result and 'ansible_facts' in host_result and 'ovirt_hosts' in host_result.ansible_facts and host_result.ansible_facts.ovirt_hosts|length >= 1 and 'up' in host_result.ansible_facts.ovirt_hosts[0].status
+    until: host_result|succeeded and host_result.ansible_facts.ovirt_hosts|length >= 1
     retries: 50
     delay: 10
   - debug: var=host_result
