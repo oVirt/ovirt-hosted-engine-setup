@@ -3,6 +3,16 @@
   hosts: localhost
   connection: local
   tasks:
+  - name: Obtain SSO token with using username/password credentials
+    ovirt_auth:
+      url: https://{{ FQDN }}/ovirt-engine/api
+      username: admin@internal
+      insecure: true
+      password: "{{ ADMIN_PASSWORD }}"
+    register: ovirt_sso_auth
+    until: ovirt_sso_auth|succeeded
+    retries: 50
+    delay: 10
   - name: iSCSI login
     ovirt_hosts:
       name: "{{ HOST_NAME }}"
@@ -13,11 +23,7 @@
         address: "{{ ISCSI_PORTAL_ADDR }}"
         port: "{{ ISCSI_PORTAL_PORT }}"
         target: "{{ ISCSI_TARGET }}"
-      auth:
-        username: admin@internal
-        password: "{{ ADMIN_PASSWORD }}"
-        url: https://{{ FQDN }}/ovirt-engine/api
-        insecure: true
+      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
   - name: Get iSCSI LUNs
     ovirt_host_storage_facts:
       host: "{{ HOST_NAME }}"
@@ -27,11 +33,7 @@
         address: "{{ ISCSI_PORTAL_ADDR }}"
         port: "{{ ISCSI_PORTAL_PORT }}"
         target: "{{ ISCSI_TARGET }}"
-      auth:
-        username: admin@internal
-        password: "{{ ADMIN_PASSWORD }}"
-        url: https://{{ FQDN }}/ovirt-engine/api
-        insecure: true
+      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
     register: otopi_iscsi_devices
   - debug: var=otopi_iscsi_devices
 ...

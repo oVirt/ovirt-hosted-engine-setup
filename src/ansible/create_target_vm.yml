@@ -3,6 +3,16 @@
   hosts: localhost
   connection: local
   tasks:
+  - name: Obtain SSO token with using username/password credentials
+    ovirt_auth:
+      url: https://{{ FQDN }}/ovirt-engine/api
+      username: admin@internal
+      insecure: true
+      password: "{{ ADMIN_PASSWORD }}"
+    register: ovirt_sso_auth
+    until: ovirt_sso_auth|succeeded
+    retries: 50
+    delay: 10
   - name: Get local vm ip
     shell: virsh -r net-dhcp-leases default | grep {{ VM_MAC_ADDR }} | awk '{ print $5 }' | cut -f1 -d'/'
     register: local_vm_ip
@@ -11,11 +21,7 @@
   - name: Fetch host facts
     ovirt_hosts_facts:
       pattern: name={{ HOST_NAME }}
-      auth:
-        username: admin@internal
-        password: "{{ ADMIN_PASSWORD }}"
-        url: https://{{ FQDN }}/ovirt-engine/api
-        insecure: true
+      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
     register: host_result
     until: host_result and 'ansible_facts' in host_result and 'ovirt_hosts' in host_result.ansible_facts and host_result.ansible_facts.ovirt_hosts|length >= 1 and 'up' in host_result.ansible_facts.ovirt_hosts[0].status
     retries: 50
@@ -25,20 +31,12 @@
     set_fact: cluster_id="{{ host_result.ansible_facts.ovirt_hosts[0].cluster.id }}"
   - name: Fetch cluster facts
     ovirt_cluster_facts:
-      auth:
-        username: admin@internal
-        password: "{{ ADMIN_PASSWORD }}"
-        url: https://{{ FQDN }}/ovirt-engine/api
-        insecure: true
+      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
     register: cluster_facts
   - debug: var=cluster_facts
   - name: Fetch datacenter facts
     ovirt_datacenter_facts:
-      auth:
-        username: admin@internal
-        password: "{{ ADMIN_PASSWORD }}"
-        url: https://{{ FQDN }}/ovirt-engine/api
-        insecure: true
+      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
     register: datacenter_facts
   - debug: var=datacenter_facts
   - name: Fetch cluster_name
@@ -50,11 +48,7 @@
   - name: Get storage domain details
     ovirt_storage_domains_facts:
       pattern: name={{ STORAGE_DOMAIN_NAME }} and datacenter={{ datacenter_name }}
-      auth:
-        username: admin@internal
-        password: "{{ ADMIN_PASSWORD }}"
-        url: https://{{ FQDN }}/ovirt-engine/api
-        insecure: true
+      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
     register: storage_domain_details
   - debug: var=storage_domain_details
   - name: Add he sanlock disk
@@ -65,11 +59,7 @@
       interface: virtio
       storage_domain: "{{ STORAGE_DOMAIN_NAME }}"
       timeout: 600
-      auth:
-        username: admin@internal
-        password: "{{ ADMIN_PASSWORD }}"
-        url: https://{{ FQDN }}/ovirt-engine/api
-        insecure: true
+      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
     register: he_sanlock_disk_details
   - debug: var=he_sanlock_disk_details
   - name: Add he conf disk
@@ -80,11 +70,7 @@
       interface: virtio
       storage_domain: "{{ STORAGE_DOMAIN_NAME }}"
       timeout: 600
-      auth:
-        username: admin@internal
-        password: "{{ ADMIN_PASSWORD }}"
-        url: https://{{ FQDN }}/ovirt-engine/api
-        insecure: true
+      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
     register: he_conf_disk_details
   - debug: var=he_conf_disk_details
   - name: Add he metadata disk
@@ -95,11 +81,7 @@
       interface: virtio
       storage_domain: "{{ STORAGE_DOMAIN_NAME }}"
       timeout: 600
-      auth:
-        username: admin@internal
-        password: "{{ ADMIN_PASSWORD }}"
-        url: https://{{ FQDN }}/ovirt-engine/api
-        insecure: true
+      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
     register: he_metadata_disk_details
   - debug: var=he_metadata_disk_details
   - name: Add he disk
@@ -111,11 +93,7 @@
       storage_domain: "{{ STORAGE_DOMAIN_NAME }}"
       bootable: true
       timeout: 7200
-      auth:
-        username: admin@internal
-        password: "{{ ADMIN_PASSWORD }}"
-        url: https://{{ FQDN }}/ovirt-engine/api
-        insecure: true
+      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
     register: he_virtio_disk_details
   - debug: var=he_virtio_disk_details
   - name: Add VM
@@ -137,11 +115,7 @@
         profile_name: "{{ BRIDGE }}"
         interface: virtio
         mac_address: "{{ VM_MAC_ADDR }}"
-      auth:
-        username: admin@internal
-        password: "{{ ADMIN_PASSWORD }}"
-        url: https://{{ FQDN }}/ovirt-engine/api
-        insecure: true
+      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
     register: he_vm_details
   - debug: var=he_vm_details
   - name: Prepare images

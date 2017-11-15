@@ -96,17 +96,23 @@
     template:
       src: templates/70-hosted-engine-setup.conf.j2
       dest: /etc/ovirt-host-deploy.conf.d/70-hosted-engine-setup.conf
+  - name: Obtain SSO token with using username/password credentials
+    ovirt_auth:
+      url: https://{{ FQDN }}/ovirt-engine/api
+      username: admin@internal
+      insecure: true
+      password: "{{ ADMIN_PASSWORD }}"
+    register: ovirt_sso_auth
+    until: ovirt_sso_auth|succeeded
+    retries: 50
+    delay: 10
   - name: Add host
     ovirt_hosts:
       name: "{{ HOST_NAME }}"
       state: present
       public_key: true
       address: "{{ HOST_ADDRESS }}"
-      auth:
-        username: admin@internal
-        password: "{{ ADMIN_PASSWORD }}"
-        url: https://{{ FQDN }}/ovirt-engine/api
-        insecure: true
+      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
     async: 1
     poll: 0
   # all of the next is a workaroud for the network issue, vdsm installation breaks the routing and it needs to be fixed
@@ -114,11 +120,7 @@
   - name: Wait for the host to become non operational
     ovirt_hosts_facts:
       pattern: name={{ HOST_NAME }}
-      auth:
-        username: admin@internal
-        password: "{{ ADMIN_PASSWORD }}"
-        url: https://{{ FQDN }}/ovirt-engine/api
-        insecure: true
+      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
     register: host_result
     until: host_result and 'ansible_facts' in host_result and 'ovirt_hosts' in host_result.ansible_facts and host_result.ansible_facts.ovirt_hosts|length >= 1 and ("'non_operational' in host_result.ansible_facts.ovirt_hosts[0].status" or "'up' in host_result.ansible_facts.ovirt_hosts[0].status")
     retries: 50
@@ -151,11 +153,7 @@
   - name: Wait for the host to be up
     ovirt_hosts_facts:
       pattern: name={{ HOST_NAME }}
-      auth:
-        username: admin@internal
-        password: "{{ ADMIN_PASSWORD }}"
-        url: https://{{ FQDN }}/ovirt-engine/api
-        insecure: true
+      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
     register: host_result
     until: host_result and 'ansible_facts' in host_result and 'ovirt_hosts' in host_result.ansible_facts and host_result.ansible_facts.ovirt_hosts|length >= 1 and "'up' in host_result.ansible_facts.ovirt_hosts[0].status"
     retries: 50
