@@ -991,7 +991,12 @@ class Plugin(plugin.PluginBase):
                 ).format(iname=_interface_name)
 
         if bootcmd:
-            user_data += 'bootcmd:\n%s' % bootcmd
+            user_data += (
+                'bootcmd:\n'
+                # see: https://bugzilla.redhat.com/1126096
+                ' - setenforce 0\n'
+                '{b}'
+            ).format(b=bootcmd)
 
         user_data += (
             ' - if grep -Gq "^\s*PermitRootLogin" /etc/ssh/sshd_config;'
@@ -1079,8 +1084,6 @@ class Plugin(plugin.PluginBase):
                 '   owner: root:root\n'
                 '   permissions: \'0640\'\n'
                 'runcmd:\n'
-                # see: https://bugzilla.redhat.com/1126096
-                ' - semanage permissive -a cloud_init_t\n'
                 # restarting sshd only at runcmd stage and restarting it
                 # in background to be sure it will never block this script
                 ' - systemctl restart sshd &\n'
@@ -1095,6 +1098,7 @@ class Plugin(plugin.PluginBase):
                 ' else echo "{fail_string}" >{port};'
                 ' fi\n'
                 ' - rm {heanswers}\n'
+                ' - setenforce 1\n'
             ).format(
                 fqdn=self.environment[
                     ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
@@ -1116,7 +1120,6 @@ class Plugin(plugin.PluginBase):
         if 'runcmd:\n' not in user_data:
             user_data += 'runcmd:\n'
         user_data += (
-            ' - semanage permissive -d cloud_init_t\n'
             ' - systemctl mask cloud-init-local || '
             ' chkconfig cloud-init-local off\n'
             ' - systemctl mask cloud-init || ('

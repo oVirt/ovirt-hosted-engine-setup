@@ -16,6 +16,7 @@ chpasswd:
 timezone: {{ TIME_ZONE }}
 {% endif %}
 bootcmd:
+  - setenforce 0
   - if grep -Gq "^\s*PermitRootLogin" /etc/ssh/sshd_config; then sed -re "s/^\s*(PermitRootLogin)\s+(yes|no|without-password)/ \1 {{ ROOT_SSH_ACCESS }}/" -i.$(date -u +%Y%m%d%H%M%S) /etc/ssh/sshd_config; else echo "PermitRootLogin {{ ROOT_SSH_ACCESS }}" >> /etc/ssh/sshd_config; fi
   - sed -i 's/127\.0\.0\.1[ ]*localhost localhost.localdomain localhost4 localhost4.localdomain4$/127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4 {{ FQDN }}/g' /etc/hosts
 {% if VM_ETC_HOSTS %}
@@ -33,10 +34,9 @@ write_files:
     owner: root:root
     permissions: '0640'
 runcmd:
-  - semanage permissive -a cloud_init_t
   - systemctl restart sshd &
   - /usr/bin/engine-setup --offline --config-append=/root/ovirt-engine-answers --config-append=/root/heanswers.conf {% if ENABLE_LIBGFAPI %} && engine-config -s LibgfApiSupported=true --cver=4.1 && engine-config -s LibgfApiSupported=true --cver=4.2 && systemctl restart ovirt-engine {% endif %} ;
   - rm /root/heanswers.conf
   - systemctl mask cloud-init-local
   - systemctl mask cloud-init
-  - semanage permissive -d cloud_init_t
+  - setenforce 1
