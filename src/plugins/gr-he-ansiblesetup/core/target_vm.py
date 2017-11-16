@@ -83,17 +83,13 @@ class Plugin(plugin.PluginBase):
             'ADMIN_PASSWORD': self.environment[
                 ohostedcons.EngineEnv.ADMIN_PASSWORD
             ],
-            # TODO: just for skip autoimport code on engine side,
-            # fix on engine side with a vdcOption to disable it
             'STORAGE_DOMAIN_NAME': self.environment[
                 ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
-            ] + 'Ansible',
+            ],
             'VM_MAC_ADDR': self.environment[
                 ohostedcons.VMEnv.MAC_ADDR
             ],
-            # TODO: just for skip autoimport code on engine side,
-            # fix on engine side with a vdcOption to disable it
-            'VM_NAME': ohostedcons.Const.HOSTED_ENGINE_VM_NAME + 'Ansible',
+            'VM_NAME': ohostedcons.Const.HOSTED_ENGINE_VM_NAME,
             'MEM_SIZE': self.environment[ohostedcons.VMEnv.MEM_SIZE_MB],
             'VCPUS': self.environment[ohostedcons.VMEnv.VCPUS],
             'CPU_SOCKETS': '1',

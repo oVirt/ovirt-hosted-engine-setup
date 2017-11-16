@@ -593,11 +593,9 @@ class Plugin(plugin.PluginBase):
                 'ADMIN_PASSWORD': self.environment[
                     ohostedcons.EngineEnv.ADMIN_PASSWORD
                 ],
-                # TODO: just for skip autoimport code on engine side,
-                # fix on engine side with a vdcOption to disable it
                 'STORAGE_DOMAIN_NAME': self.environment[
                     ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
-                ] + 'Ansible',
+                ],
                 'STORAGE_DOMAIN_ADDR': storage_domain_address,
                 'STORAGE_DOMAIN_PATH': storage_domain_path,
                 'MOUNT_OPTIONS': mnt_options,

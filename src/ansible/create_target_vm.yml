@@ -139,12 +139,12 @@
   - debug: var=he_metadata_disk_path
   - name: Shutdown local vm
     virt:
-      name: "{{ VM_NAME }}"
+      name: "{{ VM_NAME }}Local"
       command: shutdown
       uri: 'qemu+tls://{{ HOST_ADDRESS }}/system'
   - name: Undefine local vm
     virt:
-      name: "{{ VM_NAME }}"
+      name: "{{ VM_NAME }}Local"
       command: undefine
       uri: 'qemu+tls://{{ HOST_ADDRESS }}/system'
   - name: Create temp vm conf

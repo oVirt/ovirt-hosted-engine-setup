@@ -130,9 +130,7 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.CloudInit.ROOTPWD
             ],
             'TIME_ZONE': self.environment[ohostedcons.CloudInit.VM_TZ],
-            # TODO: just for skip autoimport code on engine side,
-            # fix on engine side with a vdcOption to disable it
-            'VM_NAME': ohostedcons.Const.HOSTED_ENGINE_VM_NAME + 'Ansible',
+            'VM_NAME': ohostedcons.Const.HOSTED_ENGINE_VM_NAME,
             'MEM_SIZE': self.environment[ohostedcons.VMEnv.MEM_SIZE_MB],
             'CDROM_UUID': self.environment[ohostedcons.VMEnv.CDROM_UUID],
             'CDROM': '',
