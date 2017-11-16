@@ -24,6 +24,7 @@ from otopi import util
 
 from . import misc
 from . import remote_answerfile
+from . import shell
 from . import titles
 from . import vdsmconf
 
@@ -34,6 +35,7 @@ def createPlugins(context):
     remote_answerfile.Plugin(context=context)
     vdsmconf.Plugin(context=context)
     titles.Plugin(context=context)
+    shell.Plugin(context=context)
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

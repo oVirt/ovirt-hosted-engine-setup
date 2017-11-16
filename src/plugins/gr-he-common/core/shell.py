@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2015 Red Hat, Inc.
+# Copyright (C) 2013-2017 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -46,7 +46,11 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
         priority=plugin.Stages.PRIORITY_HIGH,
-        condition=lambda self: not self.environment[otopicons.BaseEnv.ABORTED],
+        condition=lambda self: (
+            not self.environment[otopicons.BaseEnv.ABORTED] and
+            not self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE] and
+            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
+        ),
     )
     def _setup(self):
         self.environment.setdefault(

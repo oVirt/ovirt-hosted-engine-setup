@@ -26,7 +26,6 @@ from . import answerfile
 from . import conf
 from . import misc
 from . import preview
-from . import shell
 
 
 @util.export
@@ -35,7 +34,6 @@ def createPlugins(context):
     conf.Plugin(context=context)
     answerfile.Plugin(context=context)
     preview.Plugin(context=context)
-    shell.Plugin(context=context)
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

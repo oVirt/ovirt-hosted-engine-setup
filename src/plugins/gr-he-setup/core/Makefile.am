@@ -30,7 +30,6 @@ dist_my_PYTHON = \
 	conf.py \
 	answerfile.py \
 	preview.py \
-	shell.py \
 	$(NULL)
 
 clean-local: \
