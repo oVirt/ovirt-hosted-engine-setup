@@ -225,7 +225,25 @@
     become_method: sudo
     when: VM_IP_ADDR|length >= 8
     tags: [ 'skip_ansible_lint' ]
-  - name: Clean /etc/hosts
+  - name: Extract /etc/hosts from the engine VM
+    shell: LIBGUESTFS_BACKEND=direct virt-copy-out -a {{ he_virtio_disk_path }} /etc/hosts "{{ LOCAL_VM_DIR }}"
+    become_user: vdsm
+    become_method: sudo
+    when: not VM_ETC_HOSTS
+    tags: [ 'skip_ansible_lint' ]
+  - name: Clean /etc/hosts for the engine VM
+    lineinfile:
+      dest: "{{ LOCAL_VM_DIR }}/hosts"
+      line: "{{ HOST_IP }} {{ HOST_ADDRESS }}"
+      state: absent
+    when: not VM_ETC_HOSTS
+  - name: Copy /etc/hosts back to the engine VM
+    shell: LIBGUESTFS_BACKEND=direct virt-copy-in -a {{ he_virtio_disk_path }} "{{ LOCAL_VM_DIR }}"/hosts /etc
+    become_user: vdsm
+    become_method: sudo
+    when: not VM_ETC_HOSTS
+    tags: [ 'skip_ansible_lint' ]
+  - name: Clean /etc/hosts on the host
     lineinfile:
       dest: /etc/hosts
       line: "{{ local_vm_ip.stdout_lines[0] }} {{ FQDN }}"

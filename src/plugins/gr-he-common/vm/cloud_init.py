@@ -821,12 +821,9 @@ class Plugin(plugin.PluginBase):
                 'If in the past you added other entries there, recovering '
                 'them is up to you.'
             ))
-        if self.environment[
-            ohostedcons.CloudInit.VM_ETC_HOSTS
-        ]:
-            self.environment[
-                ohostedcons.CloudInit.HOST_IP
-            ] = self._getMyIPAddress().ip
+        self.environment[
+            ohostedcons.CloudInit.HOST_IP
+        ] = self._getMyIPAddress().ip
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,

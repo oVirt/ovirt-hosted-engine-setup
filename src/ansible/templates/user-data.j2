@@ -19,9 +19,7 @@ bootcmd:
   - setenforce 0
   - if grep -Gq "^\s*PermitRootLogin" /etc/ssh/sshd_config; then sed -re "s/^\s*(PermitRootLogin)\s+(yes|no|without-password)/ \1 {{ ROOT_SSH_ACCESS }}/" -i.$(date -u +%Y%m%d%H%M%S) /etc/ssh/sshd_config; else echo "PermitRootLogin {{ ROOT_SSH_ACCESS }}" >> /etc/ssh/sshd_config; fi
   - sed -i 's/127\.0\.0\.1[ ]*localhost localhost.localdomain localhost4 localhost4.localdomain4$/127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4 {{ FQDN }}/g' /etc/hosts
-{% if VM_ETC_HOSTS %}
   - echo "{{ HOST_IP }} {{ HOST_ADDRESS }}" >> /etc/hosts
-{% endif %}
 write_files:
   - content: |
       [environment:init]

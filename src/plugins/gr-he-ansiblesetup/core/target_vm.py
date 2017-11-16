@@ -140,6 +140,9 @@ class Plugin(plugin.PluginBase):
             'VM_ETC_HOSTS': self.environment[
                 ohostedcons.CloudInit.VM_ETC_HOSTS
             ],
+            'HOST_IP': self.environment[
+                ohostedcons.CloudInit.HOST_IP
+            ],
         }
         ah = ansible_utils.AnsibleHelper(
             playbook_name=ohostedcons.FileLocations.HE_AP_CREATE_VM,
