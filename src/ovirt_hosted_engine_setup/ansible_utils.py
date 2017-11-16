@@ -258,7 +258,13 @@ class ResultCallback(CallbackBase):
 
 class AnsibleHelper(base.Base):
 
-    def __init__(self, playbook_name, custom_path=None, extra_vars=None):
+    def __init__(
+        self,
+        playbook_name,
+        custom_path=None,
+        extra_vars=None,
+        inventory_source='localhost,',
+    ):
         super(AnsibleHelper, self).__init__()
 
         Options = namedtuple(
@@ -290,7 +296,7 @@ class AnsibleHelper(base.Base):
         self._results_callback = ResultCallback(self.logger)
         self._inventory = InventoryManager(
             loader=self._loader,
-            sources=['localhost']
+            sources=inventory_source,
         )
         self._variable_manager = VariableManager(
             loader=self._loader,

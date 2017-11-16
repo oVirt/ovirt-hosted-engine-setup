@@ -118,6 +118,39 @@
       auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
     register: he_vm_details
   - debug: var=he_vm_details
+- hosts: "{{FQDN}}"
+  vars:
+    ansible_connection: smart
+    ansible_ssh_extra_args: -o StrictHostKeyChecking=no
+    ansible_ssh_pass: "{{ APPLIANCE_PASSWORD }}"
+    ansible_user: root
+  tasks:
+  - name: Find conf file for SCL PostgreSQL
+    shell: ls -vr1 /etc/ovirt-engine/engine.conf.d/*-scl-postgres-*.conf
+    register: scl_conf_flist
+    changed_when: True
+  - debug: var=scl_conf_flist
+  - name: Check SCL PostgreSQL value
+    command: grep sclenv {{ scl_conf_flist.stdout_lines|first }}
+    register: scl_conf
+    changed_when: True
+  - debug: var=scl_conf
+  - name: Stop ovirt-engine
+    service:
+      name: ovirt-engine
+      state: stopped
+  - name: Force the target VM as the hosted-engine VM
+    command: scl enable {{ scl_conf.stdout_lines[0].split('=')[1].replace('\"','') }} -- psql -d engine -c "UPDATE vm_static SET origin=6 WHERE vm_guid='{{ hostvars['localhost']['he_vm_details']['vm']['id'] }}'"
+    become: true
+    become_user: postgres
+    become_method: sudo
+    changed_when: True
+    register: db_update
+  - debug: var=db_update
+# TODO: remove the external local VM
+- hosts: localhost
+  connection: local
+  tasks:
   - name: Prepare images
     command: vdsm-client Image prepare storagepoolID={{ datacenter_id }} storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }} imageID={{ item.disk.id }} volumeID={{ item.disk.image_id  }}
     with_items:

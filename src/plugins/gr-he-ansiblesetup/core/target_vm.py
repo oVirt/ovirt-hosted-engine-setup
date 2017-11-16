@@ -83,6 +83,9 @@ class Plugin(plugin.PluginBase):
             'ADMIN_PASSWORD': self.environment[
                 ohostedcons.EngineEnv.ADMIN_PASSWORD
             ],
+            'APPLIANCE_PASSWORD': self.environment[
+                ohostedcons.CloudInit.ROOTPWD
+            ],
             'STORAGE_DOMAIN_NAME': self.environment[
                 ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
             ],
@@ -140,9 +143,15 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.CloudInit.HOST_IP
             ],
         }
+        inventory_source = 'localhost, {fqdn}'.format(
+            fqdn=self.environment[
+                ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+            ]
+        )
         ah = ansible_utils.AnsibleHelper(
             playbook_name=ohostedcons.FileLocations.HE_AP_CREATE_VM,
             extra_vars=target_vm_vars,
+            inventory_source=inventory_source,
         )
         self.logger.info(_('Creating Target VM'))
         r = ah.run()
