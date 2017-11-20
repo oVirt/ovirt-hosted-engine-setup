@@ -163,9 +163,15 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.StorageEnv.ENABLE_LIBGFAPI
             ],
         }
+        inventory_source = 'localhost, {fqdn}'.format(
+            fqdn=self.environment[
+                ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+            ]
+        )
         ah = ansible_utils.AnsibleHelper(
             playbook_name=ohostedcons.FileLocations.HE_AP_BOOTSTRAP_LOCAL_VM,
             extra_vars=boostrap_vars,
+            inventory_source=inventory_source,
         )
         self.logger.info(_('Starting local VM'))
         r = ah.run()

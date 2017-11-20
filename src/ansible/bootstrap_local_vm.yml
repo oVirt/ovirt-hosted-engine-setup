@@ -78,8 +78,63 @@
       dest: /etc/hosts
       line: "{{ local_vm_ip.stdout_lines[0] }} {{ FQDN }}"
       insertbefore: BOF
-# TODO: execute engine-setup via ansible instead of cloud-init to gather outputs
-  - name: Wait for engine deployment to finish
+- hosts: "{{FQDN}}"
+  vars:
+    ansible_connection: smart
+    ansible_ssh_extra_args: -o StrictHostKeyChecking=no
+    ansible_ssh_pass: "{{ APPLIANCE_PASSWORD }}"
+    ansible_user: root
+  tasks:
+  - name: Add an entry for this host on /etc/hosts on the engine VM
+    lineinfile:
+      dest: /etc/hosts
+      line: "{{ HOST_IP }} {{ HOST_ADDRESS }}"
+  - name: Set FDQN
+    command: hostnamectl set-hostname {{ FQDN }}
+    changed_when: True
+  - name: Force the engine VM FDQN to resolve on 127.0.0.1
+    lineinfile:
+      path: /etc/hosts
+      regexp: '^127\.0\.0\.1'
+      line: "127.0.0.1 {{ FQDN }} localhost localhost.localdomain localhost4 localhost4.localdomain4"
+  - name: Generate an answer file for engine-setup
+    template:
+      src: templates/heanswers.conf.j2
+      dest: /root/heanswers.conf
+      owner: root
+      group: root
+      mode: 0600
+  - name: Execute engine-setup
+    command: /usr/bin/engine-setup --offline --config-append=/root/ovirt-engine-answers --config-append=/root/heanswers.conf
+    register: engine_setup_out
+    changed_when: True
+  - debug: var=engine_setup_out
+  - name: Configure LibgfApi support
+    command: engine-config -s LibgfApiSupported=true --cver=4.2
+    register: libgfapi_support_out
+    changed_when: True
+    when: "{{ ENABLE_LIBGFAPI }}"
+  - debug: var=libgfapi_support_out
+  - name: Restart the engine for LibgfApi support
+    command: systemctl restart ovirt-engine
+    register: restart_libgfapi_support_out
+    changed_when: True
+    when: "{{ ENABLE_LIBGFAPI }}"
+  - debug: var=restart_libgfapi_support_out
+  - name: Mask cloud-init-local to speed up future bootstraps
+    command: systemctl mask cloud-init-local
+    changed_when: True
+  - name: Mask cloud-init to speed up future bootstraps
+    command: systemctl mask cloud-init
+    changed_when: True
+  - name: Clean up boostrap answer file
+    file:
+      state: absent
+      path: /root/heanswers.conf
+- hosts: localhost
+  connection: local
+  tasks:
+  - name: Wait for engine to start
     uri:
       url: http://{{ FQDN }}/ovirt-engine/services/health
       return_content: yes

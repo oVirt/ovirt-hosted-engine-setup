@@ -1,0 +1,6 @@
+[environment:init]
+DIALOG/autoAcceptDefault=bool:True
+[environment:default]
+OVESETUP_CONFIG/adminPassword=str:{{ ADMIN_PASSWORD}}
+OVESETUP_CONFIG/fqdn=str:{{ FQDN }}
+OVESETUP_PKI/organization=str:{{ CLOUD_INIT_DOMAIN_NAME }}
