@@ -13,15 +13,19 @@
       state: started
       enabled: yes
   - name: Check for leftover local engine VM
-    shell: virsh list | grep {{ VM_NAME }} | cat
+    shell: virsh list | grep {{ VM_NAME }}Local | cat
     changed_when: True
     register: local_vm_list
   - name: Destroy leftover local engine VM
-    command: virsh destroy {{ VM_NAME }}
+    command: virsh destroy {{ VM_NAME }}Local
     when: local_vm_list.stdout_lines|length >= 1
   - name: Undefine leftover local engine VM
-    command: virsh undefine {{ VM_NAME }}
+    command: virsh undefine {{ VM_NAME }}Local
     when: local_vm_list.stdout_lines|length >= 1
+  - name: Remove eventually entries for the local VM from known_hosts file
+    known_hosts:
+      name: "{{ FQDN }}"
+      state: absent
   - name: Check status of default libvirt network
     shell: virsh net-info default | awk '/Active/{print $(NF)}'
     changed_when: True
@@ -78,6 +82,13 @@
       dest: /etc/hosts
       line: "{{ local_vm_ip.stdout_lines[0] }} {{ FQDN }}"
       insertbefore: BOF
+  - name: Wait for ssh to restart on the engine VM
+    local_action:
+      module: wait_for
+        host='{{ FQDN }}'
+        port=22
+        delay=30
+        timeout=300
 - hosts: "{{FQDN}}"
   vars:
     ansible_connection: smart
@@ -85,6 +96,10 @@
     ansible_ssh_pass: "{{ APPLIANCE_PASSWORD }}"
     ansible_user: root
   tasks:
+  - name: Wait for the engine VM
+    wait_for_connection:
+      delay: 5
+      timeout: 180
   - name: Add an entry for this host on /etc/hosts on the engine VM
     lineinfile:
       dest: /etc/hosts
@@ -113,13 +128,13 @@
     command: engine-config -s LibgfApiSupported=true --cver=4.2
     register: libgfapi_support_out
     changed_when: True
-    when: "{{ ENABLE_LIBGFAPI }}"
+    when: ENABLE_LIBGFAPI
   - debug: var=libgfapi_support_out
   - name: Restart the engine for LibgfApi support
     command: systemctl restart ovirt-engine
     register: restart_libgfapi_support_out
     changed_when: True
-    when: "{{ ENABLE_LIBGFAPI }}"
+    when: ENABLE_LIBGFAPI
   - debug: var=restart_libgfapi_support_out
   - name: Mask cloud-init-local to speed up future bootstraps
     command: systemctl mask cloud-init-local
