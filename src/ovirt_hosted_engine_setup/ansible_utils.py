@@ -22,17 +22,10 @@
 
 
 import gettext
+import json
 import os
-
-
-from collections import namedtuple
-
-from ansible.executor.task_queue_manager import TaskQueueManager
-from ansible.inventory.manager import InventoryManager
-from ansible.parsing.dataloader import DataLoader
-from ansible.playbook import Playbook
-from ansible.plugins.callback import CallbackBase
-from ansible.vars.manager import VariableManager
+import subprocess
+import tempfile
 
 from otopi import base
 
@@ -43,219 +36,6 @@ def _(m):
     return gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
 
-class ResultCallback(CallbackBase):
-
-    def __init__(self, logger):
-        super(ResultCallback, self).__init__()
-        self.logger = logger
-        self.cb_results = {}
-
-    def v2_runner_on_failed(self, result, ignore_errors=False):
-        delegated_vars = result._result.get(
-            '_ansible_delegated_vars',
-            None
-        )
-        self.logger.debug(result._result)
-        if 'exception' in result._result:
-            error = result._result['exception'].strip().split('\n')[-1]
-            self.logger.error(error)
-            del result._result['exception']
-        if result._task.loop and 'results' in result._result:
-            self._process_items(result)
-        else:
-            if delegated_vars:
-                self.logger.error(
-                    "fatal: [{h1} -> {h2}]: FAILED! => {r}".format(
-                        h1=result._host.get_name(),
-                        h2=delegated_vars['ansible_host'],
-                        r=self._dump_results(result._result)
-                    )
-                )
-            else:
-                self.logger.error(
-                    "fatal: [{h}]: FAILED! => {r}".format(
-                        h=result._host.get_name(),
-                        r=self._dump_results(result._result)
-                    )
-                )
-
-    def v2_runner_on_ok(self, result):
-        self._clean_results(result._result, result._task.action)
-        delegated_vars = result._result.get(
-            '_ansible_delegated_vars',
-            None
-        )
-        if result._task.action == 'include':
-            return
-        elif result._result.get('changed', False):
-            if delegated_vars:
-                msg = "changed: [{h1} -> {h2}]".format(
-                    h1=result._host.get_name(),
-                    h2=delegated_vars['ansible_host']
-                )
-            else:
-                msg = "changed: [{h}]".format(h=result._host.get_name())
-        else:
-            if delegated_vars:
-                msg = "ok: [{h1} -> {h2}]".format(
-                    h1=result._host.get_name(),
-                    h2=delegated_vars['ansible_host']
-                )
-            else:
-                msg = "ok: [{h}]".format(h=result._host.get_name())
-
-        if result._task.loop and 'results' in result._result:
-            self._process_items(result)
-        else:
-            if result.task_name == 'debug':
-                for i in result._result:
-                    if not i.startswith('_'):
-                        self.logger.debug(
-                            '{i}: {v}'.format(
-                                i=i,
-                                v=result._result[i]
-                            )
-                        )
-            else:
-                self.logger.info(msg)
-
-        register = result._task_fields['register']
-        if register and register.startswith(
-                ohostedcons.Const.ANSIBLE_R_OTOPI_PREFIX
-        ):
-            self.cb_results[register] = {}
-            for r in result._result:
-                self.cb_results[register][r] = result._result[r]
-
-    def v2_runner_on_skipped(self, result):
-        if result._task.loop and 'results' in result._result:
-            self._process_items(result)
-        else:
-            msg = "skipping: [{h}]".format(h=result._host.get_name())
-            self.logger.info(msg)
-
-    def v2_runner_on_unreachable(self, result):
-        delegated_vars = result._result.get(
-            '_ansible_delegated_vars', None
-        )
-        if delegated_vars:
-            self.logger.debug(
-                "fatal: [{h1} -> {h2}]: UNREACHABLE! => {r}".format(
-                    h1=result._host.get_name(),
-                    h2=delegated_vars['ansible_host'],
-                    r=self._dump_results(result._result)
-                )
-            )
-        else:
-            self.logger.debug(
-                "fatal: [{h}]: UNREACHABLE! => {r}".format(
-                    h=result._host.get_name(),
-                    r=self._dump_results(result._result)
-                )
-            )
-
-    def v2_runner_on_no_hosts(self, task):
-        self.logger.debug("skipping: no hosts matched")
-
-    def v2_playbook_on_task_start(self, task, is_conditional):
-        task_name = task.get_name().strip()
-        if task_name != 'debug':
-            self.logger.info("TASK [{t}]".format(
-                t=task_name)
-            )
-        else:
-            self.logger.debug("TASK [{t}]".format(
-                t=task_name)
-            )
-
-    def v2_playbook_on_play_start(self, play):
-        name = play.get_name().strip()
-        if not name:
-            msg = "PLAY"
-        else:
-            msg = "PLAY [{p}]".format(p=name)
-
-        self.logger.debug(msg)
-
-    def v2_playbook_item_on_ok(self, result):
-        delegated_vars = result._result.get(
-            '_ansible_delegated_vars',
-            None
-        )
-        if result._task.action == 'include':
-            return
-        elif result._result.get('changed', False):
-            if delegated_vars:
-                msg = "changed: [{h1} -> {h2}]".format(
-                    h1=result._host.get_name(),
-                    h2=delegated_vars['ansible_host'],
-                )
-            else:
-                msg = "changed: [{h}]".format(h=result._host.get_name())
-        else:
-            if delegated_vars:
-                msg = "ok: [%s -> %s]" % (
-                    result._host.get_name(),
-                    delegated_vars['ansible_host']
-                )
-            else:
-                msg = "ok: [{h}]".format(h=result._host.get_name())
-
-        msg += " => (item={i})".format(i=result._result['item'])
-
-        self.logger.info(msg)
-
-    def v2_playbook_item_on_failed(self, result):
-        delegated_vars = result._result.get(
-            '_ansible_delegated_vars',
-            None
-        )
-        if 'exception' in result._result:
-            error = result._result['exception'].strip().split('\n')[-1]
-            self.logger.debug(error)
-            del result._result['exception']
-        if delegated_vars:
-            self.logger.error(
-                "failed: [{h1} -> {h2}] => (item={i}) => {r}".format(
-                    h1=result._host.get_name(),
-                    h2=delegated_vars['ansible_host'],
-                    i=result._result['item'],
-                    r=self._dump_results(result._result)
-                )
-            )
-        else:
-            self.logger.error(
-                "failed: [{h}] => (item={i}) => {r}".format(
-                    h=result._host.get_name(),
-                    i=result._result['item'],
-                    r=self._dump_results(result._result)
-                )
-            )
-
-    def v2_playbook_item_on_skipped(self, result):
-        msg = "skipping: [{h}] => (item={i}) ".format(
-            h=result._host.get_name(),
-            i=result._result['item']
-        )
-        self.logger.info(msg)
-
-    def v2_playbook_on_stats(self, stats):
-        hosts = sorted(stats.processed.keys())
-        for h in hosts:
-            t = stats.summarize(h)
-
-            msg = "PLAY RECAP [{h}] : %s %s %s %s %s".format(
-                h=h,
-                o="ok: {n}".format(n=t['ok']),
-                c="changed: {n}".format(n=t['changed']),
-                u="unreachable: {n}".format(n=t['unreachable']),
-                s="skipped: {n}".format(n=t['skipped']),
-                f="failed: {n}".format(n=t['failures']),
-            )
-
-            self.logger.debug(msg)
-
-
 class AnsibleHelper(base.Base):
 
     def __init__(
@@ -264,73 +44,111 @@ class AnsibleHelper(base.Base):
         custom_path=None,
         extra_vars=None,
         inventory_source='localhost,',
+        raise_on_error=True,
     ):
         super(AnsibleHelper, self).__init__()
+        self._playbook_name = playbook_name
+        self._module_path = custom_path if custom_path \
+            else ohostedcons.FileLocations.HOSTED_ENGINE_ANSIBLE_PATH
+        self._inventory_source = inventory_source
+        self._extra_vars = extra_vars
+        self._cb_results = {}
+        self._raise_on_error = raise_on_error
 
-        Options = namedtuple(
-            'Options',
-            [
-                'connection',
-                'module_path',
-                'forks',
-                'become',
-                'become_method',
-                'become_user',
-                'check',
-                'diff'
-            ],
-        )
-        self._loader = DataLoader()
-        self._options = Options(
-            connection='local',
-            module_path=custom_path if custom_path
-            else ohostedcons.FileLocations.HOSTED_ENGINE_ANSIBLE_PATH,
-            forks=100,
-            become=None,
-            become_method=None,
-            become_user=None,
-            check=False,
-            diff=False
-        )
-        self._passwords = dict(vault_pass='secret')
-        self._results_callback = ResultCallback(self.logger)
-        self._inventory = InventoryManager(
-            loader=self._loader,
-            sources=inventory_source,
-        )
-        self._variable_manager = VariableManager(
-            loader=self._loader,
-            inventory=self._inventory
-        )
-        self.logger.debug('extra_vars: {ev}'.format(ev=extra_vars))
-        if extra_vars:
-            self._variable_manager.extra_vars = extra_vars
-        self._pb = Playbook.load(
-            os.path.join(self._options.module_path, playbook_name),
-            variable_manager=self._variable_manager,
-            loader=self._loader
-        )
+    def _process_output(self, d):
+        try:
+            data = json.loads(d)
+            if (
+                ohostedcons.AnsibleCallback.TYPE in data and
+                ohostedcons.AnsibleCallback.BODY in data
+            ):
+                t = data[ohostedcons.AnsibleCallback.TYPE]
+                b = data[ohostedcons.AnsibleCallback.BODY]
+                if t == ohostedcons.AnsibleCallback.DEBUG:
+                    self.logger.debug(b)
+                elif t == ohostedcons.AnsibleCallback.WARNING:
+                    self.logger.warning(b)
+                elif t == ohostedcons.AnsibleCallback.ERROR:
+                    self.logger.error(b)
+                elif t == ohostedcons.AnsibleCallback.INFO:
+                    self.logger.info(b)
+                elif t == ohostedcons.AnsibleCallback.RESULT:
+                    self._cb_results = b
+                else:
+                    self.logger.error(_('Unknown data type: {t}').format(t=t))
+        except Exception as e:
+            self.logger.error(
+                _('Failed decoding json data: {e} - "{b}"').format(
+                    e=str(e),
+                    b=b,
+                )
+            )
 
     def run(self):
-        tqm = None
-        try:
-            tqm = TaskQueueManager(
-                inventory=self._inventory,
-                variable_manager=self._variable_manager,
-                loader=self._loader,
-                options=self._options,
-                passwords=self._passwords,
-                stdout_callback=self._results_callback,
+        out_fd, out_path = tempfile.mkstemp()
+        vars_fd, vars_path = tempfile.mkstemp()
+        self.logger.debug('out_path: {p}'.format(p=out_path))
+        self.logger.debug('vars_path: {p}'.format(p=vars_path))
+
+        env = os.environ.copy()
+        env[ohostedcons.AnsibleCallback.OTOPI_CALLBACK_OF] = out_path
+        env[
+            'ANSIBLE_CALLBACK_WHITELIST'
+        ] = ohostedcons.AnsibleCallback.CALLBACK_NAME
+        env[
+            'ANSIBLE_STDOUT_CALLBACK'
+        ] = ohostedcons.AnsibleCallback.CALLBACK_NAME
+
+        rc = None
+        with open(vars_path, 'w') as vars_fh:
+            json.dump(self._extra_vars, vars_fh)
+        with open(out_path, 'r') as out_fh:
+            buffer = ''
+            proc = subprocess.Popen(
+                [
+                    '/bin/ansible-playbook',
+                    '--module-path={mp}'.format(mp=self._module_path),
+                    '--inventory={i}'.format(i=self._inventory_source),
+                    '--extra-vars=@{vf}'.format(vf=vars_path),
+                    '{pname}'.format(
+                        pname=os.path.join(
+                            self._module_path,
+                            self._playbook_name
+                        )
+                    ),
+                ],
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
             )
-            plays = self._pb.get_plays()
-            for play in plays:
-                result = tqm.run(play)
-            if result != 0:
-                raise RuntimeError('Failed running ansible playbook')
-        finally:
-            if tqm is not None:
-                tqm.cleanup()
-        return self._results_callback.cb_results
+            while True:
+                output = out_fh.readline()
+                if output == '' and proc.poll() is not None:
+                    break
+                if output:
+                    buffer += output
+                    if buffer[-1] == '\n':
+                        self._process_output(buffer)
+                        buffer = ''
+            rc = proc.poll()
+            self.logger.debug('ansible-playbook rc: {rc}'.format(rc=rc))
+            while True:
+                output = out_fh.readline()
+                if output == '':
+                    break
+                if output:
+                    self._process_output(output)
+            self.logger.debug('ansible-playbook stdout:')
+            for ln in proc.stdout:
+                self.logger.debug(ln)
+            self.logger.debug('ansible-playbook stderr:')
+            for ln in proc.stderr:
+                self.logger.error(ln)
+            if rc != 0 and self._raise_on_error:
+                raise RuntimeError(_('Failed executing ansible-playbook'))
+        os.unlink(out_path)
+        os.unlink(vars_path)
+        return self._cb_results
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

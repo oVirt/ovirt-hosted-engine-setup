@@ -1190,4 +1190,18 @@ class Upgrade(object):
     UPGRADE_ABORT_ON_UNSUPPORTED_VER = 'OVEHOSTED_UPGRADE/abortUnsupportedVer'
 
 
+@util.export
+@util.codegen
+class AnsibleCallback(object):
+    DEBUG = 'OVEHOSTED_AC/debug'
+    WARNING = 'OVEHOSTED_AC/warning'
+    ERROR = 'OVEHOSTED_AC/error'
+    INFO = 'OVEHOSTED_AC/info'
+    RESULT = 'OVEHOSTED_AC/result'
+    TYPE = 'OVEHOSTED_AC/type'
+    BODY = 'OVEHOSTED_AC/body'
+    OTOPI_CALLBACK_OF = 'OTOPI_CALLBACK_OF'
+    CALLBACK_NAME = '1_otopi_json'
+
+
 # vim: expandtab tabstop=4 shiftwidth=4

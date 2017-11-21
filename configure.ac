@@ -144,6 +144,7 @@ AC_CONFIG_FILES([
 	src/plugins/gr-he-upgradeappliance/vm/Makefile
 	src/vdsm_hooks/Makefile
 	src/ansible/Makefile
+	src/ansible/callback_plugins/Makefile
 	src/ansible/templates/Makefile
 	templates/Makefile
 	tests/Makefile

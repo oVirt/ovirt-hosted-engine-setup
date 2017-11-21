@@ -17,22 +17,13 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
-include $(top_srcdir)/build/ansible.inc
+include $(top_srcdir)/build/python.inc
 
 MAINTAINERCLEANFILES = \
 	$(srcdir)/Makefile.in \
 	$(NULL)
 
-ansibledir=$(ovirthostedengineansibledir)
-dist_ansible_DATA = \
-	bootstrap_local_vm.yml \
-	create_storage_domain.yml \
-	create_target_vm.yml \
-	iscsi_discover.yml \
-	iscsi_getdevices.yml \
-	$(NULL)
-
-SUBDIRS = \
-	callback_plugins \
-	templates \
+ansiblecallbacksdir=$(ovirthostedengineansibledir)/callback_plugins
+dist_ansiblecallbacks_DATA = \
+	1_otopi_json.py \
 	$(NULL)

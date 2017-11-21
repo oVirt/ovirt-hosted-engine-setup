@@ -823,7 +823,7 @@ class Plugin(plugin.PluginBase):
             ))
         self.environment[
             ohostedcons.CloudInit.HOST_IP
-        ] = self._getMyIPAddress().ip
+        ] = str(self._getMyIPAddress().ip)
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
