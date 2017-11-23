@@ -47,7 +47,7 @@
       nfs:
         address: "{{ STORAGE_DOMAIN_ADDR }}"
         path: "{{ STORAGE_DOMAIN_PATH }}"
-#       mount_options: "{{ MOUNT_OPTIONS }}"  # TODO: investigate 404 error
+        mount_options: "{{ MOUNT_OPTIONS }}"
         version: "{{ NFS_VERSION }}"
       auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
     register: otopi_storage_domain_details

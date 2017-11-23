@@ -102,6 +102,9 @@ class Plugin(plugin.PluginBase):
             'STORAGE': self.environment[
                 ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
             ],
+            'MOUNT_OPTIONS': self.environment[
+                ohostedcons.StorageEnv.MNT_OPTIONS
+            ],
             'DOMAIN_TYPE': self.environment[
                 ohostedcons.StorageEnv.DOMAIN_TYPE
             ],
