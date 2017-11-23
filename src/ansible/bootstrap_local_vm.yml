@@ -112,6 +112,11 @@
       path: /etc/hosts
       regexp: '^127\.0\.0\.1'
       line: "127.0.0.1 {{ FQDN }} localhost localhost.localdomain localhost4 localhost4.localdomain4"
+  - name: Restore sshd reverse DNS lookups
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      regexp: '^UseDNS'
+      line: "UseDNS yes"
   - name: Generate an answer file for engine-setup
     template:
       src: templates/heanswers.conf.j2
