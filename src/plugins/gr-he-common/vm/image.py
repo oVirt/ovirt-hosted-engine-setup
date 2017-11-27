@@ -54,70 +54,10 @@ class Plugin(plugin.PluginBase):
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
 
-    @plugin.event(
-        stage=plugin.Stages.STAGE_INIT,
-    )
-    def _init(self):
-        self.environment.setdefault(
-            ohostedcons.StorageEnv.IMAGE_SIZE_GB,
-            None
-        )
-        self.environment.setdefault(
-            ohostedcons.Upgrade.BACKUP_SIZE_GB,
-            None,
-        )
-        self.environment.setdefault(
-            ohostedcons.StorageEnv.BDEVICE_SIZE_GB,
-            None
-        )
-        self.environment.setdefault(
-            ohostedcons.StorageEnv.IMG_UUID,
-            str(uuid.uuid4())
-        )
-        self.environment.setdefault(
-            ohostedcons.StorageEnv.VOL_UUID,
-            str(uuid.uuid4())
-        )
-        self.environment.setdefault(
-            ohostedcons.StorageEnv.IMAGE_DESC,
-            ohostedcons.Defaults.DEFAULT_IMAGE_DESC
-        )
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_CUSTOMIZATION,
-        condition=lambda self: (
-            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE] and
-            not self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]
-            # TODO: check what will append on ansible
-            # deployment changing disk size
-        ),
-        after=(
-            ohostedcons.Stages.DIALOG_TITLES_S_VM,
-            ohostedcons.Stages.CONFIG_OVF_IMPORT,
-            ohostedcons.Stages.REQUIRE_ANSWER_FILE
-        ),
-        before=(
-            ohostedcons.Stages.DIALOG_TITLES_E_VM,
-        ),
-    )
-    def _disk_customization(self):
+    def _customize_disk_size(self, available_gb=None):
         interactive = self.environment[
             ohostedcons.StorageEnv.IMAGE_SIZE_GB
         ] is None
-
-        estimate_gb = None
-        if self.environment[
-            ohostedcons.StorageEnv.BDEVICE_SIZE_GB
-        ] is not None and not self.environment[
-            ohostedcons.CoreEnv.UPGRADING_APPLIANCE
-        ]:
-            # Conservative estimate, the exact value could be gathered from
-            # vginfo but at this point the VG has still has to be created.
-            # Later on it will be checked against the real value
-            estimate_gb = int(self.environment[
-                ohostedcons.StorageEnv.BDEVICE_SIZE_GB
-            ]) - ohostedcons.Const.STORAGE_DOMAIN_OVERHEAD_GIB
-
         default = max(
             _int_or_0(ohostedcons.Defaults.DEFAULT_IMAGE_SIZE_GB),
             _int_or_0(self.environment[ohostedcons.StorageEnv.OVF_SIZE_GB]),
@@ -140,16 +80,16 @@ class Plugin(plugin.PluginBase):
                 )
             try:
                 valid = True
-                if estimate_gb is not None and int(
+                if available_gb is not None and int(
                     self.environment[ohostedcons.StorageEnv.IMAGE_SIZE_GB]
-                ) > estimate_gb:
+                ) > available_gb:
                     msg = _(
                         'Not enough free space, '
                         'about {estimate} GiB will be available '
                         'within the storage domain '
                         '(required {required} GiB)'
                     ).format(
-                        estimate=estimate_gb,
+                        estimate=available_gb,
                         required=self.environment[
                             ohostedcons.StorageEnv.IMAGE_SIZE_GB
                         ],
@@ -201,7 +141,7 @@ class Plugin(plugin.PluginBase):
                         raise RuntimeError(msg)
 
                 if valid and int(
-                    self.environment[ohostedcons.StorageEnv.IMAGE_SIZE_GB]
+                        self.environment[ohostedcons.StorageEnv.IMAGE_SIZE_GB]
                 ) < ohostedcons.Defaults.DEFAULT_IMAGE_SIZE_GB:
                     self.logger.warning(
                         _('Minimum requirements for disk size not met')
@@ -242,6 +182,65 @@ class Plugin(plugin.PluginBase):
                             ],
                         )
                     )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_INIT,
+    )
+    def _init(self):
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.IMAGE_SIZE_GB,
+            None
+        )
+        self.environment.setdefault(
+            ohostedcons.Upgrade.BACKUP_SIZE_GB,
+            None,
+        )
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.BDEVICE_SIZE_GB,
+            None
+        )
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.IMG_UUID,
+            str(uuid.uuid4())
+        )
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.VOL_UUID,
+            str(uuid.uuid4())
+        )
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.IMAGE_DESC,
+            ohostedcons.Defaults.DEFAULT_IMAGE_DESC
+        )
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CUSTOMIZATION,
+        condition=lambda self: (
+            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE] and
+            not self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]
+        ),
+        after=(
+            ohostedcons.Stages.DIALOG_TITLES_S_VM,
+            ohostedcons.Stages.CONFIG_OVF_IMPORT,
+            ohostedcons.Stages.REQUIRE_ANSWER_FILE
+        ),
+        before=(
+            ohostedcons.Stages.DIALOG_TITLES_E_VM,
+        ),
+    )
+    def _disk_customization(self):
+        estimate_gb = None
+        if self.environment[
+            ohostedcons.StorageEnv.BDEVICE_SIZE_GB
+        ] is not None and not self.environment[
+            ohostedcons.CoreEnv.UPGRADING_APPLIANCE
+        ]:
+            # Conservative estimate, the exact value could be gathered from
+            # vginfo but at this point the VG has still has to be created.
+            # Later on it will be checked against the real value
+            estimate_gb = int(self.environment[
+                ohostedcons.StorageEnv.BDEVICE_SIZE_GB
+            ]) - ohostedcons.Const.STORAGE_DOMAIN_OVERHEAD_GIB
+        self._customize_disk_size(estimate_gb)
 
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
@@ -321,5 +320,19 @@ class Plugin(plugin.PluginBase):
             self.environment[ohostedcons.StorageEnv.IMAGE_DESC],
         )
 
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CLOSEUP,
+        after=(
+            ohostedcons.Stages.ANSIBLE_CREATE_SD,
+        ),
+        name=ohostedcons.Stages.ANSIBLE_CUSTOMIZE_DISK_SIZE,
+        condition=lambda self: (
+            self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]
+        ),
+    )
+    def _closeup_ansible(self):
+        self._customize_disk_size(available_gb=self.environment[
+            ohostedcons.StorageEnv.BDEVICE_SIZE_GB
+        ])
 
 # vim: expandtab tabstop=4 shiftwidth=4

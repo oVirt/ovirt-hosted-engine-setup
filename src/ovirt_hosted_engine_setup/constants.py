@@ -1114,6 +1114,7 @@ class Stages(object):
     ANSIBLE_BOOTSTRAP_LOCAL_VM = 'ohosted.ansible.bootstrap.local.vm'
     ANSIBLE_CREATE_SD = 'ohosted.ansible.create.storage.domain'
     ANSIBLE_CREATE_TARGET_VM = 'ohosted.ansible.create.target.vm'
+    ANSIBLE_CUSTOMIZE_DISK_SIZE = 'ohosted.ansible.disk.customized'
 
 
 @util.export

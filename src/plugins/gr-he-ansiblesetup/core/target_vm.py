@@ -47,6 +47,7 @@ class Plugin(plugin.PluginBase):
         name=ohostedcons.Stages.ANSIBLE_CREATE_TARGET_VM,
         after=[
             ohostedcons.Stages.ANSIBLE_CREATE_SD,
+            ohostedcons.Stages.ANSIBLE_CUSTOMIZE_DISK_SIZE,
         ],
     )
     def _closeup(self):
@@ -143,6 +144,9 @@ class Plugin(plugin.PluginBase):
             ],
             'HOST_IP': self.environment[
                 ohostedcons.CloudInit.HOST_IP
+            ],
+            'DISK_SIZE': self.environment[
+                ohostedcons.StorageEnv.IMAGE_SIZE_GB
             ],
         }
         inventory_source = 'localhost, {fqdn}'.format(

@@ -632,6 +632,9 @@ class Plugin(plugin.PluginBase):
                 storage_domain = r[
                     'otopi_storage_domain_details'
                 ]['storagedomain']
+                self.environment[
+                    ohostedcons.StorageEnv.BDEVICE_SIZE_GB
+                ] = int(storage_domain['available'])/1024/1024/1024
                 if storage_domain['status'] == 'active':
                     created = True
                     # and set all the env values from the response

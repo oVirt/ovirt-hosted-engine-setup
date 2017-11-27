@@ -90,7 +90,7 @@
   - name: Add he disk
     ovirt_disk:
       name: he_virtio_disk
-      size: 60GiB # TODO: make it parametric
+      size: "{{ DISK_SIZE }}GiB"
       format: cow
       interface: virtio
       storage_domain: "{{ STORAGE_DOMAIN_NAME }}"
