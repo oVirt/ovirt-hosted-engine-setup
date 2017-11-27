@@ -306,6 +306,38 @@ class Plugin(plugin.PluginBase):
             ]['ovirt_host_storages']
         return self._select_lun(available_luns)
 
+    def _query_fc_lunid(self):
+        fc_getdevices_vars = {
+            'FQDN': self.environment[
+                ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+            ],
+            'HOST_NAME': self.environment[
+                ohostedcons.EngineEnv.APP_HOST_NAME
+            ],
+            'ADMIN_PASSWORD': self.environment[
+                ohostedcons.EngineEnv.ADMIN_PASSWORD
+            ]
+        }
+        ansible_helper = ansible_utils.AnsibleHelper(
+            playbook_name=ohostedcons.FileLocations.HE_AP_FC_GETDEVICES,
+            extra_vars=fc_getdevices_vars,
+        )
+        self.logger.info(_('Getting Fibre Channel LUNs list'))
+        r = ansible_helper.run()
+        self.logger.debug(r)
+        available_luns = []
+        if (
+            'otopi_fc_devices' in r and
+            'ansible_facts' in r['otopi_fc_devices'] and
+            'ovirt_host_storages' in r['otopi_fc_devices']['ansible_facts']
+        ):
+            available_luns = r[
+                'otopi_fc_devices'
+            ][
+                'ansible_facts'
+            ]['ovirt_host_storages']
+        return self._select_lun(available_luns)
+
     def _select_lun(self, available_luns):
         if len(available_luns) == 0:
             msg = _('Cannot find any LUN on the selected target')
@@ -330,6 +362,8 @@ class Plugin(plugin.PluginBase):
                     'productID': entry['logical_units'][0]['product_id'],
                     'status': entry['logical_units'][0]['status'],
                     'paths': paths,
+                    'discard_max_size': int(entry['logical_units'][0]
+                                            ['discard_max_size'])
                 }
             )
         for entry in f_luns:
@@ -489,6 +523,7 @@ class Plugin(plugin.PluginBase):
             lunid = self.environment[
                 ohostedcons.StorageEnv.LUN_ID
             ]
+            discard = True
 
             if domain_type is None:
                 domain_type = self.dialog.queryString(
@@ -580,6 +615,22 @@ class Plugin(plugin.PluginBase):
                         if not interactive:
                             raise e
                         continue
+
+            elif domain_type == ohostedcons.DomainTypes.FC:
+                if lunid is None:
+                    try:
+                        lun = self._query_fc_lunid()
+                        lunid = lun['id']
+                        discard = lun['discard_max_size'] > 0
+                        self.logger.info("FC discard is %s" %
+                                         ("enabled" if discard else "disabled")
+                                         )
+                    except RuntimeError as e:
+                        self.logger.error(_('Unable to get target list'))
+                        if not interactive:
+                            raise e
+                        continue
+
             else:
                 self.logger.error(_('Currently not implemented'))
                 if not interactive:
@@ -613,6 +664,7 @@ class Plugin(plugin.PluginBase):
                 'ISCSI_USERNAME': iscsi_username,
                 'ISCSI_PASSWORD': iscsi_password,
                 'LOCAL_VM_DIR': ohostedcons.FileLocations.LOCAL_VM_DIR,
+                'DISCARD': discard,
             }
             ah = ansible_utils.AnsibleHelper(
                 playbook_name=ohostedcons.FileLocations.HE_AP_CREATE_SD,
@@ -642,13 +694,15 @@ class Plugin(plugin.PluginBase):
                     created = True
                     # and set all the env values from the response
                     storage = storage_domain['storage']
+                    storage_type = storage['type']
+                    if storage_type == "fcp":
+                        storage_type = "fc"  # Normalize type for HE broker.
                     self.environment[
                         ohostedcons.StorageEnv.DOMAIN_TYPE
-                    ] = storage['type']
+                    ] = storage_type
                     if self.environment[
                         ohostedcons.StorageEnv.DOMAIN_TYPE
                     ] == ohostedcons.DomainTypes.NFS:
-                        # TODO: implement fc
                         self.environment[
                             ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
                         ] = '{address}:{path}'.format(

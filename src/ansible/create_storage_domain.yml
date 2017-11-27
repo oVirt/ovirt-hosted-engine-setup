@@ -85,6 +85,18 @@
       auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
     when: DOMAIN_TYPE == "iscsi"
     register: otopi_storage_domain_details
+  - name: Add FC storage domain
+    ovirt_storage_domains:
+      name: "{{ STORAGE_DOMAIN_NAME }}"
+      host: "{{ HOST_NAME }}"
+      data_center: "{{ datacenter_name }}"
+      wait: True
+      discard_after_delete: "{{ DISCARD }}"
+      fcp:
+        lun_id: "{{ LUN_ID }}"
+      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
+    register: otopi_storage_domain_details
+    when: DOMAIN_TYPE == "fc"
   - name: Get storage domain details
     ovirt_storage_domains_facts:
       pattern: name={{ STORAGE_DOMAIN_NAME }} and datacenter={{ datacenter_name }}

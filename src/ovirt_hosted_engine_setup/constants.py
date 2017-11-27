@@ -354,6 +354,7 @@ class FileLocations(object):
     HE_AP_CREATE_VM = 'create_target_vm.yml'
     HE_AP_ISCSI_DISCOVER = 'iscsi_discover.yml'
     HE_AP_ISCSI_GETDEVICES = 'iscsi_getdevices.yml'
+    HE_AP_FC_GETDEVICES = 'fc_getdevices.yml'
 
 
 @util.export

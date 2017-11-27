@@ -87,6 +87,7 @@ AM_PATH_PYTHON([2.6],, [AC_MSG_ERROR([Cannot find python])])
 
 otopiplugindir="\$(datadir)/otopi/plugins"
 ovirthostedengineplugindir="\$(pkgdatadir)/plugins"
+ovirthostedenginelibrarydir="\$(pkgdatadir)/library"
 ovirthostedenginetemplatedir="\$(pkgdatadir)/templates"
 ovirthostedenginescriptsdir="\$(pkgdatadir)/scripts"
 ovirthostedengineansibledir="\$(pkgdatadir)/ansible"
@@ -96,6 +97,7 @@ APPLIANCE_RPM_PREFIX="ovirt-engine"
 APPLIANCE40_RPM_PREFIX="ovirt-engine"
 AC_SUBST([otopiplugindir])
 AC_SUBST([ovirthostedengineplugindir])
+AC_SUBST([ovirthostedenginelibrarydir])
 AC_SUBST([ovirthostedenginetemplatedir])
 AC_SUBST([ovirthostedenginescriptsdir])
 AC_SUBST([ovirthostedengineansibledir])
@@ -145,6 +147,7 @@ AC_CONFIG_FILES([
 	src/vdsm_hooks/Makefile
 	src/ansible/Makefile
 	src/ansible/callback_plugins/Makefile
+	src/ansible/library/Makefile
 	src/ansible/templates/Makefile
 	templates/Makefile
 	tests/Makefile

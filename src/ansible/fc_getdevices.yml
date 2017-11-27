@@ -1,0 +1,24 @@
+---
+- name: Fibre Channel related tasks
+  hosts: localhost
+  connection: local
+  tasks:
+  - name: Obtain SSO token with using username/password credentials
+    ovirt_auth:
+      url: https://{{ FQDN }}/ovirt-engine/api
+      username: admin@internal
+      insecure: true
+      password: "{{ ADMIN_PASSWORD }}"
+    register: ovirt_sso_auth
+    until: ovirt_sso_auth|succeeded
+    retries: 50
+    delay: 10
+  - name: Get FC LUNs
+    ovirt_host_storage_facts:
+      host: "{{ HOST_NAME }}"
+      fcp:
+        lun_id: -1 # currently it is unused and I use it to turn on FC filtering
+      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
+    register: otopi_fc_devices
+  - debug: var=otopi_fc_devices
+...
