@@ -61,19 +61,58 @@
       format: raw
       interface: virtio
       storage_domain: "{{ STORAGE_DOMAIN_NAME }}"
+      wait: True
       timeout: 600
       auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
     register: he_sanlock_disk_details
   - debug: var=he_sanlock_disk_details
-  - name: Add he conf disk
-    ovirt_disk:
-      name: he_conf
-      size: 1GiB
-      format: raw
-      interface: virtio
-      storage_domain: "{{ STORAGE_DOMAIN_NAME }}"
+#  - name: Add he conf disk
+#    ovirt_disk:
+#      name: HostedEngineConfigurationImage
+#      size: 1GiB
+#      format: raw
+#      interface: virtio
+#      storage_domain: "{{ STORAGE_DOMAIN_NAME }}"
+#      wait: True
+#      timeout: 600
+#      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
+#    register: he_conf_disk_details
+#  - debug: var=he_conf_disk_details
+# TODO: the relevant ansible module currently doesn't provide the description filed, remove once ready
+  - name: Create HE configuration disk via REST API
+    uri:
+      url: https://{{ FQDN }}/ovirt-engine/api/disks
+      method: POST
+      user: admin@internal
+      password: "{{ ADMIN_PASSWORD }}"
+      body: <disk><storage_domains><storage_domain id="{{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }}"/></storage_domains><name>he_conf</name><alias>he_conf</alias><description>HostedEngineConfigurationImage</description><provisioned_size>1073745920</provisioned_size><format>raw</format></disk>
+      force_basic_auth: yes
+      body_format: raw
+      validate_certs: no
+      status_code: 201
+      return_content: yes
       timeout: 600
+      headers:
+        Version: 4
+        Content-Type: application/xml
+        Accept: application/xml
+    register: rest_conf_disk
+  - debug: var=rest_conf_disk
+  - name: Parse disk creation output from REST API
+    xml:
+      xmlstring: "{{ rest_conf_disk.content }}"
+      xpath: /disk
+      content: attribute
+      attribute: id
+    register: disk_id_xml
+  - debug: var=disk_id_xml
+  - name: Wait for disk creation
+    ovirt_disk:
+      id: "{{ disk_id_xml.matches[0].disk['id'] }}"
       auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
+      state: present
+      wait: True
+      timeout: 600
     register: he_conf_disk_details
   - debug: var=he_conf_disk_details
   - name: Add he metadata disk
@@ -83,6 +122,7 @@
       format: raw
       interface: virtio
       storage_domain: "{{ STORAGE_DOMAIN_NAME }}"
+      wait: True
       timeout: 600
       auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
     register: he_metadata_disk_details
@@ -95,6 +135,7 @@
       interface: virtio
       storage_domain: "{{ STORAGE_DOMAIN_NAME }}"
       bootable: true
+      wait: True
       timeout: 7200
       auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
     register: he_virtio_disk_details
@@ -148,8 +189,16 @@
     become_user: postgres
     become_method: sudo
     changed_when: True
-    register: db_update
-  - debug: var=db_update
+    register: db_vm_update
+  - debug: var=db_vm_update
+  - name: Make the engine aware of the hosted-engine configuration image uuid
+    command: scl enable {{ scl_conf.stdout_lines[0].split('=')[1].replace('\"','') }} -- psql -d engine -c "UPDATE vdc_options SET option_value='{{ hostvars['localhost']['he_conf_disk_details']['disk']['id'] }}' WHERE option_name='HostedEngineConfigurationImageGuid' AND version='general'"
+    become: true
+    become_user: postgres
+    become_method: sudo
+    changed_when: True
+    register: db_conf_update
+  - debug: var=db_conf_update
 # TODO: remove the external local VM
 - hosts: localhost
   connection: local
