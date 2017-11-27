@@ -226,9 +226,7 @@ class Plugin(plugin.PluginBase):
             ohostedcons.NetworkEnv.BRIDGE_IF
         ] is None
         if interactive:
-            default = ohostedcons.Defaults.DEFAULT_BRIDGE_IF
-            if default not in validValues:
-                default = validValues[0]
+            default = self._get_active_interface(validValues)
             self.environment[
                 ohostedcons.NetworkEnv.BRIDGE_IF
             ] = self.dialog.queryString(
@@ -246,6 +244,18 @@ class Plugin(plugin.PluginBase):
                 default=default,
                 validValues=validValues,
             )
+
+    def _get_active_interface(self, valid_interfaces):
+        for iface in valid_interfaces:
+            try:
+                if (
+                    socket.getfqdn(ethtool.get_ipaddr(iface)) ==
+                    socket.gethostname()
+                ):
+                    return iface
+            except IOError:
+                pass
+        return valid_interfaces[0]
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
