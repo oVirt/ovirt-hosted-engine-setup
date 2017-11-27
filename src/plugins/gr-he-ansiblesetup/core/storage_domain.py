@@ -609,6 +609,7 @@ class Plugin(plugin.PluginBase):
                 'LUN_ID': iscsi_lunid,
                 'ISCSI_USERNAME': iscsi_username,
                 'ISCSI_PASSWORD': iscsi_password,
+                'LOCAL_VM_DIR': ohostedcons.FileLocations.LOCAL_VM_DIR,
             }
             ah = ansible_utils.AnsibleHelper(
                 playbook_name=ohostedcons.FileLocations.HE_AP_CREATE_SD,
@@ -696,6 +697,9 @@ class Plugin(plugin.PluginBase):
                 else:
                     if not interactive:
                         raise RuntimeError('Failed creating storage domain')
+            else:
+                if not interactive:
+                    raise RuntimeError('Failed creating storage domain')
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

@@ -50,8 +50,8 @@
         mount_options: "{{ MOUNT_OPTIONS }}"
         version: "{{ NFS_VERSION }}"
       auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
-    register: otopi_storage_domain_details
     when: DOMAIN_TYPE == "nfs"
+    register: otopi_storage_domain_details
   - name: Add glusterfs storage domain
     ovirt_storage_domains:
       name: "{{ STORAGE_DOMAIN_NAME }}"
@@ -67,8 +67,8 @@
         password: "{{ ADMIN_PASSWORD }}"
         url: https://{{ FQDN }}/ovirt-engine/api
         insecure: true
-    register: otopi_storage_domain_details
     when: DOMAIN_TYPE == "glusterfs"
+    register: otopi_storage_domain_details
   - name: Add iSCSI storage domain
     ovirt_storage_domains:
       name: "{{ STORAGE_DOMAIN_NAME }}"
@@ -83,7 +83,38 @@
         username: "{{ ISCSI_USERNAME }}"
         password: "{{ ISCSI_PASSWORD }}"
       auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
-    register: otopi_storage_domain_details
     when: DOMAIN_TYPE == "iscsi"
-  - debug: var=otopi_storage_domain_details
+    register: otopi_storage_domain_details
+  - name: Get storage domain details
+    ovirt_storage_domains_facts:
+      pattern: name={{ STORAGE_DOMAIN_NAME }} and datacenter={{ datacenter_name }}
+      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
+    register: storage_domain_details
+  - debug: var=storage_domain_details
+  - name: Find the appliance OVF
+    find:
+      paths: "{{ LOCAL_VM_DIR }}/master"
+      recurse: true
+      patterns: ^.*.(?<!meta).ovf$
+      use_regex: true
+    register: app_ovf
+  - debug: var=app_ovf
+  - name: parse OVF
+    xml:
+      path: "{{ app_ovf.files[0].path }}"
+      xpath: /ovf:Envelope/Section/Disk
+      namespaces:
+        ovf: http://schemas.dmtf.org/ovf/envelope/1/
+        rasd: http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData
+        vssd: http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData
+        xsi: http://www.w3.org/2001/XMLSchema-instance
+      content: attribute
+      attribute: size
+    register: disk_size_xml
+  - name: Get required size
+    set_fact: required_size="{{ disk_size_xml.matches[0].Disk['{http://schemas.dmtf.org/ovf/envelope/1/}size']|int * 1024 * 1024 * 1024 + 3 * 1024 * 1024 * 1024}}"
+  - debug: var=required_size
+  - fail:
+      msg: "Error: the target storage domain contains only {{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].available|int / 1024 /1024 }}Mb of available space while a minimum of {{ required_size|int / 1024 /1024 }}Mb is required"
+    when: storage_domain_details.ansible_facts.ovirt_storage_domains[0].available|int <= required_size|int
 ...
