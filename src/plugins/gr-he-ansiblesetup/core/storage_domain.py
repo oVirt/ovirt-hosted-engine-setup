@@ -484,7 +484,7 @@ class Plugin(plugin.PluginBase):
             iscsi_target = self.environment[
                 ohostedcons.StorageEnv.ISCSI_TARGET
             ]
-            iscsi_lunid = self.environment[
+            lunid = self.environment[
                 ohostedcons.StorageEnv.LUN_ID
             ]
 
@@ -563,9 +563,9 @@ class Plugin(plugin.PluginBase):
                         if not interactive:
                             raise e
                         continue
-                if iscsi_lunid is None:
+                if lunid is None:
                     try:
-                        iscsi_lunid = self._query_iscsi_lunid(
+                        lunid = self._query_iscsi_lunid(
                             username=iscsi_username,
                             password=iscsi_password,
                             portal=iscsi_portal,
@@ -606,7 +606,7 @@ class Plugin(plugin.PluginBase):
                     iscsi_port and iscsi_port.isdigit()
                 ) else iscsi_port,
                 'ISCSI_TARGET': iscsi_target,
-                'LUN_ID': iscsi_lunid,
+                'LUN_ID': lunid,
                 'ISCSI_USERNAME': iscsi_username,
                 'ISCSI_PASSWORD': iscsi_password,
                 'LOCAL_VM_DIR': ohostedcons.FileLocations.LOCAL_VM_DIR,
