@@ -987,11 +987,12 @@ class Plugin(plugin.PluginBase):
                     ' - ifup {iname}\n'
                 ).format(iname=_interface_name)
 
+        # see: https://bugzilla.redhat.com/1126096
+        bootcmd += ' - setenforce 0\n'
+
         if bootcmd:
             user_data += (
                 'bootcmd:\n'
-                # see: https://bugzilla.redhat.com/1126096
-                ' - setenforce 0\n'
                 '{b}'
             ).format(b=bootcmd)
 
