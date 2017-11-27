@@ -304,7 +304,9 @@ class Plugin(plugin.PluginBase):
             ][
                 'ansible_facts'
             ]['ovirt_host_storages']
+        return self._select_lun(available_luns)
 
+    def _select_lun(self, available_luns):
         if len(available_luns) == 0:
             msg = _('Cannot find any LUN on the selected target')
             self.logger.error(msg)
