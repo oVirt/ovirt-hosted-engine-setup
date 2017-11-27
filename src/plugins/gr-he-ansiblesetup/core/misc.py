@@ -142,7 +142,6 @@ class Plugin(plugin.PluginBase):
             'VCPUS': self.environment[ohostedcons.VMEnv.VCPUS],
             'MAXVCPUS': self.environment[ohostedcons.VMEnv.MAXVCPUS],
             'CPU_SOCKETS': '1',
-            'CPU_TYPE': 'Conroe',  # TODO: fix
             'EMULATED_MACHINE': self.environment[
                 ohostedcons.VMEnv.EMULATED_MACHINE
             ],
@@ -176,6 +175,10 @@ class Plugin(plugin.PluginBase):
         self.logger.info(_('Starting local VM'))
         r = ah.run()
         self.logger.debug(r)
+
+        # TODO: get the CPU models list from /ovirt-engine/api/clusterlevels
+        # once wrapped by ansible facts and filter it by host CPU architecture
+        # in order to let the user choose the cluster CPU type in advance
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

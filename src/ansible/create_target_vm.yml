@@ -45,6 +45,9 @@
     set_fact: datacenter_id="{{ cluster_facts.ansible_facts.ovirt_clusters|json_query(\"[?id=='" + cluster_id + "'].data_center.id\")|first }}"
   - name: Fetch datacenter_name
     set_fact: datacenter_name="{{ datacenter_facts.ansible_facts.ovirt_datacenters|json_query(\"[?id=='" + datacenter_id + "'].name\")|first }}"
+  - name: Get cluster cpu model
+    set_fact: cluster_cpu_model="{{ cluster_facts.ansible_facts.ovirt_clusters|json_query(\"[?id=='" + cluster_id + "'].cpu.type\")|first|replace('Intel ', '')|replace('AMD ', '')|replace('IBM ', '')|replace(' Family', '') }}"
+  - debug: var=cluster_cpu_model
   - name: Get storage domain details
     ovirt_storage_domains_facts:
       pattern: name={{ STORAGE_DOMAIN_NAME }} and datacenter={{ datacenter_name }}

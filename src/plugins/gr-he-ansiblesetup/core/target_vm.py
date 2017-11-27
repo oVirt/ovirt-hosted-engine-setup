@@ -129,7 +129,6 @@ class Plugin(plugin.PluginBase):
             'VIDEO_DEVICE': 'vga',
             'GRAPHICS_DEVICE': 'vnc',
             'MAXVCPUS': self.environment[ohostedcons.VMEnv.MAXVCPUS],
-            'CPU_TYPE': 'Conroe',  # TODO: fix
             'EMULATED_MACHINE': self.environment[
                 ohostedcons.VMEnv.EMULATED_MACHINE
             ],
