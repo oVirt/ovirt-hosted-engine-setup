@@ -366,7 +366,7 @@ class Plugin(plugin.PluginBase):
             default='1',
             validValues=[i['index'] for i in f_luns],
         )
-        return f_luns[int(slun)-1]['id']
+        return f_luns[int(slun)-1]
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
@@ -567,13 +567,14 @@ class Plugin(plugin.PluginBase):
                         continue
                 if lunid is None:
                     try:
-                        lunid = self._query_iscsi_lunid(
+                        lun = self._query_iscsi_lunid(
                             username=iscsi_username,
                             password=iscsi_password,
                             portal=iscsi_portal,
                             port=iscsi_port,
                             target=iscsi_target
                         )
+                        lunid = lun['id']
                     except RuntimeError as e:
                         self.logger.error(_('Unable to get target list'))
                         if not interactive:
