@@ -12,20 +12,6 @@
       name: libvirtd
       state: started
       enabled: yes
-  - name: Check for leftover local engine VM
-    shell: virsh list | grep {{ VM_NAME }}Local | cat
-    changed_when: True
-    register: local_vm_list
-  - name: Destroy leftover local engine VM
-    command: virsh destroy {{ VM_NAME }}Local
-    when: local_vm_list.stdout_lines|length >= 1
-  - name: Undefine leftover local engine VM
-    command: virsh undefine {{ VM_NAME }}Local
-    when: local_vm_list.stdout_lines|length >= 1
-  - name: Remove eventually entries for the local VM from known_hosts file
-    known_hosts:
-      name: "{{ FQDN }}"
-      state: absent
   - name: Check status of default libvirt network
     shell: virsh net-info default | awk '/Active/{print $(NF)}'
     changed_when: True

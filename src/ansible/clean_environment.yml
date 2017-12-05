@@ -1,0 +1,36 @@
+---
+- name: Clean previous deploy attempts
+  hosts: localhost
+  connection: local
+  tasks:
+  - name: Stop libvirt # We need it to clean leftover VM
+    service:
+      name: libvirtd
+      state: stopped
+      enabled: yes
+  - name: Drop libvirt config
+    shell: echo -n > /etc/libvirt/libvirtd.conf
+  - name: Start libvirt # We need it to clean leftover VM
+    service:
+      name: libvirtd
+      state: started
+      enabled: yes
+  - name: Check for leftover local engine VM
+    shell: virsh list | grep {{ VM_NAME }}Local | cat
+    changed_when: True
+    register: local_vm_list
+  - name: Destroy leftover local engine VM
+    command: virsh destroy {{ VM_NAME }}Local
+    when: local_vm_list.stdout_lines|length >= 1
+  - name: Undefine leftover local engine VM
+    command: virsh undefine {{ VM_NAME }}Local
+    when: local_vm_list.stdout_lines|length >= 1
+  - name: Remove eventually entries for the local VM from known_hosts file
+    known_hosts:
+      name: "{{ FQDN }}"
+      state: absent
+  - name: Remove local vm dir
+    file:
+      path: "{{ LOCAL_VM_DIR }}"
+      state: absent
+...

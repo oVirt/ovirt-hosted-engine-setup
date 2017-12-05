@@ -167,6 +167,9 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
             ]
         )
+
+        self.env_clean_up(boostrap_vars, inventory_source)
+
         ah = ansible_utils.AnsibleHelper(
             playbook_name=ohostedcons.FileLocations.HE_AP_BOOTSTRAP_LOCAL_VM,
             extra_vars=boostrap_vars,
@@ -180,5 +183,14 @@ class Plugin(plugin.PluginBase):
         # once wrapped by ansible facts and filter it by host CPU architecture
         # in order to let the user choose the cluster CPU type in advance
 
+    def env_clean_up(self, boostrap_vars, inventory_source):
+        ah = ansible_utils.AnsibleHelper(
+            playbook_name=ohostedcons.FileLocations.HE_AP_CLEAN_ENVIRONMENT,
+            extra_vars=boostrap_vars,
+            inventory_source=inventory_source,
+        )
+        self.logger.info(_('Cleaning previous attempts'))
+        r = ah.run()
+        self.logger.debug(r)
 
 # vim: expandtab tabstop=4 shiftwidth=4

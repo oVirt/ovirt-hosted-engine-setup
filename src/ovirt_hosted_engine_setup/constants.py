@@ -349,6 +349,7 @@ class FileLocations(object):
         'ansible',
     )
 
+    HE_AP_CLEAN_ENVIRONMENT = 'clean_environment.yml'
     HE_AP_BOOTSTRAP_LOCAL_VM = 'bootstrap_local_vm.yml'
     HE_AP_CREATE_SD = 'create_storage_domain.yml'
     HE_AP_CREATE_VM = 'create_target_vm.yml'
