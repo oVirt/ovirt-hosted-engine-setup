@@ -17,6 +17,7 @@
 ./src/ovirt_hosted_engine_setup/vm_status.py
 ./src/ovirt_hosted_engine_setup/vmconf.py
 ./src/ovirt_hosted_engine_setup/ansible_utils.py
+./src/plugins/gr-he-common/core/ha_notifications.py
 ./src/plugins/gr-he-common/core/misc.py
 ./src/plugins/gr-he-common/core/remote_answerfile.py
 ./src/plugins/gr-he-common/core/vdsmconf.py
@@ -45,7 +46,6 @@
 ./src/plugins/gr-he-setup/engine/add_host.py
 ./src/plugins/gr-he-setup/engine/__init__.py
 ./src/plugins/gr-he-setup/engine/os_install.py
-./src/plugins/gr-he-setup/ha/ha_notifications.py
 ./src/plugins/gr-he-setup/ha/ha_services.py
 ./src/plugins/gr-he-setup/ha/__init__.py
 ./src/plugins/gr-he-setup/libvirt/configureqemu.py

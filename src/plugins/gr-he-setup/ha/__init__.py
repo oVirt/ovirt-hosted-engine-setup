@@ -23,13 +23,11 @@
 
 from otopi import util
 
-from . import ha_notifications
 from . import ha_services
 
 
 @util.export
 def createPlugins(context):
-    ha_notifications.Plugin(context=context)
     ha_services.Plugin(context=context)
 
 

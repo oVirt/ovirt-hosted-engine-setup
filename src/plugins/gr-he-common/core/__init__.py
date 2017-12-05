@@ -22,6 +22,7 @@
 
 from otopi import util
 
+from . import ha_notifications
 from . import misc
 from . import remote_answerfile
 from . import shell
@@ -31,6 +32,7 @@ from . import vdsmconf
 
 @util.export
 def createPlugins(context):
+    ha_notifications.Plugin(context=context)
     misc.Plugin(context=context)
     remote_answerfile.Plugin(context=context)
     vdsmconf.Plugin(context=context)

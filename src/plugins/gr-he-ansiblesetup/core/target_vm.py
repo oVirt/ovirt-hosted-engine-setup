@@ -148,6 +148,18 @@ class Plugin(plugin.PluginBase):
             'DISK_SIZE': self.environment[
                 ohostedcons.StorageEnv.IMAGE_SIZE_GB
             ],
+            'SMTP_SERVER': self.environment[
+                ohostedcons.NotificationsEnv.SMTP_SERVER
+            ],
+            'SMTP_PORT': self.environment[
+                ohostedcons.NotificationsEnv.SMTP_PORT
+            ],
+            'SOURCE_EMAIL': self.environment[
+                ohostedcons.NotificationsEnv.SOURCE_EMAIL
+            ],
+            'DEST_EMAIL': self.environment[
+                ohostedcons.NotificationsEnv.DEST_EMAIL
+            ],
         }
         inventory_source = 'localhost, {fqdn}'.format(
             fqdn=self.environment[

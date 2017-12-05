@@ -103,6 +103,10 @@ class Plugin(plugin.PluginBase):
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_ENGINE,
         ),
+        condition=lambda self: (
+            not self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE] and
+            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
+        ),
     )
     def _customization(self):
         default_smtp_config = {
@@ -215,6 +219,11 @@ class Plugin(plugin.PluginBase):
     @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
         name=ohostedcons.Stages.BROKER_CONF_AVAILABLE,
+        condition=lambda self: (
+            not self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE] and
+            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE] and
+            not self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]
+        ),
     )
     def _misc(self):
         f = StringIO.StringIO()
