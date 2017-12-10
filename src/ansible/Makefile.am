@@ -31,6 +31,7 @@ dist_ansible_DATA = \
 	iscsi_discover.yml \
 	iscsi_getdevices.yml \
 	clean_environment.yml \
+	get_network_interfaces.yml \
 	$(NULL)
 
 SUBDIRS = \

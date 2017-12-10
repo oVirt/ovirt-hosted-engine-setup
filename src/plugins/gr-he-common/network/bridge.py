@@ -35,6 +35,7 @@ from vdsm.client import ServerError
 from ovirt_setup_lib import hostname as osetuphostname
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
+from ovirt_hosted_engine_setup import ansible_utils
 from ovirt_hosted_engine_setup import vds_info
 
 
@@ -149,10 +150,17 @@ class Plugin(plugin.PluginBase):
     def _customization(self):
         validValues = []
         if self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]:
-            # TODO: fix for bond and vlan with ansible
-            validValues = ethtool.get_devices()
-            if 'lo' in validValues:
-                validValues.remove('lo')
+            playbook = ohostedcons.FileLocations.HE_AP_NETWORK_INTERFACES
+            ah = ansible_utils.AnsibleHelper(
+                playbook_name=playbook,
+                extra_vars={}
+            )
+            r = ah.run()
+            self.logger.debug(r)
+            for network_interface in r['otopi_host_net']['results']:
+                if 'ansible_facts' in network_interface:
+                    validValues.append(network_interface['item'])
+
         else:
             INVALID_BOND_MODES = ('0', '5', '6')
             ALLOW_INVALID_BOND_MODES =  \

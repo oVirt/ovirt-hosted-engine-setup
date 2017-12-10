@@ -1,0 +1,44 @@
+---
+- name: Network interfaces
+  hosts: localhost
+  connection: local
+  tasks:
+  - name: Get all active network interfaces
+    set_fact:
+      otopi_net_host="{{ item }}"
+    when: (
+        (
+          item != 'lo'
+        ) and (
+          hostvars[inventory_hostname]['ansible_' + item]['type'] != 'bridge'
+        ) and (
+          (
+            hostvars[inventory_hostname]['ansible_' + item]['ipv4'] is defined
+          ) or (
+            hostvars[inventory_hostname]['ansible_' + item]['ipv6'] is defined
+          ) or (
+            (
+              hostvars[inventory_hostname]['ansible_' + item]['type'] == 'bonding'
+            ) and (
+              hostvars[inventory_hostname]['ansible_' + item]['slaves'][0] is defined
+            ) and (
+              (
+                hostvars[inventory_hostname]['ansible_' + item]['mode'] == 'active-backup'
+              ) or (
+                hostvars[inventory_hostname]['ansible_' + item]['mode'] == 'balance-xor'
+              ) or (
+                hostvars[inventory_hostname]['ansible_' + item]['mode'] == 'broadcast'
+              ) or (
+                hostvars[inventory_hostname]['ansible_' + item]['mode'] == '802.3adq'
+              )
+            )
+          )
+        )
+      )
+    with_items:
+      - "{{ ansible_interfaces | map('replace', '-','_') | list }}"
+    register: otopi_host_net
+
+  - name: print it for debug purposes
+    debug: var=otopi_host_net
+...
