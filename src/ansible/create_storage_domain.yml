@@ -121,7 +121,7 @@
       attribute: size
     register: disk_size_xml
   - name: Get required size
-    set_fact: required_size="{{ disk_size_xml.matches[0].Disk['{http://schemas.dmtf.org/ovf/envelope/1/}size']|int * 1024 * 1024 * 1024 + 3 * 1024 * 1024 * 1024}}"
+    set_fact: required_size="{{ disk_size_xml.matches[0].Disk['{http://schemas.dmtf.org/ovf/envelope/1/}size']|int * 1024 * 1024 * 1024 + 5 * 1024 * 1024 * 1024}}" # +5G: 2xOVF_STORE, lockspace, metadata, configuration
   - debug: var=required_size
   - name: Check storage domain free space
     fail:
