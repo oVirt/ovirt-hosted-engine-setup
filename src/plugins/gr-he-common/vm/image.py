@@ -80,19 +80,25 @@ class Plugin(plugin.PluginBase):
                 )
             try:
                 valid = True
-                if available_gb is not None and int(
-                    self.environment[ohostedcons.StorageEnv.IMAGE_SIZE_GB]
+                if available_gb is not None and (
+                    int(
+                        self.environment[
+                            ohostedcons.StorageEnv.IMAGE_SIZE_GB
+                        ]
+                    ) + ohostedcons.Const.OVFSTORE_SIZE_GIB
                 ) > available_gb:
                     msg = _(
                         'Not enough free space, '
                         'about {estimate} GiB will be available '
                         'within the storage domain '
-                        '(required {required} GiB)'
+                        '(required {required} GiB for the engine VM disk '
+                        'plus {req_ovf} GiB for the OVF_STORE disks)'
                     ).format(
                         estimate=available_gb,
                         required=self.environment[
                             ohostedcons.StorageEnv.IMAGE_SIZE_GB
                         ],
+                        req_ovf=ohostedcons.Const.OVFSTORE_SIZE_GIB,
                     )
                     self.logger.warning(msg)
                     valid = False

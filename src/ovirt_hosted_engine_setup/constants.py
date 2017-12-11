@@ -377,6 +377,7 @@ class Const(object):
     # TODO now the overhead is > 4GBiB cause we are creating a storage domain
     # maybe we can do better
     STORAGE_DOMAIN_OVERHEAD_GIB = 5
+    OVFSTORE_SIZE_GIB = 2
     METADATA_CHUNK_SIZE = 4096
     MAX_HOST_ID = 250
     HA_NOTIF_SMTP_SERVER = 'smtp-server'
