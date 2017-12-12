@@ -3,14 +3,49 @@
   hosts: localhost
   connection: local
   tasks:
-  - name: Stop libvirt # We need it to clean leftover VM
+  - name: Stop libvirt
     service:
       name: libvirtd
       state: stopped
       enabled: yes
-  - name: Drop libvirt config
-    shell: echo -n > /etc/libvirt/libvirtd.conf
-  - name: Start libvirt # We need it to clean leftover VM
+  - name: Drop vdsm config statements
+    command: sed -i '/## beginning of configuration section by vdsm-4.[0-9]\+.[0-9]\+/,/## end of configuration section by vdsm-4.[0-9]\+.[0-9]\+/d' {{ item }}
+    with_items:
+      - /etc/libvirt/libvirtd.conf
+      - /etc/libvirt/qemu.conf
+      - /etc/libvirt/qemu-sanlock.conf
+      - /etc/sysconfig/libvirtd
+  - name: Restore initial abrt config files
+    copy:
+      src: "{{ item.src }}"
+      dest: "{{ item.dest }}"
+    with_items:
+      - { src: /usr/share/abrt/conf.d/abrt-action-save-package-data.conf, dest: /etc/abrt/abrt-action-save-package-data.conf }
+      - { src: /usr/share/abrt/conf.d/abrt.conf, dest: /etc/abrt/abrt.conf }
+      - { src: /usr/share/abrt/conf.d/plugins/CCpp.conf, dest: /etc/abrt/plugins/CCpp.conf }
+      - { src: /usr/share/abrt/conf.d/plugins/vmcore.conf, dest: /etc/abrt/plugins/vmcore.conf }
+  - name: Restart abrtd
+    service:
+      name: abrtd
+      state: restarted
+  - name: Drop libvirt sasl2 configuration by vdsm
+    command: sed -i '/## start vdsm-4.[0-9]\+.[0-9]\+ configuration/,/## end vdsm configuration/d' /etc/sasl2/libvirt.conf
+  - name: Stop and disable ovirt-ha-agent
+    service:
+      name: ovirt-ha-agent
+      state: stopped
+      enabled: no
+  - name: Stop and disable ovirt-ha-broker
+    service:
+      name: ovirt-ha-broker
+      state: stopped
+      enabled: no
+  - name: Stop and disable vdsmd
+    service:
+      name: vdsmd
+      state: stopped
+      enabled: no
+  - name: Start libvirt
     service:
       name: libvirtd
       state: started
@@ -22,9 +57,13 @@
   - name: Destroy leftover local engine VM
     command: virsh destroy {{ VM_NAME }}Local
     when: local_vm_list.stdout_lines|length >= 1
+  - name: Check for leftover defined local engine VM
+    shell: virsh list --all | grep {{ VM_NAME }}Local | cat
+    changed_when: True
+    register: local_vm_list_all
   - name: Undefine leftover local engine VM
     command: virsh undefine {{ VM_NAME }}Local
-    when: local_vm_list.stdout_lines|length >= 1
+    when: local_vm_list_all.stdout_lines|length >= 1
   - name: Remove eventually entries for the local VM from known_hosts file
     known_hosts:
       name: "{{ FQDN }}"
