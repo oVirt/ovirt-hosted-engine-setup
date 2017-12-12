@@ -42,7 +42,7 @@ class AnsibleHelper(base.Base):
         self,
         playbook_name,
         custom_path=None,
-        extra_vars=None,
+        extra_vars={},
         inventory_source='localhost,',
         raise_on_error=True,
     ):
