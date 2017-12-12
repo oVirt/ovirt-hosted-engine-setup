@@ -131,9 +131,7 @@ class CallbackModule(CallbackBase):
             else:
                 msg = "ok: [{h}]".format(h=result._host.get_name())
 
-        if result._task.loop and 'results' in result._result:
-            self._process_items(result)
-        else:
+        if not (result._task.loop and 'results' in result._result):
             if result.task_name == 'debug':
                 for i in result._result:
                     if not i.startswith('_'):
