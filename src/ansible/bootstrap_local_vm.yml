@@ -45,8 +45,6 @@
     changed_when: True
   - name: Create local vm
     command: virt-install -n {{ VM_NAME }}Local --os-variant rhel7 --virt-type kvm --memory {{ MEM_SIZE }} --vcpus {{ VCPUS }}  --network network=default,mac={{ VM_MAC_ADDR }},model=virtio --disk {{ app_img.files[0].path }} --import --disk path={{ LOCAL_VM_DIR }}/seed.iso,device=cdrom --noautoconsole --rng /dev/random
-    async: 60
-    poll: 0
     register: create_local_vm
     changed_when: True
   - debug: var=create_local_vm
