@@ -44,7 +44,7 @@
     command: mkisofs -output {{ LOCAL_VM_DIR }}/seed.iso -volid cidata -joliet -rock -input-charset utf-8 {{ LOCAL_VM_DIR }}/meta-data {{ LOCAL_VM_DIR }}/user-data
     changed_when: True
   - name: Create local vm
-    command: virt-install -n {{ VM_NAME }}Local --os-variant rhel7 --virt-type kvm --memory {{ MEM_SIZE }} --vcpus {{ VCPUS }}  --network default,mac={{ VM_MAC_ADDR }} --disk {{ app_img.files[0].path }} --import --disk path={{ LOCAL_VM_DIR }}/seed.iso,device=cdrom --noautoconsole --rng /dev/random
+    command: virt-install -n {{ VM_NAME }}Local --os-variant rhel7 --virt-type kvm --memory {{ MEM_SIZE }} --vcpus {{ VCPUS }}  --network network=default,mac={{ VM_MAC_ADDR }},model=virtio --disk {{ app_img.files[0].path }} --import --disk path={{ LOCAL_VM_DIR }}/seed.iso,device=cdrom --noautoconsole --rng /dev/random
     async: 60
     poll: 0
     register: create_local_vm
