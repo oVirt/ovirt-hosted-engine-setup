@@ -205,6 +205,12 @@
     delay: 10
     changed_when: True
   - debug: var=ovirtmgmt_table_id
+  - name: Check network configuration
+    command: ip route show table {{ ovirtmgmt_table_id.stdout_lines[0] }}
+    register: current_net_table
+  - name: Clean network configuration
+    command: ip route del {{ virbr0_route_config.stdout_lines[0] }} table {{ ovirtmgmt_table_id.stdout_lines[0] }}
+    when: "virbr0_route_config.stdout_lines[0] in current_net_table.stdout"
   - name: Restore network configuration
     command: ip route add {{ virbr0_route_config.stdout_lines[0] }} table {{ ovirtmgmt_table_id.stdout_lines[0] }}
     register: result
