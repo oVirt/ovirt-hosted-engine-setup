@@ -667,12 +667,19 @@ class Plugin(plugin.PluginBase):
             while self.environment[
                 ohostedcons.CloudInit.ROOTPWD
             ] is None:
+                skip_password = _(': ')
+                if not self.environment[
+                    ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT
+                ]:
+                    skip_password = _(' (leave it empty to skip): ')
                 password = self.dialog.queryString(
                     name='CI_ROOT_PASSWORD',
-                    note=_(
-                        "Enter root password that "
-                        'will be used for the engine appliance '
-                        '(leave it empty to skip): '
+                    note="{prefix}{skip_password}".format(
+                        prefix=_(
+                            "Enter root password that "
+                            'will be used for the engine appliance'
+                        ),
+                        skip_password=skip_password
                     ),
                     prompt=True,
                     hidden=True,
@@ -693,6 +700,8 @@ class Plugin(plugin.PluginBase):
                         ] = password
                     else:
                         self.logger.error(_('Passwords do not match'))
+                elif self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]:
+                    self.logger.error(_('Password is empty'))
                 else:
                     self.environment[ohostedcons.CloudInit.ROOTPWD] = ''
                     self.logger.warning(_('Skipping appliance root password'))
