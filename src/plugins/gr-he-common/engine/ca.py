@@ -169,9 +169,8 @@ class Plugin(plugin.PluginBase):
             ohostedcons.EngineEnv.INSECURE_SSL,
             None
         )
-        self.environment.setdefault(
-            ohostedcons.EngineEnv.INTERACTIVE_ADMIN_PASSWORD,
-            None
+        self.environment[ohostedcons.EngineEnv.INTERACTIVE_ADMIN_PASSWORD] = (
+            self.environment[ohostedcons.EngineEnv.ADMIN_PASSWORD] is None
         )
 
     @plugin.event(
@@ -187,9 +186,6 @@ class Plugin(plugin.PluginBase):
         ),
     )
     def _customization(self):
-        self.environment[ohostedcons.EngineEnv.INTERACTIVE_ADMIN_PASSWORD] = (
-            self.environment[ohostedcons.EngineEnv.ADMIN_PASSWORD] is None
-        )
         while self.environment[ohostedcons.EngineEnv.ADMIN_PASSWORD] is None:
             password = self.dialog.queryString(
                 name='ENGINE_ADMIN_PASSWORD',

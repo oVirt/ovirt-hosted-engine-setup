@@ -89,13 +89,16 @@ def get_engine_api(
                 if base.environment[
                     ohostedcons.EngineEnv.INTERACTIVE_ADMIN_PASSWORD
                 ]:
-                    base.logger.error(
-                        _(
-                            'The Engine API didn''t accept '
-                            'the administrator password you provided.\n'
-                            'Please enter it again to retry.'
+                    if base.environment[
+                        ohostedcons.EngineEnv.ADMIN_PASSWORD
+                    ] is not None:
+                        base.logger.error(
+                            _(
+                                'The Engine API didn''t accept '
+                                'the administrator password you provided.\n'
+                                'Please enter it again to retry.'
+                            )
                         )
-                    )
                     base.environment[
                         ohostedcons.EngineEnv.ADMIN_USERNAME
                     ] = base.dialog.queryString(
