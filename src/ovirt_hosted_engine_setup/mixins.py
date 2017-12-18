@@ -290,8 +290,8 @@ class VmOperations(object):
             raise RuntimeError(_('Cannot create the VM: {message}').format(
                 message=str(e)
             ))
-        # Now it's in WaitForLaunch, need to be on powering up
         powering = False
+        created = False
         tries = self.POWER_MAX_TRIES
         while not powering and tries > 0:
             tries -= 1
@@ -299,16 +299,27 @@ class VmOperations(object):
                 stats = cli.VM.getStats(
                     vmID=self.environment[ohostedcons.VMEnv.VM_UUID]
                 )[0]
+                created = True
+                # Now it's in WaitForLaunch, need to be on powering up
             except ServerError as e:
-                raise RuntimeError(str(e))
-
-            self.logger.debug(stats)
-            if stats['status'] in ('Powering up', 'Up'):
-                powering = True
-            elif stats['status'] == 'Down':
-                # VM creation failure
-                tries = 0
-            else:
+                if created:
+                    self.logger.error(
+                        _('Failed starting the engine VM: {e}').format(e=e)
+                    )
+                    break
+                else:
+                    # VM is still undefined
+                    self.logger.debug(
+                        'VM is not defined yet: {e}'.format(e=e)
+                    )
+            if created:
+                self.logger.debug(stats)
+                if stats['status'] in ('Powering up', 'Up'):
+                    powering = True
+                elif stats['status'] == 'Down':
+                    # VM creation failure
+                    tries = 0
+            if not powering:
                 time.sleep(self.POWER_DELAY)
         if not powering:
             raise RuntimeError(
