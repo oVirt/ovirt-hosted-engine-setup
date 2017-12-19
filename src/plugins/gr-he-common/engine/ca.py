@@ -260,7 +260,7 @@ class Plugin(plugin.PluginBase):
             if cert is not None and os.path.exists(cert):
                 os.unlink(cert)
         except EnvironmentError as ex:
-            self.log.error(
+            self.logger.error(
                 _(
                     'Unable to cleanup temporary CA cert file: {msg}'
                 ).format(

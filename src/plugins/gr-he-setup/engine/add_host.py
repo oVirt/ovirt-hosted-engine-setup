@@ -705,7 +705,7 @@ class Plugin(plugin.PluginBase):
             ):
                 os.unlink(self._host_deploy_conf)
         except EnvironmentError as ex:
-            self.log.error(
+            self.logger.error(
                 _(
                     'Unable to cleanup temporary file: {msg} - '
                     'Please check and eventually manually cleanup {fnames} '
