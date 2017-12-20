@@ -31,7 +31,8 @@ dist_ansible_DATA = \
 	iscsi_discover.yml \
 	iscsi_getdevices.yml \
 	fc_getdevices.yml \
-	clean_environment.yml \
+	initial_clean.yml \
+	final_clean.yml \
 	get_network_interfaces.yml \
 	$(NULL)
 

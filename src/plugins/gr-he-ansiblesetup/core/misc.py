@@ -51,6 +51,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VMEnv.LOCAL_VM_UUID,
             str(uuid.uuid4())
         )
+        self.environment.setdefault(
+            ohostedcons.CoreEnv.LOCAL_VM_DIR,
+            None
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -122,7 +126,10 @@ class Plugin(plugin.PluginBase):
             'HOST_ADDRESS': self.environment[
                 ohostedcons.NetworkEnv.HOST_NAME
             ],
-            'LOCAL_VM_DIR': ohostedcons.FileLocations.LOCAL_VM_DIR,
+            'LOCAL_VM_DIR_PATH': ohostedcons.FileLocations.LOCAL_VM_DIR_PATH,
+            'LOCAL_VM_DIR_PREFIX': (
+                ohostedcons.FileLocations.LOCAL_VM_DIR_PREFIX
+            ),
             'ADMIN_PASSWORD': self.environment[
                 ohostedcons.EngineEnv.ADMIN_PASSWORD
             ],
@@ -168,7 +175,7 @@ class Plugin(plugin.PluginBase):
             ]
         )
 
-        self.env_clean_up(boostrap_vars, inventory_source)
+        self.initial_clean_up(boostrap_vars, inventory_source)
 
         ah = ansible_utils.AnsibleHelper(
             playbook_name=ohostedcons.FileLocations.HE_AP_BOOTSTRAP_LOCAL_VM,
@@ -179,17 +186,44 @@ class Plugin(plugin.PluginBase):
         r = ah.run()
         self.logger.debug(r)
 
+        if (
+            'otopi_localvm_dir' in r and
+            'path' in r['otopi_localvm_dir']
+        ):
+            self.environment[
+                ohostedcons.CoreEnv.LOCAL_VM_DIR
+            ] = r['otopi_localvm_dir']['path']
+        else:
+            raise RuntimeError(_('Failed getting local_vm_dir'))
+
         # TODO: get the CPU models list from /ovirt-engine/api/clusterlevels
         # once wrapped by ansible facts and filter it by host CPU architecture
         # in order to let the user choose the cluster CPU type in advance
 
-    def env_clean_up(self, boostrap_vars, inventory_source):
+    def initial_clean_up(self, boostrap_vars, inventory_source):
         ah = ansible_utils.AnsibleHelper(
-            playbook_name=ohostedcons.FileLocations.HE_AP_CLEAN_ENVIRONMENT,
+            playbook_name=ohostedcons.FileLocations.HE_AP_INITIAL_CLEAN,
             extra_vars=boostrap_vars,
             inventory_source=inventory_source,
         )
         self.logger.info(_('Cleaning previous attempts'))
+        r = ah.run()
+        self.logger.debug(r)
+
+    @plugin.event(
+        stage=plugin.Stages.STAGE_CLEANUP,
+    )
+    def _cleanup(self):
+        ah = ansible_utils.AnsibleHelper(
+            playbook_name=ohostedcons.FileLocations.HE_AP_FINAL_CLEAN,
+            extra_vars={
+                'LOCAL_VM_DIR': self.environment[
+                    ohostedcons.CoreEnv.LOCAL_VM_DIR
+                ],
+            },
+            inventory_source='localhost,',
+        )
+        self.logger.info(_('Cleaning temporary resources'))
         r = ah.run()
         self.logger.debug(r)
 

@@ -99,7 +99,7 @@ class Plugin(plugin.PluginBase):
             'CPU_SOCKETS': '1',
             'TIME_ZONE': self.environment[ohostedcons.CloudInit.VM_TZ],
             'BRIDGE': self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME],
-            'LOCAL_VM_DIR': ohostedcons.FileLocations.LOCAL_VM_DIR,
+            'LOCAL_VM_DIR': self.environment[ohostedcons.CoreEnv.LOCAL_VM_DIR],
             'STORAGE': self.environment[
                 ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
             ],

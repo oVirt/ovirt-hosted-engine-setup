@@ -341,7 +341,8 @@ class FileLocations(object):
     HECONFD_BROKER_CONF = 'broker.conf'
     HECONFD_VM_CONF = 'vm.conf'
 
-    LOCAL_VM_DIR = '/var/tmp/localvm'
+    LOCAL_VM_DIR_PATH = '/var/tmp'
+    LOCAL_VM_DIR_PREFIX = 'localvm'
 
     HOSTED_ENGINE_ANSIBLE_PATH = os.path.join(
         config.DATADIR,
@@ -349,7 +350,8 @@ class FileLocations(object):
         'ansible',
     )
 
-    HE_AP_CLEAN_ENVIRONMENT = 'clean_environment.yml'
+    HE_AP_INITIAL_CLEAN = 'initial_clean.yml'
+    HE_AP_FINAL_CLEAN = 'final_clean.yml'
     HE_AP_BOOTSTRAP_LOCAL_VM = 'bootstrap_local_vm.yml'
     HE_AP_CREATE_SD = 'create_storage_domain.yml'
     HE_AP_CREATE_VM = 'create_target_vm.yml'
@@ -420,6 +422,7 @@ class CoreEnv(object):
     ANSIBLE_DEPLOYMENT = 'OVEHOSTED_CORE/ansibleDeployment'
     ROLLBACK_UPGRADE = 'OVEHOSTED_CORE/rollbackUpgrade'
     TEMPDIR = 'OVEHOSTED_CORE/tempDir'
+    LOCAL_VM_DIR = 'OVEHOSTED_CORE/localVMDir'
 
     @ohostedattrs(
         answerfile=True,

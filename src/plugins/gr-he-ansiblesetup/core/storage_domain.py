@@ -663,7 +663,9 @@ class Plugin(plugin.PluginBase):
                 'LUN_ID': lunid,
                 'ISCSI_USERNAME': iscsi_username,
                 'ISCSI_PASSWORD': iscsi_password,
-                'LOCAL_VM_DIR': ohostedcons.FileLocations.LOCAL_VM_DIR,
+                'LOCAL_VM_DIR': self.environment[
+                    ohostedcons.CoreEnv.LOCAL_VM_DIR
+                ],
                 'DISCARD': discard,
             }
             ah = ansible_utils.AnsibleHelper(

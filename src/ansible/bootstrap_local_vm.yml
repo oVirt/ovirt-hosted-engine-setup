@@ -4,9 +4,20 @@
   connection: local
   tasks:
   - name: Create dir for local vm
-    file:
-      path: "{{ LOCAL_VM_DIR }}"
+    tempfile:
       state: directory
+      path: "{{ LOCAL_VM_DIR_PATH }}"
+      prefix: "{{ LOCAL_VM_DIR_PREFIX }}"
+    register: otopi_localvm_dir
+  - set_fact:
+      LOCAL_VM_DIR: "{{ otopi_localvm_dir.path }}"
+  - name: Fix local vm dir permission
+    file:
+      state: directory
+      path: "{{ LOCAL_VM_DIR }}"
+      owner: vdsm
+      group: kvm
+      mode: 0775
   - name: Start libvirt
     service:
       name: libvirtd

@@ -68,8 +68,4 @@
     known_hosts:
       name: "{{ FQDN }}"
       state: absent
-  - name: Remove local vm dir
-    file:
-      path: "{{ LOCAL_VM_DIR }}"
-      state: absent
 ...
