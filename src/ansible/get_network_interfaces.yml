@@ -38,7 +38,5 @@
     with_items:
       - "{{ ansible_interfaces | map('replace', '-','_') | list }}"
     register: otopi_host_net
-
-  - name: print it for debug purposes
-    debug: var=otopi_host_net
+  - debug: var=otopi_host_net
 ...
