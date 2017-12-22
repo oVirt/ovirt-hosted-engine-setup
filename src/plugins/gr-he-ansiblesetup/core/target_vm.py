@@ -122,7 +122,15 @@ class Plugin(plugin.PluginBase):
             'ISCSI_PORT': self.environment[
                 ohostedcons.StorageEnv.ISCSI_PORT
             ],
-            'VERSION': 'AnsibleTest',  # TODO: fix
+            'ISCSI_IP_ADDR': self.environment[
+                ohostedcons.StorageEnv.ISCSI_IP_ADDR
+            ],
+            'ISCSI_TPGT': self.environment[
+                ohostedcons.StorageEnv.ISCSI_PORTAL
+            ],
+            'LUN_ID': self.environment[
+                ohostedcons.StorageEnv.LUN_ID
+            ],
             'CONSOLE_TYPE': 'vnc',
             'CDROM_UUID': self.environment[ohostedcons.VMEnv.CDROM_UUID],
             'CDROM': '',
@@ -159,6 +167,19 @@ class Plugin(plugin.PluginBase):
             ],
             'DEST_EMAIL': self.environment[
                 ohostedcons.NotificationsEnv.DEST_EMAIL
+            ],
+            'STORAGE_DOMAIN_CONNECTION': self.environment[
+                ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
+            ],
+            'APPLIANCE_OVA': self.environment[ohostedcons.VMEnv.OVF],
+            'CLOUD_INIT_DOMAIN_NAME': self.environment[
+                ohostedcons.CloudInit.INSTANCE_DOMAINNAME
+            ],
+            'CLOUD_INIT_HOST_NAME': self.environment[
+                ohostedcons.CloudInit.INSTANCE_HOSTNAME
+            ],
+            'ROOT_SSH_PUBKEY': self.environment[
+                ohostedcons.CloudInit.ROOT_SSH_PUBKEY
             ],
         }
         inventory_source = 'localhost, {fqdn}'.format(

@@ -195,6 +195,11 @@
       name: "{{ VM_NAME }}Local"
       command: undefine
       uri: 'qemu+tls://{{ HOST_ADDRESS }}/system'
+  - name: Detect ovirt-hosted-engine-ha version
+    command: python -c 'from ovirt_hosted_engine_ha.agent import constants as agentconst; print(agentconst.PACKAGE_VERSION)'
+    register: ha_version_out
+  - set_fact: ha_version="{{ ha_version_out.stdout_lines|first }}"
+  - debug: var=ha_version
   - name: Create temp vm conf
     template:
       src: templates/vm.conf.j2

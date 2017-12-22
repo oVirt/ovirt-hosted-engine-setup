@@ -734,6 +734,9 @@ class Plugin(plugin.PluginBase):
                         ohostedcons.StorageEnv.DOMAIN_TYPE
                     ] == ohostedcons.DomainTypes.ISCSI:
                         # TODO: implement multipath support
+                        self.environment[
+                            ohostedcons.StorageEnv.ISCSI_PORTAL
+                        ] = 1  # TODO: FIX it with the right tpgt value
                         lun = storage['volume_group']['logical_units'][0]
                         self.environment[
                             ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION

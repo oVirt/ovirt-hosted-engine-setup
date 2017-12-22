@@ -1,65 +1,63 @@
-{# TODO: make everything parametric #}
 [environment:default]
 OVEHOSTED_CORE/screenProceed=bool:True
 OVEHOSTED_CORE/deployProceed=bool:True
 OVEHOSTED_CORE/confirmSettings=bool:True
-OVEHOSTED_NETWORK/fqdn=str:jtokar-static.tlv.redhat.com {# #}
-OVEHOSTED_NETWORK/bridgeName=str:ovirtmgmt {# #}
+OVEHOSTED_NETWORK/fqdn=str:{{ FQDN }}
+OVEHOSTED_NETWORK/bridgeName=str:{{ BRIDGE }}
 OVEHOSTED_NETWORK/firewallManager=str:iptables
-OVEHOSTED_NETWORK/gateway=str:10.35.1.254 {# #}
-OVEHOSTED_ENGINE/clusterName=str:Default {# #}
-OVEHOSTED_STORAGE/storageDatacenterName=str:hosted_datacenter {# #}
-OVEHOSTED_STORAGE/domainType=str:nfs3 {# #}
-OVEHOSTED_STORAGE/connectionUUID=str:e29cf818-5ee5-46e1-85c1-8aeefa33e95d {# #}
-OVEHOSTED_STORAGE/LunID=none:None {# #}
-OVEHOSTED_STORAGE/imgSizeGB=str:50 {# #}
-OVEHOSTED_STORAGE/mntOptions=none:None {# #}
-OVEHOSTED_STORAGE/iSCSIPortalIPAddress=none:None {# #}
-OVEHOSTED_STORAGE/metadataVolumeUUID=str:4a30b4ab-af79-4737-837d-604a7319fed4 {# #}
-OVEHOSTED_STORAGE/sdUUID=str:c257dddf-6893-4b88-8435-fe74c1c1668d {# #}
-OVEHOSTED_STORAGE/iSCSITargetName=none:None {# #}
-OVEHOSTED_STORAGE/metadataImageUUID=str:f2c12f6b-4425-408f-a721-421afa9cdcef {# #}
-OVEHOSTED_STORAGE/lockspaceVolumeUUID=str:b87b90dd-d9b9-4907-b112-ea1099775801 {# #}
-OVEHOSTED_STORAGE/iSCSIPortalPort=none:None {# #}
-OVEHOSTED_STORAGE/imgUUID=str:be4e4c1c-71bb-4abf-ae40-7040f38bdc32 {# #}
-OVEHOSTED_STORAGE/confImageUUID=str:5f8a446b-7b4c-4d4a-8c84-d2e8a1eeba77 {# #}
-OVEHOSTED_STORAGE/spUUID=str:00000000-0000-0000-0000-000000000000  # TODO CHECK
-OVEHOSTED_STORAGE/lockspaceImageUUID=str:c23a609c-c0f5-47d9-a399-3a133da4dd9a {# #}
-OVEHOSTED_ENGINE/enableHcGlusterService=none:None {# #}
-OVEHOSTED_STORAGE/storageDomainName=str:hosted_storage {# #}
-OVEHOSTED_STORAGE/iSCSIPortal=none:None {# #}
-OVEHOSTED_STORAGE/volUUID=str:1646d87e-682d-4e5a-98f6-4344ff2891e8 {# #}
-OVEHOSTED_STORAGE/vgUUID=none:None {# #}
-OVEHOSTED_STORAGE/confVolUUID=str:975cda65-14ad-42b9-ac70-50c88c664e61 {# #}
-OVEHOSTED_STORAGE/storageDomainConnection=str:shablul.eng.lab.tlv.redhat.com:/exports/multipass/export/images/rnd/etokar/fussa_storage/he {# #}
-OVEHOSTED_STORAGE/iSCSIPortalUser=none:None {# #}
-OVEHOSTED_VDSM/consoleType=str:vnc {# #}
-OVEHOSTED_VM/vmMemSizeMB=int:4044 {# #}
-OVEHOSTED_VM/vmUUID=str:a98d5f0f-044a-4aa8-be5a-92416dcab5af {# #}
-OVEHOSTED_VM/vmMACAddr=str:00:16:3e:4c:5d:ce {# #}
-OVEHOSTED_VM/emulatedMachine=str:pc {# #}
-OVEHOSTED_VM/consoleUUID=str:7270d958-6e42-4552-9a9d-ee099665e7b7 {# #}
-OVEHOSTED_VM/vmVCpus=str:4 {# #}
-OVEHOSTED_VM/nicUUID=str:66e56bec-9975-4ec3-ae78-297cf32c059c {# #}
-OVEHOSTED_VM/cdromUUID=str:a64e7989-6049-4596-8f38-38b21d4c229b {# #}
-OVEHOSTED_VM/ovfArchive=str:/usr/share/ovirt-engine-appliance/ovirt-engine-appliance-4.2-20170827.1.el7.centos.ova {# #}
-OVEHOSTED_VM/vmCDRom=str:/tmp/tmpnmNlWL/seed.iso {# #}
+OVEHOSTED_NETWORK/gateway=str:{{ GATEWAY }}
+{# TODO: FIX #}
+OVEHOSTED_ENGINE/clusterName=str:Default
+{# TODO: FIX #}
+OVEHOSTED_STORAGE/storageDatacenterName=str:hosted_datacenter
+OVEHOSTED_STORAGE/domainType=str:{{ DOMAIN_TYPE }}
+{# TODO: FIX #}
+OVEHOSTED_STORAGE/connectionUUID=str:e29cf818-5ee5-46e1-85c1-8aeefa33e95d
+OVEHOSTED_STORAGE/LunID={{ 'str' if LUN_ID else 'none' }}:{{ LUN_ID if LUN_ID else 'None' }}
+OVEHOSTED_STORAGE/imgSizeGB=str:{{ DISK_SIZE }}
+OVEHOSTED_STORAGE/mntOptions={{ 'str' if MOUNT_OPTIONS else 'none' }}:{{ MOUNT_OPTIONS if MOUNT_OPTIONS else 'None' }}
+OVEHOSTED_STORAGE/iSCSIPortalIPAddress={{ 'str' if ISCSI_IP_ADDR else 'none' }}:{{ ISCSI_IP_ADDR if ISCSI_IP_ADDR else 'None' }}
+OVEHOSTED_STORAGE/metadataVolumeUUID=str:{{ he_metadata_disk_details.disk.image_id }}
+OVEHOSTED_STORAGE/sdUUID=str:{{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }}
+OVEHOSTED_STORAGE/iSCSITargetName={{ 'str' if ISCSI_TARGET else 'none' }}:{{ ISCSI_TARGET if ISCSI_TARGET else 'None' }}
+OVEHOSTED_STORAGE/metadataImageUUID=str:{{ he_metadata_disk_details.disk.id }}
+OVEHOSTED_STORAGE/lockspaceVolumeUUID=str:{{ he_sanlock_disk_details.disk.image_id }}
+OVEHOSTED_STORAGE/iSCSIPortalPort={{ 'str' if ISCSI_PORT else 'none' }}:{{ ISCSI_PORT if ISCSI_PORT else 'None' }}
+OVEHOSTED_STORAGE/imgUUID=str:{{ he_virtio_disk_details.disk.id }}
+OVEHOSTED_STORAGE/confImageUUID=str:{{ he_conf_disk_details.disk.id }}
+OVEHOSTED_STORAGE/spUUID=str:00000000-0000-0000-0000-000000000000
+OVEHOSTED_STORAGE/lockspaceImageUUID=str:{{ he_sanlock_disk_details.disk.id }}
+{# TODO: FIX #}
+OVEHOSTED_ENGINE/enableHcGlusterService=none:None
+OVEHOSTED_STORAGE/storageDomainName=str:{{ STORAGE_DOMAIN_NAME }}
+OVEHOSTED_STORAGE/iSCSIPortal={{ 'str' if ISCSI_TPGT else 'none' }}:{{ ISCSI_TPGT if ISCSI_TPGT else 'None' }}
+OVEHOSTED_STORAGE/volUUID=str:{{ he_virtio_disk_details.disk.image_id }}
+{# TODO: FIX #}
+OVEHOSTED_STORAGE/vgUUID=none:None
+OVEHOSTED_STORAGE/confVolUUID=str:{{ he_conf_disk_details.disk.image_id }}
+OVEHOSTED_STORAGE/storageDomainConnection=str:{{ STORAGE_DOMAIN_CONNECTION }}
+OVEHOSTED_STORAGE/iSCSIPortalUser={{ 'str' if ISCSI_USERNAME else 'none' }}:{{ ISCSI_USERNAME if ISCSI_USERNAME else 'None' }}
+{# TODO: fix it #}
+OVEHOSTED_VDSM/consoleType=str:vnc
+OVEHOSTED_VM/vmMemSizeMB=int:{{ MEM_SIZE }}
+OVEHOSTED_VM/vmUUID=str:{{ he_vm_details.vm.id }}
+OVEHOSTED_VM/vmMACAddr=str:{{ VM_MAC_ADDR }}
+OVEHOSTED_VM/emulatedMachine=str:{{ EMULATED_MACHINE }}
+OVEHOSTED_VM/vmVCpus=str:{{ VCPUS }}
+OVEHOSTED_VM/ovfArchive=str:{{ APPLIANCE_OVA }}
+OVEHOSTED_VM/vmCDRom=none:None
 OVEHOSTED_VM/automateVMShutdown=bool:True
 OVEHOSTED_VM/cloudInitISO=str:generate
-OVEHOSTED_VM/cloudinitInstanceDomainName=str:tlv.redhat.com {# #}
-OVEHOSTED_VM/cloudinitInstanceHostName=str:jtokar-static.tlv.redhat.com {# #}
-OVEHOSTED_VM/rootSshPubkey=str: {# #}
-OVEHOSTED_VM/cloudinitExecuteEngineSetup=bool:True {# #}
-OVEHOSTED_VM/cloudinitVMStaticCIDR=bool:False {# #}
-OVEHOSTED_VM/cloudinitVMTZ=str:Asia/Jerusalem {# #}
-OVEHOSTED_VM/rootSshAccess=str:yes {# #}
-OVEHOSTED_VM/cloudinitVMETCHOSTS=bool:False {# #}
-OVEHOSTED_VM/cloudinitVMDNS=bool:False {# #}
-OVEHOSTED_VDSM/spicePkiSubject=str:C=EN, L=Test, O=Test, CN=Test
-OVEHOSTED_VDSM/pkiSubject=str:/C=EN/L=Test/O=Test/CN=Test
-OVEHOSTED_VDSM/caSubject=str:/C=EN/L=Test/O=Test/CN=TestCA
-OVEHOSTED_VDSM/cpu=str:model_Conroe {# #}
-OVEHOSTED_NOTIF/smtpPort=str:25 {# #}
-OVEHOSTED_NOTIF/smtpServer=str:localhost {# #}
-OVEHOSTED_NOTIF/sourceEmail=str:root@localhost {# #}
-OVEHOSTED_NOTIF/destEmail=str:root@localhost {# #}
+OVEHOSTED_VM/cloudinitInstanceDomainName={{ 'str' if CLOUD_INIT_DOMAIN_NAME else 'none' }}:{{ CLOUD_INIT_DOMAIN_NAME if CLOUD_INIT_DOMAIN_NAME else 'None' }}
+OVEHOSTED_VM/cloudinitInstanceHostName={{ 'str' if CLOUD_INIT_HOST_NAME else 'none' }}:{{ CLOUD_INIT_HOST_NAME if CLOUD_INIT_HOST_NAME else 'None' }}
+OVEHOSTED_VM/rootSshPubkey={{ 'str' if ROOT_SSH_PUBKEY else 'none' }}:{{ ROOT_SSH_PUBKEY if ROOT_SSH_PUBKEY else 'None' }}
+OVEHOSTED_VM/cloudinitExecuteEngineSetup=bool:True
+OVEHOSTED_VM/cloudinitVMStaticCIDR=str:{{ VM_IP_ADDR }}
+OVEHOSTED_VM/cloudinitVMTZ={{ 'str' if TIME_ZONE else 'none' }}:{{ TIME_ZONE if TIME_ZONE else 'None' }}
+OVEHOSTED_VM/rootSshAccess=str:yes
+OVEHOSTED_VM/cloudinitVMETCHOSTS=bool:{{ VM_ETC_HOSTS }}
+OVEHOSTED_VM/cloudinitVMDNS={{ 'str' if DNS_ADDR else 'none' }}:{{ DNS_ADDR if DNS_ADDR else 'None' }}
+OVEHOSTED_NOTIF/smtpPort=str:{{ SMTP_PORT }}
+OVEHOSTED_NOTIF/smtpServer=str:{{ SMTP_SERVER }}
+OVEHOSTED_NOTIF/sourceEmail=str:{{ SOURCE_EMAIL }}
+OVEHOSTED_NOTIF/destEmail=str:{{ DEST_EMAIL }}

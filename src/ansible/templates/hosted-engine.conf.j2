@@ -11,10 +11,11 @@ host_id=1
 console=vnc
 domainType={{ DOMAIN_TYPE }}
 {# spUUID={{ datacenter_id }} #}
-{# TODO just to avoid triggering #}
-{# 3.5 -> 3.6 upgrade code, let's see how to fix #}
+{# To avoid triggering #}
+{# 3.5 -> 3.6 upgrade code #}
 spUUID=00000000-0000-0000-0000-000000000000
 sdUUID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }}
+{# TODO: fix it #}
 connectionUUID=e29cf818-5ee5-46e1-85c1-8aeefa33e95d
 ca_cert=/etc/pki/vdsm/libvirt-spice/ca-cert.pem
 ca_subject="C=EN, L=Test, O=Test, CN=Test"
@@ -31,8 +32,7 @@ conf_image_UUID={{ he_conf_disk_details.disk.id }}
 
 # The following are used only for iSCSI storage
 iqn={{ ISCSI_TARGET }}
-{# TODO: fix it #}
-portal=1
+portal={{ ISCSI_TPGT }}
 user={{ ISCSI_USERNAME }}
 password={{ ISCSI_PASSWORD }}
 port={{ ISCSI_PORT }}
