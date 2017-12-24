@@ -273,7 +273,7 @@
       mode: 0644
     when: VM_IP_ADDR|length >= 8
   - name: Inject network configuration with guestfish
-    shell: LIBGUESTFS_BACKEND=direct virt-copy-in -a {{ he_virtio_disk_path }} "{{ LOCAL_VM_DIR }}/ifcfg-eth0" /etc/sysconfig/network-scripts
+    shell: LIBGUESTFS_BACKEND=direct guestfish -a {{ he_virtio_disk_path }} --rw -i copy-in "{{ LOCAL_VM_DIR }}/ifcfg-eth0" /etc/sysconfig/network-scripts {{ ":" }} selinux-relabel /etc/selinux/targeted/contexts/files/file_contexts /etc/sysconfig/network-scripts/ifcfg-eth0 force{{ ":" }}true
     become_user: vdsm
     become_method: sudo
     when: VM_IP_ADDR|length >= 8
