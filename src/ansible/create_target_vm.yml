@@ -1,5 +1,5 @@
 ---
-- name: Create hosted engine local vm
+- name: Create target Hosted Engine VM
   hosts: localhost
   connection: local
   tasks:
@@ -12,7 +12,7 @@
       ansible_ssh_pass: "{{ APPLIANCE_PASSWORD }}"
       ansible_user: root
   - include_tasks: auth_sso.yml
-  - name: Get local vm ip
+  - name: Get local VM IP
     shell: virsh -r net-dhcp-leases default | grep -i {{ VM_MAC_ADDR }} | awk '{ print $5 }' | cut -f1 -d'/'
     register: local_vm_ip
     changed_when: True
@@ -26,27 +26,27 @@
     retries: 50
     delay: 10
   - debug: var=host_result
-  - name: Fetch cluster id
+  - name: Fetch Cluster ID
     set_fact: cluster_id="{{ host_result.ansible_facts.ovirt_hosts[0].cluster.id }}"
-  - name: Fetch cluster facts
+  - name: Fetch Cluster facts
     ovirt_cluster_facts:
       auth: "{{ ovirt_auth }}"
     register: cluster_facts
   - debug: var=cluster_facts
-  - name: Fetch datacenter facts
+  - name: Fetch Datacenter facts
     ovirt_datacenter_facts:
       auth: "{{ ovirt_auth }}"
     register: datacenter_facts
   - debug: var=datacenter_facts
-  - name: Fetch cluster_name
+  - name: Fetch Cluster name
     set_fact: cluster_name={{ ovirt_clusters|json_query("[?id=='" + cluster_id + "'].name")|first }}
-  - name: Fetch datacenter id
+  - name: Fetch Datacenter ID
     set_fact: datacenter_id={{ ovirt_clusters|json_query("[?id=='" + cluster_id + "'].data_center.id")|first }}
-  - name: Fetch datacenter_name
+  - name: Fetch Datacenter name
     set_fact: datacenter_name={{ ovirt_datacenters|json_query("[?id=='" + datacenter_id + "'].name")|first }}
     # TODO: properly get it from the engine via REST API once properly exposed
     # see: https://bugzilla.redhat.com/show_bug.cgi?id=1542531
-  - name: Get cluster cpu model
+  - name: Get Cluster CPU model
     set_fact: cluster_cpu_model={{ ovirt_clusters|json_query("[?id=='" + cluster_id + "'].cpu.type")
       |first
       |trim
@@ -119,7 +119,7 @@
   - debug: var=external_local_vm_uuid
 - hosts: engine
   tasks:
-  - name: Find conf file for SCL PostgreSQL
+  - name: Find configuration file for SCL PostgreSQL
     shell: ls -vr1 /etc/ovirt-engine/engine.conf.d/*-scl-postgres-*.conf
     register: scl_conf_flist
     changed_when: True
@@ -139,7 +139,7 @@
     with_items:
       - { field: 'origin', value: 6 }
   - debug: var=db_vm_update
-  - name: Make the engine aware of the hosted-engine configuration image uuid
+  - name: Insert Hosted Engine configuration disk uuid into Engine database
     command: scl enable {{ scl_conf.stdout_lines[0].split('=')[1].replace('\"','') }} -- psql -d engine -c "UPDATE vdc_options SET option_value='{{ hostvars['localhost']['he_conf_disk_details']['disk']['id'] }}' WHERE option_name='HostedEngineConfigurationImageGuid' AND version='general'"
     become: true
     become_user: postgres
@@ -197,21 +197,21 @@
     register: prepareimage_results
     changed_when: True
   - debug: var=prepareimage_results
-  - name: Fetch he conf disk path
+  - name: Fetch Hosted Engine configuration disk path
     set_fact: he_conf_disk_path={{ (prepareimage_results.results|json_query("[?item.id=='" + he_conf_disk_details.id + "'].stdout")|first|from_json).path }}
-  - name: Fetch he virtio disk path
+  - name: Fetch Hosted Engine virtio disk path
     set_fact: he_virtio_disk_path={{ (prepareimage_results.results|json_query("[?item.id=='" + he_virtio_disk_details.id + "'].stdout")|first|from_json).path }}
-  - name: Fetch he virtio metadata path
+  - name: Fetch Hosted Engine virtio metadata path
     set_fact: he_metadata_disk_path={{ (prepareimage_results.results|json_query("[?item.id=='" + he_metadata_disk_details.id + "'].stdout")|first|from_json).path }}
   - debug: var=he_conf_disk_path
   - debug: var=he_virtio_disk_path
   - debug: var=he_metadata_disk_path
-  - name: Shutdown local vm
+  - name: Shutdown local VM
     virt:
       name: "{{ VM_NAME }}Local"
       command: shutdown
       uri: 'qemu+tls://{{ HOST_ADDRESS }}/system'
-  - name: Undefine local vm
+  - name: Undefine local VM
     virt:
       name: "{{ VM_NAME }}Local"
       command: undefine
@@ -280,13 +280,13 @@
       use_regex: true
     register: app_img
   - debug: var=app_img
-  - name: Copy local vm disk to shared storage
+  - name: Copy local VM disk to shared storage
     command: qemu-img convert -n -O raw {{ app_img.files[0].path }} {{ he_virtio_disk_path }}
     become_user: vdsm
     become_method: sudo
     changed_when: True
     tags: [ 'skip_ansible_lint' ]
-  - name: Generate dhcp network configuration for the engine VM
+  - name: Generate DHCP network configuration for the engine VM
     template:
       src: templates/ifcfg-eth0-dhcp.j2
       dest: "{{ LOCAL_VM_DIR }}/ifcfg-eth0"
@@ -307,19 +307,19 @@
     become_user: vdsm
     become_method: sudo
     tags: [ 'skip_ansible_lint' ]
-  - name: Extract /etc/hosts from the engine VM
+  - name: Extract /etc/hosts from the Hosted Engine VM
     shell: LIBGUESTFS_BACKEND=direct virt-copy-out -a {{ he_virtio_disk_path }} /etc/hosts "{{ LOCAL_VM_DIR }}"
     become_user: vdsm
     become_method: sudo
     when: not VM_ETC_HOSTS
     tags: [ 'skip_ansible_lint' ]
-  - name: Clean /etc/hosts for the engine VM
+  - name: Clean /etc/hosts for the Hosted Engine VM
     lineinfile:
       dest: "{{ LOCAL_VM_DIR }}/hosts"
       line: "{{ HOST_IP }} {{ HOST_ADDRESS }}"
       state: absent
     when: not VM_ETC_HOSTS
-  - name: Copy /etc/hosts back to the engine VM
+  - name: Copy /etc/hosts back to the Hosted Engine VM
     shell: LIBGUESTFS_BACKEND=direct virt-copy-in -a {{ he_virtio_disk_path }} "{{ LOCAL_VM_DIR }}"/hosts /etc
     become_user: vdsm
     become_method: sudo
@@ -336,7 +336,7 @@
       line: "{{ VM_IP_ADDR }} {{ FQDN }}"
       state: present
     when: VM_ETC_HOSTS and VM_IP_ADDR is not none
-  - name: Start broker
+  - name: Start ovirt-ha-broker service on the host
     service:
       name: ovirt-ha-broker
       state: started
@@ -349,7 +349,7 @@
     delay: 10
     changed_when: True
   - debug: var=result
-  - name: Start agent
+  - name: Start ovirt-ha-agent service on the host
     service:
       name: ovirt-ha-agent
       state: started
@@ -390,7 +390,7 @@
         retries: 24
         delay: 5
       - debug: var=local_vm_status
-      - name: Remove boostrap external VM from the engine
+      - name: Remove bootstrap external VM from the engine
         ovirt_vms:
           state: absent
           id: "{{ external_local_vm_uuid.stdout_lines|first }}"

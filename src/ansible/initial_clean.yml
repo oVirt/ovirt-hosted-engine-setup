@@ -3,7 +3,7 @@
   hosts: localhost
   connection: local
   tasks:
-  - name: Stop libvirt
+  - name: Stop libvirt service
     service:
       name: libvirtd
       state: stopped
@@ -25,7 +25,7 @@
       - { src: /usr/share/abrt/conf.d/abrt.conf, dest: /etc/abrt/abrt.conf }
       - { src: /usr/share/abrt/conf.d/plugins/CCpp.conf, dest: /etc/abrt/plugins/CCpp.conf }
       - { src: /usr/share/abrt/conf.d/plugins/vmcore.conf, dest: /etc/abrt/plugins/vmcore.conf }
-  - name: Restart abrtd
+  - name: Restart abrtd service
     service:
       name: abrtd
       state: restarted
@@ -46,15 +46,15 @@
       name: libvirtd
       state: started
       enabled: yes
-  - name: Check for leftover local engine VM
+  - name: Check for leftover local Hosted Engine VM
     shell: virsh list | grep {{ VM_NAME }}Local | cat
     changed_when: True
     register: local_vm_list
-  - name: Destroy leftover local engine VM
+  - name: Destroy leftover local Hosted Engine VM
     command: virsh destroy {{ VM_NAME }}Local
     ignore_errors: yes
     when: local_vm_list.stdout_lines|length >= 1
-  - name: Check for leftover defined local engine VM
+  - name: Check for leftover defined local Hosted Engine VM
     shell: virsh list --all | grep {{ VM_NAME }}Local | cat
     changed_when: True
     register: local_vm_list_all

@@ -110,7 +110,7 @@ class Plugin(plugin.PluginBase):
     )
     def _closeup(self):
         # TODO: use just env values
-        boostrap_vars = {
+        bootstrap_vars = {
             'APPLIANCE_OVA': self.environment[ohostedcons.VMEnv.OVF],
             'FQDN': self.environment[
                 ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
@@ -185,11 +185,11 @@ class Plugin(plugin.PluginBase):
             ]
         )
 
-        self.initial_clean_up(boostrap_vars, inventory_source)
+        self.initial_clean_up(bootstrap_vars, inventory_source)
 
         ah = ansible_utils.AnsibleHelper(
             playbook_name=ohostedcons.FileLocations.HE_AP_BOOTSTRAP_LOCAL_VM,
-            extra_vars=boostrap_vars,
+            extra_vars=bootstrap_vars,
             inventory_source=inventory_source,
         )
         self.logger.info(_('Starting local VM'))
@@ -220,10 +220,10 @@ class Plugin(plugin.PluginBase):
         # once wrapped by ansible facts and filter it by host CPU architecture
         # in order to let the user choose the cluster CPU type in advance
 
-    def initial_clean_up(self, boostrap_vars, inventory_source):
+    def initial_clean_up(self, bootstrap_vars, inventory_source):
         ah = ansible_utils.AnsibleHelper(
             playbook_name=ohostedcons.FileLocations.HE_AP_INITIAL_CLEAN,
-            extra_vars=boostrap_vars,
+            extra_vars=bootstrap_vars,
             inventory_source=inventory_source,
         )
         self.logger.info(_('Cleaning previous attempts'))

@@ -70,7 +70,7 @@
         ansible_user: root
     - name: Initial tasks
       block:
-      - name: Create dir for local vm
+      - name: Create directory for local VM
         tempfile:
           state: directory
           path: "{{ LOCAL_VM_DIR_PATH }}"
@@ -79,7 +79,7 @@
       - name: Set local vm dir path
         set_fact:
           LOCAL_VM_DIR: "{{ otopi_localvm_dir.path }}"
-      - name: Fix local vm dir permission
+      - name: Fix local VM directory permission
         file:
           state: directory
           path: "{{ LOCAL_VM_DIR }}"
@@ -93,7 +93,7 @@
           APPLIANCE_OVA_PATH: "{{ APPLIANCE_OVA }}"
         when: APPLIANCE_OVA is not none and APPLIANCE_OVA|length > 0
       - debug: var=APPLIANCE_OVA_PATH
-      - name: Extract appliance to local vm dir
+      - name: Extract appliance to local VM directory
         unarchive:
           src: "{{ APPLIANCE_OVA_PATH }}"
           dest: "{{ LOCAL_VM_DIR }}"
@@ -123,15 +123,15 @@
         with_items:
           - { src: templates/user-data.j2, dest: "{{ LOCAL_VM_DIR }}/user-data" }
           - { src: templates/meta-data.j2, dest: "{{ LOCAL_VM_DIR }}/meta-data" }
-      - name: Create iso disk
+      - name: Create ISO disk
         command: mkisofs -output {{ LOCAL_VM_DIR }}/seed.iso -volid cidata -joliet -rock -input-charset utf-8 {{ LOCAL_VM_DIR }}/meta-data {{ LOCAL_VM_DIR }}/user-data
         changed_when: True
-      - name: Create local vm
+      - name: Create local VM
         command: virt-install -n {{ VM_NAME }}Local --os-variant rhel7 --virt-type kvm --memory {{ MEM_SIZE }} --vcpus {{ VCPUS }}  --network network=default,mac={{ VM_MAC_ADDR }},model=virtio --disk {{ app_img.files[0].path }} --import --disk path={{ LOCAL_VM_DIR }}/seed.iso,device=cdrom --noautoconsole --rng /dev/random --graphics vnc --video vga --sound none --controller usb,model=none --memballoon none --boot hd,menu=off --clock kvmclock_present=yes
         register: create_local_vm
         changed_when: True
       - debug: var=create_local_vm
-      - name: Get local vm ip
+      - name: Get local VM IP
         shell: virsh -r net-dhcp-leases default | grep -i {{ VM_MAC_ADDR }} | awk '{ print $5 }' | cut -f1 -d'/'
         register: local_vm_ip
         until: local_vm_ip.stdout_lines|length >= 1
@@ -149,7 +149,7 @@
           dest: /etc/hosts
           line: "{{ local_vm_ip.stdout_lines[0] }} {{ FQDN }}"
           insertbefore: BOF
-      - name: Wait for ssh to restart on the engine VM
+      - name: Wait for SSH to restart on the local VM
         local_action:
           module: wait_for
             host='{{ FQDN }}'
@@ -168,18 +168,18 @@
   tasks:
     - name: Initial tasks
       block:
-      - name: Wait for the engine VM
+      - name: Wait for the local VM
         wait_for_connection:
           delay: 5
           timeout: 180
-      - name: Add an entry for this host on /etc/hosts on the engine VM
+      - name: Add an entry for this host on /etc/hosts on the local VM
         lineinfile:
           dest: /etc/hosts
           line: "{{ HOST_IP }} {{ HOST_ADDRESS }}"
       - name: Set FQDN
         command: hostnamectl set-hostname {{ FQDN }}
         changed_when: True
-      - name: Force the engine VM FQDN to resolve on 127.0.0.1
+      - name: Force the local VM FQDN to resolve on 127.0.0.1
         lineinfile:
           path: /etc/hosts
           regexp: '^127\.0\.0\.1'
@@ -217,21 +217,21 @@
         changed_when: True
         when: ENABLE_LIBGFAPI
       - debug: var=libgfapi_support_out
-      - name: Restart the engine for LibgfApi support
+      - name: Restart ovirt-engine service for LibgfApi support
         systemd:
           state: restarted
           name: ovirt-engine
         register: restart_libgfapi_support_out
         when: ENABLE_LIBGFAPI
       - debug: var=restart_libgfapi_support_out
-      - name: Mask services to speed up future bootstraps
+      - name: Mask cloud-init services to speed up future boot
         systemd:
           masked: yes
           name: "{{ item }}"
         with_items:
           - cloud-init-local
           - cloud-init
-      - name: Clean up boostrap answer file
+      - name: Clean up bootstrap answer file
         file:
           state: absent
           path: /root/heanswers.conf
@@ -259,7 +259,7 @@
   tasks:
     - name: Add host
       block:
-      - name: Wait for engine to start
+      - name: Wait for ovirt-engine service to start
         uri:
           url: http://{{ FQDN }}/ovirt-engine/services/health
           return_content: yes
@@ -273,7 +273,7 @@
         register: vlan_id_out
         changed_when: True
       - debug: var=vlan_id_out
-      - name: Set engine pub key as authorized key without validating the TLS/SSL certificates
+      - name: Set Engine public key as authorized key without validating the TLS/SSL certificates
         authorized_key:
           user: root
           state: present
