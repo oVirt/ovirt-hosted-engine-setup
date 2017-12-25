@@ -19,7 +19,7 @@
 
 ANSIBLE_SYNTAX_CHECK_FILES = $(srcdir)/*.yml
 
-python-syntax-check:
+ansible-syntax-check:
 if ANSIBLE_SYNTAX_CHECK
 	if [ -n "$(ANSIBLE_LINT)" ]; then \
 		$(ANSIBLE_LINT) $(ANSIBLE_SYNTAX_CHECK_FILES); \

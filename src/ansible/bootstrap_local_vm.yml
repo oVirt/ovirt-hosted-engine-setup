@@ -9,7 +9,8 @@
       path: "{{ LOCAL_VM_DIR_PATH }}"
       prefix: "{{ LOCAL_VM_DIR_PREFIX }}"
     register: otopi_localvm_dir
-  - set_fact:
+  - name: Set local vm dir path
+    set_fact:
       LOCAL_VM_DIR: "{{ otopi_localvm_dir.path }}"
   - name: Fix local vm dir permission
     file:
@@ -130,14 +131,16 @@
     when: ENABLE_LIBGFAPI
   - debug: var=libgfapi_support_out
   - name: Restart the engine for LibgfApi support
-    command: systemctl restart ovirt-engine
+    systemd:
+      state: restarted
+      name: ovirt-engine
     register: restart_libgfapi_support_out
-    changed_when: True
     when: ENABLE_LIBGFAPI
   - debug: var=restart_libgfapi_support_out
   - name: Mask services to speed up future bootstraps
-    command: systemctl mask "{{ item }}"
-    changed_when: True
+    systemd:
+      masked: yes
+      name: "{{ item }}"
     with_items:
       - cloud-init-local
       - cloud-init
@@ -206,6 +209,7 @@
   - debug: var=ovirtmgmt_table_id
   - name: Check network configuration
     command: ip route show table {{ ovirtmgmt_table_id.stdout_lines[0] }}
+    changed_when: True
     register: current_net_table
   - name: Clean network configuration
     command: ip route del {{ virbr0_route_config.stdout_lines[0] }} table {{ ovirtmgmt_table_id.stdout_lines[0] }}

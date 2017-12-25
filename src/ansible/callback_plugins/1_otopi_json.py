@@ -21,17 +21,16 @@
 
 
 # there is a default ansible callback plugin called json.py
-from __future__ import (absolute_import, division, print_function)
-
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import json
 import os
 
+from ovirt_hosted_engine_setup import constants as ohostedcons
 
 from ansible.plugins.callback import CallbackBase
-
-
-from ovirt_hosted_engine_setup import constants as ohostedcons
 
 
 class CallbackModule(CallbackBase):

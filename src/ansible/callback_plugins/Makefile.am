@@ -27,3 +27,7 @@ ansiblecallbacksdir=$(ovirthostedengineansibledir)/callback_plugins
 dist_ansiblecallbacks_DATA = \
 	1_otopi_json.py \
 	$(NULL)
+
+all-local: \
+        python-syntax-check \
+        $(NULL)

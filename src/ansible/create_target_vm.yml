@@ -31,13 +31,13 @@
     register: datacenter_facts
   - debug: var=datacenter_facts
   - name: Fetch cluster_name
-    set_fact: cluster_name="{{ ovirt_clusters|json_query(\"[?id=='" + cluster_id + "'].name\")|first }}"
+    set_fact: cluster_name={{ ovirt_clusters|json_query("[?id=='" + cluster_id + "'].name")|first }}
   - name: Fetch datacenter id
-    set_fact: datacenter_id="{{ ovirt_clusters|json_query(\"[?id=='" + cluster_id + "'].data_center.id\")|first }}"
+    set_fact: datacenter_id={{ ovirt_clusters|json_query("[?id=='" + cluster_id + "'].data_center.id")|first }}
   - name: Fetch datacenter_name
-    set_fact: datacenter_name="{{ ovirt_datacenters|json_query(\"[?id=='" + datacenter_id + "'].name\")|first }}"
+    set_fact: datacenter_name={{ ovirt_datacenters|json_query("[?id=='" + datacenter_id + "'].name")|first }}
   - name: Get cluster cpu model
-    set_fact: cluster_cpu_model="{{ ovirt_clusters|json_query(\"[?id=='" + cluster_id + "'].cpu.type\")|first|replace('Intel ', '')|replace('AMD ', '')|replace('IBM ', '')|replace(' Family', '') }}"
+    set_fact: cluster_cpu_model={{ ovirt_clusters|json_query("[?id=='" + cluster_id + "'].cpu.type")|first|replace('Intel ', '')|replace('AMD ', '')|replace('IBM ', '')|replace(' Family', '') }}
   - debug: var=cluster_cpu_model
   - name: Get storage domain details
     ovirt_storage_domains_facts:
@@ -61,7 +61,8 @@
       - { name: 'he_metadata', size: '1GiB', format: 'raw' }
       - { name: 'he_virtio_disk', size: "{{ DISK_SIZE }}GiB", format: 'cow' }
     register: add_disks
-  - set_fact:
+  - name: Register disk details
+    set_fact:
       he_sanlock_disk_details: "{{ add_disks.results[0] }}"
       he_conf_disk_details: "{{ add_disks.results[1] }}"
       he_metadata_disk_details: "{{ add_disks.results[2] }}"
@@ -141,11 +142,11 @@
     changed_when: True
   - debug: var=prepareimage_results
   - name: Fetch he conf disk path
-    set_fact: he_conf_disk_path="{{ (prepareimage_results.results|json_query(\"[?item.id=='" + he_conf_disk_details.id + "'].stdout\")|first|from_json).path }}"
+    set_fact: he_conf_disk_path={{ (prepareimage_results.results|json_query("[?item.id=='" + he_conf_disk_details.id + "'].stdout")|first|from_json).path }}
   - name: Fetch he virtio disk path
-    set_fact: he_virtio_disk_path="{{ (prepareimage_results.results|json_query(\"[?item.id=='" + he_virtio_disk_details.id + "'].stdout\")|first|from_json).path }}"
+    set_fact: he_virtio_disk_path={{ (prepareimage_results.results|json_query("[?item.id=='" + he_virtio_disk_details.id + "'].stdout")|first|from_json).path }}
   - name: Fetch he virtio metadata path
-    set_fact: he_metadata_disk_path="{{ (prepareimage_results.results|json_query(\"[?item.id=='" + he_metadata_disk_details.id + "'].stdout\")|first|from_json).path }}"
+    set_fact: he_metadata_disk_path={{ (prepareimage_results.results|json_query("[?item.id=='" + he_metadata_disk_details.id + "'].stdout")|first|from_json).path }}
   - debug: var=he_conf_disk_path
   - debug: var=he_virtio_disk_path
   - debug: var=he_metadata_disk_path
@@ -162,7 +163,9 @@
   - name: Detect ovirt-hosted-engine-ha version
     command: python -c 'from ovirt_hosted_engine_ha.agent import constants as agentconst; print(agentconst.PACKAGE_VERSION)'
     register: ha_version_out
-  - set_fact: ha_version="{{ ha_version_out.stdout_lines|first }}"
+    changed_when: True
+  - name: Set ha_version
+    set_fact: ha_version="{{ ha_version_out.stdout_lines|first }}"
   - debug: var=ha_version
   - name: Create configuration templates
     template:

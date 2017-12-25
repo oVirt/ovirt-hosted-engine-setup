@@ -43,3 +43,7 @@ SUBDIRS = \
 	library \
 	templates \
 	$(NULL)
+
+all-local: \
+        ansible-syntax-check \
+        $(NULL)
