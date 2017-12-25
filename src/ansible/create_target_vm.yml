@@ -3,16 +3,7 @@
   hosts: localhost
   connection: local
   tasks:
-  - name: Obtain SSO token with using username/password credentials
-    ovirt_auth:
-      url: https://{{ FQDN }}/ovirt-engine/api
-      username: admin@internal
-      insecure: true
-      password: "{{ ADMIN_PASSWORD }}"
-    register: ovirt_sso_auth
-    until: ovirt_sso_auth|succeeded
-    retries: 50
-    delay: 10
+  - include_tasks: auth_sso.yml
   - name: Get local vm ip
     shell: virsh -r net-dhcp-leases default | grep {{ VM_MAC_ADDR }} | awk '{ print $5 }' | cut -f1 -d'/'
     register: local_vm_ip

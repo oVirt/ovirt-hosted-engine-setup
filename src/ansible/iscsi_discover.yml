@@ -3,6 +3,7 @@
   hosts: localhost
   connection: local
   tasks:
+  - include_tasks: auth_sso.yml
   - name: iSCSI discover
     ovirt_hosts:
       name: "{{ HOST_NAME }}"
@@ -12,11 +13,7 @@
         password: "{{ ISCSI_PASSWORD }}"
         address: "{{ ISCSI_PORTAL_ADDR }}"
         port: "{{ ISCSI_PORTAL_PORT }}"
-      auth:
-        username: admin@internal
-        password: "{{ ADMIN_PASSWORD }}"
-        url: https://{{ FQDN }}/ovirt-engine/api
-        insecure: true
+      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
     register: otopi_iscsi_targets
   - debug: var=otopi_iscsi_targets
 ...

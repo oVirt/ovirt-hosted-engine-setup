@@ -168,16 +168,7 @@
     template:
       src: templates/70-hosted-engine-setup.conf.j2
       dest: /etc/ovirt-host-deploy.conf.d/70-hosted-engine-setup.conf
-  - name: Obtain SSO token with using username/password credentials
-    ovirt_auth:
-      url: https://{{ FQDN }}/ovirt-engine/api
-      username: admin@internal
-      insecure: true
-      password: "{{ ADMIN_PASSWORD }}"
-    register: ovirt_sso_auth
-    until: ovirt_sso_auth|succeeded
-    retries: 50
-    delay: 10
+  - include_tasks: auth_sso.yml
   - name: Add host
     ovirt_hosts:
       name: "{{ HOST_NAME }}"

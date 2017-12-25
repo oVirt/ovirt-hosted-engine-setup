@@ -3,16 +3,7 @@
   hosts: localhost
   connection: local
   tasks:
-  - name: Obtain SSO token with using username/password credentials
-    ovirt_auth:
-      url: https://{{ FQDN }}/ovirt-engine/api
-      username: admin@internal
-      insecure: true
-      password: "{{ ADMIN_PASSWORD }}"
-    register: ovirt_sso_auth
-    until: ovirt_sso_auth|succeeded
-    retries: 50
-    delay: 10
+  - include_tasks: auth_sso.yml
   - name: Fetch host facts
     ovirt_hosts_facts:
       pattern: name={{ HOST_NAME }}
