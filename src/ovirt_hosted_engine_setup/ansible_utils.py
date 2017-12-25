@@ -50,6 +50,10 @@ class AnsibleHelper(base.Base):
         self._playbook_name = playbook_name
         self._module_path = custom_path if custom_path \
             else ohostedcons.FileLocations.HOSTED_ENGINE_ANSIBLE_PATH
+        self._playbook_path = os.path.join(
+            self._module_path,
+            self._playbook_name
+        )
         self._inventory_source = inventory_source
         self._extra_vars = extra_vars
         self._cb_results = {}
@@ -87,9 +91,13 @@ class AnsibleHelper(base.Base):
     def run(self):
         out_fd, out_path = tempfile.mkstemp()
         vars_fd, vars_path = tempfile.mkstemp()
-        self.logger.debug('out_path: {p}'.format(p=out_path))
-        self.logger.debug('vars_path: {p}'.format(p=vars_path))
-
+        ansible_playbook_cmd = [
+            '/bin/ansible-playbook',
+            '--module-path={mp}'.format(mp=self._module_path),
+            '--inventory={i}'.format(i=self._inventory_source),
+            '--extra-vars=@{vf}'.format(vf=vars_path),
+            self._playbook_path,
+        ]
         env = os.environ.copy()
         env[ohostedcons.AnsibleCallback.OTOPI_CALLBACK_OF] = out_path
         env[
@@ -99,24 +107,18 @@ class AnsibleHelper(base.Base):
             'ANSIBLE_STDOUT_CALLBACK'
         ] = ohostedcons.AnsibleCallback.CALLBACK_NAME
 
+        self.logger.debug('ansible-playbook: cmd: %s' % ansible_playbook_cmd)
+        self.logger.debug('ansible-playbook: out_path: %s' % out_path)
+        self.logger.debug('ansible-playbook: vars_path: %s' % vars_path)
+        self.logger.debug('ansible-playbook: env: %s' % env)
+
         rc = None
         with open(vars_path, 'w') as vars_fh:
             json.dump(self._extra_vars, vars_fh)
         with open(out_path, 'r') as out_fh:
             buffer = ''
             proc = subprocess.Popen(
-                [
-                    '/bin/ansible-playbook',
-                    '--module-path={mp}'.format(mp=self._module_path),
-                    '--inventory={i}'.format(i=self._inventory_source),
-                    '--extra-vars=@{vf}'.format(vf=vars_path),
-                    '{pname}'.format(
-                        pname=os.path.join(
-                            self._module_path,
-                            self._playbook_name
-                        )
-                    ),
-                ],
+                ansible_playbook_cmd,
                 env=env,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
