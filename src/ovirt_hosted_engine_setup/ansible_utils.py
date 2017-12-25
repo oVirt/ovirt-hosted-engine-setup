@@ -82,9 +82,9 @@ class AnsibleHelper(base.Base):
                     self.logger.error(_('Unknown data type: {t}').format(t=t))
         except Exception as e:
             self.logger.error(
-                _('Failed decoding json data: {e} - "{b}"').format(
+                _('Failed decoding json data: {e} - "{d}"').format(
                     e=str(e),
-                    b=b,
+                    d=d,
                 )
             )
 
