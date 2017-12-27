@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: devel@ovirt.org\n"
-"POT-Creation-Date: 2017-11-27 15:56+0100\n"
+"POT-Creation-Date: 2017-12-27 14:45+0200\n"
 "PO-Revision-Date: 2016-12-03 11:20-0200\n"
 "Last-Translator: Wesley Morais de Oliveira\n"
 "Language-Team: \n"
@@ -15,6 +15,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Poedit-SearchPath-0: .\n"
 
+#: src/ovirt_hosted_engine_setup/ansible_utils.py:36
 #: src/ovirt_hosted_engine_setup/appliance_esetup.py:31
 #: src/ovirt_hosted_engine_setup/check_liveliness.py:37
 #: src/ovirt_hosted_engine_setup/constants.py:34
@@ -25,33 +26,36 @@ msgstr ""
 #: src/ovirt_hosted_engine_setup/tasks.py:33
 #: src/ovirt_hosted_engine_setup/util.py:37
 #: src/ovirt_hosted_engine_setup/vm_status.py:36
-#: src/ovirt_hosted_engine_setup/ansible_utils.py:36
+#: src/plugins/gr-he-ansiblesetup/core/misc.py:36
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:35
+#: src/plugins/gr-he-ansiblesetup/core/target_vm.py:35
+#: src/plugins/gr-he-common/core/answerfile.py:41
+#: src/plugins/gr-he-common/core/ha_notifications.py:38
 #: src/plugins/gr-he-common/core/misc.py:40
 #: src/plugins/gr-he-common/core/remote_answerfile.py:43
-#: src/plugins/gr-he-common/core/vdsmconf.py:38
 #: src/plugins/gr-he-common/core/shell.py:36
 #: src/plugins/gr-he-common/core/titles.py:35
+#: src/plugins/gr-he-common/core/vdsmconf.py:38
 #: src/plugins/gr-he-common/engine/ca.py:38
-#: src/plugins/gr-he-common/engine/health.py:40
 #: src/plugins/gr-he-common/engine/fqdn.py:35
-#: src/plugins/gr-he-common/network/bridge.py:42
+#: src/plugins/gr-he-common/engine/health.py:40
+#: src/plugins/gr-he-common/network/bridge.py:43
 #: src/plugins/gr-he-common/network/gateway.py:39
 #: src/plugins/gr-he-common/sanlock/lockspace.py:42
 #: src/plugins/gr-he-common/vm/boot_disk.py:58
 #: src/plugins/gr-he-common/vm/cloud_init.py:47
 #: src/plugins/gr-he-common/vm/cpu.py:37
 #: src/plugins/gr-he-common/vm/image.py:41
-#: src/plugins/gr-he-common/vm/mac.py:36
 #: src/plugins/gr-he-common/vm/machine.py:37
+#: src/plugins/gr-he-common/vm/mac.py:36
 #: src/plugins/gr-he-common/vm/memory.py:39
 #: src/plugins/gr-he-common/vm/misc.py:39
-#: src/plugins/gr-he-setup/core/answerfile.py:41
+#: src/plugins/gr-he-rollbackupgrade/core/misc.py:42
 #: src/plugins/gr-he-setup/core/conf.py:37
 #: src/plugins/gr-he-setup/core/misc.py:34
 #: src/plugins/gr-he-setup/core/preview.py:33
 #: src/plugins/gr-he-setup/engine/add_host.py:52
 #: src/plugins/gr-he-setup/engine/os_install.py:39
-#: src/plugins/gr-he-setup/ha/ha_notifications.py:38
 #: src/plugins/gr-he-setup/ha/ha_services.py:36
 #: src/plugins/gr-he-setup/libvirt/configureqemu.py:40
 #: src/plugins/gr-he-setup/network/firewall_manager.py:40
@@ -69,14 +73,26 @@ msgstr ""
 #: src/plugins/gr-he-setup/vm/cdrom.py:39
 #: src/plugins/gr-he-setup/vm/configurevm.py:40
 #: src/plugins/gr-he-setup/vm/runvm.py:42
-#: src/plugins/gr-he-rollbackupgrade/core/misc.py:42
 #: src/plugins/gr-he-upgradeappliance/core/misc.py:43
 #: src/plugins/gr-he-upgradeappliance/engine/misc.py:48
 #: src/plugins/gr-he-upgradeappliance/vm/configurevm.py:46
 #: src/plugins/gr-he-upgradeappliance/vm/runvm.py:45
-#: src/plugins/gr-he-ansiblesetup/core/misc.py:36
 msgid "ovirt-hosted-engine-setup"
 msgstr "ovirt-hosted-engine-setup"
+
+#: src/ovirt_hosted_engine_setup/ansible_utils.py:82
+#, python-brace-format
+msgid "Unknown data type: {t}"
+msgstr ""
+
+#: src/ovirt_hosted_engine_setup/ansible_utils.py:85
+#, python-brace-format
+msgid "Failed decoding json data: {e} - \"{d}\""
+msgstr ""
+
+#: src/ovirt_hosted_engine_setup/ansible_utils.py:150
+msgid "Failed executing ansible-playbook"
+msgstr ""
 
 #: src/ovirt_hosted_engine_setup/appliance_esetup.py:49
 msgid "Connecting to engine-setup on the appliance"
@@ -234,123 +250,123 @@ msgstr "Hosted Engine não está ativo!"
 msgid "Hosted Engine is up!"
 msgstr "Hosted Engine está ativo!"
 
-#: src/ovirt_hosted_engine_setup/constants.py:463
+#: src/ovirt_hosted_engine_setup/constants.py:469
 msgid "Bridge interface"
 msgstr "Interface Bridge"
 
-#: src/ovirt_hosted_engine_setup/constants.py:470
+#: src/ovirt_hosted_engine_setup/constants.py:476
 msgid "Host address"
 msgstr "Endereço do Host"
 
-#: src/ovirt_hosted_engine_setup/constants.py:478
+#: src/ovirt_hosted_engine_setup/constants.py:484
 msgid "Engine FQDN"
 msgstr "FQDN do Engine"
 
-#: src/ovirt_hosted_engine_setup/constants.py:487
+#: src/ovirt_hosted_engine_setup/constants.py:493
 msgid "Bridge name"
 msgstr "Nome da Bridge"
 
-#: src/ovirt_hosted_engine_setup/constants.py:495
+#: src/ovirt_hosted_engine_setup/constants.py:501
 msgid "Firewall manager"
 msgstr "Gerenciador de Firewall"
 
-#: src/ovirt_hosted_engine_setup/constants.py:503
+#: src/ovirt_hosted_engine_setup/constants.py:509
 msgid "Gateway address"
 msgstr "Endereço do Gateway"
 
-#: src/ovirt_hosted_engine_setup/constants.py:513
+#: src/ovirt_hosted_engine_setup/constants.py:519
 msgid "SSH daemon port"
 msgstr "Porta do daemon SSH"
 
-#: src/ovirt_hosted_engine_setup/constants.py:534
+#: src/ovirt_hosted_engine_setup/constants.py:540
 msgid "Host name for web application"
 msgstr "Nome do Host para aplicação web"
 
-#: src/ovirt_hosted_engine_setup/constants.py:562
+#: src/ovirt_hosted_engine_setup/constants.py:568
 #: src/ovirt_hosted_engine_setup/vm_status.py:49
 msgid "Host ID"
 msgstr "ID do Host"
 
-#: src/ovirt_hosted_engine_setup/constants.py:570
+#: src/ovirt_hosted_engine_setup/constants.py:576
 msgid "Storage connection"
 msgstr "Conexão ao armazenamento"
 
-#: src/ovirt_hosted_engine_setup/constants.py:631
+#: src/ovirt_hosted_engine_setup/constants.py:637
 msgid "Image size GB"
 msgstr "Tamanho da Imagem em GB"
 
-#: src/ovirt_hosted_engine_setup/constants.py:644
+#: src/ovirt_hosted_engine_setup/constants.py:650
 msgid "Storage Domain type"
 msgstr "Tipo de domínio de armazenamento"
 
-#: src/ovirt_hosted_engine_setup/constants.py:652
+#: src/ovirt_hosted_engine_setup/constants.py:658
 msgid "NFS Version"
 msgstr ""
 
-#: src/ovirt_hosted_engine_setup/constants.py:674
+#: src/ovirt_hosted_engine_setup/constants.py:680
 msgid "iSCSI Portal IP Address"
 msgstr "Endereço IP do Portal iSCSI"
 
-#: src/ovirt_hosted_engine_setup/constants.py:682
+#: src/ovirt_hosted_engine_setup/constants.py:688
 msgid "iSCSI Portal port"
 msgstr "Porta do Portal iSCSI"
 
-#: src/ovirt_hosted_engine_setup/constants.py:690
+#: src/ovirt_hosted_engine_setup/constants.py:696
 #, fuzzy
 msgid "iSCSI Target Portal Group Tag"
 msgstr "Nome do alvo iSCSI"
 
-#: src/ovirt_hosted_engine_setup/constants.py:698
+#: src/ovirt_hosted_engine_setup/constants.py:704
 msgid "iSCSI Portal user"
 msgstr "Usuário do Portal iSCSI"
 
-#: src/ovirt_hosted_engine_setup/constants.py:706
+#: src/ovirt_hosted_engine_setup/constants.py:712
 msgid "iSCSI Target Name"
 msgstr "Nome do alvo iSCSI"
 
-#: src/ovirt_hosted_engine_setup/constants.py:714
+#: src/ovirt_hosted_engine_setup/constants.py:720
 msgid "LUN ID"
 msgstr "LUN ID"
 
-#: src/ovirt_hosted_engine_setup/constants.py:783
+#: src/ovirt_hosted_engine_setup/constants.py:789
 msgid "Memory size MB"
 msgstr "Tamanho da memória em MB"
 
-#: src/ovirt_hosted_engine_setup/constants.py:791
+#: src/ovirt_hosted_engine_setup/constants.py:797
 msgid "Number of CPUs"
 msgstr "Número de CPUs"
 
-#: src/ovirt_hosted_engine_setup/constants.py:805
+#: src/ovirt_hosted_engine_setup/constants.py:811
 msgid "MAC address"
 msgstr "Endereço MAC"
 
-#: src/ovirt_hosted_engine_setup/constants.py:819
+#: src/ovirt_hosted_engine_setup/constants.py:825
 #, fuzzy
 msgid "ISO image (cdrom cloud-init)"
 msgstr "Imagem ISO (cdrom boot/cloud-init)"
 
-#: src/ovirt_hosted_engine_setup/constants.py:845
+#: src/ovirt_hosted_engine_setup/constants.py:851
 msgid "OVF archive (for disk boot)"
 msgstr "Arquivo OVF (para o disco de boot)"
 
-#: src/ovirt_hosted_engine_setup/constants.py:852
+#: src/ovirt_hosted_engine_setup/constants.py:858
 msgid "Appliance version"
 msgstr "Versão da Appliance"
 
-#: src/ovirt_hosted_engine_setup/constants.py:864
+#: src/ovirt_hosted_engine_setup/constants.py:870
 msgid "Console type"
 msgstr "Tipo de console"
 
-#: src/ovirt_hosted_engine_setup/constants.py:872
+#: src/ovirt_hosted_engine_setup/constants.py:878
 msgid "Restart engine VM after engine-setup"
 msgstr "Reiniciar a VM do engine e depois executar engine-setup"
 
-#: src/ovirt_hosted_engine_setup/constants.py:944
+#: src/ovirt_hosted_engine_setup/constants.py:950
 #, fuzzy
 msgid "Engine VM timezone"
 msgstr "VM do Engine está ativa"
 
-#: src/ovirt_hosted_engine_setup/constants.py:980
+#: src/ovirt_hosted_engine_setup/constants.py:986
 msgid "CPU Type"
 msgstr "Tipo de CPU"
 
@@ -387,7 +403,7 @@ msgstr ""
 "Não posso conectar às APIs do engine em {fqdn}:\n"
 "{details}\n"
 
-#: src/ovirt_hosted_engine_setup/engineapi.py:94
+#: src/ovirt_hosted_engine_setup/engineapi.py:97
 #, fuzzy
 msgid ""
 "The Engine API didnt accept the administrator password you provided.\n"
@@ -396,23 +412,23 @@ msgstr ""
 "A API do engine não aceitou a senha de administrador que você forneceu\n"
 "Por favor entre-a para tentar novamente."
 
-#: src/ovirt_hosted_engine_setup/engineapi.py:104
+#: src/ovirt_hosted_engine_setup/engineapi.py:107
 #, fuzzy
 msgid "Enter engine admin username [@DEFAULT@]: "
 msgstr "Entre com a senha de Administrador do engine: "
 
-#: src/ovirt_hosted_engine_setup/engineapi.py:114
-#: src/plugins/gr-he-common/engine/ca.py:197
+#: src/ovirt_hosted_engine_setup/engineapi.py:117
+#: src/plugins/gr-he-common/engine/ca.py:193
 msgid "Enter engine admin password: "
 msgstr "Entre com a senha de Administrador do engine: "
 
-#: src/ovirt_hosted_engine_setup/engineapi.py:122
+#: src/ovirt_hosted_engine_setup/engineapi.py:125
 #, fuzzy
 msgid "The Engine API didnt accept the administrator password you provided\n"
 msgstr ""
 "A API do engine não aceitou a senha de administrador que você forneceu\n"
 
-#: src/ovirt_hosted_engine_setup/engineapi.py:129
+#: src/ovirt_hosted_engine_setup/engineapi.py:132
 #, fuzzy, python-brace-format
 msgid ""
 "Cannot connect to Engine API on {fqdn}:\n"
@@ -421,7 +437,7 @@ msgstr ""
 "Não posso conectar às APIs do engine em {fqdn}:\n"
 "{details}\n"
 
-#: src/ovirt_hosted_engine_setup/engineapi.py:139
+#: src/ovirt_hosted_engine_setup/engineapi.py:142
 #, fuzzy, python-brace-format
 msgid "Cannot connect to Engine API on {fqdn}"
 msgstr "Não posso conectar às APIs do engine em {fqdn}"
@@ -494,12 +510,17 @@ msgstr "Criando VM"
 msgid "Cannot create the VM: {message}"
 msgstr "Não posso criar a VM: {message}"
 
-#: src/ovirt_hosted_engine_setup/mixins.py:316
+#: src/ovirt_hosted_engine_setup/mixins.py:307
+#, fuzzy, python-brace-format
+msgid "Failed starting the engine VM: {e}"
+msgstr "Falhou ao criar um novo disco para a VM do engine"
+
+#: src/ovirt_hosted_engine_setup/mixins.py:327
 #: src/plugins/gr-he-upgradeappliance/vm/runvm.py:102
 msgid "The VM is not powering up: please check VDSM logs"
 msgstr "A VM não está ligando: por favor verifique os logs VDSM"
 
-#: src/ovirt_hosted_engine_setup/mixins.py:342
+#: src/ovirt_hosted_engine_setup/mixins.py:353
 msgid ""
 "Cannot set temporary password for console connection.\n"
 "The VM may not have been created: please check VDSM logs"
@@ -507,7 +528,7 @@ msgstr ""
 "Não posso definir uma senha temporária para conexão do console.\n"
 "A VM pode não ter sido criada: por favor verifique os logs VDSM"
 
-#: src/ovirt_hosted_engine_setup/mixins.py:370
+#: src/ovirt_hosted_engine_setup/mixins.py:381
 msgid ""
 "Please ensure that your Guest OS is properly configured to support serial "
 "console according to your distro documentation.\n"
@@ -521,7 +542,7 @@ msgstr ""
 "Serial_Console_Setup#I_need_to_access_the_console_the_old_way para mais "
 "informações.\n"
 
-#: src/ovirt_hosted_engine_setup/mixins.py:382
+#: src/ovirt_hosted_engine_setup/mixins.py:393
 msgid ""
 "If you need to reboot the VM you will need to start it manually using the "
 "command:\n"
@@ -534,6 +555,53 @@ msgstr ""
 "hosted-engine --vm-start\n"
 "Você pode então definir uma senha temporária usando o comando:\n"
 "hosted-engine --add-console-password"
+
+#: src/ovirt_hosted_engine_setup/ohttpshandler.py:32
+#: src/ovirt_hosted_engine_setup/pkissh.py:40
+msgid "ovirt-setup-lib"
+msgstr "ovirt-setup-lib"
+
+#: src/ovirt_hosted_engine_setup/ohttpshandler.py:109
+msgid "No CN in peer certificate"
+msgstr "Nenhum certificado CN em pares"
+
+#: src/ovirt_hosted_engine_setup/ohttpshandler.py:115
+#, python-brace-format
+msgid "Invalid host '{host}' expected '{expected}'"
+msgstr "Host inválido '{host}' esperado '{expected}'"
+
+#: src/ovirt_hosted_engine_setup/pkissh.py:91
+#, python-brace-format
+msgid "Unable to read CA cert from {fname}"
+msgstr "Não é possível ler o certificado CA de {fname}"
+
+#: src/ovirt_hosted_engine_setup/pkissh.py:105
+msgid "Unable to acquire CA cert"
+msgstr "Não é possível adquirir o certificado CA"
+
+#: src/ovirt_hosted_engine_setup/pkissh.py:109
+msgid ""
+"The following CA certificate is going to be used, please immediately "
+"interrupt if not correct:"
+msgstr ""
+"O seguinte certificado CA vai ser usado, por favor interromper imediatamente "
+"se não estiver correto:"
+
+#: src/ovirt_hosted_engine_setup/pkissh.py:114
+#, python-brace-format
+msgid ""
+"Issuer: {issuer}, Subject: {subject}, Fingerprint (SHA-1): {fingerprint}"
+msgstr ""
+"Emitente: {issuer}, Assunto: {subject}, Fingerprint (SHA-1): {fingerprint}"
+
+#: src/ovirt_hosted_engine_setup/pkissh.py:125
+#, fuzzy, python-brace-format
+msgid "The CA certificate is not valid: {ex}"
+msgstr "O certificado CA não é válido: {ex}"
+
+#: src/ovirt_hosted_engine_setup/pkissh.py:163
+msgid "Unable to fetch SSH pub key"
+msgstr "Incapaz de buscar a chave pública SSH"
 
 #: src/ovirt_hosted_engine_setup/set_maintenance.py:49
 #, python-brace-format
@@ -695,19 +763,329 @@ msgstr ""
 msgid "Unable to connect the HA Broker within {t} seconds"
 msgstr "Incapaz de conectar ao {fqdn}. Erro: {error}"
 
-#: src/ovirt_hosted_engine_setup/ansible_utils.py:78
-#, python-brace-format
-msgid "Unknown data type: {t}"
+#: src/plugins/gr-he-ansiblesetup/core/misc.py:66
+#: src/plugins/gr-he-rollbackupgrade/core/misc.py:86
+#: src/plugins/gr-he-setup/core/misc.py:51
+#: src/plugins/gr-he-upgradeappliance/core/misc.py:95
+msgid "During customization use CTRL-D to abort."
+msgstr "Durante a personalização use CTRL-D para abortar."
+
+#: src/plugins/gr-he-ansiblesetup/core/misc.py:78
+#, fuzzy
+msgid ""
+"Continuing will configure this host for serving as hypervisor and create a "
+"local VM with a running engine.\n"
+"The locally running engine will be used to configure a storage domain and "
+"create a VM there.\n"
+"At the end the disk of the local VM will be moved to the shared storage.\n"
+"Are you sure you want to continue? (@VALUES@)[@DEFAULT@]: "
+msgstr ""
+"Continuando irá configurar este host para servir como hypervisor e criar uma "
+"máquina virtual onde você tem que instalar o engine depois.\n"
+"Você tem certeza que quer continuar? (@VALUES@)[@DEFAULT@]: "
+
+#: src/plugins/gr-he-ansiblesetup/core/misc.py:88
+#: src/plugins/gr-he-ansiblesetup/core/misc.py:90
+#: src/plugins/gr-he-ansiblesetup/core/misc.py:91
+#: src/plugins/gr-he-common/core/shell.py:101
+#: src/plugins/gr-he-common/core/shell.py:104
+#: src/plugins/gr-he-common/engine/ca.py:129
+#: src/plugins/gr-he-common/engine/ca.py:132
+#: src/plugins/gr-he-common/vm/cloud_init.py:500
+#: src/plugins/gr-he-common/vm/cloud_init.py:502
+#: src/plugins/gr-he-common/vm/cloud_init.py:503
+#: src/plugins/gr-he-common/vm/cloud_init.py:611
+#: src/plugins/gr-he-common/vm/cloud_init.py:613
+#: src/plugins/gr-he-common/vm/cloud_init.py:614
+#: src/plugins/gr-he-common/vm/cloud_init.py:640
+#: src/plugins/gr-he-common/vm/cloud_init.py:642
+#: src/plugins/gr-he-common/vm/cloud_init.py:643
+#: src/plugins/gr-he-common/vm/cloud_init.py:826
+#: src/plugins/gr-he-common/vm/cloud_init.py:829
+#: src/plugins/gr-he-common/vm/cpu.py:144
+#: src/plugins/gr-he-common/vm/cpu.py:147
+#: src/plugins/gr-he-common/vm/image.py:161
+#: src/plugins/gr-he-common/vm/image.py:164
+#: src/plugins/gr-he-rollbackupgrade/core/misc.py:111
+#: src/plugins/gr-he-rollbackupgrade/core/misc.py:113
+#: src/plugins/gr-he-rollbackupgrade/core/misc.py:114
+#: src/plugins/gr-he-setup/core/misc.py:70
+#: src/plugins/gr-he-setup/core/misc.py:72
+#: src/plugins/gr-he-setup/core/misc.py:73
+#: src/plugins/gr-he-setup/core/preview.py:91
+#: src/plugins/gr-he-setup/core/preview.py:93
+#: src/plugins/gr-he-setup/core/preview.py:94
+#: src/plugins/gr-he-setup/network/firewall_manager.py:155
+#: src/plugins/gr-he-setup/network/firewall_manager.py:157
+#: src/plugins/gr-he-setup/network/firewall_manager.py:159
+#: src/plugins/gr-he-upgradeappliance/core/misc.py:130
+#: src/plugins/gr-he-upgradeappliance/core/misc.py:132
+#: src/plugins/gr-he-upgradeappliance/core/misc.py:133
+#: src/plugins/gr-he-upgradeappliance/core/misc.py:284
+#: src/plugins/gr-he-upgradeappliance/core/misc.py:286
+#: src/plugins/gr-he-upgradeappliance/core/misc.py:287
+#: src/plugins/gr-he-upgradeappliance/engine/misc.py:277
+#: src/plugins/gr-he-upgradeappliance/engine/misc.py:279
+#: src/plugins/gr-he-upgradeappliance/engine/misc.py:280
+#: src/plugins/gr-he-upgradeappliance/engine/misc.py:575
+#: src/plugins/gr-he-upgradeappliance/engine/misc.py:577
+#: src/plugins/gr-he-upgradeappliance/engine/misc.py:578
+msgid "Yes"
+msgstr "Sim"
+
+#: src/plugins/gr-he-ansiblesetup/core/misc.py:88
+#: src/plugins/gr-he-common/core/shell.py:101
+#: src/plugins/gr-he-common/core/shell.py:103
+#: src/plugins/gr-he-common/engine/ca.py:129
+#: src/plugins/gr-he-common/engine/ca.py:131
+#: src/plugins/gr-he-common/vm/cloud_init.py:500
+#: src/plugins/gr-he-common/vm/cloud_init.py:611
+#: src/plugins/gr-he-common/vm/cloud_init.py:640
+#: src/plugins/gr-he-common/vm/cloud_init.py:826
+#: src/plugins/gr-he-common/vm/cloud_init.py:828
+#: src/plugins/gr-he-common/vm/cpu.py:144
+#: src/plugins/gr-he-common/vm/cpu.py:146
+#: src/plugins/gr-he-common/vm/image.py:161
+#: src/plugins/gr-he-common/vm/image.py:163
+#: src/plugins/gr-he-rollbackupgrade/core/misc.py:111
+#: src/plugins/gr-he-setup/core/misc.py:70
+#: src/plugins/gr-he-setup/core/preview.py:91
+#: src/plugins/gr-he-setup/network/firewall_manager.py:155
+#: src/plugins/gr-he-upgradeappliance/core/misc.py:130
+#: src/plugins/gr-he-upgradeappliance/core/misc.py:284
+#: src/plugins/gr-he-upgradeappliance/engine/misc.py:277
+#: src/plugins/gr-he-upgradeappliance/engine/misc.py:575
+msgid "No"
+msgstr "Não"
+
+#: src/plugins/gr-he-ansiblesetup/core/misc.py:185
+msgid "Starting local VM"
 msgstr ""
 
-#: src/ovirt_hosted_engine_setup/ansible_utils.py:81
-#, python-brace-format
-msgid "Failed decoding json data: {e} - \"{b}\""
+#: src/plugins/gr-he-ansiblesetup/core/misc.py:197
+#, fuzzy
+msgid "Failed getting local_vm_dir"
+msgstr "Falhou ao obter as informações da tarefa: {m}"
+
+#: src/plugins/gr-he-ansiblesetup/core/misc.py:209
+msgid "Cleaning previous attempts"
 msgstr ""
 
-#: src/ovirt_hosted_engine_setup/ansible_utils.py:148
-msgid "Failed executing ansible-playbook"
+#: src/plugins/gr-he-ansiblesetup/core/misc.py:226
+msgid "Cleaning temporary resources"
 msgstr ""
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:51
+#, fuzzy
+msgid ""
+"Please specify the nfs version you would like to use (@VALUES@)[@DEFAULT@]: "
+msgstr ""
+"Por favor especifique o armazenamento que você gostaria de usar (@VALUES@)"
+"[@DEFAULT@]: "
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:69
+#: src/plugins/gr-he-setup/storage/nfs.py:385
+msgid ""
+"Please specify the full shared storage connection path to use (example: "
+"host:/path): "
+msgstr ""
+"Por favor especifique um caminho de conexão de armazenamento compartilhado "
+"completo para usar (exemplo: host:/path): "
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:80
+#: src/plugins/gr-he-setup/storage/nfs.py:400
+msgid ""
+"If needed, specify additional mount options for the connection to the hosted-"
+"engine storagedomain [@DEFAULT@]: "
+msgstr ""
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:96
+#: src/plugins/gr-he-setup/storage/blockd.py:72
+msgid "Please specify the iSCSI portal IP address: "
+msgstr "Por favor especifique o endereço IP do portal iSCSI: "
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:115
+#: src/plugins/gr-he-setup/storage/blockd.py:92
+#: src/plugins/gr-he-setup/storage/blockd.py:98
+msgid "Address must be a valid IP address"
+msgstr "O endereço deve ser um endereço IP válido"
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:124
+#: src/plugins/gr-he-setup/storage/blockd.py:113
+msgid "Please specify the iSCSI portal port [@DEFAULT@]: "
+msgstr "Por favor especifique a porta do portal iSCSI [@DEFAULT@]: "
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:136
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:139
+#: src/plugins/gr-he-setup/storage/blockd.py:125
+#: src/plugins/gr-he-setup/storage/blockd.py:129
+msgid "Port must be a valid port number"
+msgstr "Porta deve ser um número de porta válido"
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:150
+#: src/plugins/gr-he-setup/storage/blockd.py:141
+msgid "Please specify the iSCSI portal user: "
+msgstr "Por favor especifique o usuário do portal iSCSI: "
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:159
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:181
+#, fuzzy, python-brace-format
+msgid "Username should not be longer than {i} characters."
+msgstr "Nome de usuário não deve ser maior do que %i caracteres."
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:171
+#: src/plugins/gr-he-setup/storage/blockd.py:169
+msgid "Please specify the iSCSI portal password: "
+msgstr "Por favor especifique a senha de portal iSCSI: "
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:205
+msgid "Discovering iSCSI targets"
+msgstr ""
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:215
+#, fuzzy
+msgid "Unable to find any target"
+msgstr "Não é possível adquirir o certificado CA"
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:229
+#: src/plugins/gr-he-setup/storage/blockd.py:207
+#, python-brace-format
+msgid ""
+"\t[{index}]\t{target}\n"
+"\t\tTPGT: {tpgt}, portals:\n"
+msgstr ""
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:239
+#: src/plugins/gr-he-setup/storage/blockd.py:215
+#, python-brace-format
+msgid "\t\t\t{portal}:{port}\n"
+msgstr ""
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:248
+#: src/plugins/gr-he-setup/storage/blockd.py:224
+#, fuzzy, python-brace-format
+msgid ""
+"The following targets have been found:\n"
+"{target_list}"
+msgstr "As seguintes VMs foram encontradas: {vms}"
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:258
+#: src/plugins/gr-he-setup/storage/blockd.py:234
+#, fuzzy
+msgid "Please select a target (@VALUES@) [@DEFAULT@]: "
+msgstr "Por favor selecione uma appliance (@VALUES@) [@DEFAULT@]: "
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:293
+msgid "Getting iSCSI LUNs list"
+msgstr ""
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:325
+msgid "Getting Fibre Channel LUNs list"
+msgstr ""
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:343
+#: src/plugins/gr-he-setup/storage/blockd.py:261
+msgid "Cannot find any LUN on the selected target"
+msgstr "Não posso encontrar qualquer LUN no alvo selecionado"
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:371
+#, fuzzy, python-brace-format
+msgid ""
+"\t[{i}]\t{id}\t{capacityGiB}GiB\t{vendorID}\t{productID}\n"
+"\t\tstatus: {status}, paths: {ap} active"
+msgstr ""
+"\t[{i}]\t{guid}\t{capacityGiB}GiB\t{vendorID}\t{productID}\n"
+"\t\tstatus: {status}, caminhos: {ap} ativos"
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:386
+#: src/plugins/gr-he-setup/storage/blockd.py:308
+#, python-brace-format
+msgid ""
+"The following luns have been found on the requested target:\n"
+"{lun_list}"
+msgstr ""
+"Os seguintes luns foram encontrados no destino solicitado:\n"
+"{lun_list}"
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:395
+#: src/plugins/gr-he-setup/storage/blockd.py:320
+msgid "Please select the destination LUN (@VALUES@) [@DEFAULT@]: "
+msgstr "Por favor selecione a LUN de destino (@VALUES@) [@DEFAULT@]: "
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:532
+#: src/plugins/gr-he-setup/storage/storage.py:980
+msgid ""
+"Please specify the storage you would like to use (@VALUES@)[@DEFAULT@]: "
+msgstr ""
+"Por favor especifique o armazenamento que você gostaria de usar (@VALUES@)"
+"[@DEFAULT@]: "
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:569
+msgid "Invalid connection path"
+msgstr ""
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:599
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:614
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:629
+#, fuzzy
+msgid "Unable to get target list"
+msgstr "Incapaz de obter o caminho do disco"
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:635
+msgid "Currently not implemented"
+msgstr ""
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:675
+#: src/plugins/gr-he-setup/storage/storage.py:1051
+msgid "Creating Storage Domain"
+msgstr "Criando Domínio de Armazenamento"
+
+#: src/plugins/gr-he-ansiblesetup/core/target_vm.py:195
+#, fuzzy
+msgid "Creating Target VM"
+msgstr "Criando VM"
+
+#: src/plugins/gr-he-common/core/answerfile.py:71
+#, python-brace-format
+msgid "Generating answer file '{name}'"
+msgstr "Gerando arquivo resposta '{name}'"
+
+#: src/plugins/gr-he-common/core/ha_notifications.py:132
+msgid ""
+"Please provide the name of the SMTP server through which we will send "
+"notifications [@DEFAULT@]: "
+msgstr ""
+"Por favor forneça o nome do servidor SMTP através do qual enviaremos "
+"notificações [@DEFAULT@]: "
+
+#: src/plugins/gr-he-common/core/ha_notifications.py:141
+msgid "Please provide the TCP port number of the SMTP server [@DEFAULT@]: "
+msgstr "Por favor forneça o número da porta TCP do servidor SMTP [@DEFAULT@]: "
+
+#: src/plugins/gr-he-common/core/ha_notifications.py:150
+msgid ""
+"Please provide the email address from which notifications will be sent "
+"[@DEFAULT@]: "
+msgstr ""
+"Por favor forneça o endereço de email por onde as notificações serão "
+"enviadas [@DEFAULT@]: "
+
+#: src/plugins/gr-he-common/core/ha_notifications.py:161
+msgid ""
+"Please provide a comma-separated list of email addresses which will get "
+"notifications [@DEFAULT@]: "
+msgstr ""
+"Por favor forneça uma lista separada por vírgulas de endereços de e-mail que "
+"irá receber notificações [@DEFAULT@]: "
+
+#: src/plugins/gr-he-common/core/ha_notifications.py:196
+msgid "Invalid input, please try again"
+msgstr "Entrada inválida, por favor tente novamente"
+
+#: src/plugins/gr-he-common/core/ha_notifications.py:201
+#, python-brace-format
+msgid "Invalid input for environment value {key}"
+msgstr "Entrada inválida para o valor ambiente {key}"
 
 #: src/plugins/gr-he-common/core/misc.py:216
 msgid "Hosted Engine successfully deployed"
@@ -880,80 +1258,6 @@ msgstr ""
 "sessão de screen usando o comando \"screen\".\n"
 "Você quer continuar mesmo assim? (@VALUES@)[@DEFAULT@]: "
 
-#: src/plugins/gr-he-common/core/shell.py:101
-#: src/plugins/gr-he-common/core/shell.py:104
-#: src/plugins/gr-he-common/engine/ca.py:129
-#: src/plugins/gr-he-common/engine/ca.py:132
-#: src/plugins/gr-he-common/vm/cloud_init.py:490
-#: src/plugins/gr-he-common/vm/cloud_init.py:492
-#: src/plugins/gr-he-common/vm/cloud_init.py:493
-#: src/plugins/gr-he-common/vm/cloud_init.py:601
-#: src/plugins/gr-he-common/vm/cloud_init.py:603
-#: src/plugins/gr-he-common/vm/cloud_init.py:604
-#: src/plugins/gr-he-common/vm/cloud_init.py:630
-#: src/plugins/gr-he-common/vm/cloud_init.py:632
-#: src/plugins/gr-he-common/vm/cloud_init.py:633
-#: src/plugins/gr-he-common/vm/cloud_init.py:807
-#: src/plugins/gr-he-common/vm/cloud_init.py:810
-#: src/plugins/gr-he-common/vm/cpu.py:144
-#: src/plugins/gr-he-common/vm/cpu.py:147
-#: src/plugins/gr-he-common/vm/image.py:221
-#: src/plugins/gr-he-common/vm/image.py:224
-#: src/plugins/gr-he-setup/core/misc.py:70
-#: src/plugins/gr-he-setup/core/misc.py:72
-#: src/plugins/gr-he-setup/core/misc.py:73
-#: src/plugins/gr-he-setup/core/preview.py:91
-#: src/plugins/gr-he-setup/core/preview.py:93
-#: src/plugins/gr-he-setup/core/preview.py:94
-#: src/plugins/gr-he-setup/network/firewall_manager.py:155
-#: src/plugins/gr-he-setup/network/firewall_manager.py:157
-#: src/plugins/gr-he-setup/network/firewall_manager.py:159
-#: src/plugins/gr-he-rollbackupgrade/core/misc.py:111
-#: src/plugins/gr-he-rollbackupgrade/core/misc.py:113
-#: src/plugins/gr-he-rollbackupgrade/core/misc.py:114
-#: src/plugins/gr-he-upgradeappliance/core/misc.py:130
-#: src/plugins/gr-he-upgradeappliance/core/misc.py:132
-#: src/plugins/gr-he-upgradeappliance/core/misc.py:133
-#: src/plugins/gr-he-upgradeappliance/core/misc.py:284
-#: src/plugins/gr-he-upgradeappliance/core/misc.py:286
-#: src/plugins/gr-he-upgradeappliance/core/misc.py:287
-#: src/plugins/gr-he-upgradeappliance/engine/misc.py:277
-#: src/plugins/gr-he-upgradeappliance/engine/misc.py:279
-#: src/plugins/gr-he-upgradeappliance/engine/misc.py:280
-#: src/plugins/gr-he-upgradeappliance/engine/misc.py:575
-#: src/plugins/gr-he-upgradeappliance/engine/misc.py:577
-#: src/plugins/gr-he-upgradeappliance/engine/misc.py:578
-#: src/plugins/gr-he-ansiblesetup/core/misc.py:84
-#: src/plugins/gr-he-ansiblesetup/core/misc.py:86
-#: src/plugins/gr-he-ansiblesetup/core/misc.py:87
-msgid "Yes"
-msgstr "Sim"
-
-#: src/plugins/gr-he-common/core/shell.py:101
-#: src/plugins/gr-he-common/core/shell.py:103
-#: src/plugins/gr-he-common/engine/ca.py:129
-#: src/plugins/gr-he-common/engine/ca.py:131
-#: src/plugins/gr-he-common/vm/cloud_init.py:490
-#: src/plugins/gr-he-common/vm/cloud_init.py:601
-#: src/plugins/gr-he-common/vm/cloud_init.py:630
-#: src/plugins/gr-he-common/vm/cloud_init.py:807
-#: src/plugins/gr-he-common/vm/cloud_init.py:809
-#: src/plugins/gr-he-common/vm/cpu.py:144
-#: src/plugins/gr-he-common/vm/cpu.py:146
-#: src/plugins/gr-he-common/vm/image.py:221
-#: src/plugins/gr-he-common/vm/image.py:223
-#: src/plugins/gr-he-setup/core/misc.py:70
-#: src/plugins/gr-he-setup/core/preview.py:91
-#: src/plugins/gr-he-setup/network/firewall_manager.py:155
-#: src/plugins/gr-he-rollbackupgrade/core/misc.py:111
-#: src/plugins/gr-he-upgradeappliance/core/misc.py:130
-#: src/plugins/gr-he-upgradeappliance/core/misc.py:284
-#: src/plugins/gr-he-upgradeappliance/engine/misc.py:277
-#: src/plugins/gr-he-upgradeappliance/engine/misc.py:575
-#: src/plugins/gr-he-ansiblesetup/core/misc.py:84
-msgid "No"
-msgstr "Não"
-
 #: src/plugins/gr-he-common/core/titles.py:58
 msgid "STORAGE CONFIGURATION"
 msgstr "CONFIGURAÇÃO DO ARMAZENAMENTO"
@@ -996,27 +1300,50 @@ msgstr ""
 "Se não, por favor forneça seu cert CA em {path} antes de continuar\n"
 "(@VALUES@)[@DEFAULT@]? "
 
-#: src/plugins/gr-he-common/engine/ca.py:206
+#: src/plugins/gr-he-common/engine/ca.py:202
 msgid "Confirm engine admin password: "
 msgstr "Confirmar senha de administrador: "
 
-#: src/plugins/gr-he-common/engine/ca.py:216
-#: src/plugins/gr-he-common/vm/cloud_init.py:685
+#: src/plugins/gr-he-common/engine/ca.py:212
+#: src/plugins/gr-he-common/vm/cloud_init.py:702
 msgid "Passwords do not match"
 msgstr "Senhas não coincidem"
 
-#: src/plugins/gr-he-common/engine/ca.py:221
+#: src/plugins/gr-he-common/engine/ca.py:217
 msgid "Please specify a password"
 msgstr "Por favor especifique uma senha"
 
-#: src/plugins/gr-he-common/engine/ca.py:224
+#: src/plugins/gr-he-common/engine/ca.py:220
 msgid "Empty password not allowed for user admin"
 msgstr "Senha vazia não é permitida para o usuário admin"
 
-#: src/plugins/gr-he-common/engine/ca.py:269
+#: src/plugins/gr-he-common/engine/ca.py:265
 #, python-brace-format
 msgid "Unable to cleanup temporary CA cert file: {msg}"
 msgstr "Incapaz de limpar o arquivo cert CA temporário: {msg}"
+
+#: src/plugins/gr-he-common/engine/fqdn.py:93
+msgid ""
+"Please provide the FQDN for the engine you would like to use.\n"
+"This needs to match the FQDN that you will use for the engine installation "
+"within the VM.\n"
+"Note: This will be the FQDN of the VM you are now going to create,\n"
+"it should not point to the base host or to any other existing machine.\n"
+"Engine FQDN: "
+msgstr ""
+"Por favor forneça o FQDN para o engine que você gostaria de usar.\n"
+"Isso precisa coincidir com o FQDN que você vai usar para a instalação do "
+"engine dentro da VM.\n"
+"Nota: Este será o FQDN da VM que você está criando agora,\n"
+"não deve apontar para o host de base ou para qualquer outra maquina "
+"existente .\n"
+"Engine FQDN: "
+
+#: src/plugins/gr-he-common/engine/fqdn.py:112
+#: src/plugins/gr-he-common/vm/cloud_init.py:556
+msgid "Please input the hostname for the engine VM, not for this host."
+msgstr ""
+"Por favor insira o nome do host para a VM do engine, não para este host."
 
 #: src/plugins/gr-he-common/engine/health.py:89
 msgid "Please install and setup the engine in the VM."
@@ -1072,30 +1399,7 @@ msgstr "Engine ainda não está acessível"
 msgid "Engine is still not reachable, waiting..."
 msgstr "Engine ainda não está acessível, aguardando..."
 
-#: src/plugins/gr-he-common/engine/fqdn.py:93
-msgid ""
-"Please provide the FQDN for the engine you would like to use.\n"
-"This needs to match the FQDN that you will use for the engine installation "
-"within the VM.\n"
-"Note: This will be the FQDN of the VM you are now going to create,\n"
-"it should not point to the base host or to any other existing machine.\n"
-"Engine FQDN: "
-msgstr ""
-"Por favor forneça o FQDN para o engine que você gostaria de usar.\n"
-"Isso precisa coincidir com o FQDN que você vai usar para a instalação do "
-"engine dentro da VM.\n"
-"Nota: Este será o FQDN da VM que você está criando agora,\n"
-"não deve apontar para o host de base ou para qualquer outra maquina "
-"existente .\n"
-"Engine FQDN: "
-
-#: src/plugins/gr-he-common/engine/fqdn.py:112
-#: src/plugins/gr-he-common/vm/cloud_init.py:546
-msgid "Please input the hostname for the engine VM, not for this host."
-msgstr ""
-"Por favor insira o nome do host para a VM do engine, não para este host."
-
-#: src/plugins/gr-he-common/network/bridge.py:107
+#: src/plugins/gr-he-common/network/bridge.py:108
 msgid ""
 "hosted-engine cannot be deployed while NetworkManager is running, please "
 "stop and disable it before proceeding"
@@ -1103,23 +1407,23 @@ msgstr ""
 "hosted-engine não pode ser implantado enquanto NetworkManager estiver "
 "funcionando, por favor, pare e desative-o antes de continuar"
 
-#: src/plugins/gr-he-common/network/bridge.py:129
+#: src/plugins/gr-he-common/network/bridge.py:130
 #, python-brace-format
 msgid "Bridge {bridge} already created"
 msgstr "Bridge {bridge} já criada"
 
-#: src/plugins/gr-he-common/network/bridge.py:180
+#: src/plugins/gr-he-common/network/bridge.py:188
 #, python-brace-format
 msgid ""
 "Bond {bondname} is on mode {bondmode}, modes {invalid} are not supported"
 msgstr ""
 
-#: src/plugins/gr-he-common/network/bridge.py:193
+#: src/plugins/gr-he-common/network/bridge.py:201
 #, python-brace-format
 msgid "Allowing anyway, as enforced by {key}={val}"
 msgstr ""
 
-#: src/plugins/gr-he-common/network/bridge.py:216
+#: src/plugins/gr-he-common/network/bridge.py:224
 #, python-brace-format
 msgid ""
 "The following existing interfaces are not suitable for vdsm: {enslaved}. You "
@@ -1129,11 +1433,11 @@ msgstr ""
 "{enslaved}. Você pode querer tirar uma interface de uma bridge para ser "
 "capaz de usá-la"
 
-#: src/plugins/gr-he-common/network/bridge.py:224
+#: src/plugins/gr-he-common/network/bridge.py:232
 msgid "A Network interface is required"
 msgstr "Uma interface de rede é necessária"
 
-#: src/plugins/gr-he-common/network/bridge.py:235
+#: src/plugins/gr-he-common/network/bridge.py:243
 #, python-brace-format
 msgid ""
 "Please indicate a nic to set {bridge} bridge on: (@VALUES@) [@DEFAULT@]: "
@@ -1141,7 +1445,7 @@ msgstr ""
 "Por favor indique um NIC para definir {bridge} bridge em: (@VALUES@) "
 "[@DEFAULT@]: "
 
-#: src/plugins/gr-he-common/network/bridge.py:285
+#: src/plugins/gr-he-common/network/bridge.py:293
 #, python-brace-format
 msgid ""
 "Unable to uniquely detect the interface where Bridge {bridge} has been "
@@ -1150,21 +1454,21 @@ msgstr ""
 "Incapaz de detectar exclusivamente a interface onde a Bridge {bridge} foi "
 "criada, {bridge_ifs} parecem ser alternativas válidas"
 
-#: src/plugins/gr-he-common/network/bridge.py:298
+#: src/plugins/gr-he-common/network/bridge.py:306
 #, python-brace-format
 msgid ""
 "Unable to detect the interface where Bridge {bridge} has been created on"
 msgstr "Incapaz de detectar a interface onde a Bridge {bridge} foi criada"
 
-#: src/plugins/gr-he-common/network/bridge.py:345
+#: src/plugins/gr-he-common/network/bridge.py:353
 msgid "Cannot acquire nic/bond/vlan address"
 msgstr "Não posso coletar os endereços nic/bond/vlan"
 
-#: src/plugins/gr-he-common/network/bridge.py:367
+#: src/plugins/gr-he-common/network/bridge.py:375
 msgid "Cannot acquire bridge address"
 msgstr "Não posso adquirir o endereço bridge"
 
-#: src/plugins/gr-he-common/network/bridge.py:380
+#: src/plugins/gr-he-common/network/bridge.py:388
 #, python-brace-format
 msgid ""
 "hostname '{h}' doesn't uniquely match the interface '{i}' selected for the "
@@ -1177,7 +1481,7 @@ msgstr ""
 "{o}. Por favor, certifique-se de que o hostname tem uma interface para o "
 "gerenciamento de rede."
 
-#: src/plugins/gr-he-common/network/bridge.py:431
+#: src/plugins/gr-he-common/network/bridge.py:439
 msgid "Configuring the management bridge"
 msgstr "Configurando o gerenciamento da bridge"
 
@@ -1498,21 +1802,21 @@ msgstr ""
 "Por favor insira o endereço IP a ser utilizado pela VM do engine "
 "[@DEFAULT@]: "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:280
+#: src/plugins/gr-he-common/vm/cloud_init.py:290
 #, python-brace-format
 msgid "The engine VM will be configured to use {cidr}"
 msgstr "A VM do engine será configurada para usar {cidr}"
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:298
+#: src/plugins/gr-he-common/vm/cloud_init.py:308
 msgid "Just three DNS addresses are supported"
 msgstr "Apenas três endereços DNS são suportados"
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:304
+#: src/plugins/gr-he-common/vm/cloud_init.py:314
 #, python-brace-format
 msgid "'{ip}' doesn't look like a valid IP address"
 msgstr "'{ip}' não se parece com um endereço IP válido"
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:324
+#: src/plugins/gr-he-common/vm/cloud_init.py:334
 msgid ""
 "Please provide a comma-separated list (max 3) of IP addresses of domain name "
 "servers for the engine VM\n"
@@ -1522,20 +1826,20 @@ msgstr ""
 "de servidores de nomes de domínio para VM do engine\n"
 "VM Engine DNS (deixá-la vazia para pular) [@DEFAULT@]: "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:353
+#: src/plugins/gr-he-common/vm/cloud_init.py:363
 msgid "Detecting host timezone."
 msgstr ""
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:363
+#: src/plugins/gr-he-common/vm/cloud_init.py:373
 #, python-brace-format
 msgid "{fname} is not a symlink to a timezone definition."
 msgstr ""
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:371
+#: src/plugins/gr-he-common/vm/cloud_init.py:381
 msgid "Unable to detect host timezone. Engine VM timezone will be set to UTC. "
 msgstr ""
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:485
+#: src/plugins/gr-he-common/vm/cloud_init.py:495
 msgid ""
 "Would you like to use cloud-init to customize the appliance on the first "
 "boot (@VALUES@)[@DEFAULT@]? "
@@ -1543,7 +1847,7 @@ msgstr ""
 "Gostaria de usar cloud-init para personalizar a appliance na primeira "
 "inicialização (@VALUES@)[@DEFAULT@]? "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:497
+#: src/plugins/gr-he-common/vm/cloud_init.py:507
 msgid ""
 "Would you like to generate on-fly a cloud-init ISO image (of no-cloud type)\n"
 "or do you have an existing one (@VALUES@)[@DEFAULT@]? "
@@ -1551,17 +1855,17 @@ msgstr ""
 "Gostaria de gerar uma imagem ISO on-fly cloud-init (do tipo no-cloud )\n"
 "ou você já tem uma existente (@VALUES@)[@DEFAULT@]? "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:503
-#: src/plugins/gr-he-common/vm/cloud_init.py:505
-#: src/plugins/gr-he-common/vm/cloud_init.py:506
+#: src/plugins/gr-he-common/vm/cloud_init.py:513
+#: src/plugins/gr-he-common/vm/cloud_init.py:515
+#: src/plugins/gr-he-common/vm/cloud_init.py:516
 msgid "Generate"
 msgstr "Gerar"
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:503
+#: src/plugins/gr-he-common/vm/cloud_init.py:513
 msgid "Existing"
 msgstr "Existente"
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:530
+#: src/plugins/gr-he-common/vm/cloud_init.py:540
 msgid ""
 "Please provide the FQDN you would like to use for the engine appliance.\n"
 "Note: This will be the FQDN of the engine VM you are now going to launch,\n"
@@ -1575,7 +1879,7 @@ msgstr ""
 "existente.\n"
 "VM engine FQDN: (deixe em branco para pular): "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:580
+#: src/plugins/gr-he-common/vm/cloud_init.py:590
 msgid ""
 "Please provide the domain name you would like to use for the engine "
 "appliance.\n"
@@ -1585,7 +1889,7 @@ msgstr ""
 "appliance do engine.\n"
 "VM engine Domínio: [@DEFAULT@]"
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:596
+#: src/plugins/gr-he-common/vm/cloud_init.py:606
 msgid ""
 "Automatically execute engine-setup on the engine appliance on first boot "
 "(@VALUES@)[@DEFAULT@]? "
@@ -1593,7 +1897,7 @@ msgstr ""
 "Executar automaticamente o engine-setup na appliance do engine na primeira "
 "inicialização (@VALUES@)[@DEFAULT@]? "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:625
+#: src/plugins/gr-he-common/vm/cloud_init.py:635
 msgid ""
 "Automatically restart the engine VM as a monitored service after engine-"
 "setup (@VALUES@)[@DEFAULT@]? "
@@ -1601,23 +1905,35 @@ msgstr ""
 "Reiniciar automaticamente a VM do engine como um serviço monitorado após o "
 "engine-setup (@VALUES@)[@DEFAULT@]? "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:663
-msgid ""
-"Enter root password that will be used for the engine appliance (leave it "
-"empty to skip): "
+#: src/plugins/gr-he-common/vm/cloud_init.py:670
+msgid ": "
+msgstr ""
+
+#: src/plugins/gr-he-common/vm/cloud_init.py:674
+msgid " (leave it empty to skip): "
+msgstr ""
+
+#: src/plugins/gr-he-common/vm/cloud_init.py:679
+#, fuzzy
+msgid "Enter root password that will be used for the engine appliance"
 msgstr ""
 "Digite a senha de root que será usado para a appliance do engine (deixá-la "
 "vazia para pular): "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:675
+#: src/plugins/gr-he-common/vm/cloud_init.py:692
 msgid "Confirm appliance root password: "
 msgstr "Confirmar senha de root da appliance: "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:688
+#: src/plugins/gr-he-common/vm/cloud_init.py:704
+#, fuzzy
+msgid "Password is empty"
+msgstr "Senhas não coincidem"
+
+#: src/plugins/gr-he-common/vm/cloud_init.py:707
 msgid "Skipping appliance root password"
 msgstr "Ignorando senha de root da appliance"
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:696
+#: src/plugins/gr-he-common/vm/cloud_init.py:715
 #, fuzzy
 msgid ""
 "Enter ssh public key for the root user that will be used for the engine "
@@ -1626,23 +1942,23 @@ msgstr ""
 "Digite a senha de root que será usado para a appliance do engine (deixá-la "
 "vazia para pular): "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:722
+#: src/plugins/gr-he-common/vm/cloud_init.py:741
 #, fuzzy
 msgid "The ssh key is not valid."
 msgstr "O certificado CA não é válido: {ex}"
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:733
+#: src/plugins/gr-he-common/vm/cloud_init.py:752
 #, fuzzy
 msgid "Skipping appliance root ssh public key"
 msgstr "Ignorando senha de root da appliance"
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:748
+#: src/plugins/gr-he-common/vm/cloud_init.py:767
 #, fuzzy
 msgid ""
 "Do you want to enable ssh access for the root user (@VALUES@) [@DEFAULT@]: "
 msgstr "Por favor especifique o nome de destino (@VALUES@) [@DEFAULT@]: "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:770
+#: src/plugins/gr-he-common/vm/cloud_init.py:789
 msgid ""
 "The oVirt engine appliance is not configured with a default password, please "
 "consider configuring it via cloud-init"
@@ -1650,7 +1966,7 @@ msgstr ""
 "A appliance do ovirt engine não está configurada com uma senha padrão, por "
 "favor considere configurá-la via cloud-init"
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:800
+#: src/plugins/gr-he-common/vm/cloud_init.py:819
 msgid ""
 "Add lines for the appliance itself and for this host to /etc/hosts on the "
 "engine VM?\n"
@@ -1664,7 +1980,7 @@ msgstr ""
 "engine\n"
 "(@VALUES@)[@DEFAULT@] "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:819
+#: src/plugins/gr-he-common/vm/cloud_init.py:838
 msgid ""
 "Please take care that this will simply add an entry for this host under /etc/"
 "hosts on the engine VM. If in the past you added other entries there, "
@@ -1674,7 +1990,7 @@ msgstr ""
 "este host em /etc/hosts na VM do engine. Se no passado você adicionou outras "
 "entradas lá, recuperá-las é com você."
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:1194
+#: src/plugins/gr-he-common/vm/cloud_init.py:1214
 msgid "Error generating cloud-init ISO image"
 msgstr "Erro ao gerar imagem ISO cloud-init"
 
@@ -1720,14 +2036,14 @@ msgstr ""
 msgid "Invalid number of cpu specified: {vcpu}"
 msgstr "Número de cpu especificado inválido: {vcpu}"
 
-#: src/plugins/gr-he-common/vm/image.py:135
+#: src/plugins/gr-he-common/vm/image.py:75
 #, fuzzy
 msgid "Please specify the size of the VM disk in GB: [@DEFAULT@]: "
 msgstr ""
 "Por favor especifique o tamanho do disco da VM em GB (Padrão para o "
 "requisito mínimo é): [@DEFAULT@]: "
 
-#: src/plugins/gr-he-common/vm/image.py:147
+#: src/plugins/gr-he-common/vm/image.py:87
 #, python-brace-format
 msgid ""
 "Not enough free space, about {estimate} GiB will be available within the "
@@ -1736,35 +2052,35 @@ msgstr ""
 "Não há espaço livre suficiente, cerca de {estimate} GiB estão disponíveis "
 "dentro do domínio de armazenamento (requerido {required} GiB)"
 
-#: src/plugins/gr-he-common/vm/image.py:170
+#: src/plugins/gr-he-common/vm/image.py:110
 #, python-brace-format
 msgid ""
 "Minimum requirements to fit the disk from the appliance OVF not met "
 "(required {required} GiB)"
 msgstr ""
 
-#: src/plugins/gr-he-common/vm/image.py:190
+#: src/plugins/gr-he-common/vm/image.py:130
 #, python-brace-format
 msgid ""
 "The current appliance disk is bigger than the proposed size, this upgrade "
 "procedure cannot shrink the existing disk (minimum {minimum} GiB)."
 msgstr ""
 
-#: src/plugins/gr-he-common/vm/image.py:207
+#: src/plugins/gr-he-common/vm/image.py:147
 msgid "Minimum requirements for disk size not met"
 msgstr "Os requisitos mínimos para o tamanho do disco não cumprem"
 
-#: src/plugins/gr-he-common/vm/image.py:217
+#: src/plugins/gr-he-common/vm/image.py:157
 msgid "Continue with specified disk size? (@VALUES@)[@DEFAULT@]: "
 msgstr "Continuar com o tamanho do disco especificado? (@VALUES@)[@DEFAULT@]: "
 
-#: src/plugins/gr-he-common/vm/image.py:231
-#: src/plugins/gr-he-common/vm/image.py:239
+#: src/plugins/gr-he-common/vm/image.py:171
+#: src/plugins/gr-he-common/vm/image.py:179
 #, python-brace-format
 msgid "Invalid disk size specified: {size}"
 msgstr "Tamanho do disco especificado inválido: {size}"
 
-#: src/plugins/gr-he-common/vm/image.py:288
+#: src/plugins/gr-he-common/vm/image.py:287
 #, python-brace-format
 msgid ""
 "Error: the VG on block device has capacity of only {available_gb} GiB while "
@@ -1773,7 +2089,7 @@ msgstr ""
 "Erro: o VG no dispositivo bloco tem capacidade de apenas {available_gb} GiB "
 "enquanto {required_size} GiB é necessário para a imagem"
 
-#: src/plugins/gr-he-common/vm/image.py:297
+#: src/plugins/gr-he-common/vm/image.py:296
 msgid "Creating VM Image"
 msgstr "Criando imagem da VM"
 
@@ -1888,21 +2204,62 @@ msgstr ""
 msgid "Cannot destroy the Hosted Engine VM: {error}"
 msgstr "Não posso destruir a VM do Hosted Engine: "
 
-#: src/plugins/gr-he-setup/core/answerfile.py:71
+#: src/plugins/gr-he-rollbackupgrade/core/misc.py:100
+msgid ""
+"Continuing will rollback the engine VM from a previous upgrade attempt.\n"
+"This procedure will restore an engine VM image from a backup taken during an "
+"upgrade attempt.\n"
+"The result of any action occurred after the backup creation instant could be "
+"definitively lost.\n"
+"Are you sure you want to continue? (@VALUES@)[@DEFAULT@]: "
+msgstr ""
+"Continuando irá tentar restaurar a VM do engine para uma versão prévia.\n"
+"Este procedimento irá restaurar a imagem da VM do engine a partir de um "
+"backup durante a tentativa de backup"
+
+#: src/plugins/gr-he-rollbackupgrade/core/misc.py:219
+msgid ""
+"Unable to find any backup disk: please ensure that a backup has been "
+"correctly created during a previous upgrade attempt"
+msgstr ""
+"Incapaz de encontrar qualquer disco de backup: por favor certifique-se de "
+"que um backup foi criado corretamente durante a tentativa prévia de "
+"atualização"
+
+#: src/plugins/gr-he-rollbackupgrade/core/misc.py:222
+msgid "No available backup disk"
+msgstr "Nenhum disco de backup disponível"
+
+#: src/plugins/gr-he-rollbackupgrade/core/misc.py:227
 #, python-brace-format
-msgid "Generating answer file '{name}'"
-msgstr "Gerando arquivo resposta '{name}'"
+msgid "\t[{i}] - {description}\n"
+msgstr "\t[{i}] - {description}\n"
+
+#: src/plugins/gr-he-rollbackupgrade/core/misc.py:235
+#, python-brace-format
+msgid ""
+"The following backup disk have been found on your system:\n"
+"{bd_list}"
+msgstr ""
+"O seguinte disco de backup foi encontrado em seu sistema:\n"
+"{bd_list}"
+
+#: src/plugins/gr-he-rollbackupgrade/core/misc.py:245
+msgid "Please select one of them  (@VALUES@) [@DEFAULT@]: "
+msgstr "Por favor selecione um deles (@VALUES@) [@DEFAULT@]: "
+
+#: src/plugins/gr-he-rollbackupgrade/core/misc.py:309
+#, python-brace-format
+msgid ""
+"Error on volume size: the selected backup (size {source}) doesn't fit the "
+"engine VM disk (size {destination})"
+msgstr ""
+"Erro no tamanho do volume: o backup selecionado (size {source}) não cabe no "
+"disco da VM do engine (size {destination})"
 
 #: src/plugins/gr-he-setup/core/conf.py:58
 msgid "Updating hosted-engine configuration"
 msgstr "Atualizando a configuração do hosted-engine"
-
-#: src/plugins/gr-he-setup/core/misc.py:51
-#: src/plugins/gr-he-rollbackupgrade/core/misc.py:86
-#: src/plugins/gr-he-upgradeappliance/core/misc.py:95
-#: src/plugins/gr-he-ansiblesetup/core/misc.py:62
-msgid "During customization use CTRL-D to abort."
-msgstr "Durante a personalização use CTRL-D para abortar."
 
 #: src/plugins/gr-he-setup/core/misc.py:63
 msgid ""
@@ -2161,43 +2518,6 @@ msgstr ""
 "eventualmente, faça uma limpeza manualmente {fnames} uma futura atualização "
 "pode ser afetada."
 
-#: src/plugins/gr-he-setup/ha/ha_notifications.py:128
-msgid ""
-"Please provide the name of the SMTP server through which we will send "
-"notifications [@DEFAULT@]: "
-msgstr ""
-"Por favor forneça o nome do servidor SMTP através do qual enviaremos "
-"notificações [@DEFAULT@]: "
-
-#: src/plugins/gr-he-setup/ha/ha_notifications.py:137
-msgid "Please provide the TCP port number of the SMTP server [@DEFAULT@]: "
-msgstr "Por favor forneça o número da porta TCP do servidor SMTP [@DEFAULT@]: "
-
-#: src/plugins/gr-he-setup/ha/ha_notifications.py:146
-msgid ""
-"Please provide the email address from which notifications will be sent "
-"[@DEFAULT@]: "
-msgstr ""
-"Por favor forneça o endereço de email por onde as notificações serão "
-"enviadas [@DEFAULT@]: "
-
-#: src/plugins/gr-he-setup/ha/ha_notifications.py:157
-msgid ""
-"Please provide a comma-separated list of email addresses which will get "
-"notifications [@DEFAULT@]: "
-msgstr ""
-"Por favor forneça uma lista separada por vírgulas de endereços de e-mail que "
-"irá receber notificações [@DEFAULT@]: "
-
-#: src/plugins/gr-he-setup/ha/ha_notifications.py:192
-msgid "Invalid input, please try again"
-msgstr "Entrada inválida, por favor tente novamente"
-
-#: src/plugins/gr-he-setup/ha/ha_notifications.py:197
-#, python-brace-format
-msgid "Invalid input for environment value {key}"
-msgstr "Entrada inválida para o valor ambiente {key}"
-
 #: src/plugins/gr-he-setup/ha/ha_services.py:64
 msgid ""
 "Hosted Engine HA services are already running on this system. Hosted Engine "
@@ -2271,69 +2591,15 @@ msgstr "Erro ao analisar certificado libvirt"
 msgid "Generating libvirt-spice certificates"
 msgstr "Gerando certificado libvirt-spice"
 
-#: src/plugins/gr-he-setup/storage/blockd.py:72
-msgid "Please specify the iSCSI portal IP address: "
-msgstr "Por favor especifique o endereço IP do portal iSCSI: "
-
-#: src/plugins/gr-he-setup/storage/blockd.py:92
-#: src/plugins/gr-he-setup/storage/blockd.py:98
-msgid "Address must be a valid IP address"
-msgstr "O endereço deve ser um endereço IP válido"
-
-#: src/plugins/gr-he-setup/storage/blockd.py:113
-msgid "Please specify the iSCSI portal port [@DEFAULT@]: "
-msgstr "Por favor especifique a porta do portal iSCSI [@DEFAULT@]: "
-
-#: src/plugins/gr-he-setup/storage/blockd.py:125
-#: src/plugins/gr-he-setup/storage/blockd.py:129
-msgid "Port must be a valid port number"
-msgstr "Porta deve ser um número de porta válido"
-
-#: src/plugins/gr-he-setup/storage/blockd.py:141
-msgid "Please specify the iSCSI portal user: "
-msgstr "Por favor especifique o usuário do portal iSCSI: "
-
 #: src/plugins/gr-he-setup/storage/blockd.py:152
 #, python-format
 msgid "Username should not be longer than %i characters."
 msgstr "Nome de usuário não deve ser maior do que %i caracteres."
 
-#: src/plugins/gr-he-setup/storage/blockd.py:169
-msgid "Please specify the iSCSI portal password: "
-msgstr "Por favor especifique a senha de portal iSCSI: "
-
 #: src/plugins/gr-he-setup/storage/blockd.py:180
 #, python-format
 msgid "Password should not be longer than %i characters."
 msgstr "Senha não deve ser maior do que %i caracteres."
-
-#: src/plugins/gr-he-setup/storage/blockd.py:207
-#, python-brace-format
-msgid ""
-"\t[{index}]\t{target}\n"
-"\t\tTPGT: {tpgt}, portals:\n"
-msgstr ""
-
-#: src/plugins/gr-he-setup/storage/blockd.py:215
-#, python-brace-format
-msgid "\t\t\t{portal}:{port}\n"
-msgstr ""
-
-#: src/plugins/gr-he-setup/storage/blockd.py:224
-#, fuzzy, python-brace-format
-msgid ""
-"The following targets have been found:\n"
-"{target_list}"
-msgstr "As seguintes VMs foram encontradas: {vms}"
-
-#: src/plugins/gr-he-setup/storage/blockd.py:234
-#, fuzzy
-msgid "Please select a target (@VALUES@) [@DEFAULT@]: "
-msgstr "Por favor selecione uma appliance (@VALUES@) [@DEFAULT@]: "
-
-#: src/plugins/gr-he-setup/storage/blockd.py:261
-msgid "Cannot find any LUN on the selected target"
-msgstr "Não posso encontrar qualquer LUN no alvo selecionado"
 
 #: src/plugins/gr-he-setup/storage/blockd.py:289
 #, python-brace-format
@@ -2348,19 +2614,6 @@ msgstr ""
 #, python-brace-format
 msgid ", {fp} failed"
 msgstr ", {fp} falhou"
-
-#: src/plugins/gr-he-setup/storage/blockd.py:308
-#, python-brace-format
-msgid ""
-"The following luns have been found on the requested target:\n"
-"{lun_list}"
-msgstr ""
-"Os seguintes luns foram encontrados no destino solicitado:\n"
-"{lun_list}"
-
-#: src/plugins/gr-he-setup/storage/blockd.py:320
-msgid "Please select the destination LUN (@VALUES@) [@DEFAULT@]: "
-msgstr "Por favor selecione a LUN de destino (@VALUES@) [@DEFAULT@]: "
 
 #: src/plugins/gr-he-setup/storage/blockd.py:340
 msgid ""
@@ -2511,20 +2764,6 @@ msgstr ""
 "Por favor note que o suporte à Replica 3 é necessário para o armazenamento "
 "compartilhado."
 
-#: src/plugins/gr-he-setup/storage/nfs.py:385
-msgid ""
-"Please specify the full shared storage connection path to use (example: "
-"host:/path): "
-msgstr ""
-"Por favor especifique um caminho de conexão de armazenamento compartilhado "
-"completo para usar (exemplo: host:/path): "
-
-#: src/plugins/gr-he-setup/storage/nfs.py:400
-msgid ""
-"If needed, specify additional mount options for the connection to the hosted-"
-"engine storagedomain [@DEFAULT@]: "
-msgstr ""
-
 #: src/plugins/gr-he-setup/storage/nfs.py:428
 #, python-brace-format
 msgid "Cannot access storage connection {connection}: {error}"
@@ -2603,21 +2842,10 @@ msgstr ""
 "Setup não pode configurar o Hosted Engine com pools de armazenamento "
 "conectados"
 
-#: src/plugins/gr-he-setup/storage/storage.py:980
-msgid ""
-"Please specify the storage you would like to use (@VALUES@)[@DEFAULT@]: "
-msgstr ""
-"Por favor especifique o armazenamento que você gostaria de usar (@VALUES@)"
-"[@DEFAULT@]: "
-
 #: src/plugins/gr-he-setup/storage/storage.py:1011
 #, python-brace-format
 msgid "Invalid domain type: \"{dtype}\""
 msgstr "Tipo de Domínio inválido: \"{dtype}\""
-
-#: src/plugins/gr-he-setup/storage/storage.py:1051
-msgid "Creating Storage Domain"
-msgstr "Criando Domínio de Armazenamento"
 
 #: src/plugins/gr-he-setup/storage/storage.py:1054
 msgid "Creating Storage Pool"
@@ -2756,59 +2984,6 @@ msgstr ""
 #: src/plugins/gr-he-setup/vm/runvm.py:153
 msgid "Unsuppored console type provided."
 msgstr "Tipo de console fornecido não suportado."
-
-#: src/plugins/gr-he-rollbackupgrade/core/misc.py:100
-msgid ""
-"Continuing will rollback the engine VM from a previous upgrade attempt.\n"
-"This procedure will restore an engine VM image from a backup taken during an "
-"upgrade attempt.\n"
-"The result of any action occurred after the backup creation instant could be "
-"definitively lost.\n"
-"Are you sure you want to continue? (@VALUES@)[@DEFAULT@]: "
-msgstr ""
-"Continuando irá tentar restaurar a VM do engine para uma versão prévia.\n"
-"Este procedimento irá restaurar a imagem da VM do engine a partir de um "
-"backup durante a tentativa de backup"
-
-#: src/plugins/gr-he-rollbackupgrade/core/misc.py:219
-msgid ""
-"Unable to find any backup disk: please ensure that a backup has been "
-"correctly created during a previous upgrade attempt"
-msgstr ""
-"Incapaz de encontrar qualquer disco de backup: por favor certifique-se de "
-"que um backup foi criado corretamente durante a tentativa prévia de "
-"atualização"
-
-#: src/plugins/gr-he-rollbackupgrade/core/misc.py:222
-msgid "No available backup disk"
-msgstr "Nenhum disco de backup disponível"
-
-#: src/plugins/gr-he-rollbackupgrade/core/misc.py:227
-#, python-brace-format
-msgid "\t[{i}] - {description}\n"
-msgstr "\t[{i}] - {description}\n"
-
-#: src/plugins/gr-he-rollbackupgrade/core/misc.py:235
-#, python-brace-format
-msgid ""
-"The following backup disk have been found on your system:\n"
-"{bd_list}"
-msgstr ""
-"O seguinte disco de backup foi encontrado em seu sistema:\n"
-"{bd_list}"
-
-#: src/plugins/gr-he-rollbackupgrade/core/misc.py:245
-msgid "Please select one of them  (@VALUES@) [@DEFAULT@]: "
-msgstr "Por favor selecione um deles (@VALUES@) [@DEFAULT@]: "
-
-#: src/plugins/gr-he-rollbackupgrade/core/misc.py:309
-#, python-brace-format
-msgid ""
-"Error on volume size: the selected backup (size {source}) doesn't fit the "
-"engine VM disk (size {destination})"
-msgstr ""
-"Erro no tamanho do volume: o backup selecionado (size {source}) não cabe no "
-"disco da VM do engine (size {destination})"
 
 #: src/plugins/gr-he-upgradeappliance/core/misc.py:109
 msgid ""
@@ -3310,24 +3485,6 @@ msgstr "Incapaz de gerar o arquivo temporário vm.conf: {msg}"
 msgid "Unable to cleanup the temporary vm.conf file: {msg}"
 msgstr "Incapaz de limpar o arquivo temporário vm.conf: {msg}"
 
-#: src/plugins/gr-he-ansiblesetup/core/misc.py:74
-#, fuzzy
-msgid ""
-"Continuing will configure this host for serving as hypervisor and create a "
-"local VM with a running engine.\n"
-"The locally running engine will be used to configure a storage domain and "
-"create a VM there.\n"
-"At the end the disk of the local VM will be moved to the shared storage.\n"
-"Are you sure you want to continue? (@VALUES@)[@DEFAULT@]: "
-msgstr ""
-"Continuando irá configurar este host para servir como hypervisor e criar uma "
-"máquina virtual onde você tem que instalar o engine depois.\n"
-"Você tem certeza que quer continuar? (@VALUES@)[@DEFAULT@]: "
-
-#: src/plugins/gr-he-ansiblesetup/core/misc.py:176
-msgid "Starting local VM"
-msgstr ""
-
 #~ msgid "iSCSI Portal"
 #~ msgstr "Portal iSCSI"
 
@@ -3551,36 +3708,6 @@ msgstr ""
 
 #~ msgid "GlusterFS Share Name"
 #~ msgstr "Nome do GlusterFS compartilhado"
-
-#~ msgid "ovirt-setup-lib"
-#~ msgstr "ovirt-setup-lib"
-
-#~ msgid "No CN in peer certificate"
-#~ msgstr "Nenhum certificado CN em pares"
-
-#~ msgid "Invalid host '{host}' expected '{expected}'"
-#~ msgstr "Host inválido '{host}' esperado '{expected}'"
-
-#~ msgid "Unable to read CA cert from {fname}"
-#~ msgstr "Não é possível ler o certificado CA de {fname}"
-
-#~ msgid "Unable to acquire CA cert"
-#~ msgstr "Não é possível adquirir o certificado CA"
-
-#~ msgid ""
-#~ "The following CA certificate is going to be used, please immediately "
-#~ "interrupt if not correct:"
-#~ msgstr ""
-#~ "O seguinte certificado CA vai ser usado, por favor interromper "
-#~ "imediatamente se não estiver correto:"
-
-#~ msgid ""
-#~ "Issuer: {issuer}, Subject: {subject}, Fingerprint (SHA-1): {fingerprint}"
-#~ msgstr ""
-#~ "Emitente: {issuer}, Assunto: {subject}, Fingerprint (SHA-1): {fingerprint}"
-
-#~ msgid "Unable to fetch SSH pub key"
-#~ msgstr "Incapaz de buscar a chave pública SSH"
 
 #~ msgid "Please provide the FQDN or IP of an active HE host: "
 #~ msgstr "Por favor forneça o FQDN ou IP de um host HE ativo: "

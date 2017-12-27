@@ -26,6 +26,7 @@ MAINTAINERCLEANFILES = \
 mydir=$(ovirthostedengineplugindir)/gr-he-common/core
 dist_my_PYTHON = \
 	__init__.py \
+	answerfile.py \
 	ha_notifications.py \
 	misc.py \
 	remote_answerfile.py \

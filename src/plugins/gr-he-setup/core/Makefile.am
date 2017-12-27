@@ -28,7 +28,6 @@ dist_my_PYTHON = \
 	__init__.py \
 	misc.py \
 	conf.py \
-	answerfile.py \
 	preview.py \
 	$(NULL)
 

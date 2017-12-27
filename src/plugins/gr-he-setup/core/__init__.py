@@ -22,7 +22,6 @@
 
 from otopi import util
 
-from . import answerfile
 from . import conf
 from . import misc
 from . import preview
@@ -32,7 +31,6 @@ from . import preview
 def createPlugins(context):
     misc.Plugin(context=context)
     conf.Plugin(context=context)
-    answerfile.Plugin(context=context)
     preview.Plugin(context=context)
 
 
