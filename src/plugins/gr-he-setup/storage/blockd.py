@@ -239,6 +239,10 @@ class Plugin(plugin.PluginBase):
                 default='1',
                 validValues=[i['index'] for i in f_targets],
             )
+        else:
+            tpgt = self.environment[ohostedcons.StorageEnv.ISCSI_PORTAL] or '1'
+            f_targets = [{'target': target, 'tpgt': tpgt}]
+            s_target = 1
         return (
             f_targets[int(s_target)-1]['target'],
             f_targets[int(s_target)-1]['tpgt']
