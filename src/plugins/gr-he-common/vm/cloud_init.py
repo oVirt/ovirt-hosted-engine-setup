@@ -1215,9 +1215,10 @@ class Plugin(plugin.PluginBase):
         os.unlink(f_meta_data)
         os.unlink(f_user_data)
         self.environment[ohostedcons.VMEnv.CDROM] = f_cloud_init_iso
+        os.chmod(self._directory_name, 0o710)
         os.chown(
             self._directory_name,
-            pwd.getpwnam('qemu').pw_uid,
+            pwd.getpwnam('vdsm').pw_uid,
             pwd.getpwnam('qemu').pw_uid,
         )
         os.chmod(f_cloud_init_iso, 0o600)
