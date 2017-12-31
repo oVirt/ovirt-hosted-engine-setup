@@ -25,15 +25,17 @@ MAINTAINERCLEANFILES = \
 
 ansibledir=$(ovirthostedengineansibledir)
 dist_ansible_DATA = \
+	auth_revoke.yml \
+	auth_sso.yml \
 	bootstrap_local_vm.yml \
 	create_storage_domain.yml \
 	create_target_vm.yml \
-	iscsi_discover.yml \
-	iscsi_getdevices.yml \
 	fc_getdevices.yml \
-	initial_clean.yml \
 	final_clean.yml \
 	get_network_interfaces.yml \
+	initial_clean.yml \
+	iscsi_discover.yml \
+	iscsi_getdevices.yml \
 	$(NULL)
 
 SUBDIRS = \
