@@ -73,6 +73,8 @@ Usage: $0 [--help] <command> [<command-args>]
             provided.  Otherwise, if it is set,  the environment variable
             OVIRT_HOSTED_ENGINE_CONSOLE_PASSWORD will be used.  As a last
             resort, the password will be read interactively.
+        --config-append=file
+            Load extra configuration files or answer file.
         --check-deployed
             Check whether the hosted engine has been deployed already
         --check-liveliness
