@@ -362,6 +362,8 @@ class Plugin(plugin.PluginBase):
             )
             self.logger.debug(targets)
         except ServerError as e:
+            if e.params['user']:
+                e.params['password'] = '******'
             raise RuntimeError(str(e))
 
         full_target_template = (
