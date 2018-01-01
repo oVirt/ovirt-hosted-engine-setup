@@ -267,7 +267,9 @@ class Plugin(plugin.PluginBase):
 
         f_luns = []
         lun_list = ''
-        available_luns = sorted(available_luns, key=lambda lun: lun['GUID'])
+        available_luns = sorted(
+            available_luns, key=lambda lun: lun['pathstatus'][0]['lun']
+        )
         for entry in available_luns:
             activep = 0
             failedp = 0
