@@ -26,6 +26,7 @@ import json
 import os
 import subprocess
 import tempfile
+import time
 
 from otopi import base
 
@@ -125,6 +126,7 @@ class AnsibleHelper(base.Base):
             )
             while True:
                 output = out_fh.readline()
+                time.sleep(0.1)
                 if output == '' and proc.poll() is not None:
                     break
                 if output:
