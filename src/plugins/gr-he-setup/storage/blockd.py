@@ -281,6 +281,7 @@ class Plugin(plugin.PluginBase):
             f_luns.append(
                 {
                     'index': str(len(f_luns)+1),
+                    'lun': "LUN%s" % entry['pathstatus'][0]['lun'],
                     'GUID': entry['GUID'],
                     'capacityGiB': int(entry['capacity']) / pow(2, 30),
                     'vendorID': entry['vendorID'],
@@ -292,13 +293,14 @@ class Plugin(plugin.PluginBase):
             )
         for entry in f_luns:
             lun_list += _(
-                '\t[{i}]\t{guid}\t{capacityGiB}GiB\t{vendorID}\t{productID}\n'
+                '\t[{i}]\t{lun}\t{guid}\t{capGiB}GiB\t{venID}\t{productID}\n'
                 '\t\tstatus: {status}, paths: {ap} active'
             ).format(
                 i=entry['index'],
+                lun=entry['lun'],
                 guid=entry['GUID'],
-                capacityGiB=entry['capacityGiB'],
-                vendorID=entry['vendorID'],
+                capGiB=entry['capacityGiB'],
+                venID=entry['vendorID'],
                 productID=entry['productID'],
                 status=entry['status'],
                 ap=entry['activep'],
