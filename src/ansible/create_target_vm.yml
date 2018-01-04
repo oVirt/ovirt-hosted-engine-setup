@@ -45,55 +45,28 @@
       auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
     register: storage_domain_details
   - debug: var=storage_domain_details
-  - name: Add he sanlock disk
+  - name: Add HE disks
     ovirt_disk:
-      name: he_sanlock
-      size: 1GiB
-      format: raw
+      name: "{{ item.name }}"
+      size: "{{ item.size }}"
+      format: "{{ item.format }}"
       interface: virtio
       storage_domain: "{{ STORAGE_DOMAIN_NAME }}"
       wait: True
       timeout: 600
       auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
-    register: he_sanlock_disk_details
-  - debug: var=he_sanlock_disk_details
-  - name: Add he conf disk
-    ovirt_disk:
-      name: HostedEngineConfigurationImage
-      size: 1GiB
-      format: raw
-      interface: virtio
-      storage_domain: "{{ STORAGE_DOMAIN_NAME }}"
-      wait: True
-      timeout: 600
-      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
-    register: he_conf_disk_details
-  - debug: var=he_conf_disk_details
-  - name: Add he metadata disk
-    ovirt_disk:
-      name: he_metadata
-      size: 1GiB
-      format: raw
-      interface: virtio
-      storage_domain: "{{ STORAGE_DOMAIN_NAME }}"
-      wait: True
-      timeout: 600
-      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
-    register: he_metadata_disk_details
-  - debug: var=he_metadata_disk_details
-  - name: Add he disk
-    ovirt_disk:
-      name: he_virtio_disk
-      size: "{{ DISK_SIZE }}GiB"
-      format: cow
-      interface: virtio
-      storage_domain: "{{ STORAGE_DOMAIN_NAME }}"
-      bootable: true
-      wait: True
-      timeout: 7200
-      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
-    register: he_virtio_disk_details
-  - debug: var=he_virtio_disk_details
+    with_items:
+      - { name: 'he_sanlock', size: '1GiB', format: 'raw' }
+      - { name: 'HostedEngineConfigurationImage', size: '1GiB', format: 'raw' }
+      - { name: 'he_metadata', size: '1GiB', format: 'raw' }
+      - { name: 'he_virtio_disk', size: "{{ DISK_SIZE }}GiB", format: 'cow' }
+    register: add_disks
+  - set_fact:
+      he_sanlock_disk_details: "{{ add_disks.results[0] }}"
+      he_conf_disk_details: "{{ add_disks.results[1] }}"
+      he_metadata_disk_details: "{{ add_disks.results[2] }}"
+      he_virtio_disk_details: "{{ add_disks.results[3] }}"
+  - debug: var=add_disks
   - name: Add VM
     ovirt_vms:
       state: stopped
