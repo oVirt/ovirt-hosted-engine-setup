@@ -43,14 +43,13 @@
       use_regex: true
     register: app_img
   - debug: var=app_img
-  - name: Create cloud init user-data file
+  - name: Create cloud init user-data and meta-data files
     template:
-      src: templates/user-data.j2
-      dest: "{{ LOCAL_VM_DIR }}/user-data"
-  - name: Create cloud init meta-data file
-    template:
-      src: templates/meta-data.j2
-      dest: "{{ LOCAL_VM_DIR }}/meta-data"
+      src: "{{ item.src }}"
+      dest: "{{ item.dest }}"
+    with_items:
+      - { src: templates/user-data.j2, dest: "{{ LOCAL_VM_DIR }}/user-data" }
+      - { src: templates/meta-data.j2, dest: "{{ LOCAL_VM_DIR }}/meta-data" }
   - name: Create iso disk
     command: mkisofs -output {{ LOCAL_VM_DIR }}/seed.iso -volid cidata -joliet -rock -input-charset utf-8 {{ LOCAL_VM_DIR }}/meta-data {{ LOCAL_VM_DIR }}/user-data
     changed_when: True
@@ -136,12 +135,12 @@
     changed_when: True
     when: ENABLE_LIBGFAPI
   - debug: var=restart_libgfapi_support_out
-  - name: Mask cloud-init-local to speed up future bootstraps
-    command: systemctl mask cloud-init-local
+  - name: Mask services to speed up future bootstraps
+    command: systemctl mask "{{ item }}"
     changed_when: True
-  - name: Mask cloud-init to speed up future bootstraps
-    command: systemctl mask cloud-init
-    changed_when: True
+    with_items:
+      - cloud-init-local
+      - cloud-init
   - name: Clean up boostrap answer file
     file:
       state: absent

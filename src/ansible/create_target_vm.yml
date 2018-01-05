@@ -191,26 +191,16 @@
     register: ha_version_out
   - set_fact: ha_version="{{ ha_version_out.stdout_lines|first }}"
   - debug: var=ha_version
-  - name: Create temp vm conf
+  - name: Create configuration templates
     template:
-      src: templates/vm.conf.j2
-      dest: "{{ LOCAL_VM_DIR }}/vm.conf"
-  - name: Create temp broker conf
-    template:
-      src: templates/broker.conf.j2
-      dest: "{{ LOCAL_VM_DIR }}/broker.conf"
-  - name: Create version file
-    template:
-      src: templates/version.j2
-      dest: "{{ LOCAL_VM_DIR }}/version"
-  - name: Create he answers
-    template:
-      src: templates/fhanswers.conf.j2
-      dest: "{{ LOCAL_VM_DIR }}/fhanswers.conf"
-  - name: Create hosted engine conf
-    template:
-      src: templates/hosted-engine.conf.j2
-      dest: "{{ LOCAL_VM_DIR }}/hosted-engine.conf"
+      src: "{{ item.src }}"
+      dest: "{{ item.dest }}"
+    with_items:
+      - { src: templates/vm.conf.j2, dest: "{{ LOCAL_VM_DIR }}/vm.conf" }
+      - { src: templates/broker.conf.j2, dest: "{{ LOCAL_VM_DIR }}/broker.conf" }
+      - { src: templates/version.j2, dest: "{{ LOCAL_VM_DIR }}/version" }
+      - { src: templates/fhanswers.conf.j2, dest: "{{ LOCAL_VM_DIR }}/fhanswers.conf" }
+      - { src: templates/hosted-engine.conf.j2, dest: "{{ LOCAL_VM_DIR }}/hosted-engine.conf" }
   - name: Create configuration archive
     command: tar --record-size=20480 -cvf {{ he_conf_disk_details.disk.image_id }} vm.conf broker.conf version fhanswers.conf hosted-engine.conf
     args:
@@ -221,14 +211,13 @@
     file:
       path: /var/run/ovirt-hosted-engine-ha
       state: directory
-  - name: Copy vm.conf to the right location on host
+  - name: Copy configuration files to the right location on host
     copy:
-      src: "{{ LOCAL_VM_DIR }}/vm.conf"
-      dest: /var/run/ovirt-hosted-engine-ha
-  - name: Copy hosted-engine.conf to the right location on host
-    copy:
-      src: "{{ LOCAL_VM_DIR }}/hosted-engine.conf"
-      dest: /etc/ovirt-hosted-engine/
+      src: "{{ item.src }}"
+      dest: "{{ item.dest }}"
+    with_items:
+      - { src: "{{ LOCAL_VM_DIR }}/vm.conf", dest: /var/run/ovirt-hosted-engine-ha }
+      - { src: "{{ LOCAL_VM_DIR }}/hosted-engine.conf", dest: /etc/ovirt-hosted-engine/ }
   - name: Copy configuration archive to storage
     command: dd bs=20480 count=1 oflag=direct if="{{ LOCAL_VM_DIR }}/{{ he_conf_disk_details.disk.image_id }}" of="{{ he_conf_disk_path }}"
     become_user: vdsm

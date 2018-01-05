@@ -30,21 +30,15 @@
       state: restarted
   - name: Drop libvirt sasl2 configuration by vdsm
     command: sed -i '/## start vdsm-4.[0-9]\+.[0-9]\+ configuration/,/## end vdsm configuration/d' /etc/sasl2/libvirt.conf
-  - name: Stop and disable ovirt-ha-agent
+  - name: Stop and disable services
     service:
-      name: ovirt-ha-agent
+      name: "{{ item }}"
       state: stopped
       enabled: no
-  - name: Stop and disable ovirt-ha-broker
-    service:
-      name: ovirt-ha-broker
-      state: stopped
-      enabled: no
-  - name: Stop and disable vdsmd
-    service:
-      name: vdsmd
-      state: stopped
-      enabled: no
+    with_items:
+      - ovirt-ha-agent
+      - ovirt-ha-broker
+      - vdsmd
   - name: Start libvirt
     service:
       name: libvirtd
