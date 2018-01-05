@@ -174,7 +174,7 @@
       state: present
       public_key: true
       address: "{{ HOST_ADDRESS }}"
-      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
+      auth: "{{ ovirt_auth }}"
     async: 1
     poll: 0
   # all of the next is a workaroud for the network issue, vdsm installation breaks the routing and it needs to be fixed
@@ -182,7 +182,7 @@
   - name: Wait for the host to become non operational
     ovirt_hosts_facts:
       pattern: name={{ HOST_NAME }}
-      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
+      auth: "{{ ovirt_auth }}"
     register: host_result
     until: host_result|succeeded and host_result.ansible_facts.ovirt_hosts|length >= 1 and ("'non_operational' in host_result.ansible_facts.ovirt_hosts[0].status" or "'up' in host_result.ansible_facts.ovirt_hosts[0].status")
     retries: 150
@@ -221,7 +221,7 @@
   - name: Wait for the host to be up
     ovirt_hosts_facts:
       pattern: name={{ HOST_NAME }} status=up
-      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
+      auth: "{{ ovirt_auth }}"
     register: host_result
     until: host_result|succeeded and host_result.ansible_facts.ovirt_hosts|length >= 1
     retries: 50

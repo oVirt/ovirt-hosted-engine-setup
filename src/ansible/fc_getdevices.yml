@@ -9,7 +9,7 @@
       host: "{{ HOST_NAME }}"
       fcp:
         lun_id: -1 # currently it is unused and I use it to turn on FC filtering
-      auth: "{{ ovirt_sso_auth.ansible_facts.ovirt_auth }}"
+      auth: "{{ ovirt_auth }}"
     register: otopi_fc_devices
   - debug: var=otopi_fc_devices
 ...
