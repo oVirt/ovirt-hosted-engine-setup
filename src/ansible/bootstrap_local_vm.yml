@@ -59,7 +59,7 @@
     changed_when: True
   - debug: var=create_local_vm
   - name: Get local vm ip
-    shell: virsh -r net-dhcp-leases default | grep {{ VM_MAC_ADDR }} | awk '{ print $5 }' | cut -f1 -d'/'
+    shell: virsh -r net-dhcp-leases default | grep -i {{ VM_MAC_ADDR }} | awk '{ print $5 }' | cut -f1 -d'/'
     register: local_vm_ip
     until: local_vm_ip.stdout_lines|length >= 1
     retries: 50

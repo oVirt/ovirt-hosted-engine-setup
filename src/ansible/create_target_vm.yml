@@ -5,7 +5,7 @@
   tasks:
   - include_tasks: auth_sso.yml
   - name: Get local vm ip
-    shell: virsh -r net-dhcp-leases default | grep {{ VM_MAC_ADDR }} | awk '{ print $5 }' | cut -f1 -d'/'
+    shell: virsh -r net-dhcp-leases default | grep -i {{ VM_MAC_ADDR }} | awk '{ print $5 }' | cut -f1 -d'/'
     register: local_vm_ip
     changed_when: True
   - debug: var=local_vm_ip
