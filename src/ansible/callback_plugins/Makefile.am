@@ -26,6 +26,7 @@ MAINTAINERCLEANFILES = \
 ansiblecallbacksdir=$(ovirthostedengineansibledir)/callback_plugins
 dist_ansiblecallbacks_DATA = \
 	1_otopi_json.py \
+	2_ovirt_logger.py \
 	$(NULL)
 
 all-local: \

@@ -24,6 +24,8 @@
 import gettext
 import json
 import os
+import random
+import string
 import subprocess
 import tempfile
 import time
@@ -103,10 +105,31 @@ class AnsibleHelper(base.Base):
         env[ohostedcons.AnsibleCallback.OTOPI_CALLBACK_OF] = out_path
         env[
             'ANSIBLE_CALLBACK_WHITELIST'
-        ] = ohostedcons.AnsibleCallback.CALLBACK_NAME
+        ] = '{com},{log}'.format(
+            com=ohostedcons.AnsibleCallback.CALLBACK_NAME,
+            log=ohostedcons.AnsibleCallback.LOGGER_CALLBACK_NAME,
+        )
         env[
             'ANSIBLE_STDOUT_CALLBACK'
         ] = ohostedcons.AnsibleCallback.CALLBACK_NAME
+        env[
+            'ANSIBLE_LOG_PATH'
+        ] = os.path.join(
+            ohostedcons.FileLocations.OVIRT_HOSTED_ENGINE_SETUP_LOGDIR,
+            "%s-ansible-%s-%s-%s.log" % (
+                ohostedcons.FileLocations.OVIRT_HOSTED_ENGINE_SETUP,
+                os.path.splitext(self._playbook_name)[0],
+                time.strftime("%Y%m%d%H%M%S"),
+                ''.join(
+                    [
+                        random.choice(
+                            string.ascii_lowercase +
+                            string.digits
+                        ) for i in range(6)
+                    ]
+                )
+            )
+        )
 
         self.logger.debug('ansible-playbook: cmd: %s' % ansible_playbook_cmd)
         self.logger.debug('ansible-playbook: out_path: %s' % out_path)

@@ -1209,6 +1209,7 @@ class AnsibleCallback(object):
     BODY = 'OVEHOSTED_AC/body'
     OTOPI_CALLBACK_OF = 'OTOPI_CALLBACK_OF'
     CALLBACK_NAME = '1_otopi_json'
+    LOGGER_CALLBACK_NAME = '2_ovirt_logger'
 
 
 # vim: expandtab tabstop=4 shiftwidth=4
