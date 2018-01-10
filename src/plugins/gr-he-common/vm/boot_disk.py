@@ -80,9 +80,7 @@ class ImageTransaction(transaction.TransactionElement):
         Return path of the volume file inside the domain
         """
         return heconflib.get_volume_path(
-            self._parent.environment[
-                ohostedcons.StorageEnv.DOMAIN_TYPE
-            ],
+            self._parent.environment[ohostedcons.StorageEnv.SP_UUID],
             self._parent.environment[ohostedcons.StorageEnv.SD_UUID],
             self._parent.environment[ohostedcons.StorageEnv.IMG_UUID],
             self._parent.environment[ohostedcons.StorageEnv.VOL_UUID]
