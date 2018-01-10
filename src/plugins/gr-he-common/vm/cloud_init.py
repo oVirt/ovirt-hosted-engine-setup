@@ -486,6 +486,11 @@ class Plugin(plugin.PluginBase):
         ] is None:
             self.environment[ohostedcons.CloudInit.VM_TZ] = self._get_host_tz()
 
+        if self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]:
+            self.environment[
+                ohostedcons.CloudInit.GENERATE_ISO
+            ] = ohostedcons.Const.CLOUD_INIT_GENERATE
+
         if self.environment[
             ohostedcons.CloudInit.GENERATE_ISO
         ] is None:
