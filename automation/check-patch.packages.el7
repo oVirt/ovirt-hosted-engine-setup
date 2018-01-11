@@ -4,7 +4,9 @@ automake
 gettext-devel
 git
 make
+otopi
 ovirt-engine-sdk-python
+python-dateutil
 python-pep8
 python2-devel
 pyflakes

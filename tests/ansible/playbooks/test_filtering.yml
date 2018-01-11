@@ -1,0 +1,52 @@
+---
+- name: Test Filtering
+  hosts: localhost
+  connection: local
+  tasks:
+  - name: init he_filtered_tokens
+    set_fact:
+      he_filtered_tokens: []
+    failed_when: false
+  - name: add a secret to he_filtered_tokens
+    set_fact:
+      he_filtered_tokens: >
+        {{ he_filtered_tokens }} + [ 'secret_data_1' ]
+    failed_when: false
+  - name: add another secret to he_filtered_tokens
+    set_fact:
+      he_filtered_tokens: >
+        {{ he_filtered_tokens }} + [ 'secret_data_2' ]
+    failed_when: false
+  - name: init he_filtered_tokens_vars
+    set_fact:
+      he_filtered_tokens_vars: []
+    failed_when: false
+  - name: add a secret key to he_filtered_tokens_vars
+    set_fact:
+      he_filtered_tokens_vars: >
+        {{ he_filtered_tokens_vars }} + [ 'secret_var_a' ]
+    failed_when: false
+  - name: init he_filtered_tokens_re
+    set_fact:
+      he_filtered_tokens_re: []
+    failed_when: false
+  - name: add a secret regular expression to he_filtered_tokens_re
+    set_fact:
+      he_filtered_tokens_re: >
+        {{ he_filtered_tokens_re }} + [ 'secret start marker(?P<filter>.*)secret end marker' ]
+    failed_when: false
+  - name: set secret_var_c to something secret
+    set_fact: secret_var_c='secret start marker secret_data_4 secret_data_5 secret end marker'
+    failed_when: false
+  - name: set secret_var_b to secret_data_1
+    set_fact: secret_var_b=secret_data_1
+    failed_when: false
+  - name: set secret_var_a
+    set_fact: secret_var_a=secret_data_6
+    failed_when: false
+  - debug: var=secret_var_a
+  - name: Display all variables/facts known for a host
+    debug:
+      var: hostvars[inventory_hostname]
+
+...
