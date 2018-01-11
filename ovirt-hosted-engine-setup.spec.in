@@ -44,6 +44,7 @@ Requires:       openssh-server
 Requires:       openssl
 Requires:       pyliblzma
 Requires:       python
+Requires:       python-dateutil
 Requires:       python-ethtool >= 0.6-3
 Requires:       python-netaddr
 Requires:       python-libguestfs

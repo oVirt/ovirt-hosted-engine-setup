@@ -113,7 +113,7 @@ class AnsibleHelper(base.Base):
             'ANSIBLE_STDOUT_CALLBACK'
         ] = ohostedcons.AnsibleCallback.CALLBACK_NAME
         env[
-            'ANSIBLE_LOG_PATH'
+            'HE_ANSIBLE_LOG_PATH'
         ] = os.path.join(
             ohostedcons.FileLocations.OVIRT_HOSTED_ENGINE_SETUP_LOGDIR,
             "%s-ansible-%s-%s-%s.log" % (

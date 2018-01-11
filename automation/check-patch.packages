@@ -6,7 +6,9 @@ dnf-command(builddep)
 gettext-devel
 git
 make
+otopi
 ovirt-engine-sdk-python
+python-dateutil
 pyflakes
 pytest
 python-isort
