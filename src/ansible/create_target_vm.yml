@@ -50,16 +50,17 @@
       name: "{{ item.name }}"
       size: "{{ item.size }}"
       format: "{{ item.format }}"
+      sparse: "{{ item.sparse }}"
       interface: virtio
       storage_domain: "{{ STORAGE_DOMAIN_NAME }}"
       wait: True
       timeout: 600
       auth: "{{ ovirt_auth }}"
     with_items:
-      - { name: 'he_sanlock', size: '1GiB', format: 'raw' }
-      - { name: 'HostedEngineConfigurationImage', size: '1GiB', format: 'raw' }
-      - { name: 'he_metadata', size: '1GiB', format: 'raw' }
-      - { name: 'he_virtio_disk', size: "{{ DISK_SIZE }}GiB", format: 'cow' }
+      - { name: 'he_sanlock', size: '1GiB', format: 'raw', sparse: False }
+      - { name: 'HostedEngineConfigurationImage', size: '1GiB', format: 'raw', sparse: False }
+      - { name: 'he_metadata', size: '1GiB', format: 'raw', sparse: False }
+      - { name: 'he_virtio_disk', size: "{{ DISK_SIZE }}GiB", format: 'raw', sparse: "{{ False if DOMAIN_TYPE == 'fc' or DOMAIN_TYPE == 'iscsi' else True }}" }
     register: add_disks
   - name: Register disk details
     set_fact:
@@ -219,7 +220,7 @@
     register: app_img
   - debug: var=app_img
   - name: Copy local vm disk to shared storage
-    command: qemu-img convert -n -O qcow2 {{ app_img.files[0].path }} {{ he_virtio_disk_path }}
+    command: qemu-img convert -n -O raw {{ app_img.files[0].path }} {{ he_virtio_disk_path }}
     become_user: vdsm
     become_method: sudo
     changed_when: True
