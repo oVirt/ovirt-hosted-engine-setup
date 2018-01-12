@@ -35,7 +35,7 @@ OVEHOSTED_STORAGE/volUUID=str:{{ he_virtio_disk_details.disk.image_id }}
 {# TODO: FIX #}
 OVEHOSTED_STORAGE/vgUUID=none:None
 OVEHOSTED_STORAGE/confVolUUID=str:{{ he_conf_disk_details.disk.image_id }}
-OVEHOSTED_STORAGE/storageDomainConnection=str:{{ STORAGE_DOMAIN_CONNECTION }}
+OVEHOSTED_STORAGE/storageDomainConnection=str:{{ STORAGE }}
 OVEHOSTED_STORAGE/iSCSIPortalUser={{ 'str' if ISCSI_USERNAME else 'none' }}:{{ ISCSI_USERNAME if ISCSI_USERNAME else 'None' }}
 {# TODO: fix it #}
 OVEHOSTED_VDSM/consoleType=str:vnc

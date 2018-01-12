@@ -168,9 +168,6 @@ class Plugin(plugin.PluginBase):
             'DEST_EMAIL': self.environment[
                 ohostedcons.NotificationsEnv.DEST_EMAIL
             ],
-            'STORAGE_DOMAIN_CONNECTION': self.environment[
-                ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
-            ],
             'APPLIANCE_OVA': self.environment[ohostedcons.VMEnv.OVF],
             'CLOUD_INIT_DOMAIN_NAME': self.environment[
                 ohostedcons.CloudInit.INSTANCE_DOMAINNAME
