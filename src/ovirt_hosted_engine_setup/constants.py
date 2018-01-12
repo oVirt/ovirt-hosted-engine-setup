@@ -701,10 +701,17 @@ class StorageEnv(object):
     @ohostedattrs(
         answerfile=True,
         summary=True,
-        description=_('iSCSI Portal user'),
+        description=_('iSCSI portal login user'),
     )
     def ISCSI_USER(self):
         return 'OVEHOSTED_STORAGE/iSCSIPortalUser'
+
+    @ohostedattrs(
+        answerfile=True,
+        description=_('iSCSI discover user'),
+    )
+    def ISCSI_DISCOVER_USER(self):
+        return 'OVEHOSTED_STORAGE/iSCSIDiscoverUser'
 
     @ohostedattrs(
         answerfile=True,
@@ -723,6 +730,7 @@ class StorageEnv(object):
         return 'OVEHOSTED_STORAGE/LunID'
 
     ISCSI_PASSWORD = 'OVEHOSTED_STORAGE/iSCSIPortalPassword'
+    ISCSI_DISCOVER_PASSWORD = 'OVEHOSTED_STORAGE/iSCSIDiscoverPassword'
 
     BDEVICE_SIZE_GB = 'OVEHOSTED_STORAGE/blockDeviceSizeGB'
 

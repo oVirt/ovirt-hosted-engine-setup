@@ -9,8 +9,8 @@
       name: "{{ HOST_NAME }}"
       state: iscsidiscover
       iscsi:
-        username: "{{ ISCSI_USERNAME }}"
-        password: "{{ ISCSI_PASSWORD }}"
+        username: "{{ ISCSI_DISCOVER_USERNAME }}"
+        password: "{{ ISCSI_DISCOVER_PASSWORD }}"
         address: "{{ ISCSI_PORTAL_ADDR }}"
         port: "{{ ISCSI_PORTAL_PORT }}"
       auth: "{{ ovirt_auth }}"

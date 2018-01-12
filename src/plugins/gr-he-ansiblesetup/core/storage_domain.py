@@ -139,16 +139,20 @@ class Plugin(plugin.PluginBase):
                 self.logger.error(_('Port must be a valid port number'))
         return port
 
-    def _query_iscsi_username(self):
+    def _query_iscsi_username(self, discover):
         valid = False
         username = None
+        if discover:
+            qtype = _('discover')
+        else:
+            qtype = _('portal login')
         while not valid:
             valid = True
             username = self.dialog.queryString(
                 name='OVEHOSTED_STORAGE_ISCSI_USER',
                 note=_(
-                    'Please specify the iSCSI portal user: '
-                ),
+                    'Please specify the iSCSI {qtype} user: '
+                ).format(qtype=qtype),
                 prompt=True,
                 caseSensitive=True,
                 default='',
@@ -160,16 +164,20 @@ class Plugin(plugin.PluginBase):
                 ).format(i=ohostedcons.Const.MAX_STORAGE_USERNAME_LENGTH))
         return username
 
-    def _query_iscsi_password(self):
+    def _query_iscsi_password(self, discover):
         valid = False
         password = None
+        if discover:
+            qtype = _('discover')
+        else:
+            qtype = _('portal login')
         while not valid:
             valid = True
             password = self.dialog.queryString(
                 name='OVEHOSTED_STORAGE_ISCSI_PASSWORD',
                 note=_(
-                    'Please specify the iSCSI portal password: '
-                ),
+                    'Please specify the iSCSI {qtype} password: '
+                ).format(qtype=qtype),
                 prompt=True,
                 caseSensitive=True,
                 hidden=True,
@@ -182,7 +190,13 @@ class Plugin(plugin.PluginBase):
                 ).format(i=ohostedcons.Const.MAX_STORAGE_PASSWORD_LENGTH))
         return password
 
-    def _query_iscsi_target(self, username, password, portal, port):
+    def _query_iscsi_target(
+            self,
+            discover_username,
+            discover_password,
+            portal,
+            port
+    ):
         iscsi_discover_vars = {
             'FQDN': self.environment[
                 ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
@@ -193,8 +207,8 @@ class Plugin(plugin.PluginBase):
             'ADMIN_PASSWORD': self.environment[
                 ohostedcons.EngineEnv.ADMIN_PASSWORD
             ],
-            'ISCSI_USERNAME': username,
-            'ISCSI_PASSWORD': password,
+            'ISCSI_DISCOVER_USERNAME': discover_username,
+            'ISCSI_DISCOVER_PASSWORD': discover_password,
             'ISCSI_PORTAL_ADDR': portal,
             'ISCSI_PORTAL_PORT': port,
         }
@@ -447,6 +461,14 @@ class Plugin(plugin.PluginBase):
             None
         )
         self.environment.setdefault(
+            ohostedcons.StorageEnv.ISCSI_DISCOVER_USER,
+            None
+        )
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.ISCSI_DISCOVER_PASSWORD,
+            None
+        )
+        self.environment.setdefault(
             ohostedcons.StorageEnv.ISCSI_TARGET,
             None
         )
@@ -517,6 +539,12 @@ class Plugin(plugin.PluginBase):
             iscsi_password = self.environment[
                 ohostedcons.StorageEnv.ISCSI_PASSWORD
             ]
+            iscsi_discover_username = self.environment[
+                ohostedcons.StorageEnv.ISCSI_DISCOVER_USER
+            ]
+            iscsi_discover_password = self.environment[
+                ohostedcons.StorageEnv.ISCSI_DISCOVER_PASSWORD
+            ]
             iscsi_target = self.environment[
                 ohostedcons.StorageEnv.ISCSI_TARGET
             ]
@@ -583,15 +611,27 @@ class Plugin(plugin.PluginBase):
                     storage_domain_address = iscsi_portal
                 if iscsi_port is None:
                     iscsi_port = self._query_iscsi_port()
+                if iscsi_discover_username is None:
+                    iscsi_discover_username = self._query_iscsi_username(
+                        discover=True
+                    )
+                if iscsi_discover_password is None:
+                    iscsi_discover_password = self._query_iscsi_password(
+                        discover=True
+                    )
                 if iscsi_username is None:
-                    iscsi_username = self._query_iscsi_username()
+                    iscsi_username = self._query_iscsi_username(
+                        discover=False
+                    )
                 if iscsi_password is None:
-                    iscsi_password = self._query_iscsi_password()
+                    iscsi_password = self._query_iscsi_password(
+                        discover=False
+                    )
                 if iscsi_target is None:
                     try:
                         iscsi_target, iscsi_tpgt = self._query_iscsi_target(
-                            username=iscsi_username,
-                            password=iscsi_password,
+                            discover_username=iscsi_discover_username,
+                            discover_password=iscsi_discover_password,
                             portal=iscsi_portal,
                             port=iscsi_port,
                         )
