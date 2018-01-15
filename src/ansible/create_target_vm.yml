@@ -90,6 +90,11 @@
       auth: "{{ ovirt_auth }}"
     register: he_vm_details
   - debug: var=he_vm_details
+  - name: Register external local VM uuid
+    shell: virsh -r domuuid {{ VM_NAME }}Local | head -1
+    register: external_local_vm_uuid
+    changed_when: True
+  - debug: var=external_local_vm_uuid
 - hosts: "{{FQDN}}"
   vars:
     ansible_connection: smart
@@ -127,7 +132,6 @@
     changed_when: True
     register: db_conf_update
   - debug: var=db_conf_update
-# TODO: remove the external local VM
 - hosts: localhost
   connection: local
   tasks:
@@ -289,4 +293,12 @@
     delay: 5
     changed_when: True
   - debug: var=health_result
+  - include_tasks: auth_sso.yml
+  - name: Remove boostrap external VM from the engine
+    ovirt_vms:
+      state: absent
+      id: "{{ external_local_vm_uuid.stdout_lines|first }}"
+      auth: "{{ ovirt_auth }}"
+    register: vmremove_result
+  - debug: var=vmremove_result
 ...
