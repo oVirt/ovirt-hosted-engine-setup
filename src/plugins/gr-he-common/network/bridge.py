@@ -157,9 +157,18 @@ class Plugin(plugin.PluginBase):
             )
             r = ah.run()
             self.logger.debug(r)
-            for network_interface in r['otopi_host_net']['results']:
-                if 'ansible_facts' in network_interface:
-                    validValues.append(network_interface['item'])
+            if 'otopi_host_net' in r:
+                for network_interface in r['otopi_host_net']['results']:
+                    if 'ansible_facts' in network_interface:
+                        validValues.append(
+                            network_interface['item']['item']
+                        )
+            else:
+                raise RuntimeError(
+                    _(
+                        'No suitable network interfaces were found'
+                    )
+                )
 
         else:
             INVALID_BOND_MODES = ('0', '5', '6')
