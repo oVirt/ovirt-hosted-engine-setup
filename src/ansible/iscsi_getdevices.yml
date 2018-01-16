@@ -8,21 +8,28 @@
     ovirt_hosts:
       name: "{{ HOST_NAME }}"
       state: iscsilogin
+      timeout: 30
       iscsi:
         username: "{{ ISCSI_USERNAME }}"
         password: "{{ ISCSI_PASSWORD }}"
-        address: "{{ ISCSI_PORTAL_ADDR }}"
-        port: "{{ ISCSI_PORTAL_PORT }}"
+        address: "{{ item.0 }}"
+        port: "{{ item.1 }}"
         target: "{{ ISCSI_TARGET }}"
       auth: "{{ ovirt_auth }}"
+    ignore_errors: yes
+    # TODO: avoid the with_together loop once
+    # https://github.com/ansible/ansible/issues/32640 got properly fixed
+    with_together:
+      - "{{ ISCSI_PORTAL_ADDR.split(',') }}"
+      - "{{ ISCSI_PORTAL_PORT.split(',') }}"
   - name: Get iSCSI LUNs
     ovirt_host_storage_facts:
       host: "{{ HOST_NAME }}"
       iscsi:
         username: "{{ ISCSI_USERNAME }}"
         password: "{{ ISCSI_PASSWORD }}"
-        address: "{{ ISCSI_PORTAL_ADDR }}"
-        port: "{{ ISCSI_PORTAL_PORT }}"
+        address: "{{ ISCSI_PORTAL_ADDR.split(',')|first }}"
+        port: "{{ ISCSI_PORTAL_PORT.split(',')|first }}"
         target: "{{ ISCSI_TARGET }}"
       auth: "{{ ovirt_auth }}"
     register: otopi_iscsi_devices

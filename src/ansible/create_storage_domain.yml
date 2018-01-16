@@ -66,9 +66,14 @@
       host: "{{ HOST_NAME }}"
       data_center: "{{ datacenter_name }}"
       wait: True
+      # we are sending a single iSCSI path but, not sure if intended or if
+      # it's bug, the engine is implicitly creating the storage domain
+      # consuming all the path that are already connected on the host (we
+      # cannot logout since there is not logout command in the rest API, see
+      # https://bugzilla.redhat.com/show_bug.cgi?id=1535951 ).
       iscsi:
-        address: "{{ STORAGE_DOMAIN_ADDR }}"
-        port: "{{ ISCSI_PORT }}"
+        address: "{{ STORAGE_DOMAIN_ADDR.split(',')|first }}"
+        port: "{{ ISCSI_PORT.split(',')|first }}"
         target: "{{ ISCSI_TARGET }}"
         lun_id: "{{ LUN_ID }}"
         username: "{{ ISCSI_USERNAME }}"

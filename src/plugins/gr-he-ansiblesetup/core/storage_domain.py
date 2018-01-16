@@ -219,22 +219,38 @@ class Plugin(plugin.PluginBase):
         self.logger.info(_('Discovering iSCSI targets'))
         r = ah.run()
         self.logger.debug(r)
-        values = []
-        if (
-            'otopi_iscsi_targets' in r and
-            'iscsi_targets' in r['otopi_iscsi_targets']
-        ):
-            values = r['otopi_iscsi_targets']['iscsi_targets']
-        if not values:
+        try:
+            values = r[
+                'otopi_iscsi_targets'
+            ]['json']['discovered_targets']['iscsi_details']
+        except KeyError:
             raise RuntimeError(_('Unable to find any target'))
+        self.logger.debug(values)
         f_targets = []
-        for target in values:
-            for tpgt in ['???']:  # TODO: fix for multipath
+        found = {}
+        for v in values:
+            self.logger.debug(v)
+            target = v['target']
+            tpgt = v['portal'].split(',')[1]
+            if target not in found:
+                found[target] = {}
+            if tpgt not in found[target]:
+                found[target][tpgt] = []
+            found[target][tpgt].append(
+                {
+                    'address': v['address'],
+                    'port': v['port']
+                }
+            )
+        self.logger.debug(found)
+        for target in found:
+            for tpgt in found[target]:
                 f_targets.append(
                     {
                         'index': str(len(f_targets)+1),
                         'target': target,
                         'tpgt': tpgt,
+                        'address_port_l': found[target][tpgt]
                     }
                 )
         target_list = ''
@@ -246,14 +262,12 @@ class Plugin(plugin.PluginBase):
                 target=entry['target'],
                 tpgt=entry['tpgt'],
             )
-            # TODO: fix for multipath once REST APIs are fixed
-            # https://bugzilla.redhat.com/1510860
-            for portal in [{'ip': '???', 'port': '???'}]:
+            for pp in entry['address_port_l']:
                 target_list += _(
                     '\t\t\t{portal}:{port}\n'
                 ).format(
-                    portal=portal['ip'],
-                    port=portal['port'],
+                    portal=pp['address'],
+                    port=pp['port'],
                 )
             target_list += '\n'
 
@@ -265,7 +279,6 @@ class Plugin(plugin.PluginBase):
                 target_list=target_list,
             )
         )
-
         s_target = self.dialog.queryString(
             name='OVEHOSTED_STORAGE_ISCSI_TARGET',
             note=_(
@@ -277,13 +290,15 @@ class Plugin(plugin.PluginBase):
             default='1',
             validValues=[i['index'] for i in f_targets],
         )
+        apl = f_targets[int(s_target)-1]['address_port_l']
         return (
             f_targets[int(s_target)-1]['target'],
-            f_targets[int(s_target)-1]['tpgt']
+            f_targets[int(s_target)-1]['tpgt'],
+            ','.join([x['address'] for x in apl]),
+            ','.join([x['port'] for x in apl]),
         )
 
     def _query_iscsi_lunid(self, username, password, portal, port, target):
-        # TODO: support multipath
         iscsi_getdevices_vars = {
             'FQDN': self.environment[
                 ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
@@ -629,12 +644,13 @@ class Plugin(plugin.PluginBase):
                     )
                 if iscsi_target is None:
                     try:
-                        iscsi_target, iscsi_tpgt = self._query_iscsi_target(
-                            discover_username=iscsi_discover_username,
-                            discover_password=iscsi_discover_password,
-                            portal=iscsi_portal,
-                            port=iscsi_port,
-                        )
+                        iscsi_target, iscsi_tpgt, iscsi_portal, iscsi_port = \
+                            self._query_iscsi_target(
+                                discover_username=iscsi_discover_username,
+                                discover_password=iscsi_discover_password,
+                                portal=iscsi_portal,
+                                port=iscsi_port,
+                            )
                     except RuntimeError as e:
                         self.logger.error(_('Unable to get target list'))
                         if not interactive:
@@ -773,26 +789,38 @@ class Plugin(plugin.PluginBase):
                     if self.environment[
                         ohostedcons.StorageEnv.DOMAIN_TYPE
                     ] == ohostedcons.DomainTypes.ISCSI:
-                        # TODO: implement multipath support
+                        self.logger.info(
+                            _('iSCSI connected paths: {n}').format(
+                                n=len(storage['volume_group']['logical_units'])
+                            )
+                        )
                         self.environment[
                             ohostedcons.StorageEnv.ISCSI_PORTAL
-                        ] = 1  # TODO: FIX it with the right tpgt value
-                        lun = storage['volume_group']['logical_units'][0]
-                        self.environment[
-                            ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
-                        ] = lun['address']
+                        ] = storage['volume_group']['logical_units'][
+                            0
+                        ]['portal'].split(',')[1]
+                        lun0 = storage['volume_group']['logical_units'][0]
                         self.environment[
                             ohostedcons.StorageEnv.ISCSI_IP_ADDR
-                        ] = lun['address']
+                        ] = ','.join([x['address'] for x in storage[
+                            'volume_group'
+                        ]['logical_units']])
+                        self.environment[
+                            ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
+                        ] = self.environment[
+                            ohostedcons.StorageEnv.ISCSI_IP_ADDR
+                        ]
                         self.environment[
                             ohostedcons.StorageEnv.ISCSI_PORT
-                        ] = str(lun['port'])
+                        ] = ','.join([str(x['port']) for x in storage[
+                            'volume_group'
+                        ]['logical_units']])
                         self.environment[
                             ohostedcons.StorageEnv.ISCSI_TARGET
-                        ] = lun['target']
+                        ] = lun0['target']
                         self.environment[
                             ohostedcons.StorageEnv.LUN_ID
-                        ] = lun['id']
+                        ] = lun0['id']
                         self.environment[
                             ohostedcons.StorageEnv.ISCSI_USER
                         ] = iscsi_username

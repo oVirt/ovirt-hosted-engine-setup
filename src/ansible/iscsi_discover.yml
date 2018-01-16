@@ -4,16 +4,54 @@
   connection: local
   tasks:
   - include_tasks: auth_sso.yml
-  - name: iSCSI discover
-    ovirt_hosts:
-      name: "{{ HOST_NAME }}"
-      state: iscsidiscover
-      iscsi:
-        username: "{{ ISCSI_DISCOVER_USERNAME }}"
-        password: "{{ ISCSI_DISCOVER_PASSWORD }}"
-        address: "{{ ISCSI_PORTAL_ADDR }}"
-        port: "{{ ISCSI_PORTAL_PORT }}"
+  # - name: iSCSI discover
+  #  ovirt_hosts:
+  #    name: "{{ HOST_NAME }}"
+  #    state: iscsidiscover
+  #    iscsi:
+  #      username: "{{ ISCSI_DISCOVER_USERNAME }}"
+  #      password: "{{ ISCSI_DISCOVER_PASSWORD }}"
+  #      address: "{{ ISCSI_PORTAL_ADDR }}"
+  #      port: "{{ ISCSI_PORTAL_PORT }}"
+  #    auth: "{{ ovirt_auth }}"
+  #  register: otopi_iscsi_targets
+  # - debug: var=otopi_iscsi_targets
+  # TODO: switch back to ovirt_hosts when it will be able to handle
+  # discovered_targets
+  - name: Prepare iSCSI parameters
+    set_fact:
+      iscsid:
+        iscsi:
+          address: "{{ ISCSI_PORTAL_ADDR }}"
+          port: "{{ ISCSI_PORTAL_PORT }}"
+          username: "{{ ISCSI_DISCOVER_USERNAME }}"
+          password: "{{ ISCSI_DISCOVER_PASSWORD }}"
+  - name: Fetch host facts
+    ovirt_hosts_facts:
+      pattern: name={{ HOST_NAME }}
       auth: "{{ ovirt_auth }}"
+    register: host_result
+    until: host_result|succeeded and host_result.ansible_facts.ovirt_hosts|length >= 1
+    retries: 50
+    delay: 10
+  - debug: var=host_result
+  - name: iSCSI discover with REST API
+    uri:
+      url: https://{{ FQDN }}/ovirt-engine/api/hosts/{{ host_result.ansible_facts.ovirt_hosts[0].id }}/iscsidiscover
+      validate_certs: no
+      user: admin@internal
+      password: "{{ ADMIN_PASSWORD }}"
+      method: POST
+      body: "{{ iscsid | to_json }}"
+      return_content: yes
+      body_format: json
+      status_code: 200
+      headers:
+        Content-Type: application/json
+        Accept: application/json
     register: otopi_iscsi_targets
   - debug: var=otopi_iscsi_targets
+# TODO: perform an iSCSI logout when viable, see:
+# https://bugzilla.redhat.com/show_bug.cgi?id=1535951
+# https://github.com/ansible/ansible/issues/35039
 ...
