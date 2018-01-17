@@ -666,6 +666,12 @@ class Plugin(plugin.PluginBase):
                             target=iscsi_target
                         )
                         lunid = lun['id']
+                        discard = lun['discard_max_size'] > 0
+                        self.logger.info(
+                            _("iSCSI discard after delete is {v}").format(
+                                v=_("enabled") if discard else _("disabled")
+                            )
+                        )
                     except RuntimeError as e:
                         self.logger.error(_('Unable to get target list'))
                         if not interactive:
@@ -678,9 +684,11 @@ class Plugin(plugin.PluginBase):
                         lun = self._query_fc_lunid()
                         lunid = lun['id']
                         discard = lun['discard_max_size'] > 0
-                        self.logger.info("FC discard is %s" %
-                                         ("enabled" if discard else "disabled")
-                                         )
+                        self.logger.info(
+                            _("FC discard after delete is {v}").format(
+                                v=_("enabled") if discard else _("disabled")
+                            )
+                        )
                     except RuntimeError as e:
                         self.logger.error(_('Unable to get target list'))
                         if not interactive:

@@ -66,6 +66,7 @@
       host: "{{ HOST_NAME }}"
       data_center: "{{ datacenter_name }}"
       wait: True
+      discard_after_delete: "{{ DISCARD }}"
       # we are sending a single iSCSI path but, not sure if intended or if
       # it's bug, the engine is implicitly creating the storage domain
       # consuming all the path that are already connected on the host (we
