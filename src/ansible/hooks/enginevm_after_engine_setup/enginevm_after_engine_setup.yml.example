@@ -1,0 +1,8 @@
+---
+- name: Change engine configuration
+  command: engine-config -s LogMaxCpuUsedThresholdInPercentage=90
+  changed_when: True
+- name: Restart the engine to make it effective
+  systemd:
+    state: restarted
+    name: ovirt-engine

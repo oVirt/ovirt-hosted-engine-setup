@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2017 Red Hat, Inc.
+# Copyright (C) 2018 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -23,28 +23,7 @@ MAINTAINERCLEANFILES = \
 	$(srcdir)/Makefile.in \
 	$(NULL)
 
-ansibledir=$(ovirthostedengineansibledir)
-dist_ansible_DATA = \
-	auth_revoke.yml \
-	auth_sso.yml \
-	bootstrap_local_vm.yml \
-	create_storage_domain.yml \
-	create_target_vm.yml \
-	fc_getdevices.yml \
-	final_clean.yml \
-	get_network_interfaces.yml \
-	initial_clean.yml \
-	iscsi_discover.yml \
-	iscsi_getdevices.yml \
+enginevm_before_engine_setupdir=$(ovirthostedengineansibledir)/hooks/enginevm_before_engine_setup
+dist_enginevm_before_engine_setup_DATA = \
+	enginevm_before_engine_setup.yml.example \
 	$(NULL)
-
-SUBDIRS = \
-	callback_plugins \
-	hooks \
-	library \
-	templates \
-	$(NULL)
-
-all-local: \
-        ansible-syntax-check \
-        $(NULL)

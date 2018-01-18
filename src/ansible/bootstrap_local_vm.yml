@@ -119,11 +119,21 @@
       owner: root
       group: root
       mode: 0600
+  - name: Include before engine-setup custom tasks files for the engine VM
+    include_tasks: "{{ item }}"
+    with_fileglob: "hooks/enginevm_before_engine_setup/*.yml"
+    register: include_before_engine_setup_results
+  - debug: var=include_before_engine_setup_results
   - name: Execute engine-setup
     command: /usr/bin/engine-setup --offline --config-append=/root/ovirt-engine-answers --config-append=/root/heanswers.conf
     register: engine_setup_out
     changed_when: True
   - debug: var=engine_setup_out
+  - name: Include before engine-setup custom tasks files for the engine VM
+    include_tasks: "{{ item }}"
+    with_fileglob: "hooks/enginevm_after_engine_setup/*.yml"
+    register: include_after_engine_setup_results
+  - debug: var=include_after_engine_setup_results
   - name: Configure LibgfApi support
     command: engine-config -s LibgfApiSupported=true --cver=4.2
     register: libgfapi_support_out

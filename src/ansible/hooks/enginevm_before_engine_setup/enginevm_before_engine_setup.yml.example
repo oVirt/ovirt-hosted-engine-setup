@@ -1,0 +1,21 @@
+---
+- name: Upgrade all packages
+  yum:
+    name: '*'
+    state: latest
+- name: Install screen rpm
+  yum:
+    name: screen
+    state: present
+- name: Inject a line at the end of engine-setup answer file
+  lineinfile:
+    path: /root/heanswers.conf
+    line: 'OVESETUP_DWH_CONFIG/scale=str:1'
+    insertafter: EOF
+    state: present
+- name: Replace a line in the engine-setup answer file
+  lineinfile:
+    path: /root/heanswers.conf
+    regexp: '^DIALOG/autoAcceptDefault='
+    line: 'DIALOG/autoAcceptDefault=bool:False'
+    state: present
