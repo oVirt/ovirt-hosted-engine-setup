@@ -230,7 +230,15 @@
     become_method: sudo
     changed_when: True
     tags: [ 'skip_ansible_lint' ]
-  - name: Generate network configuration for the engine VM
+  - name: Generate dhcp network configuration for the engine VM
+    template:
+      src: templates/ifcfg-eth0-dhcp.j2
+      dest: "{{ LOCAL_VM_DIR }}/ifcfg-eth0"
+      owner: root
+      group: root
+      mode: 0644
+    when: not VM_IP_ADDR|length >= 8
+  - name: Generate static network configuration for the engine VM
     template:
       src: templates/ifcfg-eth0-static.j2
       dest: "{{ LOCAL_VM_DIR }}/ifcfg-eth0"
@@ -242,7 +250,6 @@
     shell: LIBGUESTFS_BACKEND=direct guestfish -a {{ he_virtio_disk_path }} --rw -i copy-in "{{ LOCAL_VM_DIR }}/ifcfg-eth0" /etc/sysconfig/network-scripts {{ ":" }} selinux-relabel /etc/selinux/targeted/contexts/files/file_contexts /etc/sysconfig/network-scripts/ifcfg-eth0 force{{ ":" }}true
     become_user: vdsm
     become_method: sudo
-    when: VM_IP_ADDR|length >= 8
     tags: [ 'skip_ansible_lint' ]
   - name: Extract /etc/hosts from the engine VM
     shell: LIBGUESTFS_BACKEND=direct virt-copy-out -a {{ he_virtio_disk_path }} /etc/hosts "{{ LOCAL_VM_DIR }}"
