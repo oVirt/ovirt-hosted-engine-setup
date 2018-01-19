@@ -1,9 +1,9 @@
 #cloud-config
 # vim: syntax=yaml
 disable_root: false
-{% if ROOT_SSH_PUBKEY|length > 1 %}
+{% if ROOT_SSH_PUBKEY is not none and ROOT_SSH_PUBKEY|length > 1 %}
 ssh_authorized_keys:
-  - {{ROOT_SSH_PUBKEY}}
+  - {{ ROOT_SSH_PUBKEY }}
 {% endif %}
 ssh_pwauth: True
 chpasswd:
