@@ -38,6 +38,10 @@ dist_ansible_DATA = \
 	iscsi_getdevices.yml \
 	$(NULL)
 
+nodist_ansible_DATA = \
+	install_appliance.yml \
+	$(NULL)
+
 SUBDIRS = \
 	callback_plugins \
 	hooks \
@@ -45,6 +49,20 @@ SUBDIRS = \
 	templates \
 	$(NULL)
 
+CLEANFILES = \
+	install_appliance.yml \
+	$(NULL)
+
+EXTRA_DIST = \
+	install_appliance.yml.in \
+	$(NULL)
+
+install_appliance.yml: install_appliance.yml.in
+	$(SED) \
+	-e 's|@APPLIANCE_RPM_PREFIX[@]|$(APPLIANCE_RPM_PREFIX)|g' \
+	-e 's|@APPLIANCE40_RPM_PREFIX[@]|$(APPLIANCE40_RPM_PREFIX)|g' \
+	< $< > $@
+
 all-local: \
-        ansible-syntax-check \
-        $(NULL)
+	ansible-syntax-check \
+	$(NULL)

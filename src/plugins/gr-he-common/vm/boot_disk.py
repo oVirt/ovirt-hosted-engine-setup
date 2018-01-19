@@ -550,6 +550,9 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
+        condition=lambda self: not self.environment[
+            ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT
+        ],
     )
     def _setup(self):
         self.command.detect('sudo')
@@ -622,7 +625,8 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.DIALOG_TITLES_E_VM,
         ),
         condition=lambda self: (
-            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
+            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE] and
+            not self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]
         ),
         name=ohostedcons.Stages.CONFIG_OVF_IMPORT,
     )
@@ -814,6 +818,84 @@ class Plugin(plugin.PluginBase):
             valid = True if tempDirCheck is True and spaceCheck else False
 
     @plugin.event(
+        stage=plugin.Stages.STAGE_CUSTOMIZATION,
+        after=(
+            ohostedcons.Stages.DIALOG_TITLES_S_VM,
+            ohostedcons.Stages.UPGRADE_CHECK_SPM_HOST,
+        ),
+        before=(
+            ohostedcons.Stages.DIALOG_TITLES_E_VM,
+            ohostedcons.Stages.CONFIG_OVF_IMPORT,
+        ),
+        condition=lambda self: self.environment[
+            ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT
+        ],
+        name=ohostedcons.Stages.CONFIG_OVF_IMPORT_ANSIBLE,
+    )
+    def _customization_ansible(self):
+        interactive = self.environment[
+            ohostedcons.VMEnv.OVF
+        ] is None
+        valid = False
+        self.environment[
+            ohostedcons.VMEnv.APPLIANCEVCPUS
+        ] = str(ohostedcons.Defaults.ANSIBLE_RECOMMENDED_APPLIANCE_VCPUS)
+        self.environment[
+            ohostedcons.VMEnv.APPLIANCEMEM
+        ] = int(ohostedcons.Defaults.ANSIBLE_RECOMMENDED_APPLIANCE_MEM_SIZE_MB)
+
+        while not valid:
+            appliance_ver = None
+            if not interactive:
+                ova_path = self.environment[ohostedcons.VMEnv.OVF]
+            else:
+                ova_path = ''
+                if not ova_path:
+                    ova_path = self.dialog.queryString(
+                        name='OVEHOSTED_VMENV_OVF_ANSIBLE',
+                        note=_(
+                            'If you want to deploy with a custom engine '
+                            'appliance image,\n'
+                            'please specify the path to '
+                            'the OVA archive you would like to use\n'
+                            '(leave it empty to skip, the setup will use '
+                            '{rpmname} rpm installing it if missing): '
+                        ).format(rpmname=self._appliance_rpm_name),
+                        prompt=True,
+                        caseSensitive=True,
+                        default="",
+                    )
+            if ova_path == "":
+                valid = True
+            else:
+                valid = self._check_ovf(ova_path)
+            if valid:
+                self.environment[ohostedcons.VMEnv.OVF] = ova_path
+                self.environment[
+                    ohostedcons.VMEnv.APPLIANCE_VERSION
+                ] = appliance_ver
+            else:
+                if interactive:
+                    self.logger.error(
+                        _(
+                            'The specified OVF archive is not a valid OVF '
+                            'archive.'
+                        )
+                    )
+                else:
+                    raise RuntimeError(
+                        _(
+                            'The specified OVF archive is not '
+                            'readable. Please ensure that {filepath} '
+                            'could be read'
+                        ).format(
+                            filepath=self.environment[
+                                ohostedcons.VMEnv.OVF
+                            ]
+                        )
+                    )
+
+    @plugin.event(
         stage=plugin.Stages.STAGE_MISC,
         name=ohostedcons.Stages.OVF_IMPORTED,
         after=(
@@ -889,6 +971,9 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLEANUP,
+        condition=lambda self: not self.environment[
+            ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT
+        ]
     )
     def _cleanup(self):
         if self._image_path and os.path.exists(self._image_path):

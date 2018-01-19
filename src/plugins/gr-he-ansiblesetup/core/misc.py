@@ -196,6 +196,16 @@ class Plugin(plugin.PluginBase):
         else:
             raise RuntimeError(_('Failed getting local_vm_dir'))
 
+        try:
+            vsize = r[
+                'otopi_appliance_disk_size'
+            ]['ansible_facts']['virtual_size']
+            self.environment[
+                ohostedcons.StorageEnv.OVF_SIZE_GB
+            ] = int(vsize)/1024/1024/1024
+        except KeyError:
+            raise RuntimeError(_('Unable to get appliance disk size'))
+
         # TODO: get the CPU models list from /ovirt-engine/api/clusterlevels
         # once wrapped by ansible facts and filter it by host CPU architecture
         # in order to let the user choose the cluster CPU type in advance

@@ -1056,6 +1056,7 @@ class Stages(object):
     CONFIG_BACKUP_FILE = 'ohosted.configuration.backupfile'
     REQUIRE_ANSWER_FILE = 'ohosted.core.require.answerfile'
     CONFIG_OVF_IMPORT = 'ohosted.configuration.ovf'
+    CONFIG_OVF_IMPORT_ANSIBLE = 'ohosted.configuration.ovf.ansible'
     VDSMD_START = 'ohosted.vdsm.started'
     VDSMD_PKI = 'ohosted.vdsm.pki.available'
     VDSMD_CONFIGURED = 'ohosted.vdsm.configured'
@@ -1162,6 +1163,8 @@ class Defaults(object):
     DEFAULT_STATE_TRANS_NOTIFICATION = 'maintenance|start|stop|migrate|up|down'
     DEFAULT_TEMPDIR = '/var/tmp'
     DEFAULT_ADMIN_USERNAME = 'admin@internal'
+    ANSIBLE_RECOMMENDED_APPLIANCE_VCPUS = 4  # based on appliance definition
+    ANSIBLE_RECOMMENDED_APPLIANCE_MEM_SIZE_MB = 16384  # based on appliance def
 
 
 @util.export

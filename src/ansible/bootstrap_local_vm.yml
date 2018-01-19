@@ -31,9 +31,16 @@
   - name: Activate default libvirt network
     command: virsh net-start default
     when: default_net_status.stdout != 'yes'
+  - include_tasks: install_appliance.yml
+    when: APPLIANCE_OVA is none or APPLIANCE_OVA|length == 0
+  - name: Register appliance PATH
+    set_fact:
+      APPLIANCE_OVA_PATH: "{{ APPLIANCE_OVA }}"
+    when: APPLIANCE_OVA is not none and APPLIANCE_OVA|length > 0
+  - debug: var=APPLIANCE_OVA_PATH
   - name: Extract appliance to local vm dir
     unarchive:
-      src: "{{ APPLIANCE_OVA }}" # FIX
+      src: "{{ APPLIANCE_OVA_PATH }}"
       dest: "{{ LOCAL_VM_DIR }}"
       extra_opts: ['--sparse']
   - name: Find the appliance image
@@ -44,6 +51,16 @@
       use_regex: true
     register: app_img
   - debug: var=app_img
+  - name: Get appliance disk size
+    command: qemu-img info --output=json {{ app_img.files[0].path }}
+    changed_when: True
+    register: qemu_img_out
+  - debug: var=qemu_img_out
+  - name: Parse qemu-img output
+    set_fact:
+      virtual_size={{ qemu_img_out.stdout|from_json|json_query('"virtual-size"') }}
+    register: otopi_appliance_disk_size
+  - debug: var=virtual_size
   - name: Create cloud init user-data and meta-data files
     template:
       src: "{{ item.src }}"
