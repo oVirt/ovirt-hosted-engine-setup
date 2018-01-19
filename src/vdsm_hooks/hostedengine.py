@@ -27,7 +27,7 @@ class HostedEngineHook(object):
             content = f.read().splitlines()
         for line in content:
             if '=' in line:
-                key, value = line.split('=')
+                key, value = line.split('=', 1)
                 self.config[key] = value
 
     def save(self):
