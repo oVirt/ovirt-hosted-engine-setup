@@ -47,10 +47,14 @@ def handle_server_error(f):
 @handle_server_error
 def create(args):
     vm_params = vmconf.parseVmConfFile(args.filename)
+
+    # Send only libvirt xml if it is present in the vm.conf
+    xml = vm_params.get('xml')
+
     cli = ohautil.connect_vdsm_json_rpc()
     cli.VM.create(
         vmID=vm_params['vmId'],
-        vmParams=vm_params
+        vmParams={'xml': xml} if xml is not None else vm_params
     )
 
 

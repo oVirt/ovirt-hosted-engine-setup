@@ -57,13 +57,17 @@ class Plugin(plugin.PluginBase):
 
     def _createvm(self):
         vm_params = vmconf.parseVmConfFile(self._temp_vm_conf)
+
+        # Send only libvirt xml if it is present in the vm.conf
+        xml = vm_params.get('xml')
+
         POWER_MAX_TRIES = 20
         POWER_DELAY = 3
         cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
         try:
             status = cli.VM.create(
                 vmID=vm_params['vmId'],
-                vmParams=vm_params
+                vmParams={'xml': xml} if xml is not None else vm_params
             )
             self.logger.debug(status)
         except ServerError as e:

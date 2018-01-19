@@ -21,6 +21,7 @@
 """vm.conf Utils"""
 
 
+import base64
 import re
 
 
@@ -155,6 +156,12 @@ def parseVmConfFile(filename):
     if 'moreImages' in params:
         for image in params['moreImages'].split(','):
             params[drives.pop()] = image
+
+    # Decode xml string
+    if 'xmlBase64' in params:
+        xml = base64.standard_b64decode(params['xmlBase64'])
+        del params['xmlBase64']
+        params['xml'] = xml
 
     return params
 
