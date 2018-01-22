@@ -960,7 +960,7 @@ class Plugin(plugin.PluginBase):
         sd_list = self._getStorageDomainsList()
         for sdUUID in sd_list:
             domain_info = self._getStorageDomainInfo(sdUUID)
-            if domain_info['name'] == self.environment[
+            if domain_info.get('name', None) == self.environment[
                 ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
             ]:
                 msg = (
