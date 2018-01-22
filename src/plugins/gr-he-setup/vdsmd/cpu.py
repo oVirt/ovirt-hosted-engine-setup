@@ -43,8 +43,16 @@ class Plugin(plugin.PluginBase):
     cpu check plugin.
     """
 
-    # CPU list from ovirt-engine: git grep ServerCPUList | grep 3.6
+    # CPU list from ovirt-engine: git grep ServerCPUList | grep 4.1
     CPU_FAMILIES = (
+        {
+            'model': 'model_Skylake-Client',
+            'name': 'Intel Skylake Client Family'
+        },
+        {
+            'model': 'model_Skylake-Client-IBRS',
+            'name': 'Intel Skylake-IBRS Family'
+        },
         {
             'model': 'model_Broadwell',
             'name': 'Intel Broadwell Family'
@@ -52,6 +60,14 @@ class Plugin(plugin.PluginBase):
         {
             'model': 'model_Broadwell-noTSX',
             'name': 'Intel Broadwell-noTSX Family'
+        },
+        {
+            'model': 'model_Broadwell-IBRS',
+            'name': 'Intel Broadwell-IBRS Family'
+        },
+        {
+            'model': 'model_Broadwell-noTSX-IBRS',
+            'name': 'Intel Broadwell-noTSX-IBRS Family'
         },
         {
             'model': 'model_Haswell',
@@ -62,16 +78,36 @@ class Plugin(plugin.PluginBase):
             'name': 'Intel Haswell-noTSX Family'
         },
         {
+            'model': 'model_Haswell-IBRS',
+            'name': 'Intel Haswell-IBRS Family'
+        },
+        {
+            'model': 'model_Haswell-noTSX-IBRS',
+            'name': 'Intel Haswell-noTSX-IBRS Family'
+        },
+        {
             'model': 'model_SandyBridge',
             'name': 'Intel SandyBridge Family'
+        },
+        {
+            'model': 'model_SandyBridge-IBRS',
+            'name': 'Intel SandyBridge-IBRS Family'
         },
         {
             'model': 'model_Westmere',
             'name': 'Intel Westmere Family'
         },
         {
+            'model': 'model_Westmere-IBRS',
+            'name': 'Intel Westmere-IBRS Family'
+        },
+        {
             'model': 'model_Nehalem',
             'name': 'Intel Nehalem Family'
+        },
+        {
+            'model': 'model_Nehalem-IBRS',
+            'name': 'Intel Nehalem-IBRS Family'
         },
         {
             'model': 'model_Penryn',
