@@ -28,6 +28,7 @@ if PYTHON_SYNTAX_CHECK
 		$(PEP8) $(PYTHON_SYNTAX_CHECK_FILES); \
 	fi
 	if [ -n "$(ISORT)" ]; then \
+		$(ISORT) --diff $(PYTHON_SYNTAX_CHECK_FILES); \
 		$(ISORT) --check $(PYTHON_SYNTAX_CHECK_FILES); \
 	fi
 endif
