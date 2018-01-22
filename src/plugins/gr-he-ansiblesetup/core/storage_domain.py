@@ -719,10 +719,7 @@ class Plugin(plugin.PluginBase):
                 'MOUNT_OPTIONS': mnt_options,
                 'NFS_VERSION': nfs_version,
                 'DOMAIN_TYPE': domain_type,
-                # see: https://github.com/ansible/ansible/issues/32670
-                'ISCSI_PORT': int(iscsi_port) if (
-                    iscsi_port and iscsi_port.isdigit()
-                ) else iscsi_port,
+                'ISCSI_PORT': iscsi_port,
                 'ISCSI_TARGET': iscsi_target,
                 'LUN_ID': lunid,
                 'ISCSI_USERNAME': iscsi_username,
