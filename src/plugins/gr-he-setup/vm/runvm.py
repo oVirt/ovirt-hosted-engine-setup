@@ -52,15 +52,23 @@ class Plugin(mixins.VmOperations, plugin.PluginBase):
         super(Plugin, self).__init__(context=context)
 
     @plugin.event(
+        stage=plugin.Stages.STAGE_BOOT,
+        before=(
+            otopicons.Stages.CORE_LOG_INIT,
+        )
+    )
+    def _boot(self):
+        self.environment[otopicons.CoreEnv.LOG_FILTER_KEYS].append(
+            ohostedcons.VMEnv.VM_PASSWD
+        )
+
+    @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
     )
     def _init(self):
         self.environment.setdefault(
             ohostedcons.VMEnv.VM_PASSWD,
             self._generateTempVncPassword()
-        )
-        self.environment[otopicons.CoreEnv.LOG_FILTER_KEYS].append(
-            ohostedcons.VMEnv.VM_PASSWD
         )
         self.environment.setdefault(
             ohostedcons.VMEnv.VM_PASSWD_VALIDITY_SECS,

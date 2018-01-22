@@ -147,6 +147,17 @@ class Plugin(plugin.PluginBase):
                     raise RuntimeError('Failed trusting the REST API cert')
 
     @plugin.event(
+        stage=plugin.Stages.STAGE_BOOT,
+        before=(
+            otopicons.Stages.CORE_LOG_INIT,
+        )
+    )
+    def _boot(self):
+        self.environment[otopicons.CoreEnv.LOG_FILTER_KEYS].append(
+            ohostedcons.EngineEnv.ADMIN_PASSWORD
+        )
+
+    @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
     )
     def _init(self):
@@ -157,9 +168,6 @@ class Plugin(plugin.PluginBase):
         self.environment.setdefault(
             ohostedcons.EngineEnv.ADMIN_USERNAME,
             ohostedcons.Defaults.DEFAULT_ADMIN_USERNAME,
-        )
-        self.environment[otopicons.CoreEnv.LOG_FILTER_KEYS].append(
-            ohostedcons.EngineEnv.ADMIN_PASSWORD
         )
         self.environment.setdefault(
             ohostedcons.EngineEnv.TEMPORARY_CERT_FILE,

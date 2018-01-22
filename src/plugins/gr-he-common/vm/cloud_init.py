@@ -384,6 +384,17 @@ class Plugin(plugin.PluginBase):
         return tz
 
     @plugin.event(
+        stage=plugin.Stages.STAGE_BOOT,
+        before=(
+            otopicons.Stages.CORE_LOG_INIT,
+        )
+    )
+    def _boot(self):
+        self.environment[otopicons.CoreEnv.LOG_FILTER_KEYS].append(
+            ohostedcons.CloudInit.ROOTPWD
+        )
+
+    @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
     )
     def _init(self):
@@ -403,9 +414,6 @@ class Plugin(plugin.PluginBase):
             ] = self.environment[
                 ohostedcons.CloudInit.ROOTPWD
             ].strip()
-        self.environment[otopicons.CoreEnv.LOG_FILTER_KEYS].append(
-            ohostedcons.CloudInit.ROOTPWD
-        )
         self.environment.setdefault(
             ohostedcons.CloudInit.ROOT_SSH_PUBKEY,
             None
