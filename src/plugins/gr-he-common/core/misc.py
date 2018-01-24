@@ -216,23 +216,22 @@ class Plugin(plugin.PluginBase):
         successfully = _('Hosted Engine successfully deployed')
         failed_early = _('Hosted Engine deployment failed')
         failed_hard = failed_early + _(
-            ': this system is not reliable, please check the issue,'
-            'fix and redeploy'
+            ': please check the logs for the issue, '
+            'fix accordingly or re-deploy from scratch.'
         )
         if self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE]:
             successfully = _('Hosted Engine successfully upgraded')
             failed_early = _('Hosted Engine upgrade failed')
             failed_hard = failed_early + _(
-                ': this system is not reliable, you can use '
-                '--rollback-upgrade option to recover the engine '
-                'VM disk from a backup'
+                ': you can use --rollback-upgrade option to recover the '
+                'engine VM disk from a backup.'
             )
         elif self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]:
             successfully = _('Hosted Engine successfully rolled back')
             failed_early = _('Hosted Engine rollback failed')
             failed_hard = failed_early + _(
-                ': this system is not reliable, please try again this '
-                'procedure to reach a stable status'
+                ': please check the logs and try again this '
+                'procedure to reach a stable status.'
             )
         if self.environment[otopicons.BaseEnv.ERROR]:
             self.logger.error(
