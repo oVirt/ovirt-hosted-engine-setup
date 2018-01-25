@@ -378,4 +378,10 @@
         register: vmremove_result
       - debug: var=vmremove_result
     when: local_vm_f.ansible_facts.ovirt_vms|length > 0
+
+  - name: Include custom tasks for after setup customization
+    include_tasks: "{{ item }}"
+    with_fileglob: "hooks/after_setup/*.yml"
+    register: after_setup_results
+  - debug: var=after_setup_results
 ...

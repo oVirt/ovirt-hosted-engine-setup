@@ -1,0 +1,12 @@
+---
+- name: Check the hosts
+  setup:
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['gluster'] }}"
+
+- name: Add gluster host to engine
+  ovirt_hosts:
+    cluster: Default
+    name: "{{item}}"
+    address: "{{item}}"
+    with_items: "{{ groups['gluster'] }}"
