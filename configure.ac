@@ -150,6 +150,7 @@ AC_CONFIG_FILES([
 	src/ansible/hooks/Makefile
 	src/ansible/hooks/enginevm_after_engine_setup/Makefile
 	src/ansible/hooks/enginevm_before_engine_setup/Makefile
+	src/ansible/hooks/inventory/Makefile
 	src/ansible/library/Makefile
 	src/ansible/module_utils/Makefile
 	src/ansible/templates/Makefile

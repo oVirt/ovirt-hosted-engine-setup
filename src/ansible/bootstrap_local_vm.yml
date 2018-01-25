@@ -3,6 +3,14 @@
   hosts: localhost
   connection: local
   tasks:
+    - name: Register the engine FQDN as a host
+      add_host:
+        name: "{{ FQDN }}"
+        groups: engine
+        ansible_connection: smart
+        ansible_ssh_extra_args: -o StrictHostKeyChecking=no
+        ansible_ssh_pass: "{{ APPLIANCE_PASSWORD }}"
+        ansible_user: root
     - name: Initial tasks
       block:
       - name: Create dir for local vm
@@ -111,12 +119,7 @@
               The system may not be provisioned according to the playbook
               results: please check the logs for the issue,
               fix accordingly or re-deploy from scratch.
-- hosts: "{{FQDN}}"
-  vars:
-    ansible_connection: smart
-    ansible_ssh_extra_args: -o StrictHostKeyChecking=no
-    ansible_ssh_pass: "{{ APPLIANCE_PASSWORD }}"
-    ansible_user: root
+- hosts: engine
   tasks:
     - name: Initial tasks
       block:
