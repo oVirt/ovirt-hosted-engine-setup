@@ -23,10 +23,11 @@ MAINTAINERCLEANFILES = \
 	$(srcdir)/Makefile.in \
 	$(NULL)
 
-SUBDIRS = \
-	after_setup \
-	enginevm_after_engine_setup \
-	enginevm_before_engine_setup \
-	inventory \
+after_setupdir=$(ovirthostedengineansibledir)/hooks/after_setup
+dist_after_setup_DATA = \
+	after_setup.yml.example \
 	$(NULL)
 
+all-local: \
+	ansible-syntax-check \
+	$(NULL)
