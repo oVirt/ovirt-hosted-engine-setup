@@ -90,6 +90,7 @@
       serial_console: True
       operating_system: rhel_7x64
       type: server
+      high_availability_priority: 1
       delete_protected: True
 #      timezone: "{{ TIME_ZONE }}" # TODO: fix with the right parameter syntax
       storage_domain: "{{ STORAGE_DOMAIN_NAME }}"
@@ -125,10 +126,6 @@
     register: scl_conf
     changed_when: True
   - debug: var=scl_conf
-  - name: Stop ovirt-engine
-    service:
-      name: ovirt-engine
-      state: stopped
   - name: Update target VM details at DB level
     command: scl enable {{ scl_conf.stdout_lines[0].split('=')[1].replace('\"','') }} -- psql -d engine -c "UPDATE vm_static SET {{ item.field }}={{ item.value }} WHERE vm_guid='{{ hostvars['localhost']['he_vm_details']['vm']['id'] }}'"
     become: true
@@ -138,9 +135,6 @@
     register: db_vm_update
     with_items:
       - { field: 'origin', value: 6 }
-      # TODO: remove once https://github.com/ansible/ansible/issues/35268
-      # got properly fixed
-      - { field: 'priority', value: 1 }
   - debug: var=db_vm_update
   - name: Make the engine aware of the hosted-engine configuration image uuid
     command: scl enable {{ scl_conf.stdout_lines[0].split('=')[1].replace('\"','') }} -- psql -d engine -c "UPDATE vdc_options SET option_value='{{ hostvars['localhost']['he_conf_disk_details']['disk']['id'] }}' WHERE option_name='HostedEngineConfigurationImageGuid' AND version='general'"
@@ -153,6 +147,23 @@
 - hosts: localhost
   connection: local
   tasks:
+  - name: Trigger hosted engine OVF update
+    ovirt_vms:
+      id: "{{ he_vm_details.vm.id }}"
+      description: "Hosted engine VM"
+      auth: "{{ ovirt_auth }}"
+  - name: Wait until OVF update finishes
+    ovirt_storage_domains_facts:
+      auth: "{{ ovirt_auth }}"
+      fetch_nested: True
+      nested_attributes:
+        - name
+      pattern: "name={{ STORAGE_DOMAIN_NAME }}"
+    retries: 12
+    delay: 10
+    until: "ovirt_storage_domains[0].disks | selectattr('name', 'match', '^OVF_STORE$') | list"
+  # TODO: check volume with vdsm-tool and wait for update field in its description to be sure we also have OVF_STORE content.
+  # The disk will be listed once the volume is created also if still empty
   - name: Prepare images
     command: vdsm-client Image prepare storagepoolID={{ datacenter_id }} storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }} imageID={{ item.disk.id }} volumeID={{ item.disk.image_id  }}
     with_items:
