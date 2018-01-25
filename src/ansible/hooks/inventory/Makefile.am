@@ -23,9 +23,3 @@ MAINTAINERCLEANFILES = \
 	$(srcdir)/Makefile.in \
 	$(NULL)
 
-SUBDIRS = \
-	enginevm_after_engine_setup \
-	enginevm_before_engine_setup \
-	inventory \
-	$(NULL)
-
