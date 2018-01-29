@@ -1,12 +1,12 @@
 ansible-lint
 autoconf
 automake
-dnf
-dnf-command(builddep)
 gettext-devel
+git
 make
 ovirt-engine-sdk-python
+python-pep8
+python2-devel
 pyflakes
 pytest
-python-isort
-python-pep8
+yum-utils
