@@ -26,5 +26,6 @@ MAINTAINERCLEANFILES = \
 ansiblelibrarydir=$(ovirthostedengineansibledir)/library
 dist_ansiblelibrary_DATA = \
 	ovirt_storage_domains.py \
+	ovirt_auth.py \
 	ovirt_disk.py \
 	$(NULL)
