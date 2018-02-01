@@ -38,6 +38,24 @@ from ovirt_hosted_engine_setup import constants as ohostedcons
 def _(m):
     return gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
+# TODO do this nicely
+_FILTERED_VARS = (
+    'ADMIN_PASSWORD',
+    'APPLIANCE_PASSWORD',
+    'ISCSI_PASSWORD',
+    'ISCSI_DISCOVER_PASSWORD',
+    'ROOTPWD',
+)
+
+_FILTERED_REs = (
+    'BEGIN PRIVATE KEY(?P<filter>.*)END PRIVATE KEY',
+)
+
+_EXTRA_VARS_FOR_FILTERING = {
+    'he_filtered_tokens_vars': list(_FILTERED_VARS),
+    'he_filtered_tokens_re': list(_FILTERED_REs),
+}
+
 
 class AnsibleHelper(base.Base):
 
@@ -59,6 +77,7 @@ class AnsibleHelper(base.Base):
         )
         self._inventory_source = inventory_source
         self._extra_vars = extra_vars
+        self._extra_vars.update(_EXTRA_VARS_FOR_FILTERING)
         self._cb_results = {}
         self._raise_on_error = raise_on_error
 
