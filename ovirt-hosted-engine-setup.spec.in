@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2017 Red Hat, Inc.
+# Copyright (C) 2013-2018 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -146,6 +146,9 @@ print((
 ' > %{_sysconfdir}/ovirt-hosted-engine/virsh_auth.conf
 
 %changelog
+* Thu Feb 01 2018 Simone Tiraboschi <stirabos@redhat.com> - 2.3.0-0.0.master
+- 2.3.0-0.0.master
+
 * Wed Jan 24 2018 Simone Tiraboschi <stirabos@redhat.com> - 2.2.9-0.0.master
 - 2.2.9-0.0.master
 

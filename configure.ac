@@ -1,6 +1,6 @@
 dnl
 dnl ovirt-hosted-engine-setup -- ovirt with a manager in a VM
-dnl Copyright (C) 2013-2017 Red Hat, Inc.
+dnl Copyright (C) 2013-2018 Red Hat, Inc.
 dnl
 dnl This library is free software; you can redistribute it and/or
 dnl modify it under the terms of the GNU Lesser General Public
@@ -19,8 +19,8 @@ dnl
 AC_PREREQ(2.60)
 
 define([VERSION_MAJOR], [2])
-define([VERSION_MINOR], [2])
-define([VERSION_FIX], [9])
+define([VERSION_MINOR], [3])
+define([VERSION_FIX], [0])
 define([VERSION_NUMBER], VERSION_MAJOR[.]VERSION_MINOR[.]VERSION_FIX)
 define([VERSION_RELEASE], [0.0])
 define([VERSION_SUFFIX], [master])
