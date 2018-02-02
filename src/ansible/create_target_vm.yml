@@ -36,8 +36,16 @@
     set_fact: datacenter_id={{ ovirt_clusters|json_query("[?id=='" + cluster_id + "'].data_center.id")|first }}
   - name: Fetch datacenter_name
     set_fact: datacenter_name={{ ovirt_datacenters|json_query("[?id=='" + datacenter_id + "'].name")|first }}
+    # TODO: properly get it from the engine via REST API once properly exposed
+    # see: https://bugzilla.redhat.com/show_bug.cgi?id=1542531
   - name: Get cluster cpu model
-    set_fact: cluster_cpu_model={{ ovirt_clusters|json_query("[?id=='" + cluster_id + "'].cpu.type")|first|replace('Intel ', '')|replace('AMD ', '')|replace('IBM ', '')|replace(' Family', '') }}
+    set_fact: cluster_cpu_model={{ ovirt_clusters|json_query("[?id=='" + cluster_id + "'].cpu.type")
+      |first
+      |trim
+      |replace('Intel ', '')|replace('AMD ', '')|replace('IBM ', '')
+      |replace(' Family', '')
+      |replace('Opteron G', 'Opteron_G')
+      |replace(' ', '-') }}
   - debug: var=cluster_cpu_model
   - name: Get storage domain details
     ovirt_storage_domains_facts:
@@ -182,6 +190,8 @@
       src: "{{ item.src }}"
       dest: "{{ item.dest }}"
     with_items:
+# TODO: properly get {{ EMULATED_MACHINE }} from the engine via REST API once
+# properly exposed. See: https://bugzilla.redhat.com/show_bug.cgi?id=1542531
       - { src: templates/vm.conf.j2, dest: "{{ LOCAL_VM_DIR }}/vm.conf" }
       - { src: templates/broker.conf.j2, dest: "{{ LOCAL_VM_DIR }}/broker.conf" }
       - { src: templates/version.j2, dest: "{{ LOCAL_VM_DIR }}/version" }
