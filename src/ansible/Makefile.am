@@ -28,6 +28,7 @@ dist_ansible_DATA = \
 	auth_revoke.yml \
 	auth_sso.yml \
 	bootstrap_local_vm.yml \
+	clean_localvm_dir.yml \
 	create_storage_domain.yml \
 	create_target_vm.yml \
 	fc_getdevices.yml \
