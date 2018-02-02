@@ -3,104 +3,114 @@
   hosts: localhost
   connection: local
   tasks:
-  - name: Create dir for local vm
-    tempfile:
-      state: directory
-      path: "{{ LOCAL_VM_DIR_PATH }}"
-      prefix: "{{ LOCAL_VM_DIR_PREFIX }}"
-    register: otopi_localvm_dir
-  - name: Set local vm dir path
-    set_fact:
-      LOCAL_VM_DIR: "{{ otopi_localvm_dir.path }}"
-  - name: Fix local vm dir permission
-    file:
-      state: directory
-      path: "{{ LOCAL_VM_DIR }}"
-      owner: vdsm
-      group: kvm
-      mode: 0775
-  - name: Start libvirt
-    service:
-      name: libvirtd
-      state: started
-      enabled: yes
-  - name: Check status of default libvirt network
-    shell: virsh net-info default | awk '/Active/{print $(NF)}'
-    changed_when: True
-    register: default_net_status
-  - name: Activate default libvirt network
-    command: virsh net-start default
-    when: default_net_status.stdout != 'yes'
-  - include_tasks: install_appliance.yml
-    when: APPLIANCE_OVA is none or APPLIANCE_OVA|length == 0
-  - name: Register appliance PATH
-    set_fact:
-      APPLIANCE_OVA_PATH: "{{ APPLIANCE_OVA }}"
-    when: APPLIANCE_OVA is not none and APPLIANCE_OVA|length > 0
-  - debug: var=APPLIANCE_OVA_PATH
-  - name: Extract appliance to local vm dir
-    unarchive:
-      src: "{{ APPLIANCE_OVA_PATH }}"
-      dest: "{{ LOCAL_VM_DIR }}"
-      extra_opts: ['--sparse']
-  - name: Find the appliance image
-    find:
-      paths: "{{ LOCAL_VM_DIR }}/images"
-      recurse: true
-      patterns: ^.*.(?<!meta)$
-      use_regex: true
-    register: app_img
-  - debug: var=app_img
-  - name: Get appliance disk size
-    command: qemu-img info --output=json {{ app_img.files[0].path }}
-    changed_when: True
-    register: qemu_img_out
-  - debug: var=qemu_img_out
-  - name: Parse qemu-img output
-    set_fact:
-      virtual_size={{ qemu_img_out.stdout|from_json|json_query('"virtual-size"') }}
-    register: otopi_appliance_disk_size
-  - debug: var=virtual_size
-  - name: Create cloud init user-data and meta-data files
-    template:
-      src: "{{ item.src }}"
-      dest: "{{ item.dest }}"
-    with_items:
-      - { src: templates/user-data.j2, dest: "{{ LOCAL_VM_DIR }}/user-data" }
-      - { src: templates/meta-data.j2, dest: "{{ LOCAL_VM_DIR }}/meta-data" }
-  - name: Create iso disk
-    command: mkisofs -output {{ LOCAL_VM_DIR }}/seed.iso -volid cidata -joliet -rock -input-charset utf-8 {{ LOCAL_VM_DIR }}/meta-data {{ LOCAL_VM_DIR }}/user-data
-    changed_when: True
-  - name: Create local vm
-    command: virt-install -n {{ VM_NAME }}Local --os-variant rhel7 --virt-type kvm --memory {{ MEM_SIZE }} --vcpus {{ VCPUS }}  --network network=default,mac={{ VM_MAC_ADDR }},model=virtio --disk {{ app_img.files[0].path }} --import --disk path={{ LOCAL_VM_DIR }}/seed.iso,device=cdrom --noautoconsole --rng /dev/random --graphics vnc --video vga --sound none --controller usb,model=none --memballoon none --boot hd,menu=off --clock kvmclock_present=yes
-    register: create_local_vm
-    changed_when: True
-  - debug: var=create_local_vm
-  - name: Get local vm ip
-    shell: virsh -r net-dhcp-leases default | grep -i {{ VM_MAC_ADDR }} | awk '{ print $5 }' | cut -f1 -d'/'
-    register: local_vm_ip
-    until: local_vm_ip.stdout_lines|length >= 1
-    retries: 50
-    delay: 10
-    changed_when: True
-  - debug: var=local_vm_ip
-  - name: Remove eventually entries for the local VM from /etc/hosts
-    lineinfile:
-      dest: /etc/hosts
-      regexp: "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3} .*{{ FQDN }}[ .*]*"
-      state: absent
-  - name: Create an entry in /etc/hosts for the local VM
-    lineinfile:
-      dest: /etc/hosts
-      line: "{{ local_vm_ip.stdout_lines[0] }} {{ FQDN }}"
-      insertbefore: BOF
-  - name: Wait for ssh to restart on the engine VM
-    local_action:
-      module: wait_for
-        host='{{ FQDN }}'
-        port=22
-        delay=30
-        timeout=300
+    - name: Initial tasks
+      block:
+      - name: Create dir for local vm
+        tempfile:
+          state: directory
+          path: "{{ LOCAL_VM_DIR_PATH }}"
+          prefix: "{{ LOCAL_VM_DIR_PREFIX }}"
+        register: otopi_localvm_dir
+      - name: Set local vm dir path
+        set_fact:
+          LOCAL_VM_DIR: "{{ otopi_localvm_dir.path }}"
+      - name: Fix local vm dir permission
+        file:
+          state: directory
+          path: "{{ LOCAL_VM_DIR }}"
+          owner: vdsm
+          group: kvm
+          mode: 0775
+      - name: Start libvirt
+        service:
+          name: libvirtd
+          state: started
+          enabled: yes
+      - name: Check status of default libvirt network
+        shell: virsh net-info default | awk '/Active/{print $(NF)}'
+        changed_when: True
+        register: default_net_status
+      - name: Activate default libvirt network
+        command: virsh net-start default
+        when: default_net_status.stdout != 'yes'
+      - include_tasks: install_appliance.yml
+        when: APPLIANCE_OVA is none or APPLIANCE_OVA|length == 0
+      - name: Register appliance PATH
+        set_fact:
+          APPLIANCE_OVA_PATH: "{{ APPLIANCE_OVA }}"
+        when: APPLIANCE_OVA is not none and APPLIANCE_OVA|length > 0
+      - debug: var=APPLIANCE_OVA_PATH
+      - name: Extract appliance to local vm dir
+        unarchive:
+          src: "{{ APPLIANCE_OVA_PATH }}"
+          dest: "{{ LOCAL_VM_DIR }}"
+          extra_opts: ['--sparse']
+      - name: Find the appliance image
+        find:
+          paths: "{{ LOCAL_VM_DIR }}/images"
+          recurse: true
+          patterns: ^.*.(?<!meta)$
+          use_regex: true
+        register: app_img
+      - debug: var=app_img
+      - name: Get appliance disk size
+        command: qemu-img info --output=json {{ app_img.files[0].path }}
+        changed_when: True
+        register: qemu_img_out
+      - debug: var=qemu_img_out
+      - name: Parse qemu-img output
+        set_fact:
+          virtual_size={{ qemu_img_out.stdout|from_json|json_query('"virtual-size"') }}
+        register: otopi_appliance_disk_size
+      - debug: var=virtual_size
+      - name: Create cloud init user-data and meta-data files
+        template:
+          src: "{{ item.src }}"
+          dest: "{{ item.dest }}"
+        with_items:
+          - { src: templates/user-data.j2, dest: "{{ LOCAL_VM_DIR }}/user-data" }
+          - { src: templates/meta-data.j2, dest: "{{ LOCAL_VM_DIR }}/meta-data" }
+      - name: Create iso disk
+        command: mkisofs -output {{ LOCAL_VM_DIR }}/seed.iso -volid cidata -joliet -rock -input-charset utf-8 {{ LOCAL_VM_DIR }}/meta-data {{ LOCAL_VM_DIR }}/user-data
+        changed_when: True
+      - name: Create local vm
+        command: virt-install -n {{ VM_NAME }}Local --os-variant rhel7 --virt-type kvm --memory {{ MEM_SIZE }} --vcpus {{ VCPUS }}  --network network=default,mac={{ VM_MAC_ADDR }},model=virtio --disk {{ app_img.files[0].path }} --import --disk path={{ LOCAL_VM_DIR }}/seed.iso,device=cdrom --noautoconsole --rng /dev/random --graphics vnc --video vga --sound none --controller usb,model=none --memballoon none --boot hd,menu=off --clock kvmclock_present=yes
+        register: create_local_vm
+        changed_when: True
+      - debug: var=create_local_vm
+      - name: Get local vm ip
+        shell: virsh -r net-dhcp-leases default | grep -i {{ VM_MAC_ADDR }} | awk '{ print $5 }' | cut -f1 -d'/'
+        register: local_vm_ip
+        until: local_vm_ip.stdout_lines|length >= 1
+        retries: 50
+        delay: 10
+        changed_when: True
+      - debug: var=local_vm_ip
+      - name: Remove eventually entries for the local VM from /etc/hosts
+        lineinfile:
+          dest: /etc/hosts
+          regexp: "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3} .*{{ FQDN }}[ .*]*"
+          state: absent
+      - name: Create an entry in /etc/hosts for the local VM
+        lineinfile:
+          dest: /etc/hosts
+          line: "{{ local_vm_ip.stdout_lines[0] }} {{ FQDN }}"
+          insertbefore: BOF
+      - name: Wait for ssh to restart on the engine VM
+        local_action:
+          module: wait_for
+            host='{{ FQDN }}'
+            port=22
+            delay=30
+            timeout=300
+      rescue:
+        - include_tasks: clean_localvm_dir.yml
+        - name: Notify the user about a failure
+          fail:
+            msg: >
+              The system may not be provisioned according to the playbook
+              results: please check the logs for the issue,
+              fix accordingly or re-deploy from scratch.
 - hosts: "{{FQDN}}"
   vars:
     ansible_connection: smart
@@ -108,158 +118,185 @@
     ansible_ssh_pass: "{{ APPLIANCE_PASSWORD }}"
     ansible_user: root
   tasks:
-  - name: Wait for the engine VM
-    wait_for_connection:
-      delay: 5
-      timeout: 180
-  - name: Add an entry for this host on /etc/hosts on the engine VM
-    lineinfile:
-      dest: /etc/hosts
-      line: "{{ HOST_IP }} {{ HOST_ADDRESS }}"
-  - name: Set FDQN
-    command: hostnamectl set-hostname {{ FQDN }}
-    changed_when: True
-  - name: Force the engine VM FDQN to resolve on 127.0.0.1
-    lineinfile:
-      path: /etc/hosts
-      regexp: '^127\.0\.0\.1'
-      line: "127.0.0.1 {{ FQDN }} localhost localhost.localdomain localhost4 localhost4.localdomain4"
-  - name: Restore sshd reverse DNS lookups
-    lineinfile:
-      path: /etc/ssh/sshd_config
-      regexp: '^UseDNS'
-      line: "UseDNS yes"
-  - name: Generate an answer file for engine-setup
-    template:
-      src: templates/heanswers.conf.j2
-      dest: /root/heanswers.conf
-      owner: root
-      group: root
-      mode: 0600
-  - name: Include before engine-setup custom tasks files for the engine VM
-    include_tasks: "{{ item }}"
-    with_fileglob: "hooks/enginevm_before_engine_setup/*.yml"
-    register: include_before_engine_setup_results
-  - debug: var=include_before_engine_setup_results
-  - name: Execute engine-setup
-    command: /usr/bin/engine-setup --offline --config-append=/root/ovirt-engine-answers --config-append=/root/heanswers.conf
-    register: engine_setup_out
-    changed_when: True
-  - debug: var=engine_setup_out
-  - name: Include before engine-setup custom tasks files for the engine VM
-    include_tasks: "{{ item }}"
-    with_fileglob: "hooks/enginevm_after_engine_setup/*.yml"
-    register: include_after_engine_setup_results
-  - debug: var=include_after_engine_setup_results
-  - name: Configure LibgfApi support
-    command: engine-config -s LibgfApiSupported=true --cver=4.2
-    register: libgfapi_support_out
-    changed_when: True
-    when: ENABLE_LIBGFAPI
-  - debug: var=libgfapi_support_out
-  - name: Restart the engine for LibgfApi support
-    systemd:
-      state: restarted
-      name: ovirt-engine
-    register: restart_libgfapi_support_out
-    when: ENABLE_LIBGFAPI
-  - debug: var=restart_libgfapi_support_out
-  - name: Mask services to speed up future bootstraps
-    systemd:
-      masked: yes
-      name: "{{ item }}"
-    with_items:
-      - cloud-init-local
-      - cloud-init
-  - name: Clean up boostrap answer file
-    file:
-      state: absent
-      path: /root/heanswers.conf
+    - name: Initial tasks
+      block:
+      - name: Wait for the engine VM
+        wait_for_connection:
+          delay: 5
+          timeout: 180
+      - name: Add an entry for this host on /etc/hosts on the engine VM
+        lineinfile:
+          dest: /etc/hosts
+          line: "{{ HOST_IP }} {{ HOST_ADDRESS }}"
+      - name: Set FDQN
+        command: hostnamectl set-hostname {{ FQDN }}
+        changed_when: True
+      - name: Force the engine VM FDQN to resolve on 127.0.0.1
+        lineinfile:
+          path: /etc/hosts
+          regexp: '^127\.0\.0\.1'
+          line: "127.0.0.1 {{ FQDN }} localhost localhost.localdomain localhost4 localhost4.localdomain4"
+      - name: Restore sshd reverse DNS lookups
+        lineinfile:
+          path: /etc/ssh/sshd_config
+          regexp: '^UseDNS'
+          line: "UseDNS yes"
+      - name: Generate an answer file for engine-setup
+        template:
+          src: templates/heanswers.conf.j2
+          dest: /root/heanswers.conf
+          owner: root
+          group: root
+          mode: 0600
+      - name: Include before engine-setup custom tasks files for the engine VM
+        include_tasks: "{{ item }}"
+        with_fileglob: "hooks/enginevm_before_engine_setup/*.yml"
+        register: include_before_engine_setup_results
+      - debug: var=include_before_engine_setup_results
+      - name: Execute engine-setup
+        command: /usr/bin/engine-setup --offline --config-append=/root/ovirt-engine-answers --config-append=/root/heanswers.conf
+        register: engine_setup_out
+        changed_when: True
+      - debug: var=engine_setup_out
+      - name: Include before engine-setup custom tasks files for the engine VM
+        include_tasks: "{{ item }}"
+        with_fileglob: "hooks/enginevm_after_engine_setup/*.yml"
+        register: include_after_engine_setup_results
+      - debug: var=include_after_engine_setup_results
+      - name: Configure LibgfApi support
+        command: engine-config -s LibgfApiSupported=true --cver=4.2
+        register: libgfapi_support_out
+        changed_when: True
+        when: ENABLE_LIBGFAPI
+      - debug: var=libgfapi_support_out
+      - name: Restart the engine for LibgfApi support
+        systemd:
+          state: restarted
+          name: ovirt-engine
+        register: restart_libgfapi_support_out
+        when: ENABLE_LIBGFAPI
+      - debug: var=restart_libgfapi_support_out
+      - name: Mask services to speed up future bootstraps
+        systemd:
+          masked: yes
+          name: "{{ item }}"
+        with_items:
+          - cloud-init-local
+          - cloud-init
+      - name: Clean up boostrap answer file
+        file:
+          state: absent
+          path: /root/heanswers.conf
+      rescue:
+        - name: Get local VM dir path
+          set_fact:
+            LOCAL_VM_DIR={{ hostvars['localhost']['LOCAL_VM_DIR'] }}
+        - name: Clean bootstrap VM
+          include_tasks: clean_localvm_dir.yml
+          delegate_to: localhost
+          connection: local
+        - name: Notify the user about a failure
+          fail:
+            msg: >
+              There was a failure deploying the engine on the local engine VM.
+              The system may not be provisioned according to the playbook
+              results: please check the logs for the issue,
+              fix accordingly or re-deploy from scratch.
 - hosts: localhost
   connection: local
   tasks:
-  - name: Wait for engine to start
-    uri:
-      url: http://{{ FQDN }}/ovirt-engine/services/health
-      return_content: yes
-    register: engine_status
-    until: "'DB Up!Welcome to Health Status!' in engine_status.content"
-    retries: 30
-    delay: 20
-  - debug: var=engine_status
-  - name: Set engine pub key as authorized key without validating the TLS/SSL certificates
-    authorized_key:
-      user: root
-      state: present
-      key: https://{{ FQDN }}/ovirt-engine/services/pki-resource?resource=engine-certificate&format=OPENSSH-PUBKEY
-      validate_certs: False
-  - name: Force host-deploy in offline mode
-    template:
-      src: templates/70-hosted-engine-setup.conf.j2
-      dest: /etc/ovirt-host-deploy.conf.d/70-hosted-engine-setup.conf
-  - include_tasks: auth_sso.yml
-  - name: Add host
-    ovirt_hosts:
-      name: "{{ HOST_NAME }}"
-      state: present
-      public_key: true
-      address: "{{ HOST_ADDRESS }}"
-      auth: "{{ ovirt_auth }}"
-    async: 1
-    poll: 0
-  # all of the next is a workaroud for the network issue, vdsm installation breaks the routing and it needs to be fixed
-  # once we'll fix the host installation it could be removed
-  - name: Wait for the host to become non operational
-    ovirt_hosts_facts:
-      pattern: name={{ HOST_NAME }}
-      auth: "{{ ovirt_auth }}"
-    register: host_result
-    until: host_result|succeeded and host_result.ansible_facts.ovirt_hosts|length >= 1 and ("'non_operational' in host_result.ansible_facts.ovirt_hosts[0].status" or "'up' in host_result.ansible_facts.ovirt_hosts[0].status")
-    retries: 150
-    delay: 2
-  - debug: var=host_result
-  - name: Get virbr0 routing configuration
-    shell: ip route | grep virbr0
-    register: virbr0_route_config
-    until: virbr0_route_config.stdout_lines|length >= 1
-    retries: 50
-    delay: 10
-    changed_when: True
-  - debug: var=virbr0_route_config
-  - name: Get ovirtmgmt route table id
-    shell: ip rule list | grep ovirtmgmt | sed s/\\[.*\\]\ //g | awk '{ print $9 }'
-    register: ovirtmgmt_table_id
-    until: ovirtmgmt_table_id.stdout_lines|length >= 1
-    retries: 50
-    delay: 10
-    changed_when: True
-  - debug: var=ovirtmgmt_table_id
-  - name: Check network configuration
-    command: ip route show table {{ ovirtmgmt_table_id.stdout_lines[0] }}
-    changed_when: True
-    register: current_net_table
-  - name: Clean network configuration
-    command: ip route del {{ virbr0_route_config.stdout_lines[0] }} table {{ ovirtmgmt_table_id.stdout_lines[0] }}
-    when: "virbr0_route_config.stdout_lines[0] in current_net_table.stdout"
-  - name: Restore network configuration
-    command: ip route add {{ virbr0_route_config.stdout_lines[0] }} table {{ ovirtmgmt_table_id.stdout_lines[0] }}
-    register: result
-    until: result.rc == 0
-    retries: 50
-    delay: 10
-    changed_when: True
-  - debug: var=result
-  - name: Wait for the host to be up
-    ovirt_hosts_facts:
-      pattern: name={{ HOST_NAME }} status=up
-      auth: "{{ ovirt_auth }}"
-    register: host_result
-    until: host_result|succeeded and host_result.ansible_facts.ovirt_hosts|length >= 1
-    retries: 50
-    delay: 10
-  - debug: var=host_result
-  - name: Remove host-deploy configuration file
-    file:
-      state: absent
-      path: /etc/ovirt-host-deploy.conf.d/70-hosted-engine-setup.conf
+    - name: Add host
+      block:
+      - name: Wait for engine to start
+        uri:
+          url: http://{{ FQDN }}/ovirt-engine/services/health
+          return_content: yes
+        register: engine_status
+        until: "'DB Up!Welcome to Health Status!' in engine_status.content"
+        retries: 30
+        delay: 20
+      - debug: var=engine_status
+      - name: Set engine pub key as authorized key without validating the TLS/SSL certificates
+        authorized_key:
+          user: root
+          state: present
+          key: https://{{ FQDN }}/ovirt-engine/services/pki-resource?resource=engine-certificate&format=OPENSSH-PUBKEY
+          validate_certs: False
+      - name: Force host-deploy in offline mode
+        template:
+          src: templates/70-hosted-engine-setup.conf.j2
+          dest: /etc/ovirt-host-deploy.conf.d/70-hosted-engine-setup.conf
+      - include_tasks: auth_sso.yml
+      - name: Add host
+        ovirt_hosts:
+          name: "{{ HOST_NAME }}"
+          state: present
+          public_key: true
+          address: "{{ HOST_ADDRESS }}"
+          auth: "{{ ovirt_auth }}"
+        async: 1
+        poll: 0
+      # all of the next is a workaroud for the network issue, vdsm installation breaks the routing and it needs to be fixed
+      # once we'll fix the host installation it could be removed
+      - name: Wait for the host to become non operational
+        ovirt_hosts_facts:
+          pattern: name={{ HOST_NAME }}
+          auth: "{{ ovirt_auth }}"
+        register: host_result
+        until: host_result|succeeded and host_result.ansible_facts.ovirt_hosts|length >= 1 and ("'non_operational' in host_result.ansible_facts.ovirt_hosts[0].status" or "'up' in host_result.ansible_facts.ovirt_hosts[0].status")
+        retries: 150
+        delay: 2
+      - debug: var=host_result
+      - name: Get virbr0 routing configuration
+        shell: ip route | grep virbr0
+        register: virbr0_route_config
+        until: virbr0_route_config.stdout_lines|length >= 1
+        retries: 50
+        delay: 10
+        changed_when: True
+      - debug: var=virbr0_route_config
+      - name: Get ovirtmgmt route table id
+        shell: ip rule list | grep ovirtmgmt | sed s/\\[.*\\]\ //g | awk '{ print $9 }'
+        register: ovirtmgmt_table_id
+        until: ovirtmgmt_table_id.stdout_lines|length >= 1
+        retries: 50
+        delay: 10
+        changed_when: True
+      - debug: var=ovirtmgmt_table_id
+      - name: Check network configuration
+        command: ip route show table {{ ovirtmgmt_table_id.stdout_lines[0] }}
+        changed_when: True
+        register: current_net_table
+      - name: Clean network configuration
+        command: ip route del {{ virbr0_route_config.stdout_lines[0] }} table {{ ovirtmgmt_table_id.stdout_lines[0] }}
+        when: "virbr0_route_config.stdout_lines[0] in current_net_table.stdout"
+      - name: Restore network configuration
+        command: ip route add {{ virbr0_route_config.stdout_lines[0] }} table {{ ovirtmgmt_table_id.stdout_lines[0] }}
+        register: result
+        until: result.rc == 0
+        retries: 50
+        delay: 10
+        changed_when: True
+      - debug: var=result
+      - name: Wait for the host to be up
+        ovirt_hosts_facts:
+          pattern: name={{ HOST_NAME }} status=up
+          auth: "{{ ovirt_auth }}"
+        register: host_result
+        until: host_result|succeeded and host_result.ansible_facts.ovirt_hosts|length >= 1
+        retries: 50
+        delay: 10
+      - debug: var=host_result
+      - name: Remove host-deploy configuration file
+        file:
+          state: absent
+          path: /etc/ovirt-host-deploy.conf.d/70-hosted-engine-setup.conf
+      rescue:
+        - include_tasks: clean_localvm_dir.yml
+        - name: Notify the user about a failure
+          fail:
+            msg: >
+              The system may not be provisioned according to the playbook
+              results: please check the logs for the issue,
+              fix accordingly or re-deploy from scratch.
 ...

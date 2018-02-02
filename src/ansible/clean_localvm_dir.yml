@@ -1,0 +1,7 @@
+---
+- name: Remove local vm dir
+  file:
+    path: "{{ LOCAL_VM_DIR }}"
+    state: absent
+  register: rm_localvm_dir
+- debug: var=rm_localvm_dir

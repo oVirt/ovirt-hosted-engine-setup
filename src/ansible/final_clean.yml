@@ -3,8 +3,5 @@
   hosts: localhost
   connection: local
   tasks:
-  - name: Remove local vm dir
-    file:
-      path: "{{ LOCAL_VM_DIR }}"
-      state: absent
+  - include_tasks: clean_localvm_dir.yml
 ...
