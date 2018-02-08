@@ -177,6 +177,7 @@ class VmStatus(object):
             return None
 
     def get_status(self, timeout=30):
+        i_timeout = timeout
         RETRY_DELAY = 3
         status = {}
         while timeout > 0:
@@ -203,7 +204,7 @@ class VmStatus(object):
                 timeout -= RETRY_DELAY
         raise RuntimeError(
             _('Unable to connect the HA Broker within {t} seconds').format(
-                t=timeout,
+                t=i_timeout,
             )
         )
 

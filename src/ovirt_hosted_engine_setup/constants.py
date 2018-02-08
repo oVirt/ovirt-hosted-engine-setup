@@ -407,7 +407,7 @@ class Const(object):
     BACKUP_DISK_PREFIX = 'hosted-engine-backup-'
     APPLIANCE_RPM_NAME = '%s-appliance' % config.APPLIANCE_RPM_PREFIX
     APPLIANCE40_RPM_NAME = '%s-appliance' % config.APPLIANCE40_RPM_PREFIX
-    VM_LIVELINESS_CHECK_TIMEOUT = 600
+    VM_LIVELINESS_CHECK_TIMEOUT = 900
     ANSIBLE_R_OTOPI_PREFIX = 'otopi_'
 
 
