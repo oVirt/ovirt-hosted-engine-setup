@@ -36,7 +36,6 @@ from otopi import util
 from vdsm.client import ServerError
 
 from ovirt_hosted_engine_ha.lib import heconflib
-from ovirt_hosted_engine_ha.lib import image
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import tasks
@@ -190,105 +189,6 @@ class Plugin(plugin.PluginBase):
         )
         self.logger.error(msg)
         raise RuntimeError(msg)
-
-    def _analyze_volume(self, img, vol_uuid):
-        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        sdUUID = self.environment[ohostedcons.StorageEnv.SD_UUID]
-        spUUID = ohostedcons.Const.BLANK_UUID
-
-        voldict = {
-            ohostedcons.Const.CONF_IMAGE_DESC: {
-                'img_key': ohostedcons.StorageEnv.CONF_IMG_UUID,
-                'vol_key': ohostedcons.StorageEnv.CONF_VOL_UUID,
-            },
-            self.environment[
-                ohostedcons.SanlockEnv.LOCKSPACE_NAME
-            ] + '.lockspace': {
-                'img_key': ohostedcons.StorageEnv.LOCKSPACE_IMAGE_UUID,
-                'vol_key': ohostedcons.StorageEnv.LOCKSPACE_VOLUME_UUID,
-            },
-            self.environment[
-                ohostedcons.SanlockEnv.LOCKSPACE_NAME
-            ] + '.metadata': {
-                'img_key': ohostedcons.StorageEnv.METADATA_IMAGE_UUID,
-                'vol_key': ohostedcons.StorageEnv.METADATA_VOLUME_UUID,
-            },
-        }
-
-        try:
-            volumeinfo = cli.Volume.getInfo(
-                volumeID=vol_uuid,
-                imageID=img,
-                storagepoolID=spUUID,
-                storagedomainID=sdUUID,
-            )
-            self.logger.debug(volumeinfo)
-        except ServerError as e:
-            # avoid raising here, simply skip the unknown volume
-            self.logger.debug(
-                (
-                    'Error fetching volume info '
-                    'for {volume}: {message}'
-                ).format(
-                    volume=vol_uuid,
-                    message=str(e),
-                )
-            )
-            return
-
-        description = volumeinfo['description']
-        if description in voldict:
-            self.environment[voldict[description]['img_key']] = img
-            self.environment[voldict[description]['vol_key']] = vol_uuid
-            self.logger.debug(
-                'Found {desc} volume: imgUUID:{img}, volUUID:{vol}'.format(
-                    desc=description,
-                    img=img,
-                    vol=vol_uuid,
-                )
-            )
-
-    def _analyze_image(self, img):
-        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        sdUUID = self.environment[ohostedcons.StorageEnv.SD_UUID]
-        spUUID = ohostedcons.Const.BLANK_UUID
-
-        try:
-            volumeslist = cli.StorageDomain.getVolumes(
-                imageID=img,
-                storagepoolID=spUUID,
-                storagedomainID=sdUUID,
-            )
-            self.logger.debug('volumeslist: {vl}'.format(vl=volumeslist))
-        except ServerError as e:
-            # avoid raising here, simply skip the unknown image
-            self.logger.debug(
-                'Error fetching volumes for {image}: {message}'.format(
-                    image=image,
-                    message=str(e),
-                )
-            )
-            return
-
-        for vol_uuid in volumeslist:
-            self._analyze_volume(img, vol_uuid)
-
-    def _scan_images(self):
-        """
-        Scan for metadata, lockspace and configuration image uuids
-        """
-        # VDSM getImagesList doesn't work when the SD is not connect to
-        # a storage pool so we cannot simply directly call getImagesList
-        # see: https://bugzilla.redhat.com/1274622
-        img = image.Image(
-            self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE],
-            self.environment[ohostedcons.StorageEnv.SD_UUID],
-        )
-        img.prepare_images()
-        images = img.get_images_list(self.cli)
-        self.logger.debug("Existing images: {images}".format(images=images))
-        for img in images:
-            self._analyze_image(img)
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -1095,11 +995,60 @@ class Plugin(plugin.PluginBase):
     )
     def _closeup_reprepare_images(self):
         self.logger.debug(_("Preparing again HE images"))
-        img = image.Image(
-            self.environment[ohostedcons.StorageEnv.DOMAIN_TYPE],
-            self.environment[ohostedcons.StorageEnv.SD_UUID],
-        )
-        img.prepare_images()
+        self.cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
+        for d in [
+            {
+                'imgUUID': self.environment[
+                    ohostedcons.StorageEnv.IMG_UUID
+                ],
+                'volUUID': self.environment[
+                    ohostedcons.StorageEnv.VOL_UUID
+                ],
+            },
+            {
+                'imgUUID': self.environment[
+                    ohostedcons.StorageEnv.METADATA_IMAGE_UUID
+                ],
+                'volUUID': self.environment[
+                    ohostedcons.StorageEnv.METADATA_VOLUME_UUID
+                ],
+            },
+            {
+                'imgUUID': self.environment[
+                    ohostedcons.StorageEnv.LOCKSPACE_IMAGE_UUID
+                ],
+                'volUUID': self.environment[
+                    ohostedcons.StorageEnv.LOCKSPACE_VOLUME_UUID
+                ],
+            },
+            {
+                'imgUUID': self.environment[
+                    ohostedcons.StorageEnv.CONF_IMG_UUID
+                ],
+                'volUUID': self.environment[
+                    ohostedcons.StorageEnv.CONF_VOL_UUID
+                ],
+            },
+        ]:
+            try:
+                self.cli.Image.prepare(
+                    storagepoolID=self.environment[
+                        ohostedcons.StorageEnv.SP_UUID
+                    ],
+                    storagedomainID=self.environment[
+                        ohostedcons.StorageEnv.SD_UUID
+                    ],
+                    imageID=d['imgUUID'],
+                    volumeID=d['volUUID'],
+                )
+            except ServerError as e:
+                msg = _(
+                    'Error preparing image: {message}'.format(
+                        message=str(e)
+                    )
+                )
+                self.logger.error(msg)
+                raise RuntimeError(msg)
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLEANUP,
