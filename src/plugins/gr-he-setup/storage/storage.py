@@ -377,9 +377,7 @@ class Plugin(plugin.PluginBase):
                         'password': self.environment[
                             ohostedcons.StorageEnv.ISCSI_PASSWORD
                         ],
-                        'id': self.environment[
-                            ohostedcons.StorageEnv.CONNECTION_UUID
-                        ],
+                        'id': str(uuid.uuid4()),
                         'port': x['port'],
                     }
                 )
@@ -406,11 +404,37 @@ class Plugin(plugin.PluginBase):
                 raise RuntimeError(str(e))
 
             if not disconnect:
+                connected = False
+                broken_paths = False
                 for con in status:
-                    if con['status'] != 0:
-                        raise RuntimeError(
-                            _('Connection to storage server failed')
-                        )
+                    if con['status'] == 0:
+                        connected = True
+                    else:
+                        if len(status) > 1:
+                            broken_paths = True
+                            con_details = {}
+                            for ce in conList:
+                                if con['id'] == ce['id']:
+                                    con_details = ce
+                            self.logger.warning(
+                                _(
+                                    'A connection path to the storage server '
+                                    'is not active, details: {con_details}'
+                                ).format(
+                                    con_details=con_details,
+                                )
+                            )
+                if not connected:
+                    raise RuntimeError(
+                        _('Connection to storage server failed')
+                    )
+                elif broken_paths:
+                    self.logger.warning(_(
+                        'Please note that the broken storage paths will '
+                        'be ignored by the engine, if still broken, when\n'
+                        'you will add the first regular storage domain and '
+                        'the engine will trigger the auto import process.'
+                    ))
 
         if self._fake_SD_path and not disconnect:
             # We have to keep the loopback device mounted

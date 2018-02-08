@@ -179,17 +179,17 @@ class Plugin(plugin.PluginBase):
         timeout = ohostedcons.Const.VM_LIVELINESS_CHECK_TIMEOUT
         vmstatus = vm_status.VmStatus()
         self.logger.info('Waiting for engine to start...')
+        health_good = False
         while timeout >= 0:
             try:
                 status = vmstatus.get_status()
-                health_good = False
                 for host in status['all_host_stats'].values():
                     if 'engine-status' in host:
                         if '"health": "good"' in host['engine-status']:
                             health_good = True
                             break
 
-            except BrokerConnectionError as e:
+            except (BrokerConnectionError, RuntimeError) as e:
                 self.logger.debug(str(e))
 
             if health_good:
