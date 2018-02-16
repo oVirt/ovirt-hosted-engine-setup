@@ -204,6 +204,8 @@
               fix accordingly or re-deploy from scratch.
 - hosts: localhost
   connection: local
+  vars:
+    MGMT_NETWORK: ovirtmgmt
   tasks:
     - name: Add host
       block:
@@ -236,57 +238,81 @@
           auth: "{{ ovirt_auth }}"
         async: 1
         poll: 0
-      # all of the next is a workaroud for the network issue, vdsm installation breaks the routing and it needs to be fixed
-      # once we'll fix the host installation it could be removed
-      - name: Wait for the host to become non operational
+      - name: Wait for the engine to start host install process
         ovirt_hosts_facts:
-          pattern: name={{ HOST_NAME }}
-          auth: "{{ ovirt_auth }}"
-        register: host_result
-        until: host_result|succeeded and host_result.ansible_facts.ovirt_hosts|length >= 1 and ("'non_operational' in host_result.ansible_facts.ovirt_hosts[0].status" or "'up' in host_result.ansible_facts.ovirt_hosts[0].status")
-        retries: 150
-        delay: 2
-      - debug: var=host_result
-      - name: Get virbr0 routing configuration
-        shell: ip route | grep virbr0
-        register: virbr0_route_config
-        until: virbr0_route_config.stdout_lines|length >= 1
-        retries: 50
-        delay: 10
-        changed_when: True
-      - debug: var=virbr0_route_config
-      - name: Get ovirtmgmt route table id
-        shell: ip rule list | grep ovirtmgmt | sed s/\\[.*\\]\ //g | awk '{ print $9 }'
-        register: ovirtmgmt_table_id
-        until: ovirtmgmt_table_id.stdout_lines|length >= 1
-        retries: 50
-        delay: 10
-        changed_when: True
-      - debug: var=ovirtmgmt_table_id
-      - name: Check network configuration
-        command: ip route show table {{ ovirtmgmt_table_id.stdout_lines[0] }}
-        changed_when: True
-        register: current_net_table
-      - name: Clean network configuration
-        command: ip route del {{ virbr0_route_config.stdout_lines[0] }} table {{ ovirtmgmt_table_id.stdout_lines[0] }}
-        when: "virbr0_route_config.stdout_lines[0] in current_net_table.stdout"
-      - name: Restore network configuration
-        command: ip route add {{ virbr0_route_config.stdout_lines[0] }} table {{ ovirtmgmt_table_id.stdout_lines[0] }}
-        register: result
-        until: result.rc == 0
-        retries: 50
-        delay: 10
-        changed_when: True
-      - debug: var=result
-      - name: Wait for the host to be up
-        ovirt_hosts_facts:
-          pattern: name={{ HOST_NAME }} status=up
+          pattern: name={{ HOST_NAME }} status=installing
           auth: "{{ ovirt_auth }}"
         register: host_result
         until: host_result|succeeded and host_result.ansible_facts.ovirt_hosts|length >= 1
-        retries: 50
-        delay: 10
+        retries: 30
+        delay: 5
       - debug: var=host_result
+      - name: Wait for the management bridge to appear on the host
+        command: ip link show {{ MGMT_NETWORK }}
+        changed_when: True
+        register: ip_link_show_mgmt
+        until: ip_link_show_mgmt.rc == 0
+        retries: 90
+        delay: 10
+      - name: Wait for the host to be up
+        block:
+          - name: Wait for the host to be up
+            ovirt_hosts_facts:
+              pattern: name={{ HOST_NAME }} status=up
+              auth: "{{ ovirt_auth }}"
+            register: host_result_up
+            until: host_result_up|succeeded and host_result_up.ansible_facts.ovirt_hosts|length >= 1
+            retries: 12   # non_operational timeout on network failure is 120 seconds,
+            delay: 5      # wait 60 seconds before trying a workaround
+            ignore_errors: True
+          - debug: var=host_result_up
+          - name: Check host install result
+            fail: msg="Fix network configuration if the host is still not up"
+            when: host_result_up.ansible_facts.ovirt_hosts|length == 0
+        rescue:
+            # all of the next is a workaround for a network issue:
+            # vdsm installation breaks the routing and it needs to be fixed
+            # once we'll fix the host installation it could be removed
+          - name: Get virbr0 routing configuration
+            shell: ip route | grep virbr0
+            register: virbr0_route_config
+            until: virbr0_route_config.stdout_lines|length >= 1
+            retries: 50
+            delay: 10
+            changed_when: True
+          - debug: var=virbr0_route_config
+          - name: Get management bridge route table id
+            shell: ip rule list | grep {{ MGMT_NETWORK }} | sed s/\\[.*\\]\ //g | awk '{ print $9 }'
+            register: ovirtmgmt_table_id
+            until: ovirtmgmt_table_id.stdout_lines|length >= 1
+            retries: 50
+            delay: 10
+            changed_when: True
+          - debug: var=ovirtmgmt_table_id
+          - name: Check network configuration
+            command: ip route show table {{ ovirtmgmt_table_id.stdout_lines[0] }}
+            changed_when: True
+            register: current_net_table
+          - name: Clean network configuration
+            command: ip route del {{ virbr0_route_config.stdout_lines[0] }} table {{ ovirtmgmt_table_id.stdout_lines[0] }}
+            when: "virbr0_route_config.stdout_lines[0] in current_net_table.stdout"
+          - name: Restore network configuration
+            command: ip route add {{ virbr0_route_config.stdout_lines[0] }} table {{ ovirtmgmt_table_id.stdout_lines[0] }}
+            register: result
+            until: result.rc == 0
+            retries: 50
+            delay: 10
+            changed_when: True
+          - debug: var=result
+          - name: Wait for the host to be up
+            ovirt_hosts_facts:
+              pattern: name={{ HOST_NAME }} status=up
+              auth: "{{ ovirt_auth }}"
+            register: host_result_up_check
+            until: host_result_up_check|succeeded and host_result_up_check.ansible_facts.ovirt_hosts|length >= 1
+            retries: 20
+            delay: 5
+          - debug: var=host_result_up_check
       - name: Remove host-deploy configuration file
         file:
           state: absent
