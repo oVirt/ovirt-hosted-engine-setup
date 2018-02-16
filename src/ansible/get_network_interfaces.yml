@@ -3,6 +3,7 @@
   hosts: localhost
   connection: local
   tasks:
+  # TODO: handle an existing management bridge or destroy it
   - name: Get all active network interfaces
     vars:
       acceptable_bond_modes: ['active-backup','balance-xor','broadcast','802.3adq']

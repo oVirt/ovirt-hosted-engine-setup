@@ -206,6 +206,7 @@
   connection: local
   vars:
     MGMT_NETWORK: ovirtmgmt
+    DATA_CENTER: Default
   tasks:
     - name: Add host
       block:
@@ -218,19 +219,33 @@
         retries: 30
         delay: 20
       - debug: var=engine_status
+      - name: Detect VLAN ID
+        shell: ip -d link show {{ BRIDGE_IF }} | grep vlan | grep -Po 'id \K[\d]+' | cat
+        register: vlan_id_out
+        changed_when: True
+      - debug: var=vlan_id_out
       - name: Set engine pub key as authorized key without validating the TLS/SSL certificates
         authorized_key:
           user: root
           state: present
           key: https://{{ FQDN }}/ovirt-engine/services/pki-resource?resource=engine-certificate&format=OPENSSH-PUBKEY
           validate_certs: False
+      - include_tasks: auth_sso.yml
+      - name: Set VLAN ID at datacenter level
+        ovirt_networks:
+          data_center: "{{ DATA_CENTER }}"
+          name: "{{ MGMT_NETWORK }}"
+          vlan_tag: "{{ vlan_id_out.stdout }}"
+          auth: "{{ ovirt_auth }}"
+        when: vlan_id_out.stdout|length > 0
       - name: Force host-deploy in offline mode
         template:
           src: templates/70-hosted-engine-setup.conf.j2
           dest: /etc/ovirt-host-deploy.conf.d/70-hosted-engine-setup.conf
-      - include_tasks: auth_sso.yml
       - name: Add host
         ovirt_hosts:
+          # TODO: add to the first cluster of the datacenter
+          # where we set the vlan id
           name: "{{ HOST_NAME }}"
           state: present
           public_key: true

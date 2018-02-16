@@ -168,6 +168,9 @@ class Plugin(plugin.PluginBase):
             'ENABLE_LIBGFAPI': self.environment[
                 ohostedcons.StorageEnv.ENABLE_LIBGFAPI
             ],
+            'BRIDGE_IF': self.environment[
+                ohostedcons.NetworkEnv.BRIDGE_IF
+            ]
         }
         inventory_source = 'localhost, {fqdn}'.format(
             fqdn=self.environment[
