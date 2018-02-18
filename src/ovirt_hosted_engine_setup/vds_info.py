@@ -78,7 +78,7 @@ def network(caps, device):
         configuration['ipaddr'] = port_info['addr']
         configuration['netmask'] = port_info['netmask']
         gateway = port_info.get('gateway')
-        if gateway is not None:
+        if gateway:
             configuration['gateway'] = gateway
     configuration['defaultRoute'] = port_info['ipv4defaultroute']
     if 'addr' in port_info:
