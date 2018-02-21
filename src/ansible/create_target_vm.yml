@@ -59,16 +59,17 @@
       size: "{{ item.size }}"
       format: "{{ item.format }}"
       sparse: "{{ item.sparse }}"
+      description: "{{ item.description }}"
       interface: virtio
       storage_domain: "{{ STORAGE_DOMAIN_NAME }}"
       wait: True
       timeout: 600
       auth: "{{ ovirt_auth }}"
     with_items:
-      - { name: 'he_sanlock', size: '1GiB', format: 'raw', sparse: False }
-      - { name: 'HostedEngineConfigurationImage', size: '1GiB', format: 'raw', sparse: False }
-      - { name: 'he_metadata', size: '1GiB', format: 'raw', sparse: False }
-      - { name: 'he_virtio_disk', size: "{{ DISK_SIZE }}GiB", format: 'raw', sparse: "{{ False if DOMAIN_TYPE == 'fc' or DOMAIN_TYPE == 'iscsi' else True }}" }
+      - { name: 'he_sanlock', description: 'Hosted-Engine sanlock disk', size: '1GiB', format: 'raw', sparse: False }
+      - { name: 'HostedEngineConfigurationImage', description: 'Hosted-Engine configuration disk', size: '1GiB', format: 'raw', sparse: False }
+      - { name: 'he_metadata', description: 'Hosted-Engine metadata disk', size: '1GiB', format: 'raw', sparse: False }
+      - { name: 'he_virtio_disk', description: 'Hosted-Engine disk', size: "{{ DISK_SIZE }}GiB", format: 'raw', sparse: "{{ False if DOMAIN_TYPE == 'fc' or DOMAIN_TYPE == 'iscsi' else True }}" }
     register: add_disks
   - name: Register disk details
     set_fact:
@@ -82,11 +83,13 @@
       state: stopped
       cluster: "{{ cluster_name }}"
       name: "{{ VM_NAME }}"
+      description: 'Hosted Engine Virtual Machine'
       memory: "{{ MEM_SIZE }}Mib"
       cpu_cores: "{{ VCPUS }}"
       cpu_sockets: 1
       operating_system: rhel_7x64
       type: server
+      delete_protected: True
 #      timezone: "{{ TIME_ZONE }}" # TODO: fix with the right parameter syntax
       storage_domain: "{{ STORAGE_DOMAIN_NAME }}"
       disks:
