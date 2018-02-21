@@ -2,8 +2,14 @@
 - name: Network interfaces
   hosts: localhost
   connection: local
+  vars:
+    MGMT_NETWORK: ovirtmgmt
   tasks:
-  # TODO: handle an existing management bridge or destroy it
+  - name: Detecting interface on existing management bridge
+    set_fact:
+      bridge_interface="{{ hostvars[inventory_hostname]['ansible_' + MGMT_NETWORK ]['interfaces']|first }}"
+    when: "'ansible_' + MGMT_NETWORK in hostvars[inventory_hostname]"
+  - debug: var=bridge_interface
   - name: Get all active network interfaces
     vars:
       acceptable_bond_modes: ['active-backup','balance-xor','broadcast','802.3adq']
@@ -15,6 +21,8 @@
         (
           item != 'lo'
         ) and (
+          'ansible_' + MGMT_NETWORK not in hostvars[inventory_hostname]
+        ) and (
           hostvars[inventory_hostname]['ansible_' + item]['active']
         ) and (
           hostvars[inventory_hostname]['ansible_' + item]['type'] != 'bridge'
@@ -23,8 +31,6 @@
         ) and (
           (
             hostvars[inventory_hostname]['ansible_' + item]['ipv4'] is defined
-          ) or (
-            hostvars[inventory_hostname]['ansible_' + item]['ipv6'] is defined
           ) or (
             (
               hostvars[inventory_hostname]['ansible_' + item]['type'] == 'bonding'
@@ -40,13 +46,18 @@
       - "{{ ansible_interfaces | map('replace', '-','_') | list }}"
     register: valid_network_interfaces
   - debug: var=valid_network_interfaces
-  - name: filter bonds with bad naming
+  - name: Filter bonds with bad naming
     set_fact:
       net_iface="{{ item }}"
     when:
       not 'skipped' in item and ((item['ansible_facts']['type']  == 'ether') or ( (item['ansible_facts']['type'] == 'bonding') and (item['ansible_facts']['bond_valid_name'] != '')))
     with_items:
       - "{{ valid_network_interfaces['results'] }}"
+    register: bb_filtered_list
+  - debug: var=bb_filtered_list
+  - name: Generate output list
+    set_fact:
+       otopi_host_net: "{{ [bridge_interface] if bridge_interface is defined else bb_filtered_list.results | reject('skipped') | map(attribute='item.item') | list }}"
     register: otopi_host_net
   - debug: var=otopi_host_net
 ...

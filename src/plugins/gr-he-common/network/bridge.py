@@ -132,7 +132,8 @@ class Plugin(plugin.PluginBase):
                     bridge=self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME]
                 )
             )
-            self._enabled = False
+            if not self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]:
+                self._enabled = False
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
@@ -157,19 +158,14 @@ class Plugin(plugin.PluginBase):
             )
             r = ah.run()
             self.logger.debug(r)
-            if 'otopi_host_net' in r:
-                for network_interface in r['otopi_host_net']['results']:
-                    if 'ansible_facts' in network_interface:
-                        validValues.append(
-                            network_interface['item']['item']
-                        )
-            else:
-                raise RuntimeError(
-                    _(
-                        'No suitable network interfaces were found'
-                    )
-                )
-
+            try:
+                validValues = r[
+                    'otopi_host_net'
+                ]['ansible_facts']['otopi_host_net']
+            except KeyError:
+                raise RuntimeError(_(
+                    'No suitable network interfaces were found'
+                ))
         else:
             INVALID_BOND_MODES = ('0', '5', '6')
             ALLOW_INVALID_BOND_MODES =  \
@@ -227,7 +223,11 @@ class Plugin(plugin.PluginBase):
             self.logger.debug('Nics enslaved: %s' % ','.join(enslaved))
             self.logger.debug('Nics valid: %s' % ','.join(validValues))
         if not validValues:
-            if enslaved:
+            if (
+                not self.environment[
+                    ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT
+                ] and enslaved
+            ):
                 raise RuntimeError(
                     _(
                         'The following existing interfaces are not suitable '
