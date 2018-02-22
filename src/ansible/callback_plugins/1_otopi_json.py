@@ -25,6 +25,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import io
 import json
 import os
 
@@ -48,13 +49,13 @@ class CallbackModule(CallbackBase):
         )
         if not OTOPI_CALLBACK_OF:
             self._display.error(
-                'Unable to find {ek}'.format(
+                u'Unable to find {ek}'.format(
                     ek=ohostedcons.AnsibleCallback.OTOPI_CALLBACK_OF
                 )
             )
             self._fd = None
         else:
-            self._fd = open(OTOPI_CALLBACK_OF, 'w')
+            self._fd = io.open(OTOPI_CALLBACK_OF, mode='w', encoding='utf8',)
 
     def write_msg(self, data_type, body):
         payload = {
@@ -64,12 +65,19 @@ class CallbackModule(CallbackBase):
 
         if self._fd:
             try:
-                json.dump(payload, self._fd)
-                self._fd.write('\n')
+                self._fd.write(
+                    u'{j}'.format(
+                        j=json.dumps(
+                            payload,
+                            ensure_ascii=False
+                        ),
+                    )
+                )
+                self._fd.write(u'\n')
                 self._fd.flush()
             except Exception as e:
                 self._display.error(
-                    'Error serializing JSON data: {e}'.format(e=str(e))
+                    u'Error serializing JSON data: {e}'.format(e=str(e))
                 )
         else:
             self._display.display(str(body))
@@ -90,7 +98,7 @@ class CallbackModule(CallbackBase):
             if delegated_vars:
                 self.write_msg(
                     ohostedcons.AnsibleCallback.ERROR,
-                    "fatal: [{h1} -> {h2}]: FAILED! => {r}".format(
+                    u"fatal: [{h1} -> {h2}]: FAILED! => {r}".format(
                         h1=result._host.get_name(),
                         h2=delegated_vars['ansible_host'],
                         r=self._dump_results(result._result)
@@ -99,7 +107,7 @@ class CallbackModule(CallbackBase):
             else:
                 self.write_msg(
                     ohostedcons.AnsibleCallback.ERROR,
-                    "fatal: [{h}]: FAILED! => {r}".format(
+                    u"fatal: [{h}]: FAILED! => {r}".format(
                         h=result._host.get_name(),
                         r=self._dump_results(result._result)
                     )
@@ -115,20 +123,20 @@ class CallbackModule(CallbackBase):
             return
         elif result._result.get('changed', False):
             if delegated_vars:
-                msg = "changed: [{h1} -> {h2}]".format(
+                msg = u"changed: [{h1} -> {h2}]".format(
                     h1=result._host.get_name(),
                     h2=delegated_vars['ansible_host']
                 )
             else:
-                msg = "changed: [{h}]".format(h=result._host.get_name())
+                msg = u"changed: [{h}]".format(h=result._host.get_name())
         else:
             if delegated_vars:
-                msg = "ok: [{h1} -> {h2}]".format(
+                msg = u"ok: [{h1} -> {h2}]".format(
                     h1=result._host.get_name(),
                     h2=delegated_vars['ansible_host']
                 )
             else:
-                msg = "ok: [{h}]".format(h=result._host.get_name())
+                msg = u"ok: [{h}]".format(h=result._host.get_name())
 
         if not (result._task.loop and 'results' in result._result):
             if result.task_name == 'debug':
@@ -136,7 +144,7 @@ class CallbackModule(CallbackBase):
                     if not i.startswith('_'):
                         self.write_msg(
                             ohostedcons.AnsibleCallback.DEBUG,
-                            '{i}: {v}'.format(
+                            u'{i}: {v}'.format(
                                 i=i,
                                 v=result._result[i]
                             )
@@ -156,7 +164,7 @@ class CallbackModule(CallbackBase):
         if result._task.loop and 'results' in result._result:
             self._process_items(result)
         else:
-            msg = "skipping: [{h}]".format(h=result._host.get_name())
+            msg = u"skipping: [{h}]".format(h=result._host.get_name())
             self.write_msg(ohostedcons.AnsibleCallback.INFO, msg)
 
     def v2_runner_on_unreachable(self, result):
@@ -166,7 +174,7 @@ class CallbackModule(CallbackBase):
         if delegated_vars:
             self.write_msg(
                 ohostedcons.AnsibleCallback.ERROR,
-                "fatal: [{h1} -> {h2}]: UNREACHABLE! => {r}".format(
+                u"fatal: [{h1} -> {h2}]: UNREACHABLE! => {r}".format(
                     h1=result._host.get_name(),
                     h2=delegated_vars['ansible_host'],
                     r=self._dump_results(result._result)
@@ -175,7 +183,7 @@ class CallbackModule(CallbackBase):
         else:
             self.write_msg(
                 ohostedcons.AnsibleCallback.ERROR,
-                "fatal: [{h}]: UNREACHABLE! => {r}".format(
+                u"fatal: [{h}]: UNREACHABLE! => {r}".format(
                     h=result._host.get_name(),
                     r=self._dump_results(result._result)
                 )
@@ -184,7 +192,7 @@ class CallbackModule(CallbackBase):
     def v2_runner_on_no_hosts(self, task):
         self.write_msg(
             ohostedcons.AnsibleCallback.WARNING,
-            "skipping: no hosts matched"
+            u"skipping: no hosts matched"
         )
 
     def v2_playbook_on_task_start(self, task, is_conditional):
@@ -192,14 +200,14 @@ class CallbackModule(CallbackBase):
         if task_name != 'debug':
             self.write_msg(
                 ohostedcons.AnsibleCallback.INFO,
-                "TASK [{t}]".format(
+                u"TASK [{t}]".format(
                     t=task_name
                 )
             )
         else:
             self.write_msg(
                 ohostedcons.AnsibleCallback.DEBUG,
-                "TASK [{t}]".format(
+                u"TASK [{t}]".format(
                     t=task_name
                 )
             )
@@ -207,9 +215,9 @@ class CallbackModule(CallbackBase):
     def v2_playbook_on_play_start(self, play):
         name = play.get_name().strip()
         if not name:
-            msg = "PLAY"
+            msg = u"PLAY"
         else:
-            msg = "PLAY [{p}]".format(p=name)
+            msg = u"PLAY [{p}]".format(p=name)
 
         self.write_msg(ohostedcons.AnsibleCallback.DEBUG, msg)
 
@@ -222,22 +230,22 @@ class CallbackModule(CallbackBase):
             return
         elif result._result.get('changed', False):
             if delegated_vars:
-                msg = "changed: [{h1} -> {h2}]".format(
+                msg = u"changed: [{h1} -> {h2}]".format(
                     h1=result._host.get_name(),
                     h2=delegated_vars['ansible_host'],
                 )
             else:
-                msg = "changed: [{h}]".format(h=result._host.get_name())
+                msg = u"changed: [{h}]".format(h=result._host.get_name())
         else:
             if delegated_vars:
-                msg = "ok: [%s -> %s]" % (
-                    result._host.get_name(),
-                    delegated_vars['ansible_host']
+                msg = u"ok: [{h} -> {v}]".format(
+                    h=result._host.get_name(),
+                    v=delegated_vars['ansible_host']
                 )
             else:
-                msg = "ok: [{h}]".format(h=result._host.get_name())
+                msg = u"ok: [{h}]".format(h=result._host.get_name())
 
-        msg += " => (item={i})".format(i=result._result['item'])
+        msg += u" => (item={i})".format(i=result._result['item'])
 
         self.write_msg(ohostedcons.AnsibleCallback.INFO, msg)
 
@@ -253,7 +261,7 @@ class CallbackModule(CallbackBase):
         if delegated_vars:
             self.write_msg(
                 ohostedcons.AnsibleCallback.ERROR,
-                "failed: [{h1} -> {h2}] => (item={i}) => {r}".format(
+                u"failed: [{h1} -> {h2}] => (item={i}) => {r}".format(
                     h1=result._host.get_name(),
                     h2=delegated_vars['ansible_host'],
                     i=result._result['item'],
@@ -263,7 +271,7 @@ class CallbackModule(CallbackBase):
         else:
             self.write_msg(
                 ohostedcons.AnsibleCallback.ERROR,
-                "failed: [{h}] => (item={i}) => {r}".format(
+                u"failed: [{h}] => (item={i}) => {r}".format(
                     h=result._host.get_name(),
                     i=result._result['item'],
                     r=self._dump_results(result._result)
@@ -271,7 +279,7 @@ class CallbackModule(CallbackBase):
             )
 
     def v2_playbook_item_on_skipped(self, result):
-        msg = "skipping: [{h}] => (item={i}) ".format(
+        msg = u"skipping: [{h}] => (item={i}) ".format(
             h=result._host.get_name(),
             i=result._result['item']
         )
@@ -284,7 +292,7 @@ class CallbackModule(CallbackBase):
         for h in hosts:
             t = stats.summarize(h)
 
-            msg = "PLAY RECAP [{h}] : {o} {c} {u} {s} {f}".format(
+            msg = u"PLAY RECAP [{h}] : {o} {c} {u} {s} {f}".format(
                 h=h,
                 o="ok: {n}".format(n=t['ok']),
                 c="changed: {n}".format(n=t['changed']),

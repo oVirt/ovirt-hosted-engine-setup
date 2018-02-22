@@ -23,6 +23,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import io
 import logging
 import os
 import pprint
@@ -235,7 +236,7 @@ class CallbackModule(CallbackBase):
             CallbackModule._handler = logging.StreamHandler(self.handle)
             CallbackModule._handler.setLevel(logging.DEBUG)
             CallbackModule._handler.setFormatter(self._MyFormatter(
-                fmt='%(asctime)s %(levelname)s %(message)s',
+                fmt=u'%(asctime)s %(levelname)s %(message)s',
                 vars_cache=self._vars_cache,
                 filtered_tokens_var=self._filtered_tokens_var,
                 filtered_tokens_re_var=self._filtered_tokens_re_var,
@@ -258,8 +259,8 @@ class CallbackModule(CallbackBase):
                 not isinstance(v, type(self._vars_cache[hostname][k]))
             ):
                 res.append(
-                    'var changed: host "{h}" var "{k}" type "{t}" '
-                    'value: "{v}"'.format(
+                    u'var changed: host "{h}" var "{k}" type "{t}" '
+                    u'value: "{v}"'.format(
                         h=hostname,
                         k=k,
                         t=type(v),
@@ -298,17 +299,17 @@ class CallbackModule(CallbackBase):
 
     def dump_obj(self, obj):
         name = repr(obj)[:100]
-        return '\n'.join([
-            'type: %s' % type(obj),
-            'str: %s' % str(obj)[:300],
-            'repr: %s' % repr(obj)[:300],
-            'dir: %s' % dir(obj),
-            'pprint: %s' % pprint.pformat(obj)[:300],
+        return u'\n'.join([
+            u'type: {v}'.format(v=type(obj)),
+            u'str: {v}'.format(v=str(obj)[:300]),
+            u'repr: {v}'.format(v=repr(obj)[:300]),
+            u'dir: {v}'.format(v=dir(obj)),
+            u'pprint: {v}'.format(v=pprint.pformat(obj)[:300]),
         ] + [
-            '%s.%s: %s' % (
-                name,
-                attr,
-                pprint.pformat(getattr(obj, attr))
+            u'{n}.{a}: {o}'.format(
+                n=name,
+                a=attr,
+                o=pprint.pformat(getattr(obj, attr))
             )
             for attr in dir(obj)
             if not callable(getattr(obj, attr))
@@ -342,16 +343,18 @@ class CallbackModule(CallbackBase):
             )
         else:
             try:
-                self.handle = open(
+                self.handle = io.open(
                     logFileName,
                     mode='a',
                     buffering=1,
+                    encoding='utf8',
                 )
             except IOError:
-                self.handle = open(
+                self.handle = io.open(
                     os.devnull,
                     mode='a',
                     buffering=1,
+                    encoding='utf8',
                 )
             self._setup_logging()
 
@@ -365,8 +368,20 @@ class CallbackModule(CallbackBase):
             'ansible_type': "start",
             'ansible_playbook': self.playbook._file_name,
         }
-        self.logger.info("ansible start playbook %s", self.playbook._file_name)
-        self.logger.debug("ansible start %s" % data)
+        self.logger.info(
+            u"ansible start playbook {v}".format(v=self.playbook._file_name)
+        )
+        self.logger.debug(u"ansible start {v}".format(v=data))
+
+    def v2_playbook_on_task_start(self, task, is_conditional):
+        self._update_vars_cache()
+        data = {
+            'status': "OK",
+            'ansible_type': "task",
+            'ansible_playbook': self.playbook._file_name,
+            'ansible_task': task.get_name(),
+        }
+        self.logger.info(u"ansible task start {v}".format(v=data))
 
     def v2_playbook_on_stats(self, stats):
         end_time = datetime.utcnow()
@@ -383,25 +398,26 @@ class CallbackModule(CallbackBase):
         data = {
             'status': status,
             'ansible_type': "finish",
-            'ansible_playbook': self.playbook,
+            'ansible_playbook': self.playbook._file_name,
             'ansible_playbook_duration': runtime.total_seconds(),
             'ansible_result': self.dump_obj(summarize_stat),
         }
-        self.logger.info("ansible stats %s " % data)
+        self.logger.info(u"ansible stats {v}".format(v=data))
 
     def v2_runner_on_ok(self, result, **kwargs):
         self._update_vars_cache()
         data = {
             'status': "OK",
             'ansible_type': "task",
-            'ansible_playbook': self.playbook,
+            'ansible_playbook': self.playbook._file_name,
             'ansible_host': result._host.name,
-            'ansible_task': result._task,
+            'ansible_task': result._task.name,
         }
-        self.logger.info("ansible ok %s " % data)
+        self.logger.info(u"ansible ok {v}".format(v=data))
         self.logger.info(
-            "ansible ok result._result %s " %
-            self.dump_obj(result._result)
+            u"ansible ok result._result {v}".format(
+                v=self.dump_obj(result._result)
+            )
         )
 
     def v2_runner_on_skipped(self, result, **kwargs):
@@ -409,71 +425,73 @@ class CallbackModule(CallbackBase):
         data = {
             'status': "SKIPPED",
             'ansible_type': "task",
-            'ansible_playbook': self.playbook,
-            'ansible_task': result._task,
+            'ansible_playbook': self.playbook._file_name,
+            'ansible_task': result._task.name,
             'ansible_host': result._host.name
         }
-        self.logger.info("ansible skipped %s" % data)
+        self.logger.info(u"ansible skipped {v}".format(v=data))
 
     def v2_playbook_on_import_for_host(self, result, imported_file):
         self._update_vars_cache()
         data = {
             'status': "IMPORTED",
             'ansible_type': "import",
-            'ansible_playbook': self.playbook,
+            'ansible_playbook': self.playbook._file_name,
             'ansible_host': result._host.name,
             'imported_file': imported_file
         }
-        self.logger.info("ansible import %s" % data)
+        self.logger.info(u"ansible import {v}".format(v=data))
 
     def v2_playbook_on_not_import_for_host(self, result, missing_file):
         self._update_vars_cache()
         data = {
             'status': "NOT IMPORTED",
             'ansible_type': "import",
-            'ansible_playbook': self.playbook,
+            'ansible_playbook': self.playbook._file_name,
             'ansible_host': result._host.name,
             'missing_file': missing_file
         }
-        self.logger.info("ansible import %s" % data)
+        self.logger.info(u"ansible import {v}".format(v=data))
 
     def v2_runner_on_failed(self, result, **kwargs):
         self._update_vars_cache()
         data = {
             'status': "FAILED",
             'ansible_type': "task",
-            'ansible_playbook': self.playbook,
+            'ansible_playbook': self.playbook._file_name,
             'ansible_host': result._host.name,
-            'ansible_task': result._task,
+            'ansible_task': result._task.name,
             'ansible_result': self.dump_obj(result._result)
         }
         self.errors += 1
-        self.logger.error("ansible failed %s" % data)
+        self.logger.error(
+            u"ansible failed {v}".format(v=data)
+        )
 
     def v2_runner_on_unreachable(self, result, **kwargs):
         self._update_vars_cache()
         data = {
             'status': "UNREACHABLE",
             'ansible_type': "task",
-            'ansible_playbook': self.playbook,
+            'ansible_playbook': self.playbook._file_name,
             'ansible_host': result._host.name,
-            'ansible_task': result._task,
+            'ansible_task': result._task.name,
             'ansible_result': self.dump_obj(result._result)
         }
-        self.logger.error("ansible unreachable %s" % data)
+        self.logger.error(u"ansible unreachable {v}".format(v=data))
 
     def v2_runner_on_async_failed(self, result, **kwargs):
         self._update_vars_cache()
         data = {
             'status': "FAILED",
             'ansible_type': "task",
-            'ansible_playbook': self.playbook,
+            'ansible_playbook': self.playbook._file_name,
             'ansible_host': result._host.name,
-            'ansible_task': result._task,
+            'ansible_task': result._task.name,
             'ansible_result': self.dump_obj(result._result)
         }
         self.errors += 1
-        self.logger.error("ansible async %s" % data)
+        self.logger.error(u"ansible async {v}".format(v=data))
 
     def v2_playbook_on_play_start(self, play):
         self.play = play
@@ -483,10 +501,16 @@ class CallbackModule(CallbackBase):
             'ansible_type': "play start",
             'ansible_play': self.play.name,
         }
-        self.logger.info("ansible play start %s" % data)
+        self.logger.info(u"ansible play start {v}".format(v=data))
 
     def v2_on_any(self, *args, **kwargs):
-        self.logger.debug("ansible on_any args %s kwargs %s" % (args, kwargs))
+        msg = u"ansible on_any args "
+        for arg in args:
+            msg += u"{a}".format(a=arg)
+        msg += u" kwargs "
+        for key in kwargs:
+            msg += u"{k}:{v} ".format(k=key, v=kwargs[key])
+        self.logger.debug(msg)
 
 
 # vim: expandtab tabstop=4 shiftwidth=4
