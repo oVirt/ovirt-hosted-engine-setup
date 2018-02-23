@@ -314,7 +314,7 @@
   - name: Wait for the engine to come up on the target VM
     command: hosted-engine --vm-status --json
     register: health_result
-    until: health_result.rc == 0 and health_result.stdout|from_json|json_query('*."engine-status"."health"')|first=="good"
+    until: health_result.rc == 0 and 'health' in health_result.stdout and health_result.stdout|from_json|json_query('*."engine-status"."health"')|first=="good"
     retries: 120
     delay: 5
     changed_when: True
