@@ -147,6 +147,13 @@
     changed_when: True
     register: db_conf_update
   - debug: var=db_conf_update
+  - name: Disable IPv6
+    lineinfile:
+      path: /etc/sysctl.conf
+      line: 'net.ipv6.conf.all.disable_ipv6=1'
+  - name: Reload sysctl
+    command: sysctl -p
+    changed_when: True
 - hosts: localhost
   connection: local
   tasks:
