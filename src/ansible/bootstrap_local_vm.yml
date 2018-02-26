@@ -207,6 +207,7 @@
   vars:
     MGMT_NETWORK: ovirtmgmt
     DATA_CENTER: Default
+    CLUSTER: Default
   tasks:
     - name: Add host
       block:
@@ -231,6 +232,14 @@
           key: https://{{ FQDN }}/ovirt-engine/services/pki-resource?resource=engine-certificate&format=OPENSSH-PUBKEY
           validate_certs: False
       - include_tasks: auth_sso.yml
+      - name: Enable GlusterFS at cluster level
+        ovirt_cluster:
+          data_center: "{{ DATA_CENTER }}"
+          name: "{{ CLUSTER }}"
+          auth: "{{ ovirt_auth }}"
+          virt: true
+          gluster: true
+        when: ENABLE_HC_GLUSTER_SERVICE is defined and ENABLE_HC_GLUSTER_SERVICE
       - name: Set VLAN ID at datacenter level
         ovirt_networks:
           data_center: "{{ DATA_CENTER }}"

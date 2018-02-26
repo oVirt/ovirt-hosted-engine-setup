@@ -55,6 +55,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.CoreEnv.LOCAL_VM_DIR,
             None
         )
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.ENABLE_HC_GLUSTER_SERVICE,
+            None
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -167,6 +171,9 @@ class Plugin(plugin.PluginBase):
             ].lower(),
             'ENABLE_LIBGFAPI': self.environment[
                 ohostedcons.StorageEnv.ENABLE_LIBGFAPI
+            ],
+            'ENABLE_HC_GLUSTER_SERVICE': self.environment[
+                ohostedcons.StorageEnv.ENABLE_HC_GLUSTER_SERVICE
             ],
             'BRIDGE_IF': self.environment[
                 ohostedcons.NetworkEnv.BRIDGE_IF
