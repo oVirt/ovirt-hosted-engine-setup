@@ -128,10 +128,10 @@
         lineinfile:
           dest: /etc/hosts
           line: "{{ HOST_IP }} {{ HOST_ADDRESS }}"
-      - name: Set FDQN
+      - name: Set FQDN
         command: hostnamectl set-hostname {{ FQDN }}
         changed_when: True
-      - name: Force the engine VM FDQN to resolve on 127.0.0.1
+      - name: Force the engine VM FQDN to resolve on 127.0.0.1
         lineinfile:
           path: /etc/hosts
           regexp: '^127\.0\.0\.1'
