@@ -52,13 +52,14 @@
     register: local_vm_list
   - name: Destroy leftover local engine VM
     command: virsh destroy {{ VM_NAME }}Local
+    ignore_errors: yes
     when: local_vm_list.stdout_lines|length >= 1
   - name: Check for leftover defined local engine VM
     shell: virsh list --all | grep {{ VM_NAME }}Local | cat
     changed_when: True
     register: local_vm_list_all
   - name: Undefine leftover local engine VM
-    command: virsh undefine {{ VM_NAME }}Local
+    command: virsh undefine --managed-save {{ VM_NAME }}Local
     when: local_vm_list_all.stdout_lines|length >= 1
     changed_when: True
   - name: Remove eventually entries for the local VM from known_hosts file
