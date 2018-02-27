@@ -3,6 +3,17 @@
   hosts: localhost
   connection: local
   tasks:
+    - name: Start libvirt
+      service:
+        name: libvirtd
+        state: started
+        enabled: yes
+    - name: Activate default libvirt network
+      virt_net:
+        name: default
+        state: active
+      register: virt_net_out
+    - debug: var=virt_net_out
       # all of the next is a workaround for a network issue:
       # vdsm installation breaks the routing by defining separate
       # routing table for ovirtmgmt. But we need to enable communication
@@ -18,6 +29,17 @@
     - name: Save bridge name
       set_fact:
         virbr_default: "{{ ansible_libvirt_networks['default']['bridge'] }}"
+    - name: Wait for the bridge to appear on the host
+      command: ip link show {{ virbr_default }}
+      changed_when: True
+      register: ip_link_show_bridge
+      until: ip_link_show_bridge.rc == 0
+      retries: 30
+      delay: 3
+    - name: Refresh network facts
+      setup:
+      when: virt_net_out.changed
+      tags: [ 'skip_ansible_lint' ]
     - name: Prepare CIDR for {{ virbr_default }}
       set_fact:
         virbr_cidr: "{{ (hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv4']['address']+'/'+hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv4']['netmask']) |ipv4('host/prefix') }}"
@@ -64,18 +86,6 @@
           owner: vdsm
           group: kvm
           mode: 0775
-      - name: Start libvirt
-        service:
-          name: libvirtd
-          state: started
-          enabled: yes
-      - name: Check status of default libvirt network
-        shell: virsh net-info default | awk '/Active/{print $(NF)}'
-        changed_when: True
-        register: default_net_status
-      - name: Activate default libvirt network
-        command: virsh net-start default
-        when: default_net_status.stdout != 'yes'
       - include_tasks: install_appliance.yml
         when: APPLIANCE_OVA is none or APPLIANCE_OVA|length == 0
       - name: Register appliance PATH
