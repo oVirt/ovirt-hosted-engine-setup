@@ -161,7 +161,7 @@
         register: engine_setup_out
         changed_when: True
       - debug: var=engine_setup_out
-      - name: Include before engine-setup custom tasks files for the engine VM
+      - name: Include after engine-setup custom tasks files for the engine VM
         include_tasks: "{{ item }}"
         with_fileglob: "hooks/enginevm_after_engine_setup/*.yml"
         register: include_after_engine_setup_results
