@@ -19,7 +19,7 @@
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##
-# TODO: Please remove this file (and supporting makefiles) when ansible 2.5
+# TODO: Please remove this file when ansible 2.5
 # TODO: will be released.
 # TODO: Ansible PR https://github.com/ansible/ansible/pull/33450
 ##

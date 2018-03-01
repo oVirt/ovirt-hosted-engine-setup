@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2017 Red Hat, Inc.
+# Copyright (C) 2018 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -23,11 +23,7 @@ MAINTAINERCLEANFILES = \
 	$(srcdir)/Makefile.in \
 	$(NULL)
 
-ansiblelibrarydir=$(ovirthostedengineansibledir)/library
-dist_ansiblelibrary_DATA = \
-	ovirt_storage_domains.py \
-	ovirt_auth.py \
-	ovirt_disk.py \
-	ovirt_cluster.py \
-	ovirt_vms.py \
+ansiblemodutilsdir=$(ovirthostedengineansibledir)/module_utils
+dist_ansiblemodutils_DATA = \
+	ovirt.py \
 	$(NULL)

@@ -87,6 +87,7 @@
       memory: "{{ MEM_SIZE }}Mib"
       cpu_cores: "{{ VCPUS }}"
       cpu_sockets: 1
+      serial_console: True
       operating_system: rhel_7x64
       type: server
       delete_protected: True
