@@ -19,6 +19,11 @@
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+##
+# TODO: Please remove this file when ansible 2.5
+# TODO: will be released.
+##
+
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}

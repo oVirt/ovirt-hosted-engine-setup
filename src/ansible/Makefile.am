@@ -47,6 +47,7 @@ SUBDIRS = \
 	callback_plugins \
 	hooks \
 	library \
+	module_utils \
 	templates \
 	$(NULL)
 
