@@ -28,6 +28,31 @@ Usage: $0 [options]
 __EOF__
 }
 
+get_HE_procs() {
+	ps auxww | grep '[H]ostedEngine' | awk '{print $2}'
+}
+
+kill_HE_procs() {
+	local MAX_ATTEMPTS=5
+	local INITIAL_DELAY=0.1
+	local NEXT_DELAY=5
+	local PIDs=$(get_HE_procs)
+	local left_attempts
+	if [ -n "${PIDs}" ]; then
+		left_attempts="${MAX_ATTEMPTS}"
+		echo "  -=== Killing left-behind HostedEngine processes ===- "
+		kill $PIDs
+		sleep "${INITIAL_DELAY}"
+		while PIDs=$(get_HE_procs) && [ -n "${PIDs}" ] && [ "${left_attempts}" -gt 0 ]; do
+			sleep "${NEXT_DELAY}"
+			kill $PIDs
+			left_attempts=$(expr "${left_attempts}" - 1)
+		done
+	fi
+	[ -n "${PIDs}" ] && return 1
+	return 0
+}
+
 while getopts hq option; do
     case "${option}" in
         \?) usage; exit 1;;
@@ -40,6 +65,8 @@ caution
 
 echo "  -=== Destroy hosted-engine VM ===- "
 hosted-engine --vm-poweroff
+
+kill_HE_procs
 
 echo "  -=== Stop HA services ===- "
 systemctl stop ovirt-ha-agent
