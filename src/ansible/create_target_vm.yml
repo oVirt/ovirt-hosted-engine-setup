@@ -182,6 +182,14 @@
       name: "{{ VM_NAME }}Local"
       command: undefine
       uri: 'qemu+tls://{{ HOST_ADDRESS }}/system'
+  - name: Detect spmId
+    command: vdsm-client StoragePool getSpmStatus storagepoolID={{ datacenter_id }}
+    register: get_spm_id_out
+    changed_when: True
+  - debug: var=get_spm_id_out
+  - name: Parse spmId
+    set_fact: spmId="{{ get_spm_id_out.stdout|from_json|json_query('spmId') }}"
+  - debug: var=spmId
   - name: Detect ovirt-hosted-engine-ha version
     command: python -c 'from ovirt_hosted_engine_ha.agent import constants as agentconst; print(agentconst.PACKAGE_VERSION)'
     register: ha_version_out
