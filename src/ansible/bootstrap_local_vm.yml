@@ -257,6 +257,9 @@
           state: absent
           path: /root/heanswers.conf
       rescue:
+        - name: Fetch logs from the engine VM
+          include_tasks: fetch_engine_logs.yml
+          ignore_errors: yes
         - name: Get local VM dir path
           set_fact:
             LOCAL_VM_DIR={{ hostvars['localhost']['LOCAL_VM_DIR'] }}
@@ -357,6 +360,9 @@
           state: absent
           path: /etc/ovirt-host-deploy.conf.d/70-hosted-engine-setup.conf
       rescue:
+        - name: Fetch logs from the engine VM
+          include_tasks: fetch_engine_logs.yml
+          ignore_errors: yes
         - include_tasks: clean_localvm_dir.yml
         - name: Notify the user about a failure
           fail:
