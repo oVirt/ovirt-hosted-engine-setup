@@ -33,6 +33,7 @@ dist_ansible_DATA = \
 	create_storage_domain.yml \
 	create_target_vm.yml \
 	fc_getdevices.yml \
+	fetch_engine_logs.yml \
 	final_clean.yml \
 	get_local_vm_disk_path.yml \
 	get_network_interfaces.yml \
