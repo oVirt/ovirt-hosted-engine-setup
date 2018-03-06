@@ -498,6 +498,12 @@ class Plugin(plugin.PluginBase):
             self.environment[
                 ohostedcons.CloudInit.GENERATE_ISO
             ] = ohostedcons.Const.CLOUD_INIT_GENERATE
+            self.environment[
+                ohostedcons.VMEnv.AUTOMATE_VM_SHUTDOWN
+            ] = True
+            self.environment[
+                ohostedcons.CloudInit.EXECUTE_ESETUP
+            ] = True
 
         if self.environment[
             ohostedcons.CloudInit.GENERATE_ISO
