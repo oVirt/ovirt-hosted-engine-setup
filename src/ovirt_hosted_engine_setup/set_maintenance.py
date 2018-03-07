@@ -76,6 +76,10 @@ class Maintenance(object):
                 mode=ha_cli.MaintenanceMode.GLOBAL,
                 value=m_global,
             )
+            ha_cli.set_maintenance_mode(
+                mode=ha_cli.MaintenanceMode.LOCAL_MANUAL,
+                value=m_local,
+            )
         except socket.error:
             sys.stderr.write(
                 _('Cannot connect to the HA daemon, please check the logs.\n')

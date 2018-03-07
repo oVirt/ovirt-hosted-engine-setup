@@ -59,7 +59,9 @@ worry of interference from the HA agents. \&
 .RS 7
 \fBlocal\fP - Allow the administrator to maintain this host.
 Note that if you have only 2 nodes and one is in maintenance,
-there is only one host available to run the engine VM. \&
+there is only one host available to run the engine VM.
+Once local maintenance is set manually with this option,
+it can only be cleared by using this tool again and providing a different mode (global or none). \&
 .RE
 .RS 7
 \fBnone\fP - Resume HA functionality. \&
