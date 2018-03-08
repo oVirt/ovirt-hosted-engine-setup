@@ -161,12 +161,25 @@
       fetch_nested: True
       nested_attributes:
         - name
+        - image_id
+        - id
       pattern: "name={{ STORAGE_DOMAIN_NAME }}"
     retries: 12
     delay: 10
     until: "ovirt_storage_domains[0].disks | selectattr('name', 'match', '^OVF_STORE$') | list"
-  # TODO: check volume with vdsm-tool and wait for update field in its description to be sure we also have OVF_STORE content.
-  # The disk will be listed once the volume is created also if still empty
+  - name: Parse OVF_STORE disk list
+    set_fact:
+      ovf_store_disks: "{{ ovirt_storage_domains[0].disks | selectattr('name', 'match', '^OVF_STORE$') | list }}"
+  - debug: var=ovf_store_disks
+  - name: Check OVF_STORE volume status
+    command: vdsm-client Volume getInfo storagepoolID={{ datacenter_id }} storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }} imageID={{ item.id|first }} volumeID={{ item.image_id  }}
+    changed_when: True
+    register: ovf_store_status
+    retries: 12
+    delay: 10
+    until: ovf_store_status.rc == 0 and ovf_store_status.stdout|from_json|json_query('status') == 'OK' and ovf_store_status.stdout|from_json|json_query('description')|from_json|json_query('Updated')==true
+    with_items: "{{ ovf_store_disks }}"
+  - debug: var=ovf_store_status
   - name: Prepare images
     command: vdsm-client Image prepare storagepoolID={{ datacenter_id }} storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }} imageID={{ item.disk.id }} volumeID={{ item.disk.image_id  }}
     with_items:
