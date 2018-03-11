@@ -32,6 +32,7 @@ import time
 from otopi import plugin
 from otopi import util
 
+from ovirt_hosted_engine_ha.env import config_constants as const
 from ovirt_hosted_engine_ha.env import config
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
@@ -199,7 +200,7 @@ class Plugin(plugin.PluginBase):
             os.close(fd)
             _config = config.Config(logger=self.logger)
             _config.refresh_vm_conf()
-            _orig_vm_conf = _config.get(config.ENGINE, config.CONF_FILE)
+            _orig_vm_conf = _config.get(config.ENGINE, const.CONF_FILE)
 
             vm_conf = open(_orig_vm_conf)
             lines = vm_conf.readlines()

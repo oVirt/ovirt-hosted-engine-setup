@@ -28,6 +28,7 @@ from otopi import context as otopicontext
 from otopi import plugin
 from otopi import util
 
+from ovirt_hosted_engine_ha.env import config_constants as const
 from ovirt_hosted_engine_ha.env import config
 from ovirt_hosted_engine_ha.lib import util as ohautil
 from ovirt_hosted_engine_ha.lib import image
@@ -56,27 +57,27 @@ class Plugin(plugin.PluginBase):
         # TODO: catch error if not configured and properly raise
         self.environment.setdefault(
             ohostedcons.StorageEnv.DOMAIN_TYPE,
-            self._config.get(config.ENGINE, config.DOMAIN_TYPE),
+            self._config.get(config.ENGINE, const.DOMAIN_TYPE),
         )
         self.environment.setdefault(
             ohostedcons.StorageEnv.SD_UUID,
-            self._config.get(config.ENGINE, config.SD_UUID),
+            self._config.get(config.ENGINE, const.SD_UUID),
         )
         self.environment.setdefault(
             ohostedcons.StorageEnv.CONF_IMG_UUID,
-            self._config.get(config.ENGINE, config.CONF_IMAGE_UUID),
+            self._config.get(config.ENGINE, const.CONF_IMAGE_UUID),
         )
         self.environment.setdefault(
             ohostedcons.StorageEnv.CONF_VOL_UUID,
-            self._config.get(config.ENGINE, config.CONF_VOLUME_UUID),
+            self._config.get(config.ENGINE, const.CONF_VOLUME_UUID),
         )
         self.environment.setdefault(
             ohostedcons.VMEnv.VM_UUID,
-            self._config.get(config.ENGINE, config.HEVMID),
+            self._config.get(config.ENGINE, const.HEVMID),
         )
         self.environment.setdefault(
             ohostedcons.StorageEnv.HOST_ID,
-            int(self._config.get(config.ENGINE, config.HOST_ID)),
+            int(self._config.get(config.ENGINE, const.HOST_ID)),
         )
         self.environment.setdefault(
             ohostedcons.Upgrade.LM_VOLUMES_UPGRADE_PROCEED,

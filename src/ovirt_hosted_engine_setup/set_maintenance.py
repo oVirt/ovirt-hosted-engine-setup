@@ -26,6 +26,7 @@ import socket
 import sys
 
 from ovirt_hosted_engine_ha.client import client
+from ovirt_hosted_engine_ha.env import config_constants as const
 from ovirt_hosted_engine_ha.env import config
 
 
@@ -53,7 +54,7 @@ class Maintenance(object):
         m_global = (mode == 'global')
         if m_local:
             # Check that we have a host where to migrate VM to.
-            _host_id = int(config.Config().get(config.ENGINE, config.HOST_ID))
+            _host_id = int(config.Config().get(config.ENGINE, const.HOST_ID))
             candidates = ha_cli.get_all_host_stats()
             candidates = [h for h in candidates
                           if candidates[h]["score"] > 0 and
