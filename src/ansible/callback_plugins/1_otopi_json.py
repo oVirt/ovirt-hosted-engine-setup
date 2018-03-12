@@ -83,6 +83,12 @@ class CallbackModule(CallbackBase):
             self._display.display(str(body))
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
+        level = 'fatal'
+        msg_type = ohostedcons.AnsibleCallback.ERROR
+        if ignore_errors:
+            level = 'ignored'
+            msg_type = ohostedcons.AnsibleCallback.DEBUG
+
         delegated_vars = result._result.get(
             '_ansible_delegated_vars',
             None
@@ -90,15 +96,16 @@ class CallbackModule(CallbackBase):
         self.write_msg(ohostedcons.AnsibleCallback.DEBUG, result._result)
         if 'exception' in result._result:
             error = result._result['exception'].strip().split('\n')[-1]
-            self.write_msg(ohostedcons.AnsibleCallback.ERROR, error)
+            self.write_msg(msg_type, error)
             del result._result['exception']
         if result._task.loop and 'results' in result._result:
             self._process_items(result)
         else:
             if delegated_vars:
                 self.write_msg(
-                    ohostedcons.AnsibleCallback.ERROR,
-                    u"fatal: [{h1} -> {h2}]: FAILED! => {r}".format(
+                    msg_type,
+                    u"{el}: [{h1} -> {h2}]: FAILED! => {r}".format(
+                        el=level,
                         h1=result._host.get_name(),
                         h2=delegated_vars['ansible_host'],
                         r=self._dump_results(result._result)
@@ -106,8 +113,9 @@ class CallbackModule(CallbackBase):
                 )
             else:
                 self.write_msg(
-                    ohostedcons.AnsibleCallback.ERROR,
-                    u"fatal: [{h}]: FAILED! => {r}".format(
+                    msg_type,
+                    u"{el}: [{h}]: FAILED! => {r}".format(
+                        el=level,
                         h=result._host.get_name(),
                         r=self._dump_results(result._result)
                     )
