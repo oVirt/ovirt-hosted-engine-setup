@@ -21,7 +21,7 @@
     # https://github.com/ansible/ansible/issues/32640 got properly fixed
     with_together:
       - "{{ ISCSI_PORTAL_ADDR.split(',') }}"
-      - "{{ ISCSI_PORTAL_PORT.split(',') }}"
+      - "{{ ISCSI_PORTAL_PORT.split(',') if ISCSI_PORTAL_PORT is string else ISCSI_PORTAL_PORT }}"
   - name: Get iSCSI LUNs
     ovirt_host_storage_facts:
       host: "{{ HOST_NAME }}"
@@ -29,7 +29,7 @@
         username: "{{ ISCSI_USERNAME }}"
         password: "{{ ISCSI_PASSWORD }}"
         address: "{{ ISCSI_PORTAL_ADDR.split(',')|first }}"
-        port: "{{ ISCSI_PORTAL_PORT.split(',')|first }}"
+        port: "{{ ISCSI_PORTAL_PORT.split(',')|first if ISCSI_PORTAL_PORT is string else ISCSI_PORTAL_PORT }}"
         target: "{{ ISCSI_TARGET }}"
       auth: "{{ ovirt_auth }}"
     register: otopi_iscsi_devices
