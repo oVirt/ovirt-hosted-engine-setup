@@ -74,7 +74,7 @@
       # https://bugzilla.redhat.com/show_bug.cgi?id=1535951 ).
       iscsi:
         address: "{{ STORAGE_DOMAIN_ADDR.split(',')|first }}"
-        port: "{{ ISCSI_PORT.split(',')|first }}"
+        port: "{{ ISCSI_PORT.split(',')|first if ISCSI_PORT is string else ISCSI_PORT }}"
         target: "{{ ISCSI_TARGET }}"
         lun_id: "{{ LUN_ID }}"
         username: "{{ ISCSI_USERNAME }}"
