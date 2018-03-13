@@ -34,6 +34,7 @@ dist_ansible_DATA = \
 	create_target_vm.yml \
 	fc_getdevices.yml \
 	final_clean.yml \
+	get_local_vm_disk_path.yml \
 	get_network_interfaces.yml \
 	initial_clean.yml \
 	iscsi_discover.yml \

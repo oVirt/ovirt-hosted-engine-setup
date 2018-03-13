@@ -315,14 +315,7 @@
     become_user: vdsm
     become_method: sudo
     changed_when: True
-  - name: Find the local appliance image
-    find:
-      paths: "{{ LOCAL_VM_DIR }}/images"
-      recurse: true
-      patterns: ^.*.(?<!meta)$
-      use_regex: true
-    register: app_img
-  - debug: var=app_img
+  - include_tasks: get_local_vm_disk_path.yml
   - name: Generate DHCP network configuration for the engine VM
     template:
       src: templates/ifcfg-eth0-dhcp.j2
@@ -340,7 +333,7 @@
       mode: 0644
     when: VM_IP_ADDR is not none
   - name: Inject network configuration with guestfish
-    command: guestfish -a {{ app_img.files[0].path }} --rw -i copy-in "{{ LOCAL_VM_DIR }}/ifcfg-eth0" /etc/sysconfig/network-scripts {{ ":" }} selinux-relabel /etc/selinux/targeted/contexts/files/file_contexts /etc/sysconfig/network-scripts/ifcfg-eth0 force{{ ":" }}true
+    command: guestfish -a {{ local_vm_disk_path }} --rw -i copy-in "{{ LOCAL_VM_DIR }}/ifcfg-eth0" /etc/sysconfig/network-scripts {{ ":" }} selinux-relabel /etc/selinux/targeted/contexts/files/file_contexts /etc/sysconfig/network-scripts/ifcfg-eth0 force{{ ":" }}true
     environment:
       LIBGUESTFS_BACKEND: direct
       LANG: en_US.UTF-8
@@ -348,7 +341,7 @@
       LC_ALL: en_US.UTF-8
     changed_when: True
   - name: Extract /etc/hosts from the Hosted Engine VM
-    command: virt-copy-out -a {{ app_img.files[0].path }} /etc/hosts "{{ LOCAL_VM_DIR }}"
+    command: virt-copy-out -a {{ local_vm_disk_path }} /etc/hosts "{{ LOCAL_VM_DIR }}"
     environment:
       LIBGUESTFS_BACKEND: direct
       LANG: en_US.UTF-8
@@ -363,7 +356,7 @@
       state: absent
     when: not VM_ETC_HOSTS
   - name: Copy /etc/hosts back to the Hosted Engine VM
-    command: virt-copy-in -a {{ app_img.files[0].path }} "{{ LOCAL_VM_DIR }}"/hosts /etc
+    command: virt-copy-in -a {{ local_vm_disk_path }} "{{ LOCAL_VM_DIR }}"/hosts /etc
     environment:
       LIBGUESTFS_BACKEND: direct
       LANG: en_US.UTF-8
@@ -371,7 +364,7 @@
       LC_ALL: en_US.UTF-8
     when: not VM_ETC_HOSTS
   - name: Copy local VM disk to shared storage
-    command: qemu-img convert -n -O raw {{ app_img.files[0].path }} {{ he_virtio_disk_path }}
+    command: qemu-img convert -n -O raw {{ local_vm_disk_path }} {{ he_virtio_disk_path }}
     environment: "{{ CMD_LANG }}"
     become: true
     become_user: vdsm
