@@ -86,7 +86,7 @@ Requires(post): vdsm-python >= 4.20.21
 Requires:       ovirt-host >= 4.2.2
 
 Conflicts:      ovirt-engine-appliance < 4.0
-Conflicts:      ovirt-engine-appliance >= 4.3
+Conflicts:      ovirt-engine-appliance >= 4.4
 
 
 %description
