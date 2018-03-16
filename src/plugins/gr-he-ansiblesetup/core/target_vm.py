@@ -119,10 +119,10 @@ class Plugin(plugin.PluginBase):
             'ISCSI_PASSWORD': self.environment[
                 ohostedcons.StorageEnv.ISCSI_PASSWORD
             ],
-            'ISCSI_PORT': self.environment[
+            'ISCSI_PORTAL_PORT': self.environment[
                 ohostedcons.StorageEnv.ISCSI_PORT
             ],
-            'ISCSI_IP_ADDR': self.environment[
+            'ISCSI_PORTAL_ADDR': self.environment[
                 ohostedcons.StorageEnv.ISCSI_IP_ADDR
             ],
             'ISCSI_TPGT': self.environment[

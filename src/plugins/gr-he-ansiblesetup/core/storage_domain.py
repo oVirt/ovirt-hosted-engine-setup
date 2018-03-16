@@ -719,7 +719,7 @@ class Plugin(plugin.PluginBase):
                 'MOUNT_OPTIONS': mnt_options,
                 'NFS_VERSION': nfs_version,
                 'DOMAIN_TYPE': domain_type,
-                'ISCSI_PORT': iscsi_port,
+                'ISCSI_PORTAL_PORT': iscsi_port,
                 'ISCSI_TARGET': iscsi_target,
                 'LUN_ID': lunid,
                 'ISCSI_USERNAME': iscsi_username,
