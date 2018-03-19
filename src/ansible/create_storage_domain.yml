@@ -3,6 +3,14 @@
   hosts: localhost
   connection: local
   tasks:
+  - name: Check local VM dir stat
+    stat:
+      path: "{{ LOCAL_VM_DIR }}"
+    register: local_vm_dir_stat
+  - name: Enforce local VM dir existence
+    fail:
+      msg: "Local VM dir '{{ LOCAL_VM_DIR }}' doesn't exist"
+    when: not local_vm_dir_stat.stat.exists
   - include_tasks: auth_sso.yml
   - name: Fetch host facts
     ovirt_hosts_facts:
