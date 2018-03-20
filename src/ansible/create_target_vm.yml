@@ -293,7 +293,7 @@
       owner: root
       group: root
       mode: 0644
-    when: not VM_IP_ADDR|length >= 8
+    when: VM_IP_ADDR is none
   - name: Generate static network configuration for the engine VM
     template:
       src: templates/ifcfg-eth0-static.j2
@@ -301,7 +301,7 @@
       owner: root
       group: root
       mode: 0644
-    when: VM_IP_ADDR|length >= 8
+    when: VM_IP_ADDR is not none
   - name: Inject network configuration with guestfish
     shell: LIBGUESTFS_BACKEND=direct guestfish -a {{ he_virtio_disk_path }} --rw -i copy-in "{{ LOCAL_VM_DIR }}/ifcfg-eth0" /etc/sysconfig/network-scripts {{ ":" }} selinux-relabel /etc/selinux/targeted/contexts/files/file_contexts /etc/sysconfig/network-scripts/ifcfg-eth0 force{{ ":" }}true
     become_user: vdsm
@@ -335,7 +335,7 @@
       dest: /etc/hosts
       line: "{{ VM_IP_ADDR }} {{ FQDN }}"
       state: present
-    when: VM_ETC_HOSTS and VM_IP_ADDR|length >= 8
+    when: VM_ETC_HOSTS and VM_IP_ADDR is not none
   - name: Start broker
     service:
       name: ovirt-ha-broker
