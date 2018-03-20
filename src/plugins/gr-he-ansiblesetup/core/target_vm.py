@@ -51,9 +51,9 @@ class Plugin(plugin.PluginBase):
         ],
     )
     def _closeup(self):
-        ip_addr = ''
-        prefix = ''
-        dnslist = ''
+        ip_addr = None
+        prefix = None
+        dnslist = None
         if self.environment[ohostedcons.CloudInit.VM_STATIC_CIDR]:
             ip = netaddr.IPNetwork(
                 self.environment[ohostedcons.CloudInit.VM_STATIC_CIDR]
