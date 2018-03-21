@@ -71,6 +71,28 @@ class Plugin(plugin.PluginBase):
                     ].split(',')
                 ]
 
+        domain_type = self.environment[
+            ohostedcons.StorageEnv.DOMAIN_TYPE
+        ]
+        if (
+            domain_type == ohostedcons.DomainTypes.NFS or
+            domain_type == ohostedcons.DomainTypes.GLUSTERFS
+        ):
+            storage_domain_det = self.environment[
+                ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
+            ].split(':')
+            if len(storage_domain_det) != 2:
+                msg = _('Invalid connection path')
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            storage_domain_address = storage_domain_det[0]
+            storage_domain_path = storage_domain_det[1]
+        else:
+            storage_domain_address = self.environment[
+                ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
+            ]
+            storage_domain_path = None
+
         target_vm_vars = {
             'FQDN': self.environment[
                 ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
@@ -100,9 +122,8 @@ class Plugin(plugin.PluginBase):
             'TIME_ZONE': self.environment[ohostedcons.CloudInit.VM_TZ],
             'BRIDGE': self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME],
             'LOCAL_VM_DIR': self.environment[ohostedcons.CoreEnv.LOCAL_VM_DIR],
-            'STORAGE': self.environment[
-                ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
-            ],
+            'STORAGE_DOMAIN_ADDR': storage_domain_address,
+            'STORAGE_DOMAIN_PATH': storage_domain_path,
             'MOUNT_OPTIONS': self.environment[
                 ohostedcons.StorageEnv.MNT_OPTIONS
             ],

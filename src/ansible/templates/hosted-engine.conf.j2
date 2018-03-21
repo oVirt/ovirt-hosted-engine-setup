@@ -2,7 +2,11 @@ fqdn={{ FQDN }}
 vm_disk_id={{ he_virtio_disk_details.disk.id }}
 vm_disk_vol_id={{ he_virtio_disk_details.disk.image_id }}
 vmid={{ he_vm_details.vm.id }}
-storage={{ STORAGE }}
+{% if DOMAIN_TYPE=="nfs" or DOMAIN_TYPE=="glusterfs" %}
+storage={{ STORAGE_DOMAIN_ADDR }}:{{ STORAGE_DOMAIN_PATH }}
+{% else %}
+storage={{ STORAGE_DOMAIN_ADDR }}
+{% endif %}
 nfs_version={{ NFS_VERSION }}
 mnt_options={{ MOUNT_OPTIONS }}
 conf=/var/run/ovirt-hosted-engine-ha/vm.conf
