@@ -209,8 +209,16 @@
   - name: Shutdown local VM
     virt:
       name: "{{ VM_NAME }}Local"
-      command: shutdown
+      state: shutdown
       uri: 'qemu+tls://{{ HOST_ADDRESS }}/system'
+  - name: Wait for local VM shutdown
+    shell: virsh -r dominfo "{{ VM_NAME }}Local" | grep State
+    changed_when: True
+    register: dominfo_out
+    until: dominfo_out.rc == 0 and 'shut off' in dominfo_out.stdout
+    retries: 120
+    delay: 5
+  - debug: var=dominfo_out
   - name: Undefine local VM
     virt:
       name: "{{ VM_NAME }}Local"
