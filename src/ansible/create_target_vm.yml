@@ -74,17 +74,17 @@
       timeout: 600
       auth: "{{ ovirt_auth }}"
     with_items:
+      - { name: 'he_virtio_disk', description: 'Hosted-Engine disk', size: "{{ DISK_SIZE }}GiB", format: 'raw', sparse: "{{ False if DOMAIN_TYPE == 'fc' or DOMAIN_TYPE == 'iscsi' else True }}" }
       - { name: 'he_sanlock', description: 'Hosted-Engine sanlock disk', size: '1GiB', format: 'raw', sparse: False }
       - { name: 'HostedEngineConfigurationImage', description: 'Hosted-Engine configuration disk', size: '1GiB', format: 'raw', sparse: False }
       - { name: 'he_metadata', description: 'Hosted-Engine metadata disk', size: '1GiB', format: 'raw', sparse: False }
-      - { name: 'he_virtio_disk', description: 'Hosted-Engine disk', size: "{{ DISK_SIZE }}GiB", format: 'raw', sparse: "{{ False if DOMAIN_TYPE == 'fc' or DOMAIN_TYPE == 'iscsi' else True }}" }
     register: add_disks
   - name: Register disk details
     set_fact:
-      he_sanlock_disk_details: "{{ add_disks.results[0] }}"
-      he_conf_disk_details: "{{ add_disks.results[1] }}"
-      he_metadata_disk_details: "{{ add_disks.results[2] }}"
-      he_virtio_disk_details: "{{ add_disks.results[3] }}"
+      he_virtio_disk_details: "{{ add_disks.results[0] }}"
+      he_sanlock_disk_details: "{{ add_disks.results[1] }}"
+      he_conf_disk_details: "{{ add_disks.results[2] }}"
+      he_metadata_disk_details: "{{ add_disks.results[3] }}"
   - debug: var=add_disks
   - name: Add VM
     ovirt_vms:
