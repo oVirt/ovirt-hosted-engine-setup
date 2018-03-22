@@ -23,7 +23,7 @@
         ) and (
           'ansible_' + MGMT_NETWORK not in hostvars[inventory_hostname]
         ) and (
-          hostvars[inventory_hostname]['ansible_' + item]['active']
+          active in hostvars[inventory_hostname]['ansible_' + item] and hostvars[inventory_hostname]['ansible_' + item]['active']
         ) and (
           hostvars[inventory_hostname]['ansible_' + item]['type'] != 'bridge'
         ) and (
