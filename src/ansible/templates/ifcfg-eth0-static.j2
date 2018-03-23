@@ -9,7 +9,14 @@ ZONE=public
 IPADDR={{ VM_IP_ADDR }}
 PREFIX={{ VM_IP_PREFIX }}
 GATEWAY={{ GATEWAY }}
-{% for d in DNS_ADDR %}
+{% if DNS_ADDR is string %}
+{% set DNS_ADDR_LIST = DNS_ADDR.split(',') %}
+{% elif DNS_ADDR is iterable %}
+{% set DNS_ADDR_LIST = DNS_ADDR %}
+{% else %}
+{% set DNS_ADDR_LIST = [] %}
+{% endif %}
+{% for d in DNS_ADDR_LIST %}
 DNS{{loop.index}}={{ d }}
 {% endfor %}
 DEFROUTE=yes
