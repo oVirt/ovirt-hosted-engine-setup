@@ -562,7 +562,7 @@ class Plugin(plugin.PluginBase):
                         'you are now going to launch,\nit should not '
                         'point to the base host or to any other '
                         'existing machine.\n'
-                        'Engine VM FQDN: (leave it empty to skip): '
+                        'Engine VM FQDN: '
                     ),
                     dialog_name='CI_INSTANCE_HOSTNAME',
                     validate_syntax=True,
@@ -575,7 +575,7 @@ class Plugin(plugin.PluginBase):
                         'Please input the hostname for the engine VM, '
                         'not for this host.'
                     ),
-                    allow_empty=True,
+                    allow_empty=False,
                 )
                 if instancehname:
                     self.environment[
