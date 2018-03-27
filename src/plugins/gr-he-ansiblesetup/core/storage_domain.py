@@ -623,7 +623,6 @@ class Plugin(plugin.PluginBase):
             elif domain_type == ohostedcons.DomainTypes.ISCSI:
                 if iscsi_portal is None:
                     iscsi_portal = self._query_iscsi_portal()
-                    storage_domain_address = iscsi_portal
                 if iscsi_port is None:
                     iscsi_port = self._query_iscsi_port()
                 if iscsi_discover_username is None:
@@ -651,6 +650,7 @@ class Plugin(plugin.PluginBase):
                                 portal=iscsi_portal,
                                 port=iscsi_port,
                             )
+                        storage_domain_address = iscsi_portal.split(',')[0]
                     except RuntimeError as e:
                         self.logger.error(_('Unable to get target list'))
                         if not interactive:
