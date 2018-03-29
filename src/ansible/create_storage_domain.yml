@@ -129,10 +129,10 @@
       attribute: size
     register: disk_size_xml
   - name: Get required size
-    set_fact: required_size="{{ disk_size_xml.matches[0].Disk['{http://schemas.dmtf.org/ovf/envelope/1/}size']|int * 1024 * 1024 * 1024 + 5 * 1024 * 1024 * 1024}}" # +5G: 2xOVF_STORE, lockspace, metadata, configuration
+    set_fact: required_size="{{ disk_size_xml.matches[0].Disk['{http://schemas.dmtf.org/ovf/envelope/1/}size']|int * 1024 * 1024 * 1024 + storage_domain_details.ansible_facts.ovirt_storage_domains[0].critical_space_action_blocker|int * 1024 * 1024 * 1024 + 5 * 1024 * 1024 * 1024}}" # +5G: 2xOVF_STORE, lockspace, metadata, configuration
   - debug: var=required_size
   - name: Check storage domain free space
     fail:
-      msg: "Error: the target storage domain contains only {{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].available|int / 1024 /1024 }}Mb of available space while a minimum of {{ required_size|int / 1024 /1024 }}Mb is required"
-    when: storage_domain_details.ansible_facts.ovirt_storage_domains[0].available|int <= required_size|int
+      msg: "Error: the target storage domain contains only {{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].available|int / 1024 / 1024 / 1024 }}GiB of available space while a minimum of {{ required_size|int / 1024 / 1024 / 1024 }}GiB is required"
+    when: storage_domain_details.ansible_facts.ovirt_storage_domains[0].available|int < required_size|int
 ...
