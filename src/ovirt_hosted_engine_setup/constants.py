@@ -378,6 +378,7 @@ class Const(object):
     # maybe we can do better
     STORAGE_DOMAIN_OVERHEAD_GIB = 5
     OVFSTORE_SIZE_GIB = 2
+    CRITICAL_SPACE_ACTION_BLOCKER = 5
     METADATA_CHUNK_SIZE = 4096
     MAX_HOST_ID = 250
     HA_NOTIF_SMTP_SERVER = 'smtp-server'

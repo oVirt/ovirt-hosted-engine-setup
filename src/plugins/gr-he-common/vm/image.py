@@ -85,20 +85,24 @@ class Plugin(plugin.PluginBase):
                         self.environment[
                             ohostedcons.StorageEnv.IMAGE_SIZE_GB
                         ]
-                    ) + ohostedcons.Const.OVFSTORE_SIZE_GIB
+                    ) + ohostedcons.Const.OVFSTORE_SIZE_GIB +
+                    ohostedcons.Const.CRITICAL_SPACE_ACTION_BLOCKER
                 ) > available_gb:
                     msg = _(
                         'Not enough free space, '
                         'about {estimate} GiB will be available '
                         'within the storage domain '
                         '(required {required} GiB for the engine VM disk '
-                        'plus {req_ovf} GiB for the OVF_STORE disks)'
+                        'plus {req_ovf} GiB for the OVF_STORE disks creation)'
                     ).format(
                         estimate=available_gb,
                         required=self.environment[
                             ohostedcons.StorageEnv.IMAGE_SIZE_GB
                         ],
-                        req_ovf=ohostedcons.Const.OVFSTORE_SIZE_GIB,
+                        req_ovf=(
+                            ohostedcons.Const.OVFSTORE_SIZE_GIB +
+                            ohostedcons.Const.CRITICAL_SPACE_ACTION_BLOCKER
+                        ),
                     )
                     self.logger.warning(msg)
                     valid = False
