@@ -66,6 +66,10 @@ class Plugin(plugin.PluginBase):
             self._config.get(config.ENGINE, const.SD_UUID),
         )
         self.environment.setdefault(
+            ohostedcons.StorageEnv.SP_UUID,
+            self._config.get(config.ENGINE, const.SP_UUID),
+        )
+        self.environment.setdefault(
             ohostedcons.StorageEnv.CONF_IMG_UUID,
             self._config.get(config.ENGINE, const.CONF_IMAGE_UUID),
         )
