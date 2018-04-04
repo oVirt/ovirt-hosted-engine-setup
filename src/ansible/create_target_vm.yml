@@ -270,16 +270,16 @@
       - { src: "{{ LOCAL_VM_DIR }}/hosted-engine.conf", dest: /etc/ovirt-hosted-engine/ }
   - name: Copy configuration archive to storage
     command: dd bs=20480 count=1 oflag=direct if="{{ LOCAL_VM_DIR }}/{{ he_conf_disk_details.disk.image_id }}" of="{{ he_conf_disk_path }}"
+    become: true
     become_user: vdsm
     become_method: sudo
     changed_when: True
-    tags: [ 'skip_ansible_lint' ]
   - name: Initialize metadata volume
     command: dd bs=1M count=1024 oflag=direct if=/dev/zero of="{{ he_metadata_disk_path }}"
+    become: true
     become_user: vdsm
     become_method: sudo
     changed_when: True
-    tags: [ 'skip_ansible_lint' ]
   - name: Find the local appliance image
     find:
       paths: "{{ LOCAL_VM_DIR }}/images"
@@ -288,12 +288,6 @@
       use_regex: true
     register: app_img
   - debug: var=app_img
-  - name: Copy local VM disk to shared storage
-    command: qemu-img convert -n -O raw {{ app_img.files[0].path }} {{ he_virtio_disk_path }}
-    become_user: vdsm
-    become_method: sudo
-    changed_when: True
-    tags: [ 'skip_ansible_lint' ]
   - name: Generate DHCP network configuration for the engine VM
     template:
       src: templates/ifcfg-eth0-dhcp.j2
@@ -311,16 +305,16 @@
       mode: 0644
     when: VM_IP_ADDR is not none
   - name: Inject network configuration with guestfish
-    shell: LIBGUESTFS_BACKEND=direct guestfish -a {{ he_virtio_disk_path }} --rw -i copy-in "{{ LOCAL_VM_DIR }}/ifcfg-eth0" /etc/sysconfig/network-scripts {{ ":" }} selinux-relabel /etc/selinux/targeted/contexts/files/file_contexts /etc/sysconfig/network-scripts/ifcfg-eth0 force{{ ":" }}true
-    become_user: vdsm
-    become_method: sudo
-    tags: [ 'skip_ansible_lint' ]
+    command: guestfish -a {{ app_img.files[0].path }} --rw -i copy-in "{{ LOCAL_VM_DIR }}/ifcfg-eth0" /etc/sysconfig/network-scripts {{ ":" }} selinux-relabel /etc/selinux/targeted/contexts/files/file_contexts /etc/sysconfig/network-scripts/ifcfg-eth0 force{{ ":" }}true
+    environment:
+      LIBGUESTFS_BACKEND: direct
+    changed_when: True
   - name: Extract /etc/hosts from the Hosted Engine VM
-    shell: LIBGUESTFS_BACKEND=direct virt-copy-out -a {{ he_virtio_disk_path }} /etc/hosts "{{ LOCAL_VM_DIR }}"
-    become_user: vdsm
-    become_method: sudo
+    command: virt-copy-out -a {{ app_img.files[0].path }} /etc/hosts "{{ LOCAL_VM_DIR }}"
+    environment:
+      LIBGUESTFS_BACKEND: direct
+    changed_when: True
     when: not VM_ETC_HOSTS
-    tags: [ 'skip_ansible_lint' ]
   - name: Clean /etc/hosts for the Hosted Engine VM
     lineinfile:
       dest: "{{ LOCAL_VM_DIR }}/hosts"
@@ -328,11 +322,16 @@
       state: absent
     when: not VM_ETC_HOSTS
   - name: Copy /etc/hosts back to the Hosted Engine VM
-    shell: LIBGUESTFS_BACKEND=direct virt-copy-in -a {{ he_virtio_disk_path }} "{{ LOCAL_VM_DIR }}"/hosts /etc
+    command: virt-copy-in -a {{ app_img.files[0].path }} "{{ LOCAL_VM_DIR }}"/hosts /etc
+    environment:
+      LIBGUESTFS_BACKEND: direct
+    when: not VM_ETC_HOSTS
+  - name: Copy local VM disk to shared storage
+    command: qemu-img convert -n -O raw {{ app_img.files[0].path }} {{ he_virtio_disk_path }}
+    become: true
     become_user: vdsm
     become_method: sudo
-    when: not VM_ETC_HOSTS
-    tags: [ 'skip_ansible_lint' ]
+    changed_when: True
   - name: Clean /etc/hosts on the host
     lineinfile:
       dest: /etc/hosts
