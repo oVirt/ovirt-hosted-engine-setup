@@ -25,6 +25,7 @@ MAINTAINERCLEANFILES = \
 
 ansibledir=$(ovirthostedengineansibledir)
 dist_ansible_DATA = \
+	ansible.cfg \
 	auth_revoke.yml \
 	auth_sso.yml \
 	bootstrap_local_vm.yml \
