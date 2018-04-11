@@ -241,7 +241,7 @@
       state: shutdown
       uri: 'qemu+tls://{{ HOST_ADDRESS }}/system'
   - name: Wait for local VM shutdown
-    shell: virsh -r dominfo "{{ VM_NAME }}Local" | grep State
+    command: virsh -r domstate "{{ VM_NAME }}Local"
     environment: "{{ CMD_LANG }}"
     changed_when: True
     register: dominfo_out
