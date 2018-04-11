@@ -1,0 +1,9 @@
+---
+- name: Validate hostnames
+  hosts: localhost
+  connection: local
+  vars:
+    MGMT_NETWORK: ovirtmgmt
+  tasks:
+    - include_tasks: validate_hostname_tasks.yml
+...

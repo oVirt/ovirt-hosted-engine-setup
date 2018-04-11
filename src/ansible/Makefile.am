@@ -38,6 +38,8 @@ dist_ansible_DATA = \
 	initial_clean.yml \
 	iscsi_discover.yml \
 	iscsi_getdevices.yml \
+	validate_hostname_tasks.yml \
+	validate_hostnames.yml \
 	$(NULL)
 
 nodist_ansible_DATA = \

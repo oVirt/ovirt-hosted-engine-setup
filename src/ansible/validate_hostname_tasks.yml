@@ -1,0 +1,86 @@
+---
+- name: Validate host hostname
+  block:
+  - name: Avoid localhost
+    fail:
+      msg: >
+        localhost is not a valid address
+    when: HOST_ADDRESS in ['localhost', 'localhost.localdomain']
+  - name: Get host address resolution
+    shell: getent ahostsv4 {{ HOST_ADDRESS }} | grep {{ HOST_ADDRESS }}
+    register: hostname_resolution_output
+    changed_when: True
+    ignore_errors: yes
+  - debug: var=hostname_resolution_output
+  - name: Check address resolution
+    fail:
+      msg: >
+        Unable to resolve address
+    when: hostname_resolution_output.rc != 0
+  - name: Parse host address resolution
+    set_fact:
+      r_host_address: "{{ hostname_resolution_output.stdout.split()[0] }}"
+  - debug: var=r_host_address
+  - name: Ensure host address resolves locally
+    fail:
+      msg: >
+        The address proposed for this host does not resolves locally
+    when: r_host_address not in ansible_all_ipv4_addresses
+  - name: Ensure the resolved address resolves on the selected interface
+    block:
+    - name: Get target address from selected interface
+      set_fact:
+        target_address: "{{ hostvars[inventory_hostname]['ansible_' + MGMT_NETWORK.replace('-','_')]['ipv4']['address'] if 'ansible_' + MGMT_NETWORK.replace('-','_') in hostvars[inventory_hostname] else hostvars[inventory_hostname]['ansible_' + BRIDGE_IF.replace('-','_')]['ipv4']['address'] }}"
+    - debug: var=target_address
+    - name: Check the resolved address resolves on the selected interface
+      fail:
+        msg: >
+          The resolved address doesn't resolve
+          on the selected interface
+      when: r_host_address != target_address
+    - name: Check for alias
+      shell: getent ahostsv4 {{ HOST_ADDRESS }} | cut -d' ' -f1 | uniq
+      register: hostname_res_count_output
+      changed_when: True
+      ignore_errors: yes
+    - debug: var=hostname_res_count_output
+    - name: Ensure the resolved address resolves only on the selected interface
+      fail:
+        msg: >
+          hostname '{{ HOST_ADDRESS }}' doesn't uniquely match the interface
+          '{{ BRIDGE_IF }}' selected for the management bridge;
+          it matches also interface with IP {{ hostname_res_count_output.stdout_lines | difference([r_host_address,]) }}.
+          Please make sure that the hostname got from
+          the interface for the management network resolves
+          only there.
+      when: hostname_res_count_output.stdout_lines|length > 1
+    when: BRIDGE_IF is defined and MGMT_NETWORK is defined
+  when: HOST_ADDRESS is defined
+- name: Validate engine FQDN
+  block:
+  - name: Avoid localhost
+    fail:
+      msg: >
+        localhost is not a valid FQDN for the engine VM
+    when: FQDN in ['localhost', 'localhost.localdomain']
+  - name: Get engine FQDN resolution
+    shell: getent ahostsv4 {{ FQDN }} | grep {{ FQDN }}
+    register: fqdn_resolution_output
+    changed_when: True
+    ignore_errors: yes
+  - debug: var=fqdn_resolution_output
+  - name: Check engine FQDN resolution
+    fail:
+      msg: >
+        Unable to resolve address
+    when: fqdn_resolution_output.rc != 0
+  - name: Parse engine FQDN resolution
+    set_fact:
+      r_fqdn_address: "{{ fqdn_resolution_output.stdout.split()[0] }}"
+  - debug: var=r_fqdn_address
+  - name: Ensure engine FQDN doesn't resolve locally
+    fail:
+      msg: >
+        The FQDN proposed for the engine VM resolves on this host
+    when: r_fqdn_address in ansible_all_ipv4_addresses
+  when: FQDN is defined
