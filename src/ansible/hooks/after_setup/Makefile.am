@@ -26,6 +26,7 @@ MAINTAINERCLEANFILES = \
 after_setupdir=$(ovirthostedengineansibledir)/hooks/after_setup
 dist_after_setup_DATA = \
 	after_setup.yml.example \
+	add_host_storage_domain.yml \
 	$(NULL)
 
 all-local: \
