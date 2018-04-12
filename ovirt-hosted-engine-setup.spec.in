@@ -27,9 +27,7 @@ Summary:        oVirt Hosted Engine setup tool
 Name:           @PACKAGE_NAME@
 Version:        @PACKAGE_RPM_VERSION@
 Release:        @PACKAGE_RPM_RELEASE@%{?release_suffix}%{?dist}
-# The entire source code is LGPLv2+ except
-# src/ansible/library/ and src/ansible/module_utils/ which are GPLv3+
-License:        LGPLv2+ and GPLv3+
+License:        LGPLv2+
 URL:            http://www.ovirt.org
 Source:         http://resources.ovirt.org/pub/src/%{name}/%{name}-%{package_version}.tar.gz
 Group:          Applications/System
@@ -58,7 +56,7 @@ Requires:       libvirt-client
 Requires:       m2crypto
 Requires:       virt-install
 Requires:       python-ovirt-engine-sdk4 >= 4.2.4
-Requires:       ansible >= 2.4
+Requires:       ansible >= 2.5
 # default libvirt network
 Requires:       libvirt-daemon-config-network
 
@@ -110,9 +108,7 @@ make %{?_smp_mflags} install DESTDIR="%{buildroot}"
 %find_lang %{name}
 
 %files -f %{name}.lang
-%license PACKAGE-LICENSING
 %license COPYING
-%license COPYING.gpl3
 %doc README
 %doc readme.appliance
 %doc readme.rollback

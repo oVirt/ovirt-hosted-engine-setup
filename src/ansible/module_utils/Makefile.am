@@ -25,5 +25,4 @@ MAINTAINERCLEANFILES = \
 
 ansiblemodutilsdir=$(ovirthostedengineansibledir)/module_utils
 dist_ansiblemodutils_DATA = \
-	ovirt.py \
 	$(NULL)
