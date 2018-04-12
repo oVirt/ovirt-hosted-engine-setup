@@ -1,2 +1,0 @@
-src/ansible/library/ and src/ansible/module_utils/ are GPLv3+, see COPYING.gpl3
-Everything else is LGPLv2+, see COPYING

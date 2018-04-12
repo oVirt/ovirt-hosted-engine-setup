@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2017 Red Hat, Inc.
+# Copyright (C) 2013-2018 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -42,8 +42,6 @@ EXTRA_DIST = \
 	readme.appliance \
 	readme.rollback \
 	COPYING \
-	COPYING.gpl3 \
-	PACKAGE-LICENSING \
 	$(NULL)
 
 SUBDIRS = \
