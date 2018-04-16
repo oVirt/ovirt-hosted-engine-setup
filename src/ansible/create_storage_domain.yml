@@ -39,6 +39,7 @@
     set_fact: datacenter_name={{ ovirt_datacenters|json_query("[?id=='" + datacenter_id + "'].name")|first }}
   - name: Add NFS storage domain
     ovirt_storage_domains:
+      state: unattached
       name: "{{ STORAGE_DOMAIN_NAME }}"
       host: "{{ HOST_NAME }}"
       data_center: "{{ datacenter_name }}"
@@ -50,9 +51,10 @@
         version: "{{ NFS_VERSION }}"
       auth: "{{ ovirt_auth }}"
     when: DOMAIN_TYPE == "nfs"
-    register: otopi_storage_domain_details
+    register: otopi_storage_domain_details_nfs
   - name: Add glusterfs storage domain
     ovirt_storage_domains:
+      state: unattached
       name: "{{ STORAGE_DOMAIN_NAME }}"
       host: "{{ HOST_NAME }}"
       data_center: "{{ datacenter_name }}"
@@ -67,9 +69,10 @@
         url: https://{{ FQDN }}/ovirt-engine/api
         insecure: true
     when: DOMAIN_TYPE == "glusterfs"
-    register: otopi_storage_domain_details
+    register: otopi_storage_domain_details_gluster
   - name: Add iSCSI storage domain
     ovirt_storage_domains:
+      state: unattached
       name: "{{ STORAGE_DOMAIN_NAME }}"
       host: "{{ HOST_NAME }}"
       data_center: "{{ datacenter_name }}"
@@ -89,9 +92,10 @@
         password: "{{ ISCSI_PASSWORD }}"
       auth: "{{ ovirt_auth }}"
     when: DOMAIN_TYPE == "iscsi"
-    register: otopi_storage_domain_details
+    register: otopi_storage_domain_details_iscsi
   - name: Add Fibre Channel storage domain
     ovirt_storage_domains:
+      state: unattached
       name: "{{ STORAGE_DOMAIN_NAME }}"
       host: "{{ HOST_NAME }}"
       data_center: "{{ datacenter_name }}"
@@ -100,11 +104,11 @@
       fcp:
         lun_id: "{{ LUN_ID }}"
       auth: "{{ ovirt_auth }}"
-    register: otopi_storage_domain_details
+    register: otopi_storage_domain_details_fc
     when: DOMAIN_TYPE == "fc"
   - name: Get storage domain details
     ovirt_storage_domains_facts:
-      pattern: name={{ STORAGE_DOMAIN_NAME }} and datacenter={{ datacenter_name }}
+      pattern: name={{ STORAGE_DOMAIN_NAME }}
       auth: "{{ ovirt_auth }}"
     register: storage_domain_details
   - debug: var=storage_domain_details
@@ -131,8 +135,32 @@
   - name: Get required size
     set_fact: required_size="{{ disk_size_xml.matches[0].Disk['{http://schemas.dmtf.org/ovf/envelope/1/}size']|int * 1024 * 1024 * 1024 + storage_domain_details.ansible_facts.ovirt_storage_domains[0].critical_space_action_blocker|int * 1024 * 1024 * 1024 + 5 * 1024 * 1024 * 1024}}" # +5G: 2xOVF_STORE, lockspace, metadata, configuration
   - debug: var=required_size
+  - name: Remove unsuitable storage domain
+    ovirt_storage_domains:
+      host: "{{ HOST_NAME }}"
+      data_center: "{{ datacenter_name }}"
+      name: "{{ STORAGE_DOMAIN_NAME }}"
+      wait: true
+      state: absent
+      destroy: true
+      auth: "{{ ovirt_auth }}"
+    when: storage_domain_details.ansible_facts.ovirt_storage_domains[0].available|int < required_size|int
+    register: remove_storage_domain_details
+  - debug: var=remove_storage_domain_details
   - name: Check storage domain free space
     fail:
-      msg: "Error: the target storage domain contains only {{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].available|int / 1024 / 1024 / 1024 }}GiB of available space while a minimum of {{ required_size|int / 1024 / 1024 / 1024 }}GiB is required"
+      msg: "Error: the target storage domain contains only {{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].available|int / 1024 / 1024 / 1024 }}GiB of available space while a minimum of {{ required_size|int / 1024 / 1024 / 1024 }}GiB is required
+            If you wish to use the current target storage domain by extending it, make sure it contains nothing before adding it."
     when: storage_domain_details.ansible_facts.ovirt_storage_domains[0].available|int < required_size|int
+  - name: Activate storage domain
+    ovirt_storage_domains:
+      host: "{{ HOST_NAME }}"
+      data_center: "{{ datacenter_name }}"
+      name: "{{ STORAGE_DOMAIN_NAME }}"
+      wait: true
+      state: present
+      auth: "{{ ovirt_auth }}"
+    when: storage_domain_details.ansible_facts.ovirt_storage_domains[0].available|int >= required_size|int
+    register: otopi_storage_domain_details
+  - debug: var=otopi_storage_domain_details
 ...
