@@ -39,7 +39,10 @@ def _(m):
 class Plugin(plugin.PluginBase):
     """Storage domain plugin."""
 
-    _IPADDR_RE = re.compile(r'(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})')
+    rex = r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}'
+    rex += r'(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
+
+    _IPADDR_RE = re.compile(rex)
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
@@ -98,19 +101,10 @@ class Plugin(plugin.PluginBase):
                 prompt=True,
                 caseSensitive=True,
             )
-            if address:
+            if re.match(_IPADDR_RE, address.split(',')):
                 valid = True
-                for a in address.split(','):
-                    match = self._IPADDR_RE.match(a)
-                    if match:
-                        # TODO: figure out a better regexp
-                        # avoiding this check
-                        valid &= True
-                        for i in match.groups():
-                            valid &= int(i) >= 0
-                            valid &= int(i) < 255
-                    else:
-                        valid = False
+            else:
+                valid = False
             if not valid:
                 self.logger.error(_('Address must be a valid IP address'))
         return address
