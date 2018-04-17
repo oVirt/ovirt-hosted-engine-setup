@@ -34,6 +34,12 @@ exit_not_deployed() {
     exit 1
 }
 
+exit_not_correctly_deployed() {
+    echo It seems like a previous attempt to deploy hosted-engine failed \
+         or it\'s still in progress. Please clean it up before trying again
+    exit 2
+}
+
 check_vm_conf() {
     if [ ! -r "${conf}" ] ; then
         echo The hosted engine configuration has not been retrieved from shared storage.\
@@ -282,6 +288,9 @@ return ;}
         check_vm_conf
         python -m ovirt_hosted_engine_setup.vm_status $1
     else
+        if virsh -r domstate HostedEngineLocal 1>/dev/null 2>&1; then
+            exit_not_correctly_deployed
+        fi
         exit_not_deployed
     fi
 }
