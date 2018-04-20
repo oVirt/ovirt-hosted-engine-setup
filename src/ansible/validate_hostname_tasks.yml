@@ -65,6 +65,10 @@
     when: FQDN in ['localhost', 'localhost.localdomain']
   - name: Get engine FQDN resolution
     shell: getent ahostsv4 {{ FQDN }} | grep {{ FQDN }}
+    environment:
+      LANG: en_US.UTF-8
+      LC_MESSAGES: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
     register: fqdn_resolution_output
     changed_when: True
     ignore_errors: yes

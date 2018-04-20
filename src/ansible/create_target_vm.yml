@@ -2,6 +2,11 @@
 - name: Create target Hosted Engine VM
   hosts: localhost
   connection: local
+  vars:
+    CMD_LANG:
+      LANG: en_US.UTF-8
+      LC_MESSAGES: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
   tasks:
   - name: Register the engine FQDN as a host
     add_host:
@@ -14,6 +19,7 @@
   - include_tasks: auth_sso.yml
   - name: Get local VM IP
     shell: virsh -r net-dhcp-leases default | grep -i {{ VM_MAC_ADDR }} | awk '{ print $5 }' | cut -f1 -d'/'
+    environment: "{{ CMD_LANG }}"
     register: local_vm_ip
     changed_when: True
   - debug: var=local_vm_ip
@@ -119,23 +125,32 @@
   - debug: var=he_vm_details
   - name: Register external local VM uuid
     shell: virsh -r domuuid {{ VM_NAME }}Local | head -1
+    environment: "{{ CMD_LANG }}"
     register: external_local_vm_uuid
     changed_when: True
   - debug: var=external_local_vm_uuid
 - hosts: engine
+  vars:
+    CMD_LANG:
+      LANG: en_US.UTF-8
+      LC_MESSAGES: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
   tasks:
   - name: Find configuration file for SCL PostgreSQL
     shell: ls -vr1 /etc/ovirt-engine/engine.conf.d/*-scl-postgres-*.conf
+    environment: "{{ CMD_LANG }}"
     register: scl_conf_flist
     changed_when: True
   - debug: var=scl_conf_flist
   - name: Check SCL PostgreSQL value
     command: grep sclenv {{ scl_conf_flist.stdout_lines|first }}
+    environment: "{{ CMD_LANG }}"
     register: scl_conf
     changed_when: True
   - debug: var=scl_conf
   - name: Update target VM details at DB level
     command: scl enable {{ scl_conf.stdout_lines[0].split('=')[1].replace('\"','') }} -- psql -d engine -c "UPDATE vm_static SET {{ item.field }}={{ item.value }} WHERE vm_guid='{{ hostvars['localhost']['he_vm_details']['vm']['id'] }}'"
+    environment: "{{ CMD_LANG }}"
     become: true
     become_user: postgres
     become_method: sudo
@@ -146,6 +161,7 @@
   - debug: var=db_vm_update
   - name: Insert Hosted Engine configuration disk uuid into Engine database
     command: scl enable {{ scl_conf.stdout_lines[0].split('=')[1].replace('\"','') }} -- psql -d engine -c "UPDATE vdc_options SET option_value='{{ hostvars['localhost']['he_conf_disk_details']['disk']['id'] }}' WHERE option_name='HostedEngineConfigurationImageGuid' AND version='general'"
+    environment: "{{ CMD_LANG }}"
     become: true
     become_user: postgres
     become_method: sudo
@@ -158,9 +174,15 @@
       line: 'net.ipv6.conf.all.disable_ipv6=1'
   - name: Reload sysctl
     command: sysctl -p
+    environment: "{{ CMD_LANG }}"
     changed_when: True
 - hosts: localhost
   connection: local
+  vars:
+    CMD_LANG:
+      LANG: en_US.UTF-8
+      LC_MESSAGES: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
   tasks:
   - name: Trigger hosted engine OVF update
     ovirt_vms:
@@ -185,6 +207,7 @@
   - debug: var=ovf_store_disks
   - name: Check OVF_STORE volume status
     command: vdsm-client Volume getInfo storagepoolID={{ datacenter_id }} storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }} imageID={{ item.id|first }} volumeID={{ item.image_id  }}
+    environment: "{{ CMD_LANG }}"
     changed_when: True
     register: ovf_store_status
     retries: 12
@@ -194,6 +217,7 @@
   - debug: var=ovf_store_status
   - name: Prepare images
     command: vdsm-client Image prepare storagepoolID={{ datacenter_id }} storagedomainID={{ storage_domain_details.ansible_facts.ovirt_storage_domains[0].id }} imageID={{ item.disk.id }} volumeID={{ item.disk.image_id  }}
+    environment: "{{ CMD_LANG }}"
     with_items:
       - "{{ he_virtio_disk_details }}"
       - "{{ he_conf_disk_details }}"
@@ -218,6 +242,7 @@
       uri: 'qemu+tls://{{ HOST_ADDRESS }}/system'
   - name: Wait for local VM shutdown
     command: virsh -r domstate "{{ VM_NAME }}Local"
+    environment: "{{ CMD_LANG }}"
     changed_when: True
     register: dominfo_out
     until: dominfo_out.rc == 0 and 'shut off' in dominfo_out.stdout
@@ -231,6 +256,7 @@
       uri: 'qemu+tls://{{ HOST_ADDRESS }}/system'
   - name: Detect spmId
     command: vdsm-client StoragePool getSpmStatus storagepoolID={{ datacenter_id }}
+    environment: "{{ CMD_LANG }}"
     register: get_spm_id_out
     changed_when: True
   - debug: var=get_spm_id_out
@@ -239,6 +265,7 @@
   - debug: var=spmId
   - name: Detect ovirt-hosted-engine-ha version
     command: python -c 'from ovirt_hosted_engine_ha.agent import constants as agentconst; print(agentconst.PACKAGE_VERSION)'
+    environment: "{{ CMD_LANG }}"
     register: ha_version_out
     changed_when: True
   - name: Set ha_version
@@ -258,6 +285,7 @@
       - { src: templates/hosted-engine.conf.j2, dest: "{{ LOCAL_VM_DIR }}/hosted-engine.conf" }
   - name: Create configuration archive
     command: tar --record-size=20480 -cvf {{ he_conf_disk_details.disk.image_id }} vm.conf broker.conf version fhanswers.conf hosted-engine.conf
+    environment: "{{ CMD_LANG }}"
     args:
       chdir: "{{ LOCAL_VM_DIR }}"
     changed_when: True
@@ -275,12 +303,14 @@
       - { src: "{{ LOCAL_VM_DIR }}/hosted-engine.conf", dest: /etc/ovirt-hosted-engine/ }
   - name: Copy configuration archive to storage
     command: dd bs=20480 count=1 oflag=direct if="{{ LOCAL_VM_DIR }}/{{ he_conf_disk_details.disk.image_id }}" of="{{ he_conf_disk_path }}"
+    environment: "{{ CMD_LANG }}"
     become: true
     become_user: vdsm
     become_method: sudo
     changed_when: True
   - name: Initialize metadata volume
     command: dd bs=1M count=1024 oflag=direct if=/dev/zero of="{{ he_metadata_disk_path }}"
+    environment: "{{ CMD_LANG }}"
     become: true
     become_user: vdsm
     become_method: sudo
@@ -306,11 +336,17 @@
     command: guestfish -a {{ local_vm_disk_path }} --rw -i copy-in "{{ LOCAL_VM_DIR }}/ifcfg-eth0" /etc/sysconfig/network-scripts {{ ":" }} selinux-relabel /etc/selinux/targeted/contexts/files/file_contexts /etc/sysconfig/network-scripts/ifcfg-eth0 force{{ ":" }}true
     environment:
       LIBGUESTFS_BACKEND: direct
+      LANG: en_US.UTF-8
+      LC_MESSAGES: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
     changed_when: True
   - name: Extract /etc/hosts from the Hosted Engine VM
     command: virt-copy-out -a {{ local_vm_disk_path }} /etc/hosts "{{ LOCAL_VM_DIR }}"
     environment:
       LIBGUESTFS_BACKEND: direct
+      LANG: en_US.UTF-8
+      LC_MESSAGES: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
     changed_when: True
     when: not VM_ETC_HOSTS
   - name: Clean /etc/hosts for the Hosted Engine VM
@@ -323,9 +359,13 @@
     command: virt-copy-in -a {{ local_vm_disk_path }} "{{ LOCAL_VM_DIR }}"/hosts /etc
     environment:
       LIBGUESTFS_BACKEND: direct
+      LANG: en_US.UTF-8
+      LC_MESSAGES: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
     when: not VM_ETC_HOSTS
   - name: Copy local VM disk to shared storage
     command: qemu-img convert -n -O raw {{ local_vm_disk_path }} {{ he_virtio_disk_path }}
+    environment: "{{ CMD_LANG }}"
     become: true
     become_user: vdsm
     become_method: sudo
@@ -348,6 +388,7 @@
       enabled: true
   - name: Initialize lockspace volume
     command: hosted-engine --reinitialize-lockspace --force
+    environment: "{{ CMD_LANG }}"
     register: result
     until: result.rc == 0
     retries: 5
@@ -361,6 +402,7 @@
       enabled: true
   - name: Wait for the engine to come up on the target VM
     command: hosted-engine --vm-status --json
+    environment: "{{ CMD_LANG }}"
     register: health_result
     until: health_result.rc == 0 and 'health' in health_result.stdout and health_result.stdout|from_json|json_query('*."engine-status"."health"')|first=="good"
     retries: 120

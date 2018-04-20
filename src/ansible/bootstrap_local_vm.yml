@@ -2,6 +2,11 @@
 - name: Prepare routing rules
   hosts: localhost
   connection: local
+  vars:
+    CMD_LANG:
+      LANG: en_US.UTF-8
+      LC_MESSAGES: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
   tasks:
     - name: Start libvirt
       service:
@@ -23,6 +28,7 @@
         command: facts
     - name: Get routing rules
       command: ip rule
+      environment: "{{ CMD_LANG }}"
       register: route_rules
       changed_when: True
     - debug: var=route_rules
@@ -31,6 +37,7 @@
         virbr_default: "{{ ansible_libvirt_networks['default']['bridge'] }}"
     - name: Wait for the bridge to appear on the host
       command: ip link show {{ virbr_default }}
+      environment: "{{ CMD_LANG }}"
       changed_when: True
       register: ip_link_show_bridge
       until: ip_link_show_bridge.rc == 0
@@ -45,12 +52,14 @@
         virbr_cidr: "{{ (hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv4']['address']+'/'+hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv4']['netmask']) |ipv4('host/prefix') }}"
     - name: Add outbound route rules
       command: ip rule add from {{ virbr_cidr }} priority 101 table main
+      environment: "{{ CMD_LANG }}"
       register: result
       when: "\"101:\tfrom \"+virbr_cidr+\" lookup main\" not in route_rules.stdout"
       changed_when: True
     - debug: var=result
     - name: Add inbound route rules
       command: ip rule add from all to {{ virbr_cidr }} priority 100 table main
+      environment: "{{ CMD_LANG }}"
       register: result
       changed_when: True
       when: "\"100:\tfrom all to \"+virbr_cidr+\" lookup main\" not in route_rules.stdout"
@@ -61,6 +70,10 @@
   connection: local
   vars:
     MGMT_NETWORK: ovirtmgmt
+    CMD_LANG:
+      LANG: en_US.UTF-8
+      LC_MESSAGES: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
   tasks:
     - include_tasks: validate_hostname_tasks.yml
     - name: Register the engine FQDN as a host
@@ -104,6 +117,7 @@
       - include_tasks: get_local_vm_disk_path.yml
       - name: Get appliance disk size
         command: qemu-img info --output=json {{ local_vm_disk_path }}
+        environment: "{{ CMD_LANG }}"
         changed_when: True
         register: qemu_img_out
       - debug: var=qemu_img_out
@@ -121,14 +135,17 @@
           - { src: templates/meta-data.j2, dest: "{{ LOCAL_VM_DIR }}/meta-data" }
       - name: Create ISO disk
         command: mkisofs -output {{ LOCAL_VM_DIR }}/seed.iso -volid cidata -joliet -rock -input-charset utf-8 {{ LOCAL_VM_DIR }}/meta-data {{ LOCAL_VM_DIR }}/user-data
+        environment: "{{ CMD_LANG }}"
         changed_when: True
       - name: Create local VM
         command: virt-install -n {{ VM_NAME }}Local --os-variant rhel7 --virt-type kvm --memory {{ MEM_SIZE }} --vcpus {{ VCPUS }}  --network network=default,mac={{ VM_MAC_ADDR }},model=virtio --disk {{ local_vm_disk_path }} --import --disk path={{ LOCAL_VM_DIR }}/seed.iso,device=cdrom --noautoconsole --rng /dev/random --graphics vnc --video vga --sound none --controller usb,model=none --memballoon none --boot hd,menu=off --clock kvmclock_present=yes
+        environment: "{{ CMD_LANG }}"
         register: create_local_vm
         changed_when: True
       - debug: var=create_local_vm
       - name: Get local VM IP
         shell: virsh -r net-dhcp-leases default | grep -i {{ VM_MAC_ADDR }} | awk '{ print $5 }' | cut -f1 -d'/'
+        environment: "{{ CMD_LANG }}"
         register: local_vm_ip
         until: local_vm_ip.stdout_lines|length >= 1
         retries: 50
@@ -161,6 +178,11 @@
               results: please check the logs for the issue,
               fix accordingly or re-deploy from scratch.
 - hosts: engine
+  vars:
+    CMD_LANG:
+      LANG: en_US.UTF-8
+      LC_MESSAGES: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
   tasks:
     - name: Initial tasks
       block:
@@ -174,6 +196,7 @@
           line: "{{ HOST_IP }} {{ HOST_ADDRESS }}"
       - name: Set FQDN
         command: hostnamectl set-hostname {{ FQDN }}
+        environment: "{{ CMD_LANG }}"
         changed_when: True
       - name: Force the local VM FQDN to resolve on 127.0.0.1
         lineinfile:
@@ -199,6 +222,7 @@
       - debug: var=include_before_engine_setup_results
       - name: Execute engine-setup
         command: /usr/bin/engine-setup --offline --config-append=/root/ovirt-engine-answers --config-append=/root/heanswers.conf
+        environment: "{{ CMD_LANG }}"
         register: engine_setup_out
         changed_when: True
       - debug: var=engine_setup_out
@@ -209,6 +233,7 @@
       - debug: var=include_after_engine_setup_results
       - name: Configure LibgfApi support
         command: engine-config -s LibgfApiSupported=true --cver=4.2
+        environment: "{{ CMD_LANG }}"
         register: libgfapi_support_out
         changed_when: True
         when: ENABLE_LIBGFAPI
@@ -255,6 +280,10 @@
     MGMT_NETWORK: ovirtmgmt
     DATA_CENTER: Default
     CLUSTER: Default
+    CMD_LANG:
+      LANG: en_US.UTF-8
+      LC_MESSAGES: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
   tasks:
     - name: Add host
       block:
@@ -269,6 +298,7 @@
       - debug: var=engine_status
       - name: Detect VLAN ID
         shell: ip -d link show {{ BRIDGE_IF }} | grep vlan | grep -Po 'id \K[\d]+' | cat
+        environment: "{{ CMD_LANG }}"
         register: vlan_id_out
         changed_when: True
       - debug: var=vlan_id_out
