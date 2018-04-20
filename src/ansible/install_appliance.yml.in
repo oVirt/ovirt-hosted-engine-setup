@@ -5,11 +5,19 @@
     state: present
 - name: Parse appliance configuration for path
   shell: grep path /etc/ovirt-hosted-engine/10-appliance.conf | cut -f2 -d'='
+  environment:
+    LANG: en_US.UTF-8
+    LC_MESSAGES: en_US.UTF-8
+    LC_ALL: en_US.UTF-8
   register: APPLIANCE_OVA_OUT
   changed_when: True
 - debug: var=APPLIANCE_OVA_OUT
 - name: Parse appliance configuration for sha1sum
   shell: grep sha1sum /etc/ovirt-hosted-engine/10-appliance.conf | cut -f2 -d'='
+  environment:
+    LANG: en_US.UTF-8
+    LC_MESSAGES: en_US.UTF-8
+    LC_ALL: en_US.UTF-8
   register: APPLIANCE_OVA_SHA1
   changed_when: True
 - debug: var=APPLIANCE_OVA_SHA1

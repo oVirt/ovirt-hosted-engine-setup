@@ -2,6 +2,11 @@
 - name: Clean previous deploy attempts
   hosts: localhost
   connection: local
+  vars:
+    CMD_LANG:
+      LANG: en_US.UTF-8
+      LC_MESSAGES: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
   tasks:
   - name: Stop libvirt service
     service:
@@ -10,6 +15,7 @@
       enabled: yes
   - name: Drop vdsm config statements
     command: sed -i '/## beginning of configuration section by vdsm-4.[0-9]\+.[0-9]\+/,/## end of configuration section by vdsm-4.[0-9]\+.[0-9]\+/d' {{ item }}
+    environment: "{{ CMD_LANG }}"
     with_items:
       - /etc/libvirt/libvirtd.conf
       - /etc/libvirt/qemu.conf
@@ -31,6 +37,7 @@
       state: restarted
   - name: Drop libvirt sasl2 configuration by vdsm
     command: sed -i '/## start vdsm-4.[0-9]\+.[0-9]\+ configuration/,/## end vdsm configuration/d' /etc/sasl2/libvirt.conf
+    environment: "{{ CMD_LANG }}"
     tags: [ 'skip_ansible_lint' ]
   - name: Stop and disable services
     service:
@@ -48,18 +55,22 @@
       enabled: yes
   - name: Check for leftover local Hosted Engine VM
     shell: virsh list | grep {{ VM_NAME }}Local | cat
+    environment: "{{ CMD_LANG }}"
     changed_when: True
     register: local_vm_list
   - name: Destroy leftover local Hosted Engine VM
     command: virsh destroy {{ VM_NAME }}Local
+    environment: "{{ CMD_LANG }}"
     ignore_errors: yes
     when: local_vm_list.stdout_lines|length >= 1
   - name: Check for leftover defined local Hosted Engine VM
     shell: virsh list --all | grep {{ VM_NAME }}Local | cat
+    environment: "{{ CMD_LANG }}"
     changed_when: True
     register: local_vm_list_all
   - name: Undefine leftover local engine VM
     command: virsh undefine --managed-save {{ VM_NAME }}Local
+    environment: "{{ CMD_LANG }}"
     when: local_vm_list_all.stdout_lines|length >= 1
     changed_when: True
   - name: Remove eventually entries for the local VM from known_hosts file
