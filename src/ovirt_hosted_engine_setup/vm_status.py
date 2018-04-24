@@ -133,8 +133,10 @@ class VmStatus(object):
                 print(glb_msg)
 
             for host_id, host_stats in all_host_stats.items():
-                print _('\n\n--== Host {host_id} status ==--\n').format(
-                    host_id=host_id
+                print _('\n\n--== Host {hostname} (id: {host_id})'
+                        ' status ==--\n').format(
+                    host_id=host_id,
+                    hostname=host_stats["hostname"]
                 )
                 for key in host_stats.keys():
                     if (key == 'engine-status' and
