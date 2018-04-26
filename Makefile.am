@@ -42,6 +42,8 @@ EXTRA_DIST = \
 	readme.appliance \
 	readme.rollback \
 	COPYING \
+	COPYING.gpl3 \
+	PACKAGE-LICENSING \
 	$(NULL)
 
 SUBDIRS = \
