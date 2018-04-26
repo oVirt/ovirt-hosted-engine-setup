@@ -1,4 +1,5 @@
 ./src/ansible/callback_plugins/1_otopi_json.py
+./src/ansible/library/ovirt_storage_domains.py
 ./src/ovirt_hosted_engine_setup/ansible_utils.py
 ./src/ovirt_hosted_engine_setup/appliance_esetup.py
 ./src/ovirt_hosted_engine_setup/check_liveliness.py
