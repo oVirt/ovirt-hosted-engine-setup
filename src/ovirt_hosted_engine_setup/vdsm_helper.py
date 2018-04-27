@@ -84,13 +84,32 @@ def checkVmStatus(args):
 @handle_server_error
 def setVmTicket(args):
     cli = ohautil.connect_vdsm_json_rpc()
-    cli.VM.setTicket(
+    cli.VM.updateDevice(
         vmID=args.vmid,
-        password=args.password,
-        ttl=args.ttl,
-        existingConnAction='keep',
-        params={},
+        params={
+            'deviceType': 'graphics',
+            'existingConnAction': 'keep',
+            'graphicsType': 'vnc',
+            'params': {},
+            'ttl': args.ttl,
+            'password': args.password,
+        }
     )
+    vmstats = cli.VM.getStats(
+        vmID=args.vmid,
+    )
+    displayinfo = vmstats[0]['displayInfo']
+    vnc = [x for x in displayinfo if x['type'] == 'vnc']
+    if vnc:
+        print(
+            (
+                "You can now connect the hosted-engine VM with VNC at "
+                "{ip}:{port}"
+            ).format(
+                ip=vnc[0]['ipAddress'],
+                port=vnc[0]['port'],
+            )
+        )
 
 
 def _add_vmid_argument(parser):
