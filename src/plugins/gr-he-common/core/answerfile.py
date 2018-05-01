@@ -49,7 +49,8 @@ class Plugin(plugin.PluginBase):
         super(Plugin, self).__init__(context=context)
 
     def _generate_answers(self, f):
-        f.write(u'[environment:default]\n')
+        content = []
+        title = u'[environment:default]\n'
         for c in ohostedcons.__dict__['__hosted_attrs__']:
             for k in c.__dict__.values():
                 if hasattr(k, '__hosted_attrs__'):
@@ -57,7 +58,7 @@ class Plugin(plugin.PluginBase):
                         k = k.fget(None)
                         if k in self.environment:
                             v = self.environment[k]
-                            f.write(
+                            content.append(
                                 u'%s=%s:%s\n' % (
                                     k,
                                     common.typeName(v),
@@ -65,6 +66,7 @@ class Plugin(plugin.PluginBase):
                                     else v,
                                 )
                             )
+        f.writelines([title] + sorted(content))
 
     def _save_answers(self, name):
         self.logger.info(
