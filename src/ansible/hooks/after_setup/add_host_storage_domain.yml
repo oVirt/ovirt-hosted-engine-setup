@@ -1,6 +1,8 @@
 - name: Include Host vars
-  include_vars: "{{ item }}"
+  include_vars: "{{ file_item }}"
   with_fileglob: "/usr/share/ovirt-hosted-engine-setup/gdeploy-inventory.yml"
+  loop_control:
+    loop_var: file_item
 - debug: var=gluster
 - name: Set Engine public key as authorized key without validating the TLS/SSL certificates
   authorized_key:
