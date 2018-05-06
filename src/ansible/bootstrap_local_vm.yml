@@ -297,7 +297,7 @@
         delay: 20
       - debug: var=engine_status
       - name: Detect VLAN ID
-        shell: ip -d link show {{ BRIDGE_IF }} | grep vlan | grep -Po 'id \K[\d]+' | cat
+        shell: ip -d link show {{ BRIDGE_IF }} | grep 'vlan ' | grep -Po 'id \K[\d]+' | cat
         environment: "{{ CMD_LANG }}"
         register: vlan_id_out
         changed_when: True
