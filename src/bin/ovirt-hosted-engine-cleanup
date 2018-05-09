@@ -1,5 +1,7 @@
 #!/bin/sh
 
+VIRSH_AUTH='/etc/ovirt-hosted-engine/virsh_auth.conf'
+
 die() {
     echo "FATAL: $1" >&2
     exit 1
@@ -67,6 +69,10 @@ echo "  -=== Destroy hosted-engine VM ===- "
 hosted-engine --vm-poweroff
 
 kill_HE_procs
+/usr/bin/virsh \
+    -c qemu:///system?authfile=${VIRSH_AUTH} \
+    undefine \
+    HostedEngine
 
 echo "  -=== Stop HA services ===- "
 systemctl stop ovirt-ha-agent

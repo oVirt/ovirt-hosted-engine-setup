@@ -73,6 +73,16 @@
     environment: "{{ CMD_LANG }}"
     when: local_vm_list_all.stdout_lines|length >= 1
     changed_when: True
+  - name: Check for leftover defined Hosted Engine VM
+    shell: virsh list --all | grep {{ VM_NAME }} | cat
+    environment: "{{ CMD_LANG }}"
+    changed_when: True
+    register: target_vm_list_all
+  - name: Undefine leftover engine VM
+    command: virsh undefine --managed-save {{ VM_NAME }}
+    environment: "{{ CMD_LANG }}"
+    when: target_vm_list_all.stdout_lines|length >= 1
+    changed_when: True
   - name: Remove eventually entries for the local VM from known_hosts file
     known_hosts:
       name: "{{ FQDN }}"
