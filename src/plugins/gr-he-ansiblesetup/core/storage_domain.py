@@ -605,11 +605,19 @@ class Plugin(plugin.PluginBase):
                 domain_type == ohostedcons.DomainTypes.NFS or
                 domain_type == ohostedcons.DomainTypes.GLUSTERFS
             ):
+                path_test = '.+:/.+'
                 if storage_domain_connection is None:
                     storage_domain_connection = self._query_connection_path()
                 storage_domain_det = storage_domain_connection.split(':')
-                if len(storage_domain_det) != 2:
-                    msg = _('Invalid connection path')
+                if (
+                    not re.match(path_test, storage_domain_connection) or
+                    len(storage_domain_det) != 2
+                ):
+                    msg = _(
+                        'Invalid connection path: {p}'
+                    ).format(
+                        p=storage_domain_connection,
+                    )
                     self.logger.error(msg)
                     if not interactive:
                         raise RuntimeError(msg)
