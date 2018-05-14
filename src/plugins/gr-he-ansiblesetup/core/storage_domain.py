@@ -491,6 +491,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.StorageEnv.LUN_ID,
             None
         )
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.DISCARD_SUPPORT,
+            False
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
@@ -566,7 +570,9 @@ class Plugin(plugin.PluginBase):
             lunid = self.environment[
                 ohostedcons.StorageEnv.LUN_ID
             ]
-            discard = True
+            discard = self.environment[
+                ohostedcons.StorageEnv.DISCARD_SUPPORT
+            ]
 
             if domain_type is None:
                 domain_type = self.dialog.queryString(
@@ -658,7 +664,6 @@ class Plugin(plugin.PluginBase):
                                 portal=iscsi_portal,
                                 port=iscsi_port,
                             )
-                        storage_domain_address = iscsi_portal.split(',')[0]
                     except RuntimeError as e:
                         self.logger.error(_('Unable to get target list'))
                         if not interactive:
@@ -685,6 +690,8 @@ class Plugin(plugin.PluginBase):
                         if not interactive:
                             raise e
                         continue
+
+                storage_domain_address = iscsi_portal.split(',')[0]
 
             elif domain_type == ohostedcons.DomainTypes.FC:
                 if lunid is None:
