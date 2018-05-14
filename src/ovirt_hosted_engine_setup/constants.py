@@ -737,6 +737,12 @@ class StorageEnv(object):
     def LUN_ID(self):
         return 'OVEHOSTED_STORAGE/LunID'
 
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def DISCARD_SUPPORT(self):
+        return 'OVEHOSTED_STORAGE/discardSupport'
+
     ISCSI_PASSWORD = 'OVEHOSTED_STORAGE/iSCSIPortalPassword'
     ISCSI_DISCOVER_PASSWORD = 'OVEHOSTED_STORAGE/iSCSIDiscoverPassword'
 
