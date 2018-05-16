@@ -348,8 +348,12 @@
       LC_MESSAGES: en_US.UTF-8
       LC_ALL: en_US.UTF-8
     changed_when: True
-    when: not VM_ETC_HOSTS
-  - name: Clean /etc/hosts for the Hosted Engine VM
+  - name: Clean /etc/hosts for the Hosted Engine VM for Engine VM FQDN
+    lineinfile:
+      dest: "{{ LOCAL_VM_DIR }}/hosts"
+      regexp: "# hosted-engine-setup-{{ hostvars['localhost']['LOCAL_VM_DIR'] }}$"
+      state: absent
+  - name: Clean /etc/hosts for the Hosted Engine VM for host address
     lineinfile:
       dest: "{{ LOCAL_VM_DIR }}/hosts"
       line: "{{ HOST_IP }} {{ HOST_ADDRESS }}"
@@ -362,7 +366,7 @@
       LANG: en_US.UTF-8
       LC_MESSAGES: en_US.UTF-8
       LC_ALL: en_US.UTF-8
-    when: not VM_ETC_HOSTS
+    changed_when: True
   - name: Copy local VM disk to shared storage
     command: qemu-img convert -n -O raw {{ local_vm_disk_path }} {{ he_virtio_disk_path }}
     environment: "{{ CMD_LANG }}"
