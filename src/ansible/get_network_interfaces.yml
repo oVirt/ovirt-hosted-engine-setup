@@ -30,15 +30,17 @@
         ) and (
           hostvars[inventory_hostname]['ansible_' + item]['active'] == true
         ) and (
+          hostvars[inventory_hostname]['ansible_' + item]['ipv4'] is defined
+        ) and (
           (
-            hostvars[inventory_hostname]['ansible_' + item]['ipv4'] is defined
+            hostvars[inventory_hostname]['ansible_' + item]['type'] != 'bonding'
           ) or (
             (
               hostvars[inventory_hostname]['ansible_' + item]['type'] == 'bonding'
             ) and (
               hostvars[inventory_hostname]['ansible_' + item]['slaves'][0] is defined
             ) and (
-               hostvars[inventory_hostname]['ansible_' + item]['mode'] in acceptable_bond_modes
+              hostvars[inventory_hostname]['ansible_' + item]['mode'] in acceptable_bond_modes
             )
           )
         )
