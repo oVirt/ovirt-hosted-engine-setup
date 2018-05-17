@@ -183,6 +183,7 @@
       LANG: en_US.UTF-8
       LC_MESSAGES: en_US.UTF-8
       LC_ALL: en_US.UTF-8
+    MGMT_NETWORK: ovirtmgmt
   tasks:
   - name: Trigger hosted engine OVF update
     ovirt_vms:
@@ -413,6 +414,18 @@
     delay: 5
     changed_when: True
   - debug: var=health_result
+  - name: Get target engine VM IPv4 address
+    shell: getent ahostsv4 {{ FQDN }} | cut -d' ' -f1 | uniq
+    environment: "{{ CMD_LANG }}"
+    register: engine_vm_ipv4
+    changed_when: True
+  # Workaround for ovn-central being configured with the address of the bootstrap VM.
+  # Keep this aligned with:
+  # https://github.com/oVirt/ovirt-engine/blob/master/packaging/playbooks/roles/ovirt-provider-ovn-driver/tasks/main.yml
+  - name: Reconfigure OVN central address
+    command: vdsm-tool ovn-config {{ engine_vm_ipv4.stdout_lines[0] }} {{ MGMT_NETWORK }}
+    environment: "{{ CMD_LANG }}"
+    changed_when: True
   - include_tasks: auth_sso.yml
   # Workaround for https://bugzilla.redhat.com/1540107
   # the engine fails deleting a VM if its status in the engine DB
