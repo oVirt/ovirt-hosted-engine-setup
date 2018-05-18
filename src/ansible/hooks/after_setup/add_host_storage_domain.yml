@@ -4,6 +4,7 @@
   loop_control:
     loop_var: file_item
 - debug: var=gluster
+
 - name: Set Engine public key as authorized key without validating the TLS/SSL certificates
   authorized_key:
     user: root
@@ -15,7 +16,11 @@
   loop_control:
     loop_var: host
   when: "gluster is defined and 'hosts' in gluster"
+
 - name: Add additional gluster hosts to engine
+  async: 50
+  poll: 0
+  ignore_errors: true
   ovirt_hosts:
     cluster: Default
     name: "{{ host }}"
@@ -28,7 +33,11 @@
   loop_control:
     loop_var: host
   when: "gluster is defined and 'hosts' in gluster"
+
 - name: "Add additional glusterfs storage domains"
+  async: 50
+  poll: 0
+  ignore_errors: true
   ovirt_storage_domains:
       name: "{{ sd.name }}"
       host: "{{ HOST_NAME }}"
@@ -41,4 +50,4 @@
   with_items: "{{ gluster.vars.storage_domains }}"
   loop_control:
     loop_var: sd
-  when: "gluster is defined and 'hosts' in gluster"
+  when: "gluster is defined and 'hosts' in gluster and 'vars' in gluster"
