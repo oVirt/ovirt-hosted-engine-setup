@@ -22,6 +22,10 @@
 
 from ovirt_hosted_engine_ha.client import client
 
+from ovirt_hosted_engine_setup import constants as ohostedcons
+
 if __name__ == "__main__":
     ha_cli = client.HAClient()
-    ha_cli.connect_storage_server()
+    ha_cli.connect_storage_server(
+        timeout=ohostedcons.Const.STORAGE_SERVER_TIMEOUT,
+    )
