@@ -411,6 +411,7 @@ class Const(object):
     APPLIANCE40_RPM_NAME = '%s-appliance' % config.APPLIANCE40_RPM_PREFIX
     VM_LIVELINESS_CHECK_TIMEOUT = 900
     ANSIBLE_R_OTOPI_PREFIX = 'otopi_'
+    STORAGE_SERVER_TIMEOUT = 60
 
 
 @util.export
