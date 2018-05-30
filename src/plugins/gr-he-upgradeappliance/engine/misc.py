@@ -303,8 +303,7 @@ class Plugin(plugin.PluginBase):
     )
     def _check_upgrade_requirements(self):
         self.logger.info('Checking version requirements')
-        upg = upgrade.Upgrade()
-        if not upg.is_conf_file_uptodate():
+        if not upgrade.is_conf_file_uptodate():
             self.logger.error(_(
                 'Hosted-engine configuration didn\'t correctly reach 3.6 '
                 'level. Please successfully complete the upgrade to '
