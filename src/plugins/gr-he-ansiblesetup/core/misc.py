@@ -59,6 +59,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.StorageEnv.ENABLE_HC_GLUSTER_SERVICE,
             None
         )
+        self.environment.setdefault(
+            ohostedcons.CoreEnv.RESTORE_FROM_FILE,
+            None
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -74,19 +78,46 @@ class Plugin(plugin.PluginBase):
             ohostedcons.CoreEnv.DEPLOY_PROCEED
         ] is None
         if interactive:
+            restore_addition_1 = ''
+            restore_addition_2 = ''
+            if self.environment[
+                ohostedcons.CoreEnv.RESTORE_FROM_FILE
+            ] is not None:
+                restore_addition_1 = _(
+                    'The provided engine backup file will be restored there,\n'
+                    'it\'s strongly recommended to run this tool on an host '
+                    'that wasn\'t part of the environment going to be '
+                    'restored.\nIf a reference to this host is already '
+                    'contained in the backup file, it will be filtered out '
+                    'at restore time.\n'
+                )
+                restore_addition_2 = _(
+                    'The old hosted-engine storage domain will be renamed, '
+                    'after checking that everything is correctly working '
+                    'you can manually remove it.\n'
+                    'Other hosted-engine hosts have to be reinstalled from '
+                    'the engine to update their hosted-engine configuration.\n'
+                )
+
             self.environment[
                 ohostedcons.CoreEnv.DEPLOY_PROCEED
             ] = self.dialog.queryString(
                 name=ohostedcons.Confirms.DEPLOY_PROCEED,
                 note=_(
                     'Continuing will configure this host for serving as '
-                    'hypervisor and create a local VM with a running engine.\n'
+                    'hypervisor and will create a local VM with a '
+                    'running engine.\n'
+                    '{restore_addition_1}'
                     'The locally running engine will be used to configure '
-                    'a storage domain and create a VM there.\n'
+                    'a new storage domain and create a VM there.\n'
                     'At the end the disk of the local VM will be moved to the '
                     'shared storage.\n'
+                    '{restore_addition_2}'
                     'Are you sure you want to continue? '
                     '(@VALUES@)[@DEFAULT@]: '
+                ).format(
+                    restore_addition_1=restore_addition_1,
+                    restore_addition_2=restore_addition_2,
                 ),
                 prompt=True,
                 validValues=(_('Yes'), _('No')),
@@ -177,7 +208,13 @@ class Plugin(plugin.PluginBase):
             ],
             'BRIDGE_IF': self.environment[
                 ohostedcons.NetworkEnv.BRIDGE_IF
-            ]
+            ],
+            'RESTORE_FROM_FILE': self.environment[
+                ohostedcons.CoreEnv.RESTORE_FROM_FILE
+            ],
+            'STORAGE_DOMAIN_NAME': self.environment[
+                ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
+            ],
         }
         inventory_source = 'localhost, {fqdn}'.format(
             fqdn=self.environment[

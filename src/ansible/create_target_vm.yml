@@ -171,20 +171,9 @@
       LC_MESSAGES: en_US.UTF-8
       LC_ALL: en_US.UTF-8
   tasks:
-  - name: Find configuration file for SCL PostgreSQL
-    shell: ls -vr1 /etc/ovirt-engine/engine.conf.d/*-scl-postgres-*.conf
-    environment: "{{ CMD_LANG }}"
-    register: scl_conf_flist
-    changed_when: True
-  - debug: var=scl_conf_flist
-  - name: Check SCL PostgreSQL value
-    command: grep sclenv {{ scl_conf_flist.stdout_lines|first }}
-    environment: "{{ CMD_LANG }}"
-    register: scl_conf
-    changed_when: True
-  - debug: var=scl_conf
+  - include_tasks: pg_scl.yml
   - name: Update target VM details at DB level
-    command: scl enable {{ scl_conf.stdout_lines[0].split('=')[1].replace('\"','') }} -- psql -d engine -c "UPDATE vm_static SET {{ item.field }}={{ item.value }} WHERE vm_guid='{{ hostvars['localhost']['he_vm_details']['vm']['id'] }}'"
+    command: "{{ scl_pg_prefix }} psql -d engine -c \"UPDATE vm_static SET {{ item.field }}={{ item.value }} WHERE vm_guid='{{ hostvars['localhost']['he_vm_details']['vm']['id'] }}'\""
     environment: "{{ CMD_LANG }}"
     become: true
     become_user: postgres
@@ -195,7 +184,7 @@
       - { field: 'origin', value: 6 }
   - debug: var=db_vm_update
   - name: Insert Hosted Engine configuration disk uuid into Engine database
-    command: scl enable {{ scl_conf.stdout_lines[0].split('=')[1].replace('\"','') }} -- psql -d engine -c "UPDATE vdc_options SET option_value='{{ hostvars['localhost']['he_conf_disk_details']['disk']['id'] }}' WHERE option_name='HostedEngineConfigurationImageGuid' AND version='general'"
+    command: "{{ scl_pg_prefix }} psql -d engine -c \"UPDATE vdc_options SET option_value='{{ hostvars['localhost']['he_conf_disk_details']['disk']['id'] }}' WHERE option_name='HostedEngineConfigurationImageGuid' AND version='general'\""
     environment: "{{ CMD_LANG }}"
     become: true
     become_user: postgres
@@ -203,6 +192,17 @@
     changed_when: True
     register: db_conf_update
   - debug: var=db_conf_update
+  - name: Fetch host SPM_ID
+    command: "{{ scl_pg_prefix }} psql -t -d engine -c \"SELECT vds_spm_id FROM vds WHERE vds_name='{{ HOST_NAME }}'\""
+    environment: "{{ CMD_LANG }}"
+    become: true
+    become_user: postgres
+    become_method: sudo
+    changed_when: True
+    register: host_spm_id_out
+  - name: Parse host SPM_ID
+    set_fact: host_spm_id="{{ host_spm_id_out.stdout_lines|first|trim }}"
+  - debug: var=host_spm_id
   - name: Disable IPv6
     lineinfile:
       path: /etc/sysctl.conf
@@ -317,14 +317,8 @@
       name: "{{ VM_NAME }}Local"
       command: undefine
       uri: 'qemu+tls://{{ HOST_ADDRESS }}/system'
-  - name: Detect spmId
-    command: vdsm-client StoragePool getSpmStatus storagepoolID={{ datacenter_id }}
-    environment: "{{ CMD_LANG }}"
-    register: get_spm_id_out
-    changed_when: True
-  - debug: var=get_spm_id_out
-  - name: Parse spmId
-    set_fact: spmId="{{ get_spm_id_out.stdout|from_json|json_query('spmId') }}"
+  - name: Set spmId
+    set_fact: spmId="{{ hostvars[FQDN]['host_spm_id'] }}"
   - debug: var=spmId
   - name: Detect ovirt-hosted-engine-ha version
     command: python -c 'from ovirt_hosted_engine_ha.agent import constants as agentconst; print(agentconst.PACKAGE_VERSION)'

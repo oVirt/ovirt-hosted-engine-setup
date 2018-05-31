@@ -258,6 +258,25 @@ class Plugin(plugin.PluginBase):
                     'Please exit global maintenance mode to '
                     'restart the engine VM.'
                 ))
+            if (
+                self.environment[
+                    ohostedcons.CoreEnv.RESTORE_FROM_FILE
+                ] is not None
+            ):
+                self.logger.info(_(
+                    'Other hosted-engine hosts have to be reinstalled in '
+                    'order to update their storage configuration. '
+                    'From the engine, host by host, please set '
+                    'maintenance mode and then click on reinstall button '
+                    'ensuring you choose DEPLOY in hosted engine tab.'
+                ))
+            if (
+                self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE] or
+                self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE] or
+                self.environment[
+                    ohostedcons.CoreEnv.RESTORE_FROM_FILE
+                ] is not None
+            ):
                 self.logger.info(_(
                     'Please note that the engine VM ssh keys have changed. '
                     'Please remove the engine VM entry in ssh known_hosts on '

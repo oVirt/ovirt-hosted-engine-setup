@@ -147,6 +147,8 @@ Usage: $0 --deploy [args] [--ansible|--noansible]
         Load extra configuration files.
     --generate-answer=<file>
         Generate answer file.
+    --restore-from-file=file
+         Restore an engine backup file during the deployment
     --ansible
         Deploy using node-zero ansible flow (default)
     --noansible

@@ -424,6 +424,7 @@ class CoreEnv(object):
     UPGRADING_APPLIANCE = 'OVEHOSTED_CORE/upgradingAppliance'
     ANSIBLE_DEPLOYMENT = 'OVEHOSTED_CORE/ansibleDeployment'
     ROLLBACK_UPGRADE = 'OVEHOSTED_CORE/rollbackUpgrade'
+    RESTORE_FROM_FILE = 'OVEHOSTED_CORE/restoreFromFile'
     TEMPDIR = 'OVEHOSTED_CORE/tempDir'
     LOCAL_VM_DIR = 'OVEHOSTED_CORE/localVMDir'
 

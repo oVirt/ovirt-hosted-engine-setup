@@ -86,6 +86,11 @@
         ansible_user: root
     - name: Initial tasks
       block:
+      - name: Get system UUID
+        command: dmidecode -s system-uuid
+        environment: "{{ CMD_LANG }}"
+        changed_when: True
+        register: dmidecode_out
       - name: Create directory for local VM
         tempfile:
           state: directory
@@ -239,6 +244,10 @@
         with_fileglob: "hooks/enginevm_before_engine_setup/*.yml"
         register: include_before_engine_setup_results
       - debug: var=include_before_engine_setup_results
+      - name: Restore a backup
+        block:
+        - include_tasks: restore_backup.yml
+        when: RESTORE_FROM_FILE is defined and RESTORE_FROM_FILE
       - name: Execute engine-setup
         command: /usr/bin/engine-setup --offline --config-append=/root/ovirt-engine-answers --config-append=/root/heanswers.conf
         environment: "{{ CMD_LANG }}"
@@ -250,6 +259,12 @@
         with_fileglob: "hooks/enginevm_after_engine_setup/*.yml"
         register: include_after_engine_setup_results
       - debug: var=include_after_engine_setup_results
+      # After a restart the engine has a 5 minute grace time,
+      # other actions like electing a new SPM host or reconstructing
+      # the master storage domain could require more time
+      - name: Wait for the engine to reach a stable condition
+        wait_for: timeout=600
+        when: RESTORE_FROM_FILE is defined and RESTORE_FROM_FILE
       - name: Configure LibgfApi support
         command: engine-config -s LibgfApiSupported=true --cver=4.2
         environment: "{{ CMD_LANG }}"
