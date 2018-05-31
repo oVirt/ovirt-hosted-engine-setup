@@ -40,6 +40,8 @@ dist_ansible_DATA = \
 	initial_clean.yml \
 	iscsi_discover.yml \
 	iscsi_getdevices.yml \
+	pg_scl.yml \
+	restore_backup.yml \
 	validate_hostname_tasks.yml \
 	validate_hostnames.yml \
 	$(NULL)

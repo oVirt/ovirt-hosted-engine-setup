@@ -31,6 +31,8 @@ Usage: $0
 		Load extra configuration files.
 	--generate-answer=file
 		Generate answer file.
+	--restore-from-file=file
+		Restore an engine backup file during the deployment
 	--upgrade-appliance
 		Upgrade the engine-appliance
 	--rollback-upgrade
@@ -50,6 +52,8 @@ plugingroups="gr-he-common:gr-he-ansiblesetup"
 
 ansible_noansible=
 
+restore_from_file=
+
 while [ -n "$1" ]; do
 	x="$1"
 	v="${x#*=}"
@@ -63,6 +67,16 @@ while [ -n "$1" ]; do
 		;;
 		--generate-answer=*)
 			environment="${environment} OVEHOSTED_CORE/userAnswerFile=str:${v}"
+		;;
+		--restore-from-file=*)
+			if [[ "${plugingroups}" =~ "gr-he-setup" ]]; then
+				die "--restore-from-file can be used with ansible deployment only"
+			fi
+			if [ ! -f "${v}" ]; then
+  				die "File ${v} not found!"
+			fi
+			restore_from_file=$(realpath "${v}")
+			environment="${environment} OVEHOSTED_CORE/restoreFromFile=str:${restore_from_file}"
 		;;
 		--help)
 			usage
@@ -83,6 +97,9 @@ while [ -n "$1" ]; do
 		--noansible)
 			if [ ! -z $ansible_noansible ]; then
 				die "--ansible and --noansible are alternative"
+			fi
+			if [ ! -z $restore_from_file ]; then
+				die "--restore-from-file can be used with ansible deployment only"
 			fi
 			ansible_noansible="noansible"
 			plugingroups="gr-he-common:gr-he-setup"
