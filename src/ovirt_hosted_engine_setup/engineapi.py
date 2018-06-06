@@ -22,11 +22,9 @@
 
 import gettext
 
-import ovirtsdk.api
-import ovirtsdk.infrastructure.errors
-import ovirtsdk.xml
-
 from ovirt_hosted_engine_setup import constants as ohostedcons
+
+import ovirtsdk4 as sdk4
 
 
 def _(m):
@@ -56,7 +54,7 @@ def get_engine_api(
                 ohostedcons.EngineEnv.INSECURE_SSL
             ]:
                 insecure = True
-            engine_api = ovirtsdk.api.API(
+            engine_api = sdk4.Connection(
                 url='https://{fqdn}/ovirt-engine/api'.format(
                     fqdn=fqdn,
                 ),
@@ -73,9 +71,11 @@ def get_engine_api(
                 timeout=timeout if timeout else
                 ohostedcons.Defaults.DEFAULT_ENGINE_API_TIMEOUT,
             )
-            engine_api.clusters.list()
+            system_service = engine_api.system_service()
+            clusters_service = system_service.clusters_service()
+            clusters_service.list()
             valid = True
-        except ovirtsdk.infrastructure.errors.ConnectionError as e:
+        except sdk4.ConnectionError as e:
             base.logger.debug(
                 _(
                     'Cannot connect to Engine API on {fqdn}: \n'
@@ -84,58 +84,58 @@ def get_engine_api(
                     fqdn=fqdn,
                 )
             )
-        except ovirtsdk.infrastructure.errors.RequestError as e:
-            if e.status == 401:
+        except sdk4.AuthError:
+            if base.environment[
+                ohostedcons.EngineEnv.INTERACTIVE_ADMIN_PASSWORD
+            ]:
                 if base.environment[
-                    ohostedcons.EngineEnv.INTERACTIVE_ADMIN_PASSWORD
-                ]:
-                    if base.environment[
-                        ohostedcons.EngineEnv.ADMIN_PASSWORD
-                    ] is not None:
-                        base.logger.error(
-                            _(
-                                'The Engine API didn''t accept '
-                                'the administrator password you provided.\n'
-                                'Please enter it again to retry.'
-                            )
-                        )
-                    base.environment[
-                        ohostedcons.EngineEnv.ADMIN_USERNAME
-                    ] = base.dialog.queryString(
-                        name='ENGINE_ADMIN_USERNAME',
-                        note=_(
-                            'Enter engine admin username [@DEFAULT@]: '
-                        ),
-                        prompt=True,
-                        default=ohostedcons.Defaults.DEFAULT_ADMIN_USERNAME,
-                    )
-                    base.environment[
-                        ohostedcons.EngineEnv.ADMIN_PASSWORD
-                    ] = base.dialog.queryString(
-                        name='ENGINE_ADMIN_PASSWORD',
-                        note=_(
-                            'Enter engine admin password: '
-                        ),
-                        prompt=True,
-                        hidden=True,
-                    )
-                else:
-                    raise RuntimeError(
+                    ohostedcons.EngineEnv.ADMIN_PASSWORD
+                ] is not None:
+                    base.logger.error(
                         _(
                             'The Engine API didn''t accept '
-                            'the administrator password you provided\n'
+                            'the administrator password you provided.\n'
+                            'Please enter it again to retry.'
                         )
                     )
+                base.environment[
+                    ohostedcons.EngineEnv.ADMIN_USERNAME
+                ] = base.dialog.queryString(
+                    name='ENGINE_ADMIN_USERNAME',
+                    note=_(
+                        'Enter engine admin username [@DEFAULT@]: '
+                    ),
+                    prompt=True,
+                    default=ohostedcons.Defaults.DEFAULT_ADMIN_USERNAME,
+                )
+                base.environment[
+                    ohostedcons.EngineEnv.ADMIN_PASSWORD
+                ] = base.dialog.queryString(
+                    name='ENGINE_ADMIN_PASSWORD',
+                    note=_(
+                        'Enter engine admin password: '
+                    ),
+                    prompt=True,
+                    hidden=True,
+                )
             else:
-                base.logger.debug(
+                raise RuntimeError(
                     _(
-                        'Cannot connect to Engine API on {fqdn}:\n'
-                        '{details}\n'
-                    ).format(
-                        fqdn=fqdn,
-                        details=e.detail,
+                        'The Engine API didn''t accept '
+                        'the administrator password you provided\n'
                     )
                 )
+
+        except sdk4.Error as e:
+            base.logger.debug(
+                _(
+                    'Cannot connect to Engine API on {fqdn}:\n'
+                    '{details}\n'
+                ).format(
+                    fqdn=fqdn,
+                    details=e,
+                )
+            )
     if not valid:
         raise RuntimeError(
             _(

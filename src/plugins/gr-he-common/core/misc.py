@@ -172,7 +172,9 @@ class Plugin(plugin.PluginBase):
         ),
         name=ohostedcons.Stages.ENGINE_VM_UP_CHECK,
         condition=lambda self: (
-            not self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]
+            not self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT] and
+            not self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE] and
+            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
         ),
     )
     def engine_vm_up_check(self):

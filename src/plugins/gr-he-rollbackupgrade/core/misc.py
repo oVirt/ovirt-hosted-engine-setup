@@ -61,6 +61,10 @@ class Plugin(plugin.PluginBase):
             self._config.get(config.ENGINE, const.DOMAIN_TYPE),
         )
         self.environment.setdefault(
+            ohostedcons.StorageEnv.SP_UUID,
+            self._config.get(config.ENGINE, const.SP_UUID),
+        )
+        self.environment.setdefault(
             ohostedcons.StorageEnv.SD_UUID,
             self._config.get(config.ENGINE, const.SD_UUID),
         )
@@ -160,7 +164,7 @@ class Plugin(plugin.PluginBase):
         index = 0
         for img in img_list:
             try:
-                volumeslist = cli.Volume.getList(
+                volumeslist = cli.Image.getVolumes(
                     imageID=img,
                     storagepoolID=spUUID,
                     storagedomainID=sdUUID,

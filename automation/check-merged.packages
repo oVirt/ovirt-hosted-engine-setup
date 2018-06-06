@@ -2,6 +2,6 @@ make
 autoconf
 gettext-devel
 automake
-ovirt-engine-sdk-python
+python-ovirt-engine-sdk4
 python-pep8
 pyflakes

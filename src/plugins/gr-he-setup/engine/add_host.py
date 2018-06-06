@@ -29,10 +29,6 @@ import socket
 import tempfile
 import time
 
-import ovirtsdk.api
-import ovirtsdk.infrastructure.errors
-import ovirtsdk.xml
-
 from otopi import constants as otopicons
 from otopi import filetransaction
 from otopi import plugin
@@ -46,6 +42,8 @@ from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import engineapi
 from ovirt_hosted_engine_setup import pkissh
 from ovirt_hosted_engine_setup import vds_info
+
+import ovirtsdk4 as sdk4
 
 
 def _(m):
@@ -63,11 +61,10 @@ class Plugin(plugin.PluginBase):
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
-        self._ovirtsdk_xml = ovirtsdk.xml
         self._interactive_admin_pwd = True
         self._host_deploy_conf = None
 
-    def _wait_host_ready(self, engine_api, host):
+    def _wait_host_ready(self, engine_api, hostname):
         self.logger.info(_(
             'Waiting for the host to become operational in the engine. '
             'This may take several minutes...'
@@ -78,9 +75,16 @@ class Plugin(plugin.PluginBase):
         while not isUp and tries > 0:
             tries -= 1
             try:
-                state = engine_api.hosts.get(host).status.state
-            except Exception as exc:
-                # Sadly all ovirtsdk errors inherit only from Exception
+                state = ''
+                system_service = engine_api.system_service()
+                hlist = system_service.hosts_service().list()
+                h_id_list = [h.id for h in hlist if h.name == hostname]
+                if h_id_list:
+                    h = system_service.hosts_service().host_service(
+                        h_id_list[0]
+                    ).get()
+                    state = h.status.value
+            except sdk4.Error as exc:
                 self.logger.debug(
                     'Error fetching host state: {error}'.format(
                         error=str(exc),
@@ -128,23 +132,25 @@ class Plugin(plugin.PluginBase):
         """Return True if we should continue trying to add the host"""
         ret = True
         try:
-            cluster = engine_api.clusters.get(
+            system_service = engine_api.system_service()
+            cluster_broker = system_service.clusters_service().cluster_service(
                 self.environment[
                     ohostedcons.EngineEnv.HOST_CLUSTER_NAME
                 ]
             )
-            h = engine_api.hosts.get(host)
+            h = system_service.hosts_service().host_service(host)
             required_networks = set(
                 [
-                    rn.get_id()
-                    for rn in cluster.networks.list(required=True)
+                    rn.id
+                    for rn in cluster_broker.networks_service().list()
+                    if rn.required
                 ]
             )
             configured_networks = set(
                 [
-                    nic.get_network().get_id()
-                    for nic in h.nics.list()
-                    if nic.get_network()
+                    nic.network.id
+                    for nic in h.nics_service().list()
+                    if nic.network
                 ]
             )
             if (
@@ -152,8 +158,10 @@ class Plugin(plugin.PluginBase):
                 required_networks > configured_networks
             ):
                 tbc = required_networks - configured_networks
+                networks_service = system_service.networks_service()
                 rnet = [
-                    engine_api.networks.get(id=rn).get_name() for rn in tbc
+                    networks_service.network_service(rn).get().name
+                    for rn in tbc
                 ]
                 self.dialog.note(
                     _(
@@ -244,8 +252,7 @@ class Plugin(plugin.PluginBase):
                         )
                     )
 
-        except Exception as exc:
-            # Sadly all ovirtsdk errors inherit only from Exception
+        except sdk4.Error as exc:
             self.logger.debug(
                 'Error fetching the network configuration: {error}'.format(
                     error=str(exc),
@@ -256,24 +263,27 @@ class Plugin(plugin.PluginBase):
     def _wait_cluster_cpu_ready(self, engine_api, cluster_name):
         tries = self.VDSM_RETRIES
         cpu = None
-        while cpu is None and tries > 0:
+        cluster = None
+        while not cpu and tries > 0:
             tries -= 1
-            cluster = engine_api.clusters.get(cluster_name)
-            cpu = cluster.get_cpu()
+            system_service = engine_api.system_service()
+
+            cluster_list = [
+                c for c in system_service.clusters_service().list()
+                if c.name == cluster_name
+            ]
+            if cluster_list:
+                cluster = cluster_list[0]
+                cpu = cluster.cpu
+
             if cpu is None:
-                self.logger.debug(
-                    'cluster {cluster} cluster.__dict__ {cdict}'.format(
-                        cluster=cluster,
-                        cdict=cluster.__dict__,
-                    )
-                )
                 if tries % 30 == 0:
                     self.logger.info(
                         _(
                             "Waiting for cluster '{name}' "
                             "to become operational..."
                         ).format(
-                            name=cluster.name,
+                            name=cluster_name,
                         )
                     )
                 time.sleep(self.VDSM_DELAY)
@@ -295,10 +305,17 @@ class Plugin(plugin.PluginBase):
         )
         tries = self.VDSM_RETRIES
         gluster_service = False
+        cluster = None
         while not gluster_service and tries > 0:
             tries -= 1
-            cluster = engine_api.clusters.get(cluster_name)
-            gluster_service = cluster.get_gluster_service()
+            system_service = engine_api.system_service()
+            cluster_list = system_service.clusters_service().list()
+            cluster_flist = [c for c in cluster_list if c.name == cluster_name]
+            if cluster_flist:
+                cluster = cluster_flist[0]
+            if not cluster:
+                raise RuntimeError(_('Failed getting cluster info'))
+            gluster_service = cluster.gluster_service
             if not gluster_service:
                 self.logger.debug(
                     'cluster {cluster} cluster.__dict__ {cdict}'.format(
@@ -329,12 +346,13 @@ class Plugin(plugin.PluginBase):
         updated = False
         while not updated and tries > 0:
             tries -= 1
-            mgmt_network = engine_api.networks.get(
-                id=network_id
-            )
+            system_service = engine_api.system_service()
+            mgmt_network = system_service.networks_service().network_service(
+                network_id
+            ).get()
 
             svlanid = None
-            vlan = mgmt_network.get_vlan()
+            vlan = mgmt_network.vlan
             if vlan is None:
                 self.logger.debug(
                     'network {network} network.__dict__ {ndict}'.format(
@@ -343,7 +361,7 @@ class Plugin(plugin.PluginBase):
                     )
                 )
             else:
-                svlanid = vlan.get_id()
+                svlanid = vlan.id
                 self.logger.debug('vlan_id: {id}'.format(id=svlanid))
 
             if svlanid == vlan_id:
@@ -498,6 +516,7 @@ class Plugin(plugin.PluginBase):
         cluster_name = None
         default_cluster_name = 'Default'
         engine_api = engineapi.get_engine_api(self)
+        system_service = engine_api.system_service()
         added_to_cluster = False
         while not added_to_cluster:
             try:
@@ -513,8 +532,8 @@ class Plugin(plugin.PluginBase):
                 )
                 if cluster_name is not None:
                     if cluster_name not in [
-                        c.get_name()
-                        for c in engine_api.clusters.list()
+                        c.name
+                        for c in system_service.clusters_service().list()
                     ]:
                         raise RuntimeError(
                             _(
@@ -525,8 +544,8 @@ class Plugin(plugin.PluginBase):
                         )
                 else:
                     cluster_l = [
-                        c.get_name()
-                        for c in engine_api.clusters.list()
+                        c.name
+                        for c in system_service.clusters_service().list()
                     ]
                     cluster_name = (
                         default_cluster_name if default_cluster_name in
@@ -547,7 +566,17 @@ class Plugin(plugin.PluginBase):
                     self.environment[
                         ohostedcons.EngineEnv.HOST_CLUSTER_NAME
                     ] = cluster_name
-                cluster = engine_api.clusters.get(cluster_name)
+                cluster_list = system_service.clusters_service().list(
+                    follow='networks'
+                )
+                cluster_flist = [
+                    c for c in cluster_list if c.name == cluster_name
+                ]
+                cluster = None
+                if cluster_flist:
+                    cluster = cluster_flist[0]
+                if not cluster:
+                    raise RuntimeError(_('Failed getting cluster info'))
 
                 conn = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
                 caps = vds_info.capabilities(conn)
@@ -562,18 +591,28 @@ class Plugin(plugin.PluginBase):
                     self.logger.debug(
                         "Getting engine's management network via engine's APIs"
                     )
-                    cluster_mgmt_network = cluster.networks.get(
-                        name=self.environment[
-                            ohostedcons.NetworkEnv.BRIDGE_NAME]
+                    cluster_mgmt_network_list = [
+                        n for n in cluster.networks
+                        if n.name == self.environment[
+                            ohostedcons.NetworkEnv.BRIDGE_NAME
+                        ]
+                    ]
+                    cluster_mgmt_network = None
+                    if cluster_mgmt_network_list:
+                        cluster_mgmt_network = cluster_mgmt_network_list[0]
+                    if not cluster_mgmt_network:
+                        raise RuntimeError(_(
+                            'Failed getting cluster management network {n}'
+                        ))
+
+                    mgmt_network_id = cluster_mgmt_network.id
+                    mgmt_network_service = system_service.networks_service(
+                    ).network_service(
+                        cluster_mgmt_network.id
                     )
-                    mgmt_network_id = cluster_mgmt_network.get_id()
-                    mgmt_network = engine_api.networks.get(
-                        id=mgmt_network_id
-                    )
-                    mgmt_network.set_vlan(
-                        self._ovirtsdk_xml.params.VLAN(id=vlan_id)
-                    )
-                    mgmt_network.update()
+                    cluster_mgmt_network.vlan.id = vlan_id
+                    mgmt_network_service.update(cluster_mgmt_network)
+
                     self._wait_network_vlan_ready(
                         engine_api,
                         mgmt_network_id,
@@ -586,8 +625,11 @@ class Plugin(plugin.PluginBase):
                     self.logger.debug(
                         "Configuring the cluster for gluster service"
                     )
-                    cluster.set_gluster_service(True)
-                    cluster.update()
+                    cluster.gluster_service = True
+                    cluster_service = system_service.clusters_service(
+                    ).cluster_service(cluster.id)
+                    cluster_service.update(cluster)
+
                     c, gluster_ready = self._wait_gluster_service_ready(
                         engine_api,
                         cluster_name
@@ -599,8 +641,9 @@ class Plugin(plugin.PluginBase):
 
                 self.logger.debug('Adding the host to the cluster')
 
-                engine_api.hosts.add(
-                    self._ovirtsdk_xml.params.Host(
+                hosts_service = engine_api.system_service().hosts_service()
+                hosts_service.add(
+                    sdk4.types.Host(
                         name=self.environment[
                             ohostedcons.EngineEnv.APP_HOST_NAME
                         ],
@@ -610,8 +653,9 @@ class Plugin(plugin.PluginBase):
                             ohostedcons.NetworkEnv.HOST_NAME
                         ],
                         cluster=cluster,
-                        ssh=self._ovirtsdk_xml.params.SSH(
-                            authentication_method='publickey',
+                        ssh=sdk4.types.Ssh(
+                            authentication_method=sdk4.types.
+                            SshAuthenticationMethod('publickey'),
                             port=self.environment[
                                 ohostedcons.NetworkEnv.SSHD_PORT
                             ],
@@ -622,7 +666,7 @@ class Plugin(plugin.PluginBase):
                     )
                 )
                 added_to_cluster = True
-            except ovirtsdk.infrastructure.errors.RequestError as e:
+            except sdk4.Error as e:
                 self.logger.debug(
                     'Cannot add the host to cluster {cluster}'.format(
                         cluster=cluster_name,
@@ -672,12 +716,12 @@ class Plugin(plugin.PluginBase):
                     cluster_name
                 )
                 self.logger.debug(cpu.__dict__)
-                cpu.set_id(
-                    self.environment[ohostedcons.VDSMEnv.ENGINE_CPU]
-                )
-                cluster.set_cpu(cpu)
-                cluster.update()
-            except ovirtsdk.infrastructure.errors.RequestError as e:
+                cpu.type = self.environment[ohostedcons.VDSMEnv.ENGINE_CPU]
+                cluster.cpu = cpu
+                engine_api.system_service().clusters_service().cluster_service(
+                    cluster.id
+                ).update(cluster)
+            except sdk4.Error as e:
                 self.logger.debug(
                     'Cannot set CPU level of cluster {cluster}'.format(
                         cluster=cluster_name,
@@ -693,7 +737,7 @@ class Plugin(plugin.PluginBase):
                         details=e.detail
                     )
                 )
-        engine_api.disconnect()
+        engine_api.close()
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLEANUP,

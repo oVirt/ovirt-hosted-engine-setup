@@ -128,8 +128,10 @@ class Plugin(plugin.PluginBase):
             'Authz extensions configured on fs: {l}'.format(l=authz_ext)
         )
         engine_api = engineapi.get_engine_api(self)
+        system_service = engine_api.system_service()
+        domains_service = system_service.domains_service()
         eng_authz_domains = set([
-            d.get_name() for d in engine_api.domains.list()
+            d.name for d in domains_service.list()
         ])
         self.logger.debug(
             'Authz domains configured on the engine: {l}'.format(

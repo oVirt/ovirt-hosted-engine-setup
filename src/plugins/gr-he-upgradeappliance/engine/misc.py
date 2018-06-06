@@ -26,9 +26,6 @@ VM new disk plugin.
 import gettext
 import time
 
-from ovirtsdk.infrastructure import brokers
-from ovirtsdk.xml import params
-
 from otopi import context as otopicontext
 from otopi import plugin
 from otopi import util
@@ -42,6 +39,8 @@ from ovirt_hosted_engine_ha.lib import upgrade
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import engineapi
 from ovirt_hosted_engine_setup import vm_status
+
+import ovirtsdk4 as sdk4
 
 
 def _(m):
@@ -107,9 +106,12 @@ class Plugin(plugin.PluginBase):
         while not completed and tries > 0:
             tries -= 1
             try:
-                state = engine_api.disks.get(id=d_img_id).status.state
-            except Exception as exc:
-                # Sadly all ovirtsdk errors inherit only from Exception
+                system_service = engine_api.system_service()
+                disks_service = system_service.disks_service()
+                disk_service = disks_service.disk_service(d_img_id)
+                disk = disk_service.get()
+                state = disk.status.value
+            except sdk4.Error as exc:
                 self.logger.debug(
                     'Error fetching host state: {error}'.format(
                         error=str(exc),
@@ -173,16 +175,22 @@ class Plugin(plugin.PluginBase):
 
         my_host_id = None
         my_host_uuid = self._get_host_uuid()
-        for h in engine_api.hosts.list():
-            if h.get_hardware_information().get_uuid() == my_host_uuid:
-                my_host_id = h.get_id()
+
+        system_service = engine_api.system_service()
+        hosts_service = system_service.hosts_service()
+
+        for h in hosts_service.list():
+            if h.hardware_information.uuid == my_host_uuid:
+                my_host_id = h.id
         if not my_host_id:
             raise(_(
                 'Unable to find this host in the engine, '
                 'please check the backup recovery'
             ))
-        host_broker = engine_api.hosts.get(id=my_host_id)
-        if not host_broker.get_spm().get_status().state == 'spm':
+
+        host_service = system_service.hosts_service().host_service(my_host_id)
+        host = host_service.get()
+        if not host.spm.status.value == 'spm':
             self.logger.error(
                 _(
                     'This host is not the SPM one, please select it as the '
@@ -194,6 +202,7 @@ class Plugin(plugin.PluginBase):
             )
         else:
             self.logger.info(_('This upgrade tool is running on the SPM host'))
+        engine_api.close()
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
@@ -206,17 +215,21 @@ class Plugin(plugin.PluginBase):
     def _check_sd_and_disk_space(self):
         engine_api = engineapi.get_engine_api(self)
         self.logger.debug('Successfully connected to the engine')
-        sd_broker = engine_api.storagedomains.get(
-            id=str(self.environment[ohostedcons.StorageEnv.SD_UUID])
-        )
-        if not sd_broker:
+        system_service = engine_api.system_service()
+        storage_domains_service = system_service.storage_domains_service()
+
+        try:
+            sd_broker = storage_domains_service.storage_domain_service(
+                str(self.environment[ohostedcons.StorageEnv.SD_UUID])
+            ).get()
+        except sdk4.NotFoundError:
             raise RuntimeError(_(
                 'Unable to find the hosted-engine storage domain in the engine'
             ))
-        available = sd_broker.get_available()
-        self.logger.debug('availalbe: {a}'.format(a=available))
-        available_gib = sd_broker.get_available() / 1024 / 1024 / 1024
-        engine_api.disconnect()
+        available = sd_broker.available
+        self.logger.debug('available: {a}'.format(a=available))
+        available_gib = sd_broker.available / 1024 / 1024 / 1024
+        engine_api.close()
         required_gib = int(
             self.environment[ohostedcons.StorageEnv.IMAGE_SIZE_GB]
         )
@@ -342,15 +355,17 @@ class Plugin(plugin.PluginBase):
             _('Hosted-engine configuration is at a compatible level')
         )
         engine_api = engineapi.get_engine_api(self)
+        system_service = engine_api.system_service()
         self.logger.debug('Successfully connected to the engine')
-        elements = engine_api.clusters.list() + engine_api.datacenters.list()
+        elements = system_service.clusters_service().list() + \
+            system_service.data_centers_service().list()
         for e in elements:
-            if isinstance(e, brokers.DataCenter):
+            if isinstance(e, sdk4.types.DataCenter):
                 element_t = 'datacenter'
             else:
                 element_t = 'cluster'
 
-            version = e.get_version()
+            version = e.version
             release = '{ma}.{mi}'.format(
                 ma=version.major,
                 mi=version.minor,
@@ -363,7 +378,7 @@ class Plugin(plugin.PluginBase):
                         'Please fix it before upgrading.'
                     ).format(
                         t=element_t.title(),
-                        name=e.get_name(),
+                        name=e.name,
                         release=release,
                     )
                 )
@@ -373,18 +388,15 @@ class Plugin(plugin.PluginBase):
         self.logger.info(
             _('All the datacenters and clusters are at a compatible level')
         )
-        e_major = engine_api.get_product_info().version.major
-        e_minor = engine_api.get_product_info().version.minor
-        if not e_major:
-            # just for compatibility
-            # see: bz#1405386
-            e_major = engine_api.get_product_info().get_version().major
-            e_minor = engine_api.get_product_info().get_version().minor
+        version = system_service.get().product_info.version
+        e_major = version.major
+        e_minor = version.minor
         if e_major is not None and e_minor is not None:
             self._e_version = '{ma}.{mi}'.format(
                 ma=e_major,
                 mi=e_minor,
             )
+        engine_api.close()
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CUSTOMIZATION,
@@ -468,35 +480,43 @@ class Plugin(plugin.PluginBase):
     )
     def _create_disk(self):
         engine_api = engineapi.get_engine_api(self)
+        system_service = engine_api.system_service()
         now = time.localtime()
-        p_sds = params.StorageDomains(
-            storage_domain=[
-                engine_api.storagedomains.get(
-                    id=str(self.environment[ohostedcons.StorageEnv.SD_UUID])
-                )
-            ]
-        )
+        storage_domains_service = system_service.storage_domains_service()
+        try:
+            sd = storage_domains_service.storage_domain_service(
+                str(self.environment[ohostedcons.StorageEnv.SD_UUID])
+            ).get()
+        except sdk4.NotFoundError:
+            raise RuntimeError(_(
+                'Unable to find the hosted-engine storage domain in the engine'
+            ))
+        p_sds = [
+            sd,
+        ]
+
         description = '{p}{t}'.format(
             p=ohostedcons.Const.BACKUP_DISK_PREFIX,
             t=time.strftime("%Y%m%d%H%M%S", now),
         )
-        disk_param = params.Disk(
+        disks_service = system_service.disks_service()
+        disk_param = sdk4.types.Disk(
             name='virtio-disk0',
             description=description,
             comment=description,
             alias='virtio-disk0',
             storage_domains=p_sds,
-            size=int(
+            provisioned_size=int(
                 self.environment[ohostedcons.Upgrade.BACKUP_SIZE_GB]
             )*1024*1024*1024,
-            interface='virtio',
-            format='raw',
+            interface=sdk4.types.DiskInterface.VIRTIO,
+            format=sdk4.types.DiskFormat.RAW,
             sparse=False,
             bootable=True,
         )
-        disk_broker = engine_api.disks.add(disk_param)
-        d_img_id = disk_broker.get_id()
-        d_vol_id = disk_broker.get_image_id()
+        disk_broker = disks_service.add(disk_param)
+        d_img_id = disk_broker.id
+        d_vol_id = disk_broker.image_id
         self.logger.debug('vol: {v}'.format(v=d_vol_id))
         self.logger.debug('img: {v}'.format(v=d_img_id))
 
@@ -515,9 +535,15 @@ class Plugin(plugin.PluginBase):
         self.environment[
             ohostedcons.Upgrade.BACKUP_VOL_UUID
         ] = d_vol_id
-        engine_api.disks.get(
-            id=self.environment[ohostedcons.Upgrade.BACKUP_IMG_UUID]
-        ).set_active(False)
+
+        disk_service = disks_service.disk_service(
+            self.environment[ohostedcons.Upgrade.BACKUP_IMG_UUID]
+        )
+        disk = disk_service.get()
+        disk.active = False
+        disk_service.update(disk)
+
+        engine_api.close()
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
@@ -528,24 +554,27 @@ class Plugin(plugin.PluginBase):
     )
     def _wait_datacenter_up(self):
         engine_api = engineapi.get_engine_api(self)
+        system_service = engine_api.system_service()
+        hosts_service = system_service.hosts_service()
 
         my_host_id = None
         my_host_uuid = self._get_host_uuid()
-        for h in engine_api.hosts.list():
-            if h.get_hardware_information().get_uuid() == my_host_uuid:
-                my_host_id = h.get_id()
+        for h in hosts_service.list():
+            if h.hardware_information.uuid == my_host_uuid:
+                my_host_id = h.id
         if not my_host_id:
             raise(_(
                 'Unable to find this host in the engine, '
                 'please check the backup recovery'
             ))
-        host_broker = engine_api.hosts.get(id=my_host_id)
+        host_broker = hosts_service.host_service(h.id)
 
-        cluster_broker = engine_api.clusters.get(
-            id=host_broker.get_cluster().get_id()
+        cluster_broker = system_service.clusters_service().cluster_service(
+            host_broker.get().cluster.id
         )
-        dc_broker = engine_api.datacenters.get(
-            id=cluster_broker.get_data_center().get_id()
+
+        dc_broker = system_service.data_centers_service().data_center_service(
+            cluster_broker.get().data_center.id
         )
 
         ready = False
@@ -553,12 +582,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Upgrade.CONFIRM_UPGRADE_SUCCESS
         ] is None
         while not ready:
-            dc_broker = engine_api.datacenters.get(
-                id=cluster_broker.get_data_center().get_id()
-            )
-            host_broker = engine_api.hosts.get(id=my_host_id)
-            dc_status = dc_broker.get_status().state
-            host_status = host_broker.get_status().state
+            dc = dc_broker.get()
+            host = host_broker.get()
+            dc_status = dc.status.value
+            host_status = host.status.value
             if not (dc_status == 'up' and host_status == 'up'):
                 if interactive:
                     rcontinue = self.dialog.queryString(
@@ -586,7 +613,7 @@ class Plugin(plugin.PluginBase):
                     )
             else:
                 ready = True
-        engine_api.disconnect()
+        engine_api.close()
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
@@ -597,14 +624,17 @@ class Plugin(plugin.PluginBase):
     )
     def _closeup(self):
         engine_api = engineapi.get_engine_api(self)
-        sd_broker = engine_api.storagedomains.get(
-            id=str(self.environment[ohostedcons.StorageEnv.SD_UUID])
+        system_service = engine_api.system_service()
+        sd_broker = system_service.storage_domains_service(
+        ).storage_domain_service(
+            str(self.environment[ohostedcons.StorageEnv.SD_UUID])
         )
+
         # registering the backup disk since it has been created after
         # the engine backup was taken
         new_he_disk = None
-        for ud in sd_broker.disks.list(unregistered=True):
-            ud_id = ud.get_id()
+        for ud in sd_broker.disks_service().list(unregistered=True):
+            ud_id = ud.id
             self.logger.debug('unregistered disk: {id}'.format(id=ud_id))
             if ud_id == self.environment[ohostedcons.Upgrade.BACKUP_IMG_UUID]:
                 self.logger.debug('found the engine VM backup disk')
@@ -614,17 +644,20 @@ class Plugin(plugin.PluginBase):
         self.logger.info(_(
             'Registering the hosted-engine backup disk in the DB'
         ))
-        new_disk_broker = sd_broker.disks.add(new_he_disk, unregistered=True)
+        new_disk_broker = sd_broker.disks_service().add(
+            new_he_disk,
+            unregistered=True
+        )
         registered = self._wait_disk_ready(
             engine_api,
-            new_disk_broker.get_id(),
+            new_disk_broker.id,
             True,
         )
         if not registered:
             raise RuntimeError(_(
                 'Failed registering the engine VM backup disk'
             ))
-        engine_api.disconnect()
+        engine_api.close()
 
 
 # vim: expandtab tabstop=4 shiftwidth=4
