@@ -406,18 +406,52 @@
       state: started
       enabled: true
   - name: Wait for the engine to come up on the target VM
-    command: hosted-engine --vm-status --json
-    environment: "{{ CMD_LANG }}"
-    register: health_result
-    until: health_result.rc == 0 and 'health' in health_result.stdout and health_result.stdout|from_json|json_query('*."engine-status"."health"')|first=="good"
-    retries: 120
-    delay: 5
-    changed_when: True
-  - debug: var=health_result
+    block:
+    - name: Check engine VM health
+      command: hosted-engine --vm-status --json
+      environment: "{{ CMD_LANG }}"
+      register: health_result
+      until: health_result.rc == 0 and 'health' in health_result.stdout and health_result.stdout|from_json|json_query('*."engine-status"."health"')|first=="good"
+      retries: 120
+      delay: 5
+      changed_when: True
+    - debug: var=health_result
+    rescue:
+    - name: Check VM status at virt level
+      shell: virsh -r list | grep HostedEngine | grep running
+      environment: "{{ CMD_LANG }}"
+      ignore_errors: true
+      changed_when: true
+      register: vm_status_virsh
+    - debug: var=vm_status_virsh
+    - name: Fail if engine VM is not running
+      fail:
+        msg: "Engine VM is not running, please check vdsm logs"
+      when: vm_status_virsh.rc != 0
+    - name: Get target engine VM IPv4 address
+      shell: getent ahostsv4 {{ FQDN }} | cut -d' ' -f1 | uniq
+      environment: "{{ CMD_LANG }}"
+      register: engine_vm_ipv4
+      changed_when: True
+    - name: Get VDSM's target engine VM stats
+      command: vdsm-client VM getStats vmID={{ he_vm_details.vm.id }}
+      environment: "{{ CMD_LANG }}"
+      register: engine_vdsm_stats
+      changed_when: true
+    - name: Convert stats to JSON format
+      set_fact: json_stats={{ engine_vdsm_stats.stdout|from_json }}
+    - name: Get target engine VM IPv4 address from VDSM stats
+      set_fact: engine_vm_ip_vdsm={{ json_stats[0].guestIPs }}
+    - debug: var=engine_vm_ip_vdsm
+    - name: Fail if Engine IP is different from engine's FQDN resolved IP
+      fail:
+        msg: "Engine VM IP address is {{ engine_vm_ip_vdsm }} while the engine's FQDN {{ FQDN }} resolves to {{ engine_vm_ipv4.stdout_lines[0] }}. If you are using DHCP, check your DHCP reservation configuration"
+      when: engine_vm_ip_vdsm != engine_vm_ipv4.stdout_lines[0]
   - name: Get target engine VM IPv4 address
     shell: getent ahostsv4 {{ FQDN }} | cut -d' ' -f1 | uniq
     environment: "{{ CMD_LANG }}"
     register: engine_vm_ipv4
+    when: engine_vm_ipv4 is not defined
     changed_when: True
   # Workaround for ovn-central being configured with the address of the bootstrap VM.
   # Keep this aligned with:
