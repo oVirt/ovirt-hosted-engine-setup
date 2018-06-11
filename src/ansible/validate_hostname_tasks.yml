@@ -87,4 +87,15 @@
       msg: >
         The FQDN proposed for the engine VM resolves on this host
     when: r_fqdn_address in ansible_all_ipv4_addresses
+  - name: Check http/https proxy
+    fail:
+      msg: >
+        Your system is configured to use a proxy, please
+        add an exception for {{ url }} with no_proxy directive.
+    when: url is proxied
+    loop_control:
+      loop_var: url
+    with_items:
+      - "http://{{ FQDN }}/"
+      - "https://{{ FQDN }}/"
   when: FQDN is defined

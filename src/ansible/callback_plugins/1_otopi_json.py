@@ -99,6 +99,9 @@ class CallbackModule(CallbackBase):
             self.write_msg(msg_type, error)
             del result._result['exception']
         if result._task.loop and 'results' in result._result:
+            for r in result._result['results']:
+                if 'failed' in r and r['failed']:
+                    self.write_msg(msg_type, r)
             self._process_items(result)
         else:
             if delegated_vars:

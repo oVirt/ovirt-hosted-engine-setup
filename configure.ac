@@ -155,6 +155,7 @@ AC_CONFIG_FILES([
 	src/ansible/library/Makefile
 	src/ansible/module_utils/Makefile
 	src/ansible/templates/Makefile
+	src/ansible/test_plugins/Makefile
 	templates/Makefile
 	tests/Makefile
 ])
