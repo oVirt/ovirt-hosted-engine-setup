@@ -54,6 +54,7 @@ SUBDIRS = \
 	library \
 	module_utils \
 	templates \
+	test_plugins \
 	$(NULL)
 
 CLEANFILES = \
