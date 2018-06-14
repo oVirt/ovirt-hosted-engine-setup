@@ -24,6 +24,7 @@ from __future__ import division
 from __future__ import print_function
 
 import io
+import json
 import logging
 import os
 import pprint
@@ -249,8 +250,19 @@ class CallbackModule(CallbackBase):
             CallbackModule._logger.setLevel(logging.DEBUG)
         self.logger = CallbackModule._logger
 
+    def _pretty_logging(self, obj):
+        try:
+            return json.dumps(obj, indent=4, sort_keys=True)
+        except Exception:
+            return obj
+
     def _collect_vars_changes(self, hostname, newvars):
         res = []
+        do_not_append_vars = [
+            'vars',
+            'hostvars',
+            'ansible_facts',
+        ]
         for k, v in newvars.items():
             if (
                 hostname not in self._vars_cache or
@@ -258,15 +270,16 @@ class CallbackModule(CallbackBase):
                 str(v) != str(self._vars_cache[hostname][k]) or
                 not isinstance(v, type(self._vars_cache[hostname][k]))
             ):
-                res.append(
-                    u'var changed: host "{h}" var "{k}" type "{t}" '
-                    u'value: "{v}"'.format(
-                        h=hostname,
-                        k=k,
-                        t=type(v),
-                        v=str(v),
+                if k not in do_not_append_vars:
+                    res.append(
+                        u'var changed: host "{h}" var "{k}" type "{t}" '
+                        u'value: "{v}"'.format(
+                            h=hostname,
+                            k=k,
+                            t=type(v),
+                            v=self._pretty_logging(v),
+                        )
                     )
-                )
         return res
 
     def _update_vars_cache(self):
@@ -298,13 +311,14 @@ class CallbackModule(CallbackBase):
                 self.logger.debug(line)
 
     def dump_obj(self, obj):
+        no_debug_attr = [
+            '__doc__',
+            '__hash__',
+        ]
         name = repr(obj)[:100]
         return u'\n'.join([
             u'type: {v}'.format(v=type(obj)),
             u'str: {v}'.format(v=str(obj)[:300]),
-            u'repr: {v}'.format(v=repr(obj)[:300]),
-            u'dir: {v}'.format(v=dir(obj)),
-            u'pprint: {v}'.format(v=pprint.pformat(obj)[:300]),
         ] + [
             u'{n}.{a}: {o}'.format(
                 n=name,
@@ -312,7 +326,7 @@ class CallbackModule(CallbackBase):
                 o=pprint.pformat(getattr(obj, attr))
             )
             for attr in dir(obj)
-            if not callable(getattr(obj, attr))
+            if not callable(getattr(obj, attr)) and attr not in no_debug_attr
         ])
 
     def __init__(self):
@@ -414,11 +428,6 @@ class CallbackModule(CallbackBase):
             'ansible_task': result._task.name,
         }
         self.logger.info(u"ansible ok {v}".format(v=data))
-        self.logger.info(
-            u"ansible ok result._result {v}".format(
-                v=self.dump_obj(result._result)
-            )
-        )
 
     def v2_runner_on_skipped(self, result, **kwargs):
         self._update_vars_cache()
