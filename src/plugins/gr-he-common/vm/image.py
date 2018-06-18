@@ -72,7 +72,7 @@ class Plugin(plugin.PluginBase):
                 ] = self.dialog.queryString(
                     name='ovehosted_vmenv_image',
                     note=_(
-                        'Please specify the size of the VM disk in GB: '
+                        'Please specify the size of the VM disk in GiB: '
                         '[@DEFAULT@]: '
                     ),
                     prompt=True,
