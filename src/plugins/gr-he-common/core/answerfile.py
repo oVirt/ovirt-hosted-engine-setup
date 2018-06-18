@@ -28,8 +28,8 @@ import os
 
 from io import StringIO
 
-from otopi import constants as otopicons
 from otopi import common
+from otopi import constants as otopicons
 from otopi import plugin
 from otopi import util
 

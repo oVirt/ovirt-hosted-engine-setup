@@ -27,8 +27,8 @@ import re
 from otopi import plugin
 from otopi import util
 
-from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import ansible_utils
+from ovirt_hosted_engine_setup import constants as ohostedcons
 
 
 def _(m):

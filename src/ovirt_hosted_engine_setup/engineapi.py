@@ -22,11 +22,11 @@
 
 import gettext
 
-from ovirt_hosted_engine_setup import constants as ohostedcons
-
 import ovirtsdk.api
 import ovirtsdk.infrastructure.errors
 import ovirtsdk.xml
+
+from ovirt_hosted_engine_setup import constants as ohostedcons
 
 
 def _(m):

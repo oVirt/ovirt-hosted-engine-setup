@@ -30,9 +30,9 @@ import time
 from otopi import plugin
 from otopi import util
 
-from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import appliance_esetup
 from ovirt_hosted_engine_setup import check_liveliness
+from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import mixins
 
 

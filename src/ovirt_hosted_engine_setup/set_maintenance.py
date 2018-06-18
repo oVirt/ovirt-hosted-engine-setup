@@ -26,8 +26,8 @@ import socket
 import sys
 
 from ovirt_hosted_engine_ha.client import client
-from ovirt_hosted_engine_ha.env import config_constants as const
 from ovirt_hosted_engine_ha.env import config
+from ovirt_hosted_engine_ha.env import config_constants as const
 
 
 def _(m):

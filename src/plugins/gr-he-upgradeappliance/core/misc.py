@@ -30,10 +30,10 @@ from otopi import util
 
 from vdsm.client import ServerError
 
-from ovirt_hosted_engine_ha.env import config_constants as const
 from ovirt_hosted_engine_ha.env import config
-from ovirt_hosted_engine_ha.lib import util as ohautil
+from ovirt_hosted_engine_ha.env import config_constants as const
 from ovirt_hosted_engine_ha.lib import image
+from ovirt_hosted_engine_ha.lib import util as ohautil
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import util as ohostedutil

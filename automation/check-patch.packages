@@ -11,5 +11,5 @@ ovirt-engine-sdk-python
 python-dateutil
 pyflakes
 pytest
-python-isort
+python2-isort
 python-pep8

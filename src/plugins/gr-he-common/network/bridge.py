@@ -34,8 +34,8 @@ from vdsm.client import ServerError
 
 from ovirt_setup_lib import hostname as osetuphostname
 
-from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import ansible_utils
+from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import vds_info
 
 

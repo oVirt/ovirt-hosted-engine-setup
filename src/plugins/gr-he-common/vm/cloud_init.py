@@ -36,8 +36,8 @@ from otopi import constants as otopicons
 from otopi import plugin
 from otopi import util
 
-from ovirt_setup_lib import hostname as osetuphostname
 from ovirt_setup_lib import dialog
+from ovirt_setup_lib import hostname as osetuphostname
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import util as ohostedutil

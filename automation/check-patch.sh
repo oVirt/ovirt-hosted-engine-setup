@@ -1,4 +1,5 @@
 #!/bin/bash -ex
+
 autoreconf -ivf
 ./configure
 make test

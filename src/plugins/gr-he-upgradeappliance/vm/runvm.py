@@ -34,8 +34,8 @@ from otopi import util
 
 from vdsm.client import ServerError
 
-from ovirt_hosted_engine_ha.env import config_constants as const
 from ovirt_hosted_engine_ha.env import config
+from ovirt_hosted_engine_ha.env import config_constants as const
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import tasks
