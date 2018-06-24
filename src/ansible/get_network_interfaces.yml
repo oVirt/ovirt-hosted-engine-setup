@@ -28,8 +28,6 @@
         ) and (
           hostvars[inventory_hostname]['ansible_' + item]['type'] != 'bridge'
         ) and (
-          hostvars[inventory_hostname]['ansible_' + item]['active'] == true
-        ) and (
           hostvars[inventory_hostname]['ansible_' + item]['ipv4'] is defined
         ) and (
           (
