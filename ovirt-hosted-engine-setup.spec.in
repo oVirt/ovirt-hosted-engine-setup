@@ -36,8 +36,6 @@ BuildArch:      noarch
 
 Requires:       bind-utils
 Requires:       genisoimage
-Requires:       iptables
-Requires:       iptables-services
 Requires:       libselinux-python
 Requires:       lsof
 Requires:       openssh-server
