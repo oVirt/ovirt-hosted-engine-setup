@@ -6,3 +6,4 @@
     he_initial_clean: true
   roles:
     - role: oVirt.hosted-engine-setup
+  tags: always

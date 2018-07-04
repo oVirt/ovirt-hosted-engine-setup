@@ -214,7 +214,9 @@ class Plugin(plugin.PluginBase):
         }
         ah = ansible_utils.AnsibleHelper(
             playbook_name=ohostedcons.FileLocations.HE_AP_ISCSI_DISCOVER,
+            # Remove extra_vars when tags are supported in HE ansible role
             extra_vars=iscsi_discover_vars,
+            tags='he_setup_iscsi_discover',
         )
         self.logger.info(_('Discovering iSCSI targets'))
         r = ah.run()
@@ -317,7 +319,9 @@ class Plugin(plugin.PluginBase):
         }
         ah = ansible_utils.AnsibleHelper(
             playbook_name=ohostedcons.FileLocations.HE_AP_ISCSI_GETDEVICES,
+            # Remove extra_vars when tags are supported in HE ansible role
             extra_vars=iscsi_getdevices_vars,
+            tags='he_setup_iscsi_getdevices'
         )
         self.logger.info(_('Getting iSCSI LUNs list'))
         r = ah.run()
@@ -349,7 +353,9 @@ class Plugin(plugin.PluginBase):
         }
         ansible_helper = ansible_utils.AnsibleHelper(
             playbook_name=ohostedcons.FileLocations.HE_AP_FC_GETDEVICES,
+            # Remove extra_vars when tags are supported in HE ansible role
             extra_vars=fc_getdevices_vars,
+            tags='he_setup_fc_getdevices',
         )
         self.logger.info(_('Getting Fibre Channel LUNs list'))
         r = ansible_helper.run()
@@ -758,6 +764,7 @@ class Plugin(plugin.PluginBase):
             ah = ansible_utils.AnsibleHelper(
                 playbook_name=ohostedcons.FileLocations.HE_AP_CREATE_SD,
                 extra_vars=storage_domain_vars,
+                tags='full_setup',
             )
             self.logger.info(_('Creating Storage Domain'))
             try:
