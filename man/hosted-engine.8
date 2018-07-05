@@ -74,11 +74,14 @@ If type is given the key is set in the file from the specified type.
 This is useful if the key is duplicated in several configuration files.
 .RE
 .RS 7
-Valid types are: broker, he_conf.
+Valid types are: he_local, he_shared, ha, broker.
 .RE
 .RS 7
-New values for he_conf (hosted-engine.conf file) will be used by all hosts (re)deployed after the configuration change.
+New values for he_shared (hosted-engine.conf source on the shared storage)
+will be used by all hosts (re)deployed after the configuration change.
 Currently running hosts will still use the old values.
+New values for he_local will be set in the local instance of
+he configuration file on the local host.
 .RE
 .IP "\fB\-\-get-shared-config key [\-\-type=<type>]\fP"
 Get the specified key in the shared storage configuration. \&
@@ -88,7 +91,7 @@ If type is given the key is retrieved from the file of the specified type.
 This is useful if the key is duplicated in several configuration files.
 .RE
 .RS 7
-Valid types are: broker, he_conf.
+Valid types are: he_local, he_shared, ha, broker.
 .RE
 .IP "\fB\-\-clean_metadata [\-\-force\-cleanup] [\-\-host\-id=<id>]\fP"
 Remove host's metadata from the global status database.\&
