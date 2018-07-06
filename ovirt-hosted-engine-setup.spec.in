@@ -51,6 +51,7 @@ Requires:       python-libguestfs
 Requires:       python-six
 Requires:       sanlock >= 2.8
 Requires:       sanlock-python >= 2.8
+Requires:       socat
 Requires:       sudo
 Requires:       libvirt-client
 Requires:       m2crypto
