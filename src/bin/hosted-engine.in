@@ -90,7 +90,7 @@ Usage: $0 [--help] <command> [<command-args>]
         --disconnect-storage
             Disconnect the hosted engine storage domain
         --console
-            Open the configured console using virsh on localhost
+            Open the configured serial console
         --set-maintenance --mode=<mode>
             Set maintenance status to the specified mode (global/local/none)
         --set-shared-config key value [--type=<type>]
@@ -385,17 +385,25 @@ return ;}
 cmd_console() {
     [ "$1" == "--help" ] && { cat << __EOF__
 Usage: $0 --console
-    Open the configured console using virsh on localhost
+    Open the configured serial console.
 __EOF__
 return ;}
 
     status=$(${VDSMHELPER} checkVmStatus ${vmid})
     if [[ $status == *"Up"* ]]; then
         echo "The engine VM is running on this host"
-        exec /usr/bin/virsh \
-            -c qemu:///system?authfile=${VIRSH_AUTH} \
-            console \
-            HostedEngine
+        hasOvirtVmconsole=$(virsh -r dumpxml ${vmid} | grep -c "/var/run/ovirt-vmconsole-console")
+        if [ $hasOvirtVmconsole -eq 0 ]; then
+            exec /usr/bin/virsh \
+                -c qemu:///system?authfile=${VIRSH_AUTH} \
+                console \
+                HostedEngine
+        else
+            echo "Escape character is ^]"
+            exec /usr/bin/socat \
+                UNIX-CONNECT:/var/run/ovirt-vmconsole-console/${vmid}.sock,user=ovirt-vmconsole \
+                STDIO,raw,echo=0,escape=29
+        fi
     elif [ -n "${status}" ]; then
         echo "The engine VM is on this host but its status is ${status}"
         exit 1
