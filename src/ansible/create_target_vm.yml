@@ -455,6 +455,10 @@
     - name: Get target engine VM IPv4 address from VDSM stats
       set_fact: engine_vm_ip_vdsm={{ json_stats[0].guestIPs }}
     - debug: var=engine_vm_ip_vdsm
+    - name: Fail if the Engine has no IP address
+      fail:
+        msg: "Engine VM has no IP address. Please check your network configuration"
+      when: engine_vm_ip_vdsm == '' or engine_vm_ip_vdsm is not defined
     - name: Fail if Engine IP is different from engine's FQDN resolved IP
       fail:
         msg: "Engine VM IP address is {{ engine_vm_ip_vdsm }} while the engine's FQDN {{ FQDN }} resolves to {{ engine_vm_ipv4.stdout_lines[0] }}. If you are using DHCP, check your DHCP reservation configuration"
