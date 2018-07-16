@@ -35,8 +35,6 @@
   when: "gluster is defined and 'hosts' in gluster"
 
 - name: "Add additional glusterfs storage domains"
-  async: 50
-  poll: 0
   ignore_errors: true
   ovirt_storage_domains:
       name: "{{ sd.name }}"
@@ -44,7 +42,7 @@
       auth: "{{ ovirt_auth }}"
       data_center: "{{ datacenter_name }}"
       glusterfs:
-        address: "{{ HOST_ADDRESS }}"
+        address: "{{ STORAGE_DOMAIN_ADDR }}"
         mount_options: "{{ sd.mount_options }}"
         path: "{{ sd.path }}"
   with_items: "{{ gluster.vars.storage_domains }}"
