@@ -8,6 +8,17 @@
       LC_MESSAGES: en_US.UTF-8
       LC_ALL: en_US.UTF-8
   tasks:
+  - name: Check firewalld status
+    systemd:
+      name: firewalld
+    register: firewalld_s
+  - name: Enforce firewalld status
+    fail:
+      msg: >
+        firewalld is required to be enabled and active in order
+        to correctly deploy hosted-engine.
+        Please check, fix accordingly and re-deploy.
+    when: firewalld_s.status.SubState != 'running' or firewalld_s.status.LoadState == 'masked'
   - name: Stop libvirt service
     service:
       name: libvirtd
