@@ -279,7 +279,7 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.EngineEnv.HOST_CLUSTER_NAME
             ],
         }
-        inventory_source = 'localhost, {fqdn}'.format(
+        inventory_source = 'localhost,{fqdn}'.format(
             fqdn=self.environment[
                 ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
             ]

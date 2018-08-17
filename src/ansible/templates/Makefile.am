@@ -31,9 +31,11 @@ dist_ansibletemplates_DATA = \
 	heanswers.conf.j2 \
 	ifcfg-eth0-dhcp.j2 \
 	ifcfg-eth0-static.j2 \
+	ifcfg-eth0-static-ipv6.j2 \
 	hosted-engine.conf.j2 \
 	meta-data.j2 \
 	user-data.j2 \
+	network-config-dhcp6.j2 \
 	version.j2 \
 	vm.conf.j2 \
 	$(NULL)

@@ -75,13 +75,18 @@ def check_is_pingable(base, address):
     """
     Ensure that an address is pingable
     """
+    cmd = [
+        base.command.get('ping'),
+        '-c',
+        '1',
+    ]
+    if ':' in address:
+        cmd.append('-6')
+
+    cmd.append(str(address))
+
     rc, stdout, stderr = base.execute(
-        (
-            base.command.get('ping'),
-            '-c',
-            '1',
-            str(address),
-        ),
+        tuple(cmd),
         raiseOnError=False,
     )
     if rc == 0:

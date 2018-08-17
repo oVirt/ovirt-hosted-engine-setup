@@ -1,8 +1,22 @@
 ---
+- name: Initial validations
+  hosts: localhost
+  connection: local
+  vars:
+    MGMT_NETWORK: ovirtmgmt
+    CMD_LANG:
+      LANG: en_US.UTF-8
+      LC_MESSAGES: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
+  tasks:
+    - include_tasks: validate_hostname_tasks.yml
+
 - name: Prepare routing rules
   hosts: localhost
   connection: local
   vars:
+    MGMT_NETWORK: ovirtmgmt
+    ipv6_subnet_prefix: fd00:1234:5678:900
     CMD_LANG:
       LANG: en_US.UTF-8
       LC_MESSAGES: en_US.UTF-8
@@ -19,6 +33,11 @@
         state: active
       register: virt_net_out
     - debug: var=virt_net_out
+    - name: Check IPv6
+      set_fact:
+        ipv6_deployment: "{{ true if r_host_address != target_address_v4 and r_host_address in target_address_v6_list else false }}"
+    - include_tasks: libvirt_default_net_ipv6_tasks.yml
+      when: ipv6_deployment
       # all of the next is a workaround for a network issue:
       # vdsm installation breaks the routing by defining separate
       # routing table for ovirtmgmt. But we need to enable communication
@@ -26,12 +45,19 @@
     - name: Get libvirt interfaces
       virt_net:
         command: facts
-    - name: Get routing rules
+    - name: Get routing rules, IPv4
       command: ip rule
       environment: "{{ CMD_LANG }}"
-      register: route_rules
+      register: route_rules_ipv4
       changed_when: True
-    - debug: var=route_rules
+    - debug: var=route_rules_ipv4
+    - name: Get routing rules, IPv6
+      command: ip -6 rule
+      environment: "{{ CMD_LANG }}"
+      register: route_rules_ipv6
+      changed_when: True
+      when: ipv6_deployment
+    - debug: var=route_rules_ipv6
     - name: Save bridge name
       set_fact:
         virbr_default: "{{ ansible_libvirt_networks['default']['bridge'] }}"
@@ -47,22 +73,43 @@
       setup:
       when: virt_net_out.changed
       tags: [ 'skip_ansible_lint' ]
-    - name: Prepare CIDR for {{ virbr_default }}
+    - name: Fetch IPv4 CIDR for {{ virbr_default }}
       set_fact:
-        virbr_cidr: "{{ (hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv4']['address']+'/'+hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv4']['netmask']) |ipv4('host/prefix') }}"
-    - name: Add outbound route rules
-      command: ip rule add from {{ virbr_cidr }} priority 101 table main
+        virbr_cidr_ipv4: "{{ (hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv4']['address']+'/'+hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv4']['netmask']) |ipv4('host/prefix') if 'ipv4' in hostvars[inventory_hostname]['ansible_'+virbr_default] else None }}"
+      when: not ipv6_deployment
+    - debug: var=virbr_cidr_ipv4
+    - name: Fetch IPv6 CIDR for {{ virbr_default }}
+      set_fact:
+        virbr_cidr_ipv6: "{{ (hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv6'][0]['address']+'/'+hostvars[inventory_hostname]['ansible_'+virbr_default]['ipv6'][0]['prefix']) |ipv6('host/prefix') if 'ipv6' in hostvars[inventory_hostname]['ansible_'+virbr_default] else None }}"
+      when: ipv6_deployment
+    - debug: var=virbr_cidr_ipv6
+    - name: Add IPv4 outbound route rules
+      command: ip rule add from {{ virbr_cidr_ipv4 }} priority 101 table main
       environment: "{{ CMD_LANG }}"
       register: result
-      when: "\"101:\tfrom \"+virbr_cidr+\" lookup main\" not in route_rules.stdout"
+      when: not ipv6_deployment and "\"101:\tfrom \"+virbr_cidr_ipv4+\" lookup main\" not in route_rules_ipv4.stdout"
       changed_when: True
     - debug: var=result
-    - name: Add inbound route rules
-      command: ip rule add from all to {{ virbr_cidr }} priority 100 table main
+    - name: Add IPv4 inbound route rules
+      command: ip rule add from all to {{ virbr_cidr_ipv4 }} priority 100 table main
       environment: "{{ CMD_LANG }}"
       register: result
       changed_when: True
-      when: "\"100:\tfrom all to \"+virbr_cidr+\" lookup main\" not in route_rules.stdout"
+      when: not ipv6_deployment and "\"100:\tfrom all to \"+virbr_cidr_ipv4+\" lookup main\" not in route_rules_ipv4.stdout"
+    - debug: var=result
+    - name: Add IPv6 outbound route rules
+      command: ip -6 rule add from {{ virbr_cidr_ipv6 }} priority 101 table main
+      environment: "{{ CMD_LANG }}"
+      register: result
+      when: ipv6_deployment and "\"101:\tfrom \"+virbr_cidr_ipv6+\" lookup main\" not in route_rules_ipv6.stdout"
+      changed_when: True
+    - debug: var=result
+    - name: Add IPv6 inbound route rules
+      command: ip -6 rule add from all to {{ virbr_cidr_ipv6 }} priority 100 table main
+      environment: "{{ CMD_LANG }}"
+      register: result
+      changed_when: True
+      when: ipv6_deployment and "\"100:\tfrom all to \"+virbr_cidr_ipv6+\" lookup main\" not in route_rules_ipv6.stdout"
     - debug: var=result
 
 - name: Create hosted engine local vm
@@ -75,7 +122,6 @@
       LC_MESSAGES: en_US.UTF-8
       LC_ALL: en_US.UTF-8
   tasks:
-    - include_tasks: validate_hostname_tasks.yml
     - name: Register the engine FQDN as a host
       add_host:
         name: "{{ FQDN }}"
@@ -157,8 +203,9 @@
         with_items:
           - { src: templates/user-data.j2, dest: "{{ LOCAL_VM_DIR }}/user-data" }
           - { src: templates/meta-data.j2, dest: "{{ LOCAL_VM_DIR }}/meta-data" }
+          - { src: templates/network-config-dhcp6.j2, dest: "{{ LOCAL_VM_DIR }}/network-config" }
       - name: Create ISO disk
-        command: mkisofs -output {{ LOCAL_VM_DIR }}/seed.iso -volid cidata -joliet -rock -input-charset utf-8 {{ LOCAL_VM_DIR }}/meta-data {{ LOCAL_VM_DIR }}/user-data
+        command: mkisofs -output {{ LOCAL_VM_DIR }}/seed.iso -volid cidata -joliet -rock -input-charset utf-8 {{ LOCAL_VM_DIR }}/meta-data {{ LOCAL_VM_DIR }}/user-data {{ LOCAL_VM_DIR + '/network-config' if ipv6_deployment else None}}
         environment: "{{ CMD_LANG }}"
         changed_when: True
       - name: Create local VM

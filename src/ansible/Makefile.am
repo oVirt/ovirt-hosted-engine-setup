@@ -40,6 +40,7 @@ dist_ansible_DATA = \
 	initial_clean.yml \
 	iscsi_discover.yml \
 	iscsi_getdevices.yml \
+	libvirt_default_net_ipv6_tasks.yml \
 	pg_scl.yml \
 	restore_backup.yml \
 	validate_hostname_tasks.yml \

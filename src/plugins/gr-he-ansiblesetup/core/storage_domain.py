@@ -22,6 +22,7 @@
 
 
 import gettext
+import netaddr
 import re
 
 from otopi import plugin
@@ -38,8 +39,6 @@ def _(m):
 @util.export
 class Plugin(plugin.PluginBase):
     """Storage domain plugin."""
-
-    _IPADDR_RE = re.compile(r'(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})')
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
@@ -101,15 +100,16 @@ class Plugin(plugin.PluginBase):
             if address:
                 valid = True
                 for a in address.split(','):
-                    match = self._IPADDR_RE.match(a)
-                    if match:
-                        # TODO: figure out a better regexp
-                        # avoiding this check
+                    try:
+                        netaddr.IPAddress(a)
                         valid &= True
-                        for i in match.groups():
-                            valid &= int(i) >= 0
-                            valid &= int(i) < 255
-                    else:
+                    except ValueError as ve:
+                        self.logger.error(_(
+                            'Invalid IP address: {a} - {ve}'
+                        ).format(
+                            a=a,
+                            ve=ve,
+                        ))
                         valid = False
             if not valid:
                 self.logger.error(_('Address must be a valid IP address'))
@@ -611,14 +611,25 @@ class Plugin(plugin.PluginBase):
                 domain_type == ohostedcons.DomainTypes.NFS or
                 domain_type == ohostedcons.DomainTypes.GLUSTERFS
             ):
-                path_test = '.+:/.+'
+                path_test = '^(.+):/(.+)$'
                 if storage_domain_connection is None:
                     storage_domain_connection = self._query_connection_path()
-                storage_domain_det = storage_domain_connection.split(':')
-                if (
-                    not re.match(path_test, storage_domain_connection) or
-                    len(storage_domain_det) != 2
-                ):
+                pmatch = re.match(path_test, storage_domain_connection.strip())
+                valid = False
+                if pmatch and len(pmatch.groups()) == 2:
+                    t_storage_domain_address = pmatch.group(1)
+                    t_storage_domain_path = pmatch.group(2)
+                    valid = True
+                    if (
+                        ':' in t_storage_domain_address and
+                        (
+                            t_storage_domain_address[0] != '[' or
+                            t_storage_domain_address[-1] != ']'
+                        )
+                    ):
+                        valid = False
+
+                if not valid:
                     msg = _(
                         'Invalid connection path: {p}'
                     ).format(
@@ -628,8 +639,8 @@ class Plugin(plugin.PluginBase):
                     if not interactive:
                         raise RuntimeError(msg)
                     continue
-                storage_domain_address = storage_domain_det[0]
-                storage_domain_path = storage_domain_det[1]
+                storage_domain_address = t_storage_domain_address
+                storage_domain_path = '/{p}'.format(p=t_storage_domain_path)
 
                 if mnt_options is None:
                     mnt_options = self._query_mnt_options(mnt_options)
