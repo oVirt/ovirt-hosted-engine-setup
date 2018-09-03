@@ -64,7 +64,7 @@
         localhost is not a valid FQDN for the engine VM
     when: FQDN in ['localhost', 'localhost.localdomain']
   - name: Get engine FQDN resolution
-    shell: getent ahostsv4 {{ FQDN }} | grep {{ FQDN }}
+    shell: getent ahostsv4 {{ FQDN }} | grep STREAM
     environment:
       LANG: en_US.UTF-8
       LC_MESSAGES: en_US.UTF-8
