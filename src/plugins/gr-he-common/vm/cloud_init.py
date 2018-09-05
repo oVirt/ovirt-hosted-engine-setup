@@ -1059,6 +1059,8 @@ class Plugin(plugin.PluginBase):
                 ].split('.', 1)[1]
 
             engine_restore = ''
+            firewalld_reset = ''
+
             adminPwd = (
                 '     OVESETUP_CONFIG/adminPassword=str:{password}\n'
             ).format(
@@ -1070,6 +1072,19 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.CoreEnv.UPGRADING_APPLIANCE
             ]:
                 engine_restore = (
+                    ' - cp /etc/firewalld/firewalld.conf'
+                    ' /etc/firewalld/firewalld.conf.hebck\n'
+                    ' - if grep -Gq "^\s*IndividualCalls"'
+                    ' /etc/firewalld/firewalld.conf;'
+                    ' then sed -re "s/^\s*(IndividualCalls)\s*='
+                    '\s*(yes|no)/'
+                    ' \\1=yes/" -i.$(date -u +%Y%m%d%H%M%S)'
+                    ' /etc/firewalld/firewalld.conf;'
+                    ' else'
+                    ' echo "IndividualCalls=yes" >>'
+                    ' /etc/firewalld/firewalld.conf;'
+                    ' fi\n'
+                    ' - systemctl restart firewalld &\n'
                     ' - engine-backup --mode=restore --file={backup_file}'
                     ' --log=engine_restore.log --restore-permissions'
                     ' --provision-db {p_dwh_db} {p_reports_db}'
@@ -1097,7 +1112,15 @@ class Plugin(plugin.PluginBase):
                     fail_string=ohostedcons.Const.E_RESTORE_FAIL_STRING,
                 )
                 adminPwd = ''
+                firewalld_reset = (
+                    ' - mv /etc/firewalld/firewalld.conf.hebck'
+                    ' /etc/firewalld/firewalld.conf\n'
+                    ' - systemctl restart firewalld &\n'
+                )
             self.logger.debug('engine_restore: {er}'.format(er=engine_restore))
+            self.logger.debug('firewalld_reset: {fr}'.format(
+                fr=firewalld_reset
+            ))
 
             libgfapi_enable = ''
             if self.environment[ohostedcons.StorageEnv.ENABLE_LIBGFAPI]:
@@ -1133,6 +1156,7 @@ class Plugin(plugin.PluginBase):
                 ' then echo "{success_string}" >{port};'
                 ' else echo "{fail_string}" >{port};'
                 ' fi\n'
+                '{firewalld_reset}'
                 ' - rm {heanswers}\n'
                 ' - setenforce 1\n'
             ).format(
@@ -1150,6 +1174,7 @@ class Plugin(plugin.PluginBase):
                 success_string=ohostedcons.Const.E_SETUP_SUCCESS_STRING,
                 fail_string=ohostedcons.Const.E_SETUP_FAIL_STRING,
                 engine_restore=engine_restore,
+                firewalld_reset=firewalld_reset,
                 libgfapi_enable=libgfapi_enable
             )
 
