@@ -171,16 +171,12 @@
         delay: 10
         changed_when: True
       - debug: var=local_vm_ip
-      - name: Remove eventually entries for the local VM from /etc/hosts
-        lineinfile:
-          dest: /etc/hosts
-          regexp: "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3} .*{{ FQDN }}[ .*]*"
-          state: absent
       - name: Create an entry in /etc/hosts for the local VM
         lineinfile:
           dest: /etc/hosts
-          line: "{{ local_vm_ip.stdout_lines[0] }} {{ FQDN }}"
+          line: "{{ local_vm_ip.stdout_lines[0] }} {{ FQDN }} # temporary entry added by hosted-engine-setup for the bootstrap VM"
           insertbefore: BOF
+          backup: yes
       - name: Wait for SSH to restart on the local VM
         local_action:
           module: wait_for
