@@ -198,19 +198,19 @@ class Plugin(plugin.PluginBase):
             port
     ):
         iscsi_discover_vars = {
-            'FQDN': self.environment[
+            'he_fqdn': self.environment[
                 ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
             ],
-            'HOST_NAME': self.environment[
+            'he_host_name': self.environment[
                 ohostedcons.EngineEnv.APP_HOST_NAME
             ],
-            'ADMIN_PASSWORD': self.environment[
+            'he_admin_password': self.environment[
                 ohostedcons.EngineEnv.ADMIN_PASSWORD
             ],
-            'ISCSI_DISCOVER_USERNAME': discover_username,
-            'ISCSI_DISCOVER_PASSWORD': discover_password,
-            'ISCSI_PORTAL_ADDR': portal,
-            'ISCSI_PORTAL_PORT': port,
+            'he_iscsi_discover_username': discover_username,
+            'he_iscsi_discover_password': discover_password,
+            'he_iscsi_portal_addr': portal,
+            'he_iscsi_portal_port': port,
         }
         ah = ansible_utils.AnsibleHelper(
             playbook_name=ohostedcons.FileLocations.HE_AP_ISCSI_DISCOVER,
@@ -300,20 +300,20 @@ class Plugin(plugin.PluginBase):
 
     def _query_iscsi_lunid(self, username, password, portal, port, target):
         iscsi_getdevices_vars = {
-            'FQDN': self.environment[
+            'he_fqdn': self.environment[
                 ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
             ],
-            'HOST_NAME': self.environment[
+            'he_host_name': self.environment[
                 ohostedcons.EngineEnv.APP_HOST_NAME
             ],
-            'ADMIN_PASSWORD': self.environment[
+            'he_admin_password': self.environment[
                 ohostedcons.EngineEnv.ADMIN_PASSWORD
             ],
-            'ISCSI_USERNAME': username,
-            'ISCSI_PASSWORD': password,
-            'ISCSI_PORTAL_ADDR': portal,
-            'ISCSI_PORTAL_PORT': port,
-            'ISCSI_TARGET': target,
+            'he_iscsi_username': username,
+            'he_iscsi_password': password,
+            'he_iscsi_portal_addr': portal,
+            'he_iscsi_portal_port': port,
+            'he_iscsi_target': target,
         }
         ah = ansible_utils.AnsibleHelper(
             playbook_name=ohostedcons.FileLocations.HE_AP_ISCSI_GETDEVICES,
@@ -337,13 +337,13 @@ class Plugin(plugin.PluginBase):
 
     def _query_fc_lunid(self):
         fc_getdevices_vars = {
-            'FQDN': self.environment[
+            'he_fqdn': self.environment[
                 ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
             ],
-            'HOST_NAME': self.environment[
+            'he_host_name': self.environment[
                 ohostedcons.EngineEnv.APP_HOST_NAME
             ],
-            'ADMIN_PASSWORD': self.environment[
+            'he_admin_password': self.environment[
                 ohostedcons.EngineEnv.ADMIN_PASSWORD
             ]
         }
@@ -728,32 +728,32 @@ class Plugin(plugin.PluginBase):
                 continue
 
             storage_domain_vars = {
-                'FQDN': self.environment[
+                'he_fqdn': self.environment[
                     ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
                 ],
-                'HOST_NAME': self.environment[
+                'he_host_name': self.environment[
                     ohostedcons.EngineEnv.APP_HOST_NAME
                 ],
-                'ADMIN_PASSWORD': self.environment[
+                'he_admin_password': self.environment[
                     ohostedcons.EngineEnv.ADMIN_PASSWORD
                 ],
-                'STORAGE_DOMAIN_NAME': self.environment[
-                    ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
-                ],
-                'STORAGE_DOMAIN_ADDR': storage_domain_address,
-                'STORAGE_DOMAIN_PATH': storage_domain_path,
-                'MOUNT_OPTIONS': mnt_options,
-                'NFS_VERSION': nfs_version,
-                'DOMAIN_TYPE': domain_type,
-                'ISCSI_PORTAL_PORT': iscsi_port,
-                'ISCSI_TARGET': iscsi_target,
-                'LUN_ID': lunid,
-                'ISCSI_USERNAME': iscsi_username,
-                'ISCSI_PASSWORD': iscsi_password,
-                'LOCAL_VM_DIR': self.environment[
+                'he_local_vm_dir': self.environment[
                     ohostedcons.CoreEnv.LOCAL_VM_DIR
                 ],
-                'DISCARD': discard,
+                'he_storage_domain_name': self.environment[
+                    ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
+                ],
+                'he_storage_domain_addr': storage_domain_address,
+                'he_storage_domain_path': storage_domain_path,
+                'he_mount_options': mnt_options,
+                'he_nfs_version': nfs_version,
+                'he_domain_type': domain_type,
+                'he_iscsi_portal_port': iscsi_port,
+                'he_iscsi_target': iscsi_target,
+                'he_lun_id': lunid,
+                'he_iscsi_username': iscsi_username,
+                'he_iscsi_password': iscsi_password,
+                'he_discard': discard,
             }
             ah = ansible_utils.AnsibleHelper(
                 playbook_name=ohostedcons.FileLocations.HE_AP_CREATE_SD,

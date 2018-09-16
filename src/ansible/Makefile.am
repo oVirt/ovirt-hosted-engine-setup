@@ -26,53 +26,21 @@ MAINTAINERCLEANFILES = \
 ansibledir=$(ovirthostedengineansibledir)
 dist_ansible_DATA = \
 	ansible.cfg \
-	auth_revoke.yml \
-	auth_sso.yml \
 	bootstrap_local_vm.yml \
-	clean_localvm_dir.yml \
 	create_storage_domain.yml \
 	create_target_vm.yml \
 	fc_getdevices.yml \
-	fetch_engine_logs.yml \
 	final_clean.yml \
-	get_local_vm_disk_path.yml \
 	get_network_interfaces.yml \
 	initial_clean.yml \
 	iscsi_discover.yml \
 	iscsi_getdevices.yml \
-	libvirt_default_net_ipv6_tasks.yml \
-	pg_scl.yml \
-	restore_backup.yml \
-	validate_hostname_tasks.yml \
 	validate_hostnames.yml \
-	$(NULL)
-
-nodist_ansible_DATA = \
-	install_appliance.yml \
 	$(NULL)
 
 SUBDIRS = \
 	callback_plugins \
-	hooks \
-	library \
-	module_utils \
-	templates \
-	test_plugins \
 	$(NULL)
-
-CLEANFILES = \
-	install_appliance.yml \
-	$(NULL)
-
-EXTRA_DIST = \
-	install_appliance.yml.in \
-	$(NULL)
-
-install_appliance.yml: install_appliance.yml.in
-	$(SED) \
-	-e 's|@APPLIANCE_RPM_PREFIX[@]|$(APPLIANCE_RPM_PREFIX)|g' \
-	-e 's|@APPLIANCE40_RPM_PREFIX[@]|$(APPLIANCE40_RPM_PREFIX)|g' \
-	< $< > $@
 
 all-local: \
 	ansible-syntax-check \

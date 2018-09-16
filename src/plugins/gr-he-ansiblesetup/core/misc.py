@@ -198,83 +198,76 @@ class Plugin(plugin.PluginBase):
     def _closeup(self):
         # TODO: use just env values
         bootstrap_vars = {
-            'APPLIANCE_OVA': self.environment[ohostedcons.VMEnv.OVF],
-            'FQDN': self.environment[
+            'he_appliance_ova': self.environment[ohostedcons.VMEnv.OVF],
+            'he_fqdn': self.environment[
                 ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
             ],
-            'VM_MAC_ADDR': self.environment[
+            'he_vm_mac_addr': self.environment[
                 ohostedcons.VMEnv.MAC_ADDR
             ],
-            'CLOUD_INIT_DOMAIN_NAME': self.environment[
+            'he_cloud_init_domain_name': self.environment[
                 ohostedcons.CloudInit.INSTANCE_DOMAINNAME
             ],
-            'CLOUD_INIT_HOST_NAME': self.environment[
+            'he_cloud_init_host_name': self.environment[
                 ohostedcons.CloudInit.INSTANCE_HOSTNAME
             ],
-            'HOST_NAME': self.environment[
+            'he_host_name': self.environment[
                 ohostedcons.EngineEnv.APP_HOST_NAME
             ],
-            'HOST_ADDRESS': self.environment[
-                ohostedcons.NetworkEnv.HOST_NAME
-            ],
-            'LOCAL_VM_DIR_PATH': ohostedcons.FileLocations.LOCAL_VM_DIR_PATH,
-            'LOCAL_VM_DIR_PREFIX': (
+            'he_local_vm_dir_path': (
+                ohostedcons.FileLocations.LOCAL_VM_DIR_PATH
+            ),
+            'he_local_vm_dir_prefix': (
                 ohostedcons.FileLocations.LOCAL_VM_DIR_PREFIX
             ),
-            'ADMIN_PASSWORD': self.environment[
+            'he_admin_password': self.environment[
                 ohostedcons.EngineEnv.ADMIN_PASSWORD
             ],
-            'APPLIANCE_PASSWORD': self.environment[
+            'he_appliance_password': self.environment[
                 ohostedcons.CloudInit.ROOTPWD
             ],
-            'TIME_ZONE': self.environment[ohostedcons.CloudInit.VM_TZ],
-            'VM_NAME': ohostedcons.Const.HOSTED_ENGINE_VM_NAME,
-            'MEM_SIZE': self.environment[ohostedcons.VMEnv.MEM_SIZE_MB],
-            'CDROM_UUID': self.environment[ohostedcons.VMEnv.CDROM_UUID],
-            'CDROM': '',
-            'NIC_UUID': self.environment[ohostedcons.VMEnv.NIC_UUID],
-            'CONSOLE_UUID': '',
-            'CONSOLE_TYPE': 'vnc',
-            'VIDEO_DEVICE': 'vga',
-            'GRAPHICS_DEVICE': 'vnc',
-            'VCPUS': self.environment[ohostedcons.VMEnv.VCPUS],
-            'MAXVCPUS': self.environment[ohostedcons.VMEnv.MAXVCPUS],
-            'CPU_SOCKETS': '1',
-            'EMULATED_MACHINE': self.environment[
+            'he_time_zone': self.environment[ohostedcons.CloudInit.VM_TZ],
+            'he_cdrom_uuid': self.environment[ohostedcons.VMEnv.CDROM_UUID],
+            'he_nic_uuid': self.environment[ohostedcons.VMEnv.NIC_UUID],
+            'he_maxvcpus': self.environment[ohostedcons.VMEnv.MAXVCPUS],
+            'he_vm_name': ohostedcons.Const.HOSTED_ENGINE_VM_NAME,
+            'he_mem_size_MB': self.environment[ohostedcons.VMEnv.MEM_SIZE_MB],
+            'he_vcpus': self.environment[ohostedcons.VMEnv.VCPUS],
+            'he_emulated_machine': self.environment[
                 ohostedcons.VMEnv.EMULATED_MACHINE
             ],
-            'VM_UUID': self.environment[ohostedcons.VMEnv.LOCAL_VM_UUID],
-            'VM_ETC_HOSTS': self.environment[
+            'he_vm_uuid': self.environment[ohostedcons.VMEnv.LOCAL_VM_UUID],
+            'he_vm_etc_hosts': self.environment[
                 ohostedcons.CloudInit.VM_ETC_HOSTS
             ],
-            'ROOT_SSH_PUBKEY': self.environment[
+            'he_root_ssh_pubkey': self.environment[
                 ohostedcons.CloudInit.ROOT_SSH_PUBKEY
             ],
-            'HOST_IP': self.environment[
+            'he_host_ip': self.environment[
                 ohostedcons.CloudInit.HOST_IP
             ],
-            'ROOT_SSH_ACCESS': self.environment[
+            'he_root_ssh_access': self.environment[
                 ohostedcons.CloudInit.ROOT_SSH_ACCESS
             ].lower(),
-            'ENABLE_LIBGFAPI': self.environment[
+            'he_enable_libgfapi': self.environment[
                 ohostedcons.StorageEnv.ENABLE_LIBGFAPI
             ],
-            'ENABLE_HC_GLUSTER_SERVICE': self.environment[
+            'he_enable_hc_gluster_service': self.environment[
                 ohostedcons.StorageEnv.ENABLE_HC_GLUSTER_SERVICE
             ],
-            'BRIDGE_IF': self.environment[
+            'he_bridge_if': self.environment[
                 ohostedcons.NetworkEnv.BRIDGE_IF
             ],
-            'RESTORE_FROM_FILE': self.environment[
+            'he_restore_from_file': self.environment[
                 ohostedcons.CoreEnv.RESTORE_FROM_FILE
             ],
-            'STORAGE_DOMAIN_NAME': self.environment[
+            'he_storage_domain_name': self.environment[
                 ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
             ],
-            'DATA_CENTER': self.environment[
+            'he_data_center': self.environment[
                 ohostedcons.EngineEnv.HOST_DATACENTER_NAME
             ],
-            'CLUSTER': self.environment[
+            'he_cluster': self.environment[
                 ohostedcons.EngineEnv.HOST_CLUSTER_NAME
             ],
         }
@@ -336,7 +329,7 @@ class Plugin(plugin.PluginBase):
         ah = ansible_utils.AnsibleHelper(
             playbook_name=ohostedcons.FileLocations.HE_AP_FINAL_CLEAN,
             extra_vars={
-                'LOCAL_VM_DIR': self.environment[
+                'he_local_vm_dir': self.environment[
                     ohostedcons.CoreEnv.LOCAL_VM_DIR
                 ],
             },

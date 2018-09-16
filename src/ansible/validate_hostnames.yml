@@ -3,7 +3,6 @@
   hosts: localhost
   connection: local
   vars:
-    MGMT_NETWORK: ovirtmgmt
-  tasks:
-    - include_tasks: validate_hostname_tasks.yml
-...
+    he_pre_checks_validate_hostnames: true
+  roles:
+    - role: oVirt.hosted-engine-setup

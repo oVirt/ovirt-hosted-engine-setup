@@ -94,115 +94,114 @@ class Plugin(plugin.PluginBase):
             storage_domain_path = None
 
         target_vm_vars = {
-            'FQDN': self.environment[
+            'he_fqdn': self.environment[
                 ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
             ],
-            'HOST_ADDRESS': self.environment[
-                ohostedcons.NetworkEnv.HOST_NAME
-            ],
-            'HOST_NAME': self.environment[
+            'he_host_name': self.environment[
                 ohostedcons.EngineEnv.APP_HOST_NAME
             ],
-            'ADMIN_PASSWORD': self.environment[
+            'he_admin_password': self.environment[
                 ohostedcons.EngineEnv.ADMIN_PASSWORD
             ],
-            'APPLIANCE_PASSWORD': self.environment[
+            'he_appliance_password': self.environment[
                 ohostedcons.CloudInit.ROOTPWD
             ],
-            'STORAGE_DOMAIN_NAME': self.environment[
+            'he_local_vm_dir': self.environment[
+                ohostedcons.CoreEnv.LOCAL_VM_DIR
+            ],
+            'he_storage_domain_name': self.environment[
                 ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
             ],
-            'VM_MAC_ADDR': self.environment[
+            'he_vm_mac_addr': self.environment[
                 ohostedcons.VMEnv.MAC_ADDR
             ],
-            'VM_NAME': ohostedcons.Const.HOSTED_ENGINE_VM_NAME,
-            'MEM_SIZE': self.environment[ohostedcons.VMEnv.MEM_SIZE_MB],
-            'VCPUS': self.environment[ohostedcons.VMEnv.VCPUS],
-            'CPU_SOCKETS': '1',
-            'TIME_ZONE': self.environment[ohostedcons.CloudInit.VM_TZ],
-            'BRIDGE': self.environment[ohostedcons.NetworkEnv.BRIDGE_NAME],
-            'LOCAL_VM_DIR': self.environment[ohostedcons.CoreEnv.LOCAL_VM_DIR],
-            'STORAGE_DOMAIN_ADDR': storage_domain_address,
-            'STORAGE_DOMAIN_PATH': storage_domain_path,
-            'MOUNT_OPTIONS': self.environment[
+            'he_vm_name': ohostedcons.Const.HOSTED_ENGINE_VM_NAME,
+            'he_mem_size_MB': self.environment[ohostedcons.VMEnv.MEM_SIZE_MB],
+            'he_vcpus': self.environment[ohostedcons.VMEnv.VCPUS],
+            'he_time_zone': self.environment[ohostedcons.CloudInit.VM_TZ],
+            'he_bridge_if': self.environment[
+                ohostedcons.NetworkEnv.BRIDGE_NAME
+            ],
+            'he_local_vm_dir_path': self.environment[
+                ohostedcons.CoreEnv.LOCAL_VM_DIR
+            ],
+            'he_storage_domain_addr': storage_domain_address,
+            'he_storage_domain_path': storage_domain_path,
+            'he_mount_options': self.environment[
                 ohostedcons.StorageEnv.MNT_OPTIONS
             ],
-            'DOMAIN_TYPE': self.environment[
+            'he_domain_type': self.environment[
                 ohostedcons.StorageEnv.DOMAIN_TYPE
             ],
-            'GATEWAY': self.environment[ohostedcons.NetworkEnv.GATEWAY],
-            'ISCSI_TARGET': self.environment[
+            'he_gateway': self.environment[ohostedcons.NetworkEnv.GATEWAY],
+            'he_iscsi_target': self.environment[
                 ohostedcons.StorageEnv.ISCSI_TARGET
             ],
-            'ISCSI_USERNAME': self.environment[
+            'he_iscsi_username': self.environment[
                 ohostedcons.StorageEnv.ISCSI_USER
             ],
-            'ISCSI_PASSWORD': self.environment[
+            'he_iscsi_password': self.environment[
                 ohostedcons.StorageEnv.ISCSI_PASSWORD
             ],
-            'ISCSI_PORTAL_PORT': self.environment[
+            'he_iscsi_portal_port': self.environment[
                 ohostedcons.StorageEnv.ISCSI_PORT
             ],
-            'ISCSI_PORTAL_ADDR': self.environment[
+            'he_iscsi_portal_addr': self.environment[
                 ohostedcons.StorageEnv.ISCSI_IP_ADDR
             ],
-            'ISCSI_TPGT': self.environment[
+            'he_iscsi_tpgt': self.environment[
                 ohostedcons.StorageEnv.ISCSI_PORTAL
             ],
-            'LUN_ID': self.environment[
+            'he_lun_id': self.environment[
                 ohostedcons.StorageEnv.LUN_ID
             ],
-            'CONSOLE_TYPE': 'vnc',
-            'CDROM_UUID': self.environment[ohostedcons.VMEnv.CDROM_UUID],
-            'CDROM': '',
-            'NIC_UUID': self.environment[ohostedcons.VMEnv.NIC_UUID],
-            'VIDEO_DEVICE': 'vga',
-            'GRAPHICS_DEVICE': 'vnc',
-            'MAXVCPUS': self.environment[ohostedcons.VMEnv.MAXVCPUS],
-            'EMULATED_MACHINE': self.environment[
+            'he_cdrom_uuid': self.environment[ohostedcons.VMEnv.CDROM_UUID],
+            'he_nic_uuid': self.environment[ohostedcons.VMEnv.NIC_UUID],
+            'he_maxvcpus': self.environment[ohostedcons.VMEnv.MAXVCPUS],
+            'he_emulated_machine': self.environment[
                 ohostedcons.VMEnv.EMULATED_MACHINE
             ],
-            'NFS_VERSION': self.environment[
+            'he_nfs_version': self.environment[
                 ohostedcons.StorageEnv.NFS_VERSION
             ],
-            'VM_IP_ADDR': ip_addr,
-            'VM_IP_PREFIX': prefix,
-            'DNS_ADDR': dnslist,
-            'VM_ETC_HOSTS': self.environment[
+            'he_vm_ip_addr': ip_addr,
+            'he_vm_ip_prefix': prefix,
+            'he_dns_addr': dnslist,
+            'he_vm_etc_hosts': self.environment[
                 ohostedcons.CloudInit.VM_ETC_HOSTS
             ],
-            'HOST_IP': self.environment[
+            'he_host_ip': self.environment[
                 ohostedcons.CloudInit.HOST_IP
             ],
-            'DISK_SIZE': self.environment[
+            'he_disk_size_GB': self.environment[
                 ohostedcons.StorageEnv.IMAGE_SIZE_GB
             ],
-            'SMTP_SERVER': self.environment[
+            'he_smtp_server': self.environment[
                 ohostedcons.NotificationsEnv.SMTP_SERVER
             ],
-            'SMTP_PORT': self.environment[
+            'he_smtp_port': self.environment[
                 ohostedcons.NotificationsEnv.SMTP_PORT
             ],
-            'SOURCE_EMAIL': self.environment[
+            'he_source_email': self.environment[
                 ohostedcons.NotificationsEnv.SOURCE_EMAIL
             ],
-            'DEST_EMAIL': self.environment[
+            'he_dest_email': self.environment[
                 ohostedcons.NotificationsEnv.DEST_EMAIL
             ],
-            'APPLIANCE_OVA': self.environment[ohostedcons.VMEnv.OVF],
-            'CLOUD_INIT_DOMAIN_NAME': self.environment[
+            'he_appliance_ova': self.environment[ohostedcons.VMEnv.OVF],
+            'he_cloud_init_domain_name': self.environment[
                 ohostedcons.CloudInit.INSTANCE_DOMAINNAME
             ],
-            'CLOUD_INIT_HOST_NAME': self.environment[
+            'he_cloud_init_host_name': self.environment[
                 ohostedcons.CloudInit.INSTANCE_HOSTNAME
             ],
-            'ROOT_SSH_PUBKEY': self.environment[
+            'he_root_ssh_pubkey': self.environment[
                 ohostedcons.CloudInit.ROOT_SSH_PUBKEY
             ],
-            'RESTORE_FROM_FILE': self.environment[
+            'he_restore_from_file': self.environment[
                 ohostedcons.CoreEnv.RESTORE_FROM_FILE
             ],
-            'CLUSTER': self.environment[
+            'he_cluster': self.environment[
                 ohostedcons.EngineEnv.HOST_CLUSTER_NAME
             ],
         }
