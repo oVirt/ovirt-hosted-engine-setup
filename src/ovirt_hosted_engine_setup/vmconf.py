@@ -24,6 +24,8 @@
 import base64
 import re
 
+from ovirt_hosted_engine_setup.ovf import ovfenvelope
+
 
 def _splitDriveSpecItems(item):
     """
@@ -162,6 +164,29 @@ def parseVmConfFile(filename):
         xml = base64.standard_b64decode(params['xmlBase64'])
         del params['xmlBase64']
         params['xml'] = xml
+
+        if params.get('launchPaused', False):
+            engine_xml_tree = ovfenvelope.etree_.fromstring(xml)
+            metadata = engine_xml_tree.xpath("//metadata")[0]
+            ns = metadata.nsmap['ovirt-vm']
+            vm = metadata.find('{%s}vm' % ns)
+            # workaround an engine bug: the engine sets launchPaused
+            # without its namespace
+            lp_nons = vm.find('launchPaused')
+            if lp_nons is not None:
+                vm.remove(lp_nons)
+            lp = vm.find('{%s}launchPaused' % ns)
+            if lp is not None:
+                lp.text = 'true'
+            else:
+                lp = ovfenvelope.etree_.Element('{%s}launchPaused' % ns)
+                lp.text = 'true'
+                vm.append(lp)
+            params['xml'] = ovfenvelope.etree_.tostring(
+                engine_xml_tree,
+                xml_declaration=True,
+                encoding='UTF-8',
+            )
 
     return params
 
