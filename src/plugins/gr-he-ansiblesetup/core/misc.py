@@ -59,10 +59,6 @@ class Plugin(plugin.PluginBase):
             ohostedcons.StorageEnv.ENABLE_HC_GLUSTER_SERVICE,
             None
         )
-        self.environment.setdefault(
-            ohostedcons.CoreEnv.RESTORE_FROM_FILE,
-            None
-        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,

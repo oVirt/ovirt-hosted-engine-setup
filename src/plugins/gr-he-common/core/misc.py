@@ -107,6 +107,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.EngineEnv.HOST_CLUSTER_NAME,
             None
         )
+        self.environment.setdefault(
+            ohostedcons.CoreEnv.RESTORE_FROM_FILE,
+            None
+        )
         self.environment[ohostedcons.CoreEnv.NODE_SETUP] = False
         self.environment[ohostedcons.CoreEnv.MISC_REACHED] = False
 
