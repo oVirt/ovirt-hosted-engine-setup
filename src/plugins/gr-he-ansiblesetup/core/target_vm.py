@@ -199,6 +199,9 @@ class Plugin(plugin.PluginBase):
             'ROOT_SSH_PUBKEY': self.environment[
                 ohostedcons.CloudInit.ROOT_SSH_PUBKEY
             ],
+            'RESTORE_FROM_FILE': self.environment[
+                ohostedcons.CoreEnv.RESTORE_FROM_FILE
+            ],
         }
         inventory_source = 'localhost, {fqdn}'.format(
             fqdn=self.environment[

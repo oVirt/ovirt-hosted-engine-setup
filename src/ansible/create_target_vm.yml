@@ -211,6 +211,16 @@
     command: sysctl -p
     environment: "{{ CMD_LANG }}"
     changed_when: True
+  - name: Restore original DisableFenceAtStartupInSec
+    shell: "engine-config -s DisableFenceAtStartupInSec=$(cat /root/DisableFenceAtStartupInSec.txt)"
+    environment: "{{ CMD_LANG }}"
+    changed_when: True
+    when: RESTORE_FROM_FILE is defined and RESTORE_FROM_FILE
+  - name: Remove DisableFenceAtStartupInSec temporary file
+    file:
+      path: /root/DisableFenceAtStartupInSec.txt
+      state: absent
+    when: RESTORE_FROM_FILE is defined and RESTORE_FROM_FILE
 - hosts: localhost
   connection: local
   vars:
