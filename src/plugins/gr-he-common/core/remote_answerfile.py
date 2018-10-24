@@ -19,8 +19,6 @@
 
 
 """Answer file fetcher plugin"""
-
-
 import configparser
 import gettext
 

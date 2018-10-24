@@ -31,6 +31,7 @@ import pprint
 import re
 
 
+from collections import Callable
 from collections import defaultdict
 from datetime import datetime
 
@@ -111,7 +112,7 @@ class CallbackModule(CallbackBase):
                         # it has no group 'filter', but not sure this is
                         # a good idea (log from inside a formatter).
                         pass
-            return self._re_objects.values()
+            return list(self._re_objects.values())
 
         def _filter(self, content, tokens, regexps):
             """
@@ -326,7 +327,8 @@ class CallbackModule(CallbackBase):
                 o=pprint.pformat(getattr(obj, attr))
             )
             for attr in dir(obj)
-            if not callable(getattr(obj, attr)) and attr not in no_debug_attr
+            if not isinstance(
+                getattr(obj, attr), Callable) and attr not in no_debug_attr
         ])
 
     def __init__(self):

@@ -33,9 +33,6 @@ import shutil
 import tarfile
 import tempfile
 
-
-from io import StringIO
-
 from otopi import plugin
 from otopi import util
 
@@ -43,6 +40,11 @@ from vdsm.client import ServerError
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup.ovf import ovfenvelope
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 
 def _(m):
@@ -79,7 +81,7 @@ class Plugin(plugin.PluginBase):
             self.logger.debug('parsing: ' + cf)
             with open(cf) as stream:
                 fakefile = StringIO(
-                    u'[{s}]\n'.format(s=fakesection) + stream.read()
+                    '[{s}]\n'.format(s=fakesection) + stream.read()
                 )
                 config.readfp(fakefile)
             if set(

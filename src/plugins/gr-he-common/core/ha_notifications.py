@@ -211,5 +211,4 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Defaults.DEFAULT_STATE_TRANS_NOTIFICATION,
         )
 
-
 # vim: expandtab tabstop=4 shiftwidth=4

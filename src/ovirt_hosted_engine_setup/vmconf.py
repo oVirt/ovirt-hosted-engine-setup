@@ -110,8 +110,8 @@ def parseVmConfFile(filename):
     confLines = []
     confFile = open(filename)
     for line in confFile.readlines():
-        line = re.sub("\s+", '', line)
-        line = re.sub("\#.*", '', line)
+        line = re.sub(r"\s+", '', line)
+        line = re.sub(r"\#.*", '', line)
         if line:
             confLines.append(line)
     for line in confLines:
