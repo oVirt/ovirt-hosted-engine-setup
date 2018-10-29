@@ -132,6 +132,67 @@ class Plugin(plugin.PluginBase):
         self.environment[ohostedcons.VMEnv.CDROM] = None
 
     @plugin.event(
+        stage=plugin.Stages.STAGE_CUSTOMIZATION,
+        after=(
+            ohostedcons.Stages.DIALOG_TITLES_S_VM,
+        ),
+        before=(
+            ohostedcons.Stages.CONFIG_CLOUD_INIT_OPTIONS,
+            ohostedcons.Stages.DIALOG_TITLES_E_VM,
+        ),
+    )
+    def _customization(self):
+        restore_addition = ''
+        if self.environment[
+            ohostedcons.CoreEnv.RESTORE_FROM_FILE
+        ] is not None:
+            restore_addition = _(
+                'Please note that if you are restoring a backup that contains '
+                'info about other hosted-engine hosts,\n'
+                'this value should exactly match the value used in the '
+                'environment you are going to restore. '
+            )
+
+        if self.environment[
+            ohostedcons.EngineEnv.HOST_DATACENTER_NAME
+        ] is None:
+            self.environment[
+                ohostedcons.EngineEnv.HOST_DATACENTER_NAME
+            ] = self.dialog.queryString(
+                name='ovehosted_datacenter_name',
+                note=_(
+                    'Please enter the name of the datacenter where you want '
+                    'to deploy this hosted-engine host. '
+                    '{restore_addition}'
+                    '[@DEFAULT@]: '
+                ).format(
+                    restore_addition=restore_addition,
+                ),
+                prompt=True,
+                caseSensitive=True,
+                default=ohostedcons.Defaults.DEFAULT_DATACENTER_NAME,
+            )
+        if self.environment[
+            ohostedcons.EngineEnv.HOST_CLUSTER_NAME
+        ] is None:
+            self.environment[
+                ohostedcons.EngineEnv.HOST_CLUSTER_NAME
+            ] = self.dialog.queryString(
+                name='ovehosted_cluster_name',
+                note=_(
+                    'Please enter the name of the cluster where you want '
+                    'to deploy this hosted-engine host. '
+                    '{restore_addition}'
+                    '[@DEFAULT@]: '
+                ).format(
+                    restore_addition=restore_addition,
+                ),
+                prompt=True,
+                caseSensitive=True,
+                default=ohostedcons.Defaults.DEFAULT_CLUSTER_NAME,
+            )
+
+    @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
         name=ohostedcons.Stages.ANSIBLE_BOOTSTRAP_LOCAL_VM,
     )
@@ -210,6 +271,12 @@ class Plugin(plugin.PluginBase):
             ],
             'STORAGE_DOMAIN_NAME': self.environment[
                 ohostedcons.StorageEnv.STORAGE_DOMAIN_NAME
+            ],
+            'DATA_CENTER': self.environment[
+                ohostedcons.EngineEnv.HOST_DATACENTER_NAME
+            ],
+            'CLUSTER': self.environment[
+                ohostedcons.EngineEnv.HOST_CLUSTER_NAME
             ],
         }
         inventory_source = 'localhost, {fqdn}'.format(

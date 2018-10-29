@@ -204,6 +204,7 @@
               fix accordingly or re-deploy from scratch.
 - hosts: engine
   vars:
+    CLUSTER: Default
     CMD_LANG:
       LANG: en_US.UTF-8
       LC_MESSAGES: en_US.UTF-8
@@ -343,6 +344,20 @@
           key: https://{{ FQDN }}/ovirt-engine/services/pki-resource?resource=engine-certificate&format=OPENSSH-PUBKEY
           validate_certs: False
       - include_tasks: auth_sso.yml
+      - name: Ensure that the target datacenter is present
+        ovirt_datacenter:
+          state: present
+          name: "{{ DATA_CENTER }}"
+          wait: yes
+          local: false
+          auth: "{{ ovirt_auth }}"
+      - name: Ensure that the target cluster is present in the target datacenter
+        ovirt_cluster:
+          state: present
+          name: "{{ CLUSTER }}"
+          data_center: "{{ DATA_CENTER }}"
+          wait: yes
+          auth: "{{ ovirt_auth }}"
       - name: Enable GlusterFS at cluster level
         ovirt_cluster:
           data_center: "{{ DATA_CENTER }}"
@@ -364,8 +379,7 @@
           dest: /etc/ovirt-host-deploy.conf.d/70-hosted-engine-setup.conf
       - name: Add host
         ovirt_hosts:
-          # TODO: add to the first cluster of the datacenter
-          # where we set the vlan id
+          cluster: "{{ CLUSTER }}"
           name: "{{ HOST_NAME }}"
           state: present
           public_key: true

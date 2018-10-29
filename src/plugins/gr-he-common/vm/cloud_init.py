@@ -639,7 +639,7 @@ class Plugin(plugin.PluginBase):
         ] is None:
             self.environment[
                 ohostedcons.EngineEnv.HOST_CLUSTER_NAME
-            ] = 'Default'
+            ] = ohostedcons.Defaults.DEFAULT_CLUSTER_NAME
 
         if self.environment[
             ohostedcons.CloudInit.EXECUTE_ESETUP

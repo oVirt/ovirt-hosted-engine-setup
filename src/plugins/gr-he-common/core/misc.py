@@ -108,6 +108,10 @@ class Plugin(plugin.PluginBase):
             None
         )
         self.environment.setdefault(
+            ohostedcons.EngineEnv.HOST_DATACENTER_NAME,
+            None
+        )
+        self.environment.setdefault(
             ohostedcons.CoreEnv.RESTORE_FROM_FILE,
             None
         )
