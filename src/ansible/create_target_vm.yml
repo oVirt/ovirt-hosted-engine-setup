@@ -224,6 +224,7 @@
 - hosts: localhost
   connection: local
   vars:
+    CLUSTER: Default
     CMD_LANG:
       LANG: en_US.UTF-8
       LC_MESSAGES: en_US.UTF-8

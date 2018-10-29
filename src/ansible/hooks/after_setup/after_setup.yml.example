@@ -21,7 +21,7 @@
 
 - name: Add additional gluster hosts to engine
   ovirt_hosts:
-    cluster: Default
+    cluster: "{{ CLUSTER }}"
     name: "{{ host }}"
     address: "{{ host }}"
     state: present

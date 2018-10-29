@@ -202,6 +202,9 @@ class Plugin(plugin.PluginBase):
             'RESTORE_FROM_FILE': self.environment[
                 ohostedcons.CoreEnv.RESTORE_FROM_FILE
             ],
+            'CLUSTER': self.environment[
+                ohostedcons.EngineEnv.HOST_CLUSTER_NAME
+            ],
         }
         inventory_source = 'localhost, {fqdn}'.format(
             fqdn=self.environment[

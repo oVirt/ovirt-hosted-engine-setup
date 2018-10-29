@@ -552,6 +552,12 @@ class EngineEnv(object):
     def HOST_CLUSTER_NAME(self):
         return 'OVEHOSTED_ENGINE/clusterName'
 
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def HOST_DATACENTER_NAME(self):
+        return 'OVEHOSTED_ENGINE/datacenterName'
+
     TEMPORARY_CERT_FILE = 'OVEHOSTED_ENGINE/temporaryCertificate'
     PROMPT_NON_OPERATIONAL = 'OVEHOSTED_ENGINE/promptNonOperational'
     ENGINE_SETUP_TIMEOUT = 'OVEHOSTED_ENGINE/engineSetupTimeout'
@@ -1153,6 +1159,8 @@ class Stages(object):
 class Defaults(object):
     DEFAULT_STORAGE_DOMAIN_NAME = 'hosted_storage'
     DEFAULT_STORAGE_DATACENTER_NAME = 'hosted_datacenter'
+    DEFAULT_DATACENTER_NAME = 'Default'
+    DEFAULT_CLUSTER_NAME = 'Default'
     DEFAULT_VDSMD_SERVICE = 'vdsmd'
     DEFAULT_SYSTEM_USER_VDSM = 'vdsm'
     DEFAULT_SYSTEM_GROUP_KVM = 'kvm'

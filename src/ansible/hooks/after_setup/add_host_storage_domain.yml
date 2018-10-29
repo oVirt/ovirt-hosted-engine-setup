@@ -22,7 +22,7 @@
   poll: 0
   ignore_errors: true
   ovirt_hosts:
-    cluster: Default
+    cluster: "{{ CLUSTER }}"
     name: "{{ host }}"
     address: "{{ host }}"
     state: present
