@@ -147,6 +147,9 @@ print((
 ' > %{_sysconfdir}/ovirt-hosted-engine/virsh_auth.conf
 
 %changelog
+* Mon Nov 05 2018 Simone Tiraboschi <stirabos@redhat.com> - 2.2.33-0.0.master
+- 2.2.33-0.0.master
+
 * Mon Nov 05 2018 Simone Tiraboschi <stirabos@redhat.com> - 2.2.32-1
 - 2.2.32-1
 
