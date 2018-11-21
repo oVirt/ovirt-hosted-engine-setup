@@ -22,8 +22,8 @@ define([VERSION_MAJOR], [2])
 define([VERSION_MINOR], [3])
 define([VERSION_FIX], [0])
 define([VERSION_NUMBER], VERSION_MAJOR[.]VERSION_MINOR[.]VERSION_FIX)
-define([VERSION_RELEASE], [0.1])
-define([VERSION_SUFFIX], [beta.][m4_esyscmd([date -u +%Y%m%d%H%M%S | tr -d '\n'])])
+define([VERSION_RELEASE], [0.2])
+define([VERSION_SUFFIX], [master])
 
 AC_INIT(
     [ovirt-hosted-engine-setup],
