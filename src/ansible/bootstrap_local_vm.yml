@@ -256,6 +256,7 @@
       LANG: en_US.UTF-8
       LC_MESSAGES: en_US.UTF-8
       LC_ALL: en_US.UTF-8
+    ipv6_subnet_prefix: fd00:1234:5678:900
   tasks:
     - name: Initial tasks
       block:
@@ -275,6 +276,11 @@
         lineinfile:
           path: /etc/hosts
           line: "{{ hostvars['localhost']['local_vm_ip']['stdout_lines'][0] }} {{ FQDN }} # hosted-engine-setup-{{ hostvars['localhost']['LOCAL_VM_DIR'] }}"
+      - name: Reconfigure IPv6 default gateway
+        command: ip -6 route add default via "{{ ipv6_subnet_prefix + '::1' }}"
+        environment: "{{ CMD_LANG }}"
+        changed_when: True
+        when: hostvars['localhost']['ipv6_deployment']
       - name: Restore sshd reverse DNS lookups
         lineinfile:
           path: /etc/ssh/sshd_config
