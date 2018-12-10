@@ -23,17 +23,13 @@
 
 import gettext
 import os
-import time
 
 from otopi import constants as otopicons
 from otopi import plugin
 from otopi import util
 
-from ovirt_hosted_engine_ha.lib.exceptions import BrokerConnectionError
-
 from ovirt_hosted_engine_setup import constants as ohostedcons
 from ovirt_hosted_engine_setup import util as ohostedutil
-from ovirt_hosted_engine_setup import vm_status
 
 
 def _(m):
@@ -82,26 +78,6 @@ class Plugin(plugin.PluginBase):
         self.environment.setdefault(
             ohostedcons.CoreEnv.DEPLOY_PROCEED,
             None
-        )
-        self.environment.setdefault(
-            ohostedcons.CoreEnv.UPGRADE_PROCEED,
-            None
-        )
-        self.environment.setdefault(
-            ohostedcons.CoreEnv.ROLLBACK_PROCEED,
-            None
-        )
-        self.environment.setdefault(
-            ohostedcons.CoreEnv.UPGRADING_APPLIANCE,
-            False
-        )
-        self.environment.setdefault(
-            ohostedcons.CoreEnv.ROLLBACK_UPGRADE,
-            False
-        )
-        self.environment.setdefault(
-            ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT,
-            False
         )
         self.environment.setdefault(
             ohostedcons.EngineEnv.HOST_CLUSTER_NAME,
@@ -174,51 +150,6 @@ class Plugin(plugin.PluginBase):
         self.logger.debug('Finished persisting file configuration')
 
     @plugin.event(
-        stage=plugin.Stages.STAGE_CLOSEUP,
-        after=(
-            ohostedcons.Stages.HA_START,
-        ),
-        name=ohostedcons.Stages.ENGINE_VM_UP_CHECK,
-        condition=lambda self: (
-            not self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT] and
-            not self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE] and
-            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
-        ),
-    )
-    def engine_vm_up_check(self):
-        timeout = ohostedcons.Const.VM_LIVELINESS_CHECK_TIMEOUT
-        vmstatus = vm_status.VmStatus()
-        self.logger.info('Waiting for engine to start...')
-        health_good = False
-        while timeout >= 0:
-            try:
-                status = vmstatus.get_status()
-                for host in status['all_host_stats'].values():
-                    if 'engine-status' in host:
-                        if '"health": "good"' in host['engine-status']:
-                            health_good = True
-                            break
-
-            except (BrokerConnectionError, RuntimeError) as e:
-                self.logger.debug(str(e))
-
-            if health_good:
-                self.logger.info('Engine is up')
-                break
-
-            time.sleep(5)
-            timeout -= 5
-
-            if timeout % 60 == 0:
-                self.logger.info('Still waiting for engine to start...')
-
-        if timeout < 0:
-            self.logger.info(
-                'Engine vm is still powering up, please check the vm\'s '
-                'status using: \'hosted-engine --vm-status\''
-            )
-
-    @plugin.event(
         stage=plugin.Stages.STAGE_TERMINATE,
         priority=plugin.Stages.PRIORITY_LAST,
     )
@@ -229,20 +160,6 @@ class Plugin(plugin.PluginBase):
             ': please check the logs for the issue, '
             'fix accordingly or re-deploy from scratch.'
         )
-        if self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE]:
-            successfully = _('Hosted Engine successfully upgraded')
-            failed_early = _('Hosted Engine upgrade failed')
-            failed_hard = failed_early + _(
-                ': you can use --rollback-upgrade option to recover the '
-                'engine VM disk from a backup.'
-            )
-        elif self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]:
-            successfully = _('Hosted Engine successfully rolled back')
-            failed_early = _('Hosted Engine rollback failed')
-            failed_hard = failed_early + _(
-                ': please check the logs and try again this '
-                'procedure to reach a stable status.'
-            )
         if self.environment[otopicons.BaseEnv.ERROR]:
             self.logger.error(
                 failed_hard if self.environment[
@@ -259,14 +176,6 @@ class Plugin(plugin.PluginBase):
         else:
             self.logger.info(successfully)
             if (
-                self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE] or
-                self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
-            ):
-                self.logger.info(_(
-                    'Please exit global maintenance mode to '
-                    'restart the engine VM.'
-                ))
-            if (
                 self.environment[
                     ohostedcons.CoreEnv.RESTORE_FROM_FILE
                 ] is not None
@@ -279,8 +188,6 @@ class Plugin(plugin.PluginBase):
                     'ensuring you choose DEPLOY in hosted engine tab.'
                 ))
             if (
-                self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE] or
-                self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE] or
                 self.environment[
                     ohostedcons.CoreEnv.RESTORE_FROM_FILE
                 ] is not None

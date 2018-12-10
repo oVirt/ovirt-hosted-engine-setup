@@ -55,20 +55,12 @@ dist_ovirthostedenginelib_PYTHON = \
 	connect_storage_server.py \
 	disconnect_storage_server.py \
 	constants.py \
-	domains.py \
-	engineapi.py \
 	util.py \
 	reinitialize_lockspace.py \
 	set_maintenance.py \
 	set_shared_config.py \
 	get_shared_config.py \
-	tasks.py \
 	vm_status.py \
-	mixins.py \
-	appliance_esetup.py \
-	vds_info.py \
-	ohttpshandler.py \
-	pkissh.py \
 	vdsm_helper.py \
 	vmconf.py \
 	ansible_utils.py \

@@ -128,7 +128,6 @@ class Plugin(plugin.PluginBase):
             True
         )
 
-        self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT] = True
         self.environment[ohostedcons.VMEnv.CDROM] = None
 
     @plugin.event(

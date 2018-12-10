@@ -26,7 +26,6 @@ HA notifications configuration
 import configparser
 import gettext
 import re
-import StringIO
 
 from otopi import plugin
 from otopi import util
@@ -102,10 +101,6 @@ class Plugin(plugin.PluginBase):
         ),
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_ENGINE,
-        ),
-        condition=lambda self: (
-            not self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE] and
-            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
         ),
     )
     def _customization(self):
@@ -215,25 +210,6 @@ class Plugin(plugin.PluginBase):
             'state_transition',
             ohostedcons.Defaults.DEFAULT_STATE_TRANS_NOTIFICATION,
         )
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_MISC,
-        name=ohostedcons.Stages.BROKER_CONF_AVAILABLE,
-        condition=lambda self: (
-            not self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE] and
-            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE] and
-            not self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]
-        ),
-    )
-    def _misc(self):
-        f = StringIO.StringIO()
-        try:
-            self._cfg.write(f)
-            self.environment[
-                ohostedcons.StorageEnv.BROKER_CONF_CONTENT
-            ] = f.getvalue()
-        finally:
-            f.close()
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

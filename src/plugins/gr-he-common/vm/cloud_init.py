@@ -27,9 +27,7 @@ import ethtool
 import gettext
 import netaddr
 import os
-import pwd
 import re
-import shutil
 import tempfile
 
 from otopi import constants as otopicons
@@ -490,8 +488,7 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.DIALOG_TITLES_E_VM,
         ),
         condition=lambda self: (
-            self.environment[ohostedcons.VMEnv.CDROM] is None and
-            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
+            self.environment[ohostedcons.VMEnv.CDROM] is None
         ),
         name=ohostedcons.Stages.CONFIG_CLOUD_INIT_OPTIONS,
     )
@@ -501,16 +498,15 @@ class Plugin(plugin.PluginBase):
         ] is None:
             self.environment[ohostedcons.CloudInit.VM_TZ] = self._get_host_tz()
 
-        if self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]:
-            self.environment[
-                ohostedcons.CloudInit.GENERATE_ISO
-            ] = ohostedcons.Const.CLOUD_INIT_GENERATE
-            self.environment[
-                ohostedcons.VMEnv.AUTOMATE_VM_SHUTDOWN
-            ] = True
-            self.environment[
-                ohostedcons.CloudInit.EXECUTE_ESETUP
-            ] = True
+        self.environment[
+            ohostedcons.CloudInit.GENERATE_ISO
+        ] = ohostedcons.Const.CLOUD_INIT_GENERATE
+        self.environment[
+            ohostedcons.VMEnv.AUTOMATE_VM_SHUTDOWN
+        ] = True
+        self.environment[
+            ohostedcons.CloudInit.EXECUTE_ESETUP
+        ] = True
 
         if self.environment[
             ohostedcons.CloudInit.GENERATE_ISO
@@ -693,20 +689,13 @@ class Plugin(plugin.PluginBase):
             while self.environment[
                 ohostedcons.CloudInit.ROOTPWD
             ] is None:
-                skip_password = _(': ')
-                if not self.environment[
-                    ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT
-                ]:
-                    skip_password = _(' (leave it empty to skip): ')
                 password = self.dialog.queryString(
                     name='CI_ROOT_PASSWORD',
-                    note="{prefix}{skip_password}".format(
-                        prefix=_(
-                            "Enter root password that "
-                            'will be used for the engine appliance'
-                        ),
-                        skip_password=skip_password
+                    note=_(
+                        "Enter root password that "
+                        'will be used for the engine appliance'
                     ),
+
                     prompt=True,
                     hidden=True,
                     default='',
@@ -726,11 +715,8 @@ class Plugin(plugin.PluginBase):
                         ] = password
                     else:
                         self.logger.error(_('Passwords do not match'))
-                elif self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]:
-                    self.logger.error(_('Password is empty'))
                 else:
-                    self.environment[ohostedcons.CloudInit.ROOTPWD] = ''
-                    self.logger.warning(_('Skipping appliance root password'))
+                    self.logger.error(_('Password is empty'))
 
             while self.environment[
                 ohostedcons.CloudInit.ROOT_SSH_PUBKEY
@@ -853,443 +839,9 @@ class Plugin(plugin.PluginBase):
                 caseSensitive=False,
                 default=_('No')
             ) == _('Yes').lower()
-        if (
-            self.environment[
-                ohostedcons.CloudInit.VM_ETC_HOSTS
-            ] and self.environment[
-                ohostedcons.CoreEnv.UPGRADING_APPLIANCE
-            ]
-        ):
-            self.logger.warning(_(
-                'Please take care that this will simply add an entry for this '
-                'host under /etc/hosts on the engine VM. '
-                'If in the past you added other entries there, recovering '
-                'them is up to you.'
-            ))
         self.environment[
             ohostedcons.CloudInit.HOST_IP
         ] = str(self._getMyIPAddrList()[0].ip)
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_MISC,
-        condition=lambda self: (
-            self._enable and
-            not self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]
-            # TODO: backport all the fixes here to ansible deployment
-        ),
-    )
-    def _misc(self):
-        # TODO: find a way to properly get this at runtime
-        # see: https://bugzilla.redhat.com/1228215
-        _interface_name = 'eth0'
-
-        self._directory_name = tempfile.mkdtemp()
-        user_data = (
-            '#cloud-config\n'
-            '# vim: syntax=yaml\n'
-        )
-        f_user_data = os.path.join(self._directory_name, 'user-data')
-
-        if (
-            self.environment[ohostedcons.CloudInit.ROOT_SSH_PUBKEY] or
-            self.environment[ohostedcons.CloudInit.ROOTPWD]
-        ):
-            user_data += (
-                'disable_root: false\n'
-            )
-
-        if self.environment[ohostedcons.CloudInit.ROOT_SSH_PUBKEY]:
-            user_data += (
-                'ssh_authorized_keys:\n'
-                ' - {pubkey}\n'
-            ).format(
-                pubkey=self.environment[ohostedcons.CloudInit.ROOT_SSH_PUBKEY],
-            )
-
-        if self.environment[ohostedcons.CloudInit.ROOTPWD]:
-            # TODO: use salted hashed password
-            user_data += (
-                'ssh_pwauth: True\n'
-                'chpasswd:\n'
-                '  list: |\n'
-                '    root:{password}\n'
-                '  expire: False\n'
-            ).format(
-                password=self.environment[
-                    ohostedcons.CloudInit.ROOTPWD
-                ],
-            )
-
-        if self.environment[ohostedcons.CloudInit.VM_TZ]:
-            user_data += (
-                'timezone: {tz}\n'
-            ).format(tz=self.environment[ohostedcons.CloudInit.VM_TZ])
-
-        bootcmd = ''
-
-        if (
-            self.environment[
-                ohostedcons.CloudInit.VM_ETC_HOSTS
-            ] or
-            self.environment[
-                ohostedcons.CloudInit.VM_STATIC_CIDR
-            ]
-        ):
-
-            if self.environment[
-                ohostedcons.CloudInit.VM_ETC_HOSTS
-            ]:
-                bootcmd += (
-                    ' - echo "{myip} {myfqdn}" >> /etc/hosts\n'
-                ).format(
-                    myip=self.environment[
-                        ohostedcons.CloudInit.HOST_IP
-                    ],
-                    myfqdn=self.environment[
-                        ohostedcons.NetworkEnv.HOST_NAME
-                    ],
-                )
-                if self.environment[
-                    ohostedcons.CloudInit.VM_STATIC_CIDR
-                ] and self.environment[
-                    ohostedcons.CloudInit.INSTANCE_HOSTNAME
-                ]:
-                    ip = netaddr.IPNetwork(
-                        self.environment[ohostedcons.CloudInit.VM_STATIC_CIDR]
-                    )
-                    bootcmd += (
-                        ' - echo "{ip} {fqdn}" >> /etc/hosts\n'
-                    ).format(
-                        ip=ip.ip,
-                        fqdn=self.environment[
-                            ohostedcons.CloudInit.INSTANCE_HOSTNAME
-                        ],
-                    )
-
-            # Due to a cloud-init bug
-            # (https://bugs.launchpad.net/cloud-init/+bug/1225922)
-            # we have to deactivate and reactive the interface just after
-            # the boot on static IP configurations
-            if self.environment[
-                ohostedcons.CloudInit.VM_STATIC_CIDR
-            ]:
-                fname = (
-                    '/etc/sysconfig/network-scripts/ifcfg-{iname}'.format(
-                        iname=_interface_name
-                    )
-                )
-
-                if self.environment[ohostedcons.CloudInit.VM_DNS]:
-                    dnslist = [
-                        d.strip()
-                        for d
-                        in self.environment[
-                            ohostedcons.CloudInit.VM_DNS
-                        ].split(',')
-                    ]
-                    dn = 1
-                    for dns in dnslist:
-                        bootcmd += ' - echo "DNS{dn}={dns}" >> {f}\n'.format(
-                            dn=dn,
-                            dns=dns,
-                            f=fname,
-                        )
-                        dn += 1
-                    if self.environment[
-                        ohostedcons.CloudInit.INSTANCE_DOMAINNAME
-                    ]:
-                        bootcmd += ' - echo "DOMAIN={d}" >> {f}\n'.format(
-                            d=self.environment[
-                                ohostedcons.CloudInit.INSTANCE_DOMAINNAME
-                            ],
-                            f=fname,
-                        )
-
-                # Due to another cloud-init bug we have now also to force
-                # the gataway address:
-                # https://bugs.launchpad.net/cloud-init/+bug/1686856
-                # https://bugzilla.redhat.com/show_bug.cgi?id=1492726
-                # TODO: remove ASAP once fixed on cloud-init side
-                if self.environment[ohostedcons.NetworkEnv.GATEWAY]:
-                    bootcmd += (
-                        ' - if ! grep -Gq "^GATEWAY" {f}; '
-                        'then echo "GATEWAY={g}" >> {f}; '
-                        'fi\n'
-                    ).format(
-                        g=self.environment[ohostedcons.NetworkEnv.GATEWAY],
-                        f=fname,
-                    )
-                    bootcmd += (
-                        ' - if ! grep -Gq "^DEFROUTE" {f}; '
-                        'then echo "DEFROUTE=yes" >> {f}; '
-                        'fi\n'
-                    ).format(
-                        f=fname,
-                    )
-
-                bootcmd += (
-                    ' - ifdown {iname}\n'
-                    ' - ifup {iname}\n'
-                ).format(iname=_interface_name)
-
-        # see: https://bugzilla.redhat.com/1126096
-        bootcmd += ' - setenforce 0\n'
-
-        if bootcmd:
-            user_data += (
-                'bootcmd:\n'
-                '{b}'
-            ).format(b=bootcmd)
-
-        user_data += (
-            ' - if grep -Gq "^\s*PermitRootLogin" /etc/ssh/sshd_config;'
-            ' then sed -re'
-            ' "s/^\s*(PermitRootLogin)\s+(yes|no|without-password)/'
-            ' \\1 {root_ssh}/" -i.$(date -u +%Y%m%d%H%M%S)'
-            ' /etc/ssh/sshd_config;'
-            ' else'
-            ' echo "PermitRootLogin {root_ssh}" >> /etc/ssh/sshd_config;'
-            ' fi\n'
-        ).format(
-            root_ssh=self.environment[
-                ohostedcons.CloudInit.ROOT_SSH_ACCESS
-            ].lower()
-        )
-
-        if self.environment[ohostedcons.CloudInit.EXECUTE_ESETUP]:
-            org = 'Test'
-            if '.' in self.environment[
-                ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
-            ]:
-                org = self.environment[
-                    ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
-                ].split('.', 1)[1]
-
-            engine_restore = ''
-            firewalld_reset = ''
-
-            adminPwd = (
-                '     OVESETUP_CONFIG/adminPassword=str:{password}\n'
-            ).format(
-                password=self.environment[
-                    ohostedcons.EngineEnv.ADMIN_PASSWORD
-                ],
-            )
-            if self.environment[
-                ohostedcons.CoreEnv.UPGRADING_APPLIANCE
-            ]:
-                engine_restore = (
-                    ' - cp /etc/firewalld/firewalld.conf'
-                    ' /etc/firewalld/firewalld.conf.hebck\n'
-                    ' - if grep -Gq "^\s*IndividualCalls"'
-                    ' /etc/firewalld/firewalld.conf;'
-                    ' then sed -re "s/^\s*(IndividualCalls)\s*='
-                    '\s*(yes|no)/'
-                    ' \\1=yes/" -i.$(date -u +%Y%m%d%H%M%S)'
-                    ' /etc/firewalld/firewalld.conf;'
-                    ' else'
-                    ' echo "IndividualCalls=yes" >>'
-                    ' /etc/firewalld/firewalld.conf;'
-                    ' fi\n'
-                    ' - systemctl restart firewalld &\n'
-                    ' - engine-backup --mode=restore --file={backup_file}'
-                    ' --log=engine_restore.log --restore-permissions'
-                    ' --provision-db {p_dwh_db} {p_reports_db}'
-                    ' 1>{port}'
-                    ' 2>&1\n'
-                    ' - if [ $? -eq 0 ];'
-                    ' then echo "{success_string}" >{port};'
-                    ' else echo "{fail_string}" >{port};'
-                    ' fi\n'
-                ).format(
-                    backup_file=self.environment[
-                        ohostedcons.Upgrade.DST_BACKUP_FILE
-                    ],
-                    p_dwh_db='--provision-dwh-db' if self.environment[
-                        ohostedcons.Upgrade.RESTORE_DWH
-                    ] else '',
-                    p_reports_db='--provision-reports-db' if self.environment[
-                        ohostedcons.Upgrade.RESTORE_REPORTS
-                    ] else '',
-                    port=(
-                        ohostedcons.Const.VIRTIO_PORTS_PATH +
-                        ohostedcons.Const.OVIRT_HE_CHANNEL_NAME
-                    ),
-                    success_string=ohostedcons.Const.E_RESTORE_SUCCESS_STRING,
-                    fail_string=ohostedcons.Const.E_RESTORE_FAIL_STRING,
-                )
-                adminPwd = ''
-                firewalld_reset = (
-                    ' - mv /etc/firewalld/firewalld.conf.hebck'
-                    ' /etc/firewalld/firewalld.conf\n'
-                    ' - systemctl restart firewalld &\n'
-                )
-            self.logger.debug('engine_restore: {er}'.format(er=engine_restore))
-            self.logger.debug('firewalld_reset: {fr}'.format(
-                fr=firewalld_reset
-            ))
-
-            libgfapi_enable = ''
-            if self.environment[ohostedcons.StorageEnv.ENABLE_LIBGFAPI]:
-                libgfapi_enable = (
-                    '&& engine-config  -s LibgfApiSupported=true --cver=4.1 '
-                    '&& engine-config  -s LibgfApiSupported=true --cver=4.2 '
-                    '&& systemctl restart ovirt-engine'
-                )
-
-            user_data += (
-                'write_files:\n'
-                ' - content: |\n'
-                '     [environment:init]\n'
-                '     DIALOG/autoAcceptDefault=bool:True\n'
-                '     [environment:default]\n'
-                '{adminPwd}'
-                '     OVESETUP_CONFIG/fqdn=str:{fqdn}\n'
-                '     OVESETUP_PKI/organization=str:{org}\n'
-                '   path: {heanswers}\n'
-                '   owner: root:root\n'
-                '   permissions: \'0640\'\n'
-                'runcmd:\n'
-                # restarting sshd only at runcmd stage and restarting it
-                # in background to be sure it will never block this script
-                ' - systemctl restart sshd &\n'
-                '{engine_restore}'
-                ' - /usr/bin/engine-setup --offline'
-                ' --config-append={applianceanswers}'
-                ' --config-append={heanswers}'
-                ' 1>{port}'
-                ' 2>&1 {libgfapi_enable}\n'
-                ' - if [ $? -eq 0 ];'
-                ' then echo "{success_string}" >{port};'
-                ' else echo "{fail_string}" >{port};'
-                ' fi\n'
-                '{firewalld_reset}'
-                ' - rm {heanswers}\n'
-                ' - setenforce 1\n'
-            ).format(
-                fqdn=self.environment[
-                    ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
-                ],
-                org=org,
-                adminPwd=adminPwd,
-                applianceanswers=ohostedcons.Const.CLOUD_INIT_APPLIANCEANSWERS,
-                heanswers=ohostedcons.Const.CLOUD_INIT_HEANSWERS,
-                port=(
-                    ohostedcons.Const.VIRTIO_PORTS_PATH +
-                    ohostedcons.Const.OVIRT_HE_CHANNEL_NAME
-                ),
-                success_string=ohostedcons.Const.E_SETUP_SUCCESS_STRING,
-                fail_string=ohostedcons.Const.E_SETUP_FAIL_STRING,
-                engine_restore=engine_restore,
-                firewalld_reset=firewalld_reset,
-                libgfapi_enable=libgfapi_enable
-            )
-
-        if 'runcmd:\n' not in user_data:
-            user_data += 'runcmd:\n'
-        user_data += (
-            ' - systemctl mask cloud-init-local || '
-            ' chkconfig cloud-init-local off\n'
-            ' - systemctl mask cloud-init || ('
-            ' chkconfig cloud-init off &&'
-            ' chkconfig cloud-config off &&'
-            ' chkconfig cloud-final off'
-            ' )\n'
-        )
-
-        f = open(f_user_data, 'w')
-        f.write(user_data)
-        f.close()
-
-        meta_data = 'instance-id: {instance}\n'.format(
-            instance=self.environment[ohostedcons.VMEnv.VM_UUID],
-        )
-        f_meta_data = os.path.join(self._directory_name, 'meta-data')
-        if self.environment[ohostedcons.CloudInit.INSTANCE_HOSTNAME]:
-            meta_data += (
-                'local-hostname: {hostname}\n'
-            ).format(
-                instance=self.environment[
-                    ohostedcons.VMEnv.VM_UUID
-                ],
-                hostname=self.environment[
-                    ohostedcons.CloudInit.INSTANCE_HOSTNAME
-                ],
-            )
-
-        if self.environment[ohostedcons.CloudInit.VM_STATIC_CIDR]:
-            ip = netaddr.IPNetwork(
-                self.environment[ohostedcons.CloudInit.VM_STATIC_CIDR]
-            )
-            meta_data += (
-                'network-interfaces: |\n'
-                '  auto {iname}\n'
-                '  iface {iname} inet static\n'
-                '    address {ip_addr}\n'
-                '    network {network}\n'
-                '    netmask {netmask}\n'
-                '    broadcast {broadcast}\n'
-                '    gateway {gateway}\n'
-            ).format(
-                ip_addr=ip.ip,
-                network=ip.network,
-                netmask=ip.netmask,
-                broadcast=ip.broadcast,
-                gateway=self.environment[
-                    ohostedcons.NetworkEnv.GATEWAY
-                ],
-                iname=_interface_name,
-            )
-
-        f = open(f_meta_data, 'w')
-        f.write(meta_data)
-        f.close()
-
-        f_cloud_init_iso = os.path.join(self._directory_name, 'seed.iso')
-        rc, stdout, stderr = self.execute(
-            (
-                self.command.get('genisoimage'),
-                '-output',
-                f_cloud_init_iso,
-                '-volid',
-                'cidata',
-                '-joliet',
-                '-rock',
-                '-input-charset',
-                'utf-8',
-                f_meta_data,
-                f_user_data,
-            )
-        )
-        if rc != 0:
-            raise RuntimeError(_('Error generating cloud-init ISO image'))
-        os.unlink(f_meta_data)
-        os.unlink(f_user_data)
-        self.environment[ohostedcons.VMEnv.CDROM] = f_cloud_init_iso
-        os.chmod(self._directory_name, 0o710)
-        os.chown(
-            self._directory_name,
-            pwd.getpwnam('vdsm').pw_uid,
-            pwd.getpwnam('qemu').pw_uid,
-        )
-        os.chmod(f_cloud_init_iso, 0o600)
-        os.chown(
-            f_cloud_init_iso,
-            pwd.getpwnam('qemu').pw_uid,
-            pwd.getpwnam('qemu').pw_uid,
-        )
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_CLEANUP,
-        condition=lambda self: (
-            self._enable and
-            not self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]
-        ),
-    )
-    def _cleanup(self):
-        if self._directory_name is not None:
-            shutil.rmtree(self._directory_name)
-        self.environment[ohostedcons.VMEnv.CDROM] = None
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

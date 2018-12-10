@@ -33,14 +33,6 @@ Usage: $0
 		Generate answer file.
 	--restore-from-file=file
 		Restore an engine backup file during the deployment
-	--upgrade-appliance
-		Upgrade the engine-appliance
-	--rollback-upgrade
-		Rollback using a backup saved in a previous upgrade attempt.
-	--ansible
-		Deploy using node-zero ansible flow (default)
-	--noansible
-		Deploy using deprecated python
 
 __EOF__
 	exit 1
@@ -69,9 +61,6 @@ while [ -n "$1" ]; do
 			environment="${environment} OVEHOSTED_CORE/userAnswerFile=str:${v}"
 		;;
 		--restore-from-file=*)
-			if [[ "${plugingroups}" =~ "gr-he-setup" ]]; then
-				die "--restore-from-file can be used with ansible deployment only"
-			fi
 			if [ ! -f "${v}" ]; then
   				die "File ${v} not found!"
 			fi
@@ -80,29 +69,6 @@ while [ -n "$1" ]; do
 		;;
 		--help)
 			usage
-		;;
-		--upgrade-appliance)
-			plugingroups="gr-he-common:gr-he-upgradeappliance"
-		;;
-		--rollback-upgrade)
-			plugingroups="gr-he-common:gr-he-rollbackupgrade"
-		;;
-		--ansible)
-			if [ ! -z $ansible_noansible ]; then
-				die "--ansible and --noansible are alternative"
-			fi
-			ansible_noansible="ansible"
-			plugingroups="gr-he-common:gr-he-ansiblesetup"
-		;;
-		--noansible)
-			if [ ! -z $ansible_noansible ]; then
-				die "--ansible and --noansible are alternative"
-			fi
-			if [ ! -z $restore_from_file ]; then
-				die "--restore-from-file can be used with ansible deployment only"
-			fi
-			ansible_noansible="noansible"
-			plugingroups="gr-he-common:gr-he-setup"
 		;;
 		*)
 			die "Invalid option '${x}'"

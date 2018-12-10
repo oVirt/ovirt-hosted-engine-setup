@@ -106,10 +106,6 @@ Usage: $0 [--help] <command> [<command-args>]
             Remove the metadata for the current host's agent from the global
             status database. This makes all other hosts forget about this
             host.
-        --upgrade-appliance
-            Upgrade the engine appliance.
-        --rollback-upgrade
-            Rollback using a backup saved in a previous upgrade attempt.
 
     For additional information about a specific command try:
         $@ <command> --help
@@ -140,7 +136,7 @@ __EOF__
 
 cmd_deploy() {
     [ "$1" == "--help" ] && { cat << __EOF__
-Usage: $0 --deploy [args] [--ansible|--noansible]
+Usage: $0 --deploy [args]
     Run ovirt-hosted-engine deployment.
 
     --config-append=<file>
@@ -149,44 +145,10 @@ Usage: $0 --deploy [args] [--ansible|--noansible]
         Generate answer file.
     --restore-from-file=file
          Restore an engine backup file during the deployment
-    --ansible
-        Deploy using node-zero ansible flow (default)
-    --noansible
-        Deploy using deprecated python flow
 __EOF__
 return ;}
 
     exec @datadir@/ovirt-hosted-engine-setup/scripts/ovirt-hosted-engine-setup "$@"
-}
-
-cmd_upgrade_appliance() {
-    [ "$1" == "--help" ] && { cat << __EOF__
-Usage: $0 --upgrade-appliance [args]
-    Upgrade ovirt-hosted-engine appliance.
-
-    --config-append=<file>
-        Load extra configuration files.
-    --generate-answer=<file>
-        Generate answer file.
-__EOF__
-return ;}
-
-    exec @datadir@/ovirt-hosted-engine-setup/scripts/ovirt-hosted-engine-setup --upgrade-appliance "$@"
-}
-
-cmd_rollback_upgrade() {
-    [ "$1" == "--help" ] && { cat << __EOF__
-Usage: $0 --rollback-upgrade [args]
-    Rollback using a backup saved in a previous upgrade attempt.
-
-    --config-append=<file>
-        Load extra configuration files.
-    --generate-answer=<file>
-        Generate answer file.
-__EOF__
-return ;}
-
-    exec @datadir@/ovirt-hosted-engine-setup/scripts/ovirt-hosted-engine-setup --rollback-upgrade "$@"
 }
 
 cmd_vm_start() {
@@ -576,8 +538,6 @@ cli_broker() {
         --get-shared-config) cmd_get_shared_config "$@" ;;
         --reinitialize-lockspace) cmd_reinitialize_lockspace "$@" ;;
         --clean-metadata) cmd_clean_metadata "$@" ;;
-        --upgrade-appliance) cmd_upgrade_appliance "$@" ;;
-        --rollback-upgrade) cmd_rollback_upgrade "$@" ;;
         --help)
             rc=0
             usage "$@"

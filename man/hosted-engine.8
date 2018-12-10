@@ -20,7 +20,7 @@ hosted-engine virtual machine.
 Show the help message and exit.\&
 
 .IP "The following commands are available:"
-.IP "\fB\-\-deploy [options] [--ansible|--noansible]\fP"
+.IP "\fB\-\-deploy [options]\fP"
 Run the ovirt-hosted-engine-setup command to deploy the hosted-engine virtual
 machine.\&
 .IP "\fB\-\-vm-start [\-\-vm\-conf=<file>]\fP"
@@ -97,10 +97,6 @@ Valid types are: he_local, he_shared, ha, broker.
 Remove host's metadata from the global status database.\&
 .IP "\fB\-\-reinitialize\-lockspace [\-\-force]\fP"
 Reinitialize the sanlock lockspace file. This WIPES all locks.\&
-.IP "\fB\-\-upgrade\-appliance\fP"
-Upgrade the engine appliance. Applicable only for upgrades from 3.6/el6 to 4.0/el7.\&
-.IP "\fB\-\-rollback\-upgrade\fP"
-Rollback using a backup saved in a previous upgrade attempt.\&
 
 
 .IP "For additional information about a specific command try:"

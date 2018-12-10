@@ -23,8 +23,5 @@ MAINTAINERCLEANFILES = \
 
 SUBDIRS = \
 	gr-he-common \
-	gr-he-setup \
 	gr-he-ansiblesetup \
-	gr-he-rollbackupgrade \
-	gr-he-upgradeappliance \
 	$(NULL)

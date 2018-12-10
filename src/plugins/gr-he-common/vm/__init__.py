@@ -29,7 +29,6 @@ from . import image
 from . import mac
 from . import machine
 from . import memory
-from . import misc
 
 
 @util.export
@@ -41,7 +40,6 @@ def createPlugins(context):
     mac.Plugin(context=context)
     machine.Plugin(context=context)
     memory.Plugin(context=context)
-    misc.Plugin(context=context)
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

@@ -101,10 +101,6 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.DIALOG_TITLES_E_NETWORK,
         ),
         name=ohostedcons.Stages.CONFIG_GATEWAY,
-        condition=lambda self: (
-            not self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE] and
-            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
-        ),
     )
     def _customization(self):
 

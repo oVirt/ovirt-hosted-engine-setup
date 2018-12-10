@@ -53,6 +53,7 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_INIT
     )
     def _init(self):
+        # TODO: check what's still in use and remove everything else from here
         self.environment.setdefault(
             ohostedcons.VDSMEnv.USE_SSL,
             True
@@ -73,23 +74,6 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VDSMEnv.VDS_CLI,
             None
         )
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_LATE_SETUP,
-        name=ohostedcons.Stages.VDSMD_CONF_LOADED,
-        condition=lambda self: not self.environment[
-            ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT
-        ]
-    )
-    def _late_setup(self):
-        if self.config.read(ohostedcons.FileLocations.VDSM_CONF):
-            if (
-                    self.config.has_section('vars') and
-                    self.config.has_option('vars', 'ssl')
-            ):
-                self.environment[
-                    ohostedcons.VDSMEnv.USE_SSL
-                ] = self.config.getboolean('vars', 'ssl')
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

@@ -30,7 +30,6 @@ from otopi import plugin
 from otopi import util
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
-from ovirt_hosted_engine_setup import vds_info
 
 
 def _(m):
@@ -47,12 +46,7 @@ class Plugin(plugin.PluginBase):
         super(Plugin, self).__init__(context=context)
 
     def _getMaxVCpus(self):
-        if self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]:
-            return str(multiprocessing.cpu_count())
-        caps = vds_info.capabilities(
-            self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        )
-        return caps['cpuCores']
+        return str(multiprocessing.cpu_count())
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
@@ -86,10 +80,6 @@ class Plugin(plugin.PluginBase):
         ),
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_VM,
-        ),
-        condition=lambda self: (
-            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE] and
-            not self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE]
         ),
     )
     def _customization(self):

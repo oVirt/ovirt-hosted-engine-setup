@@ -28,8 +28,6 @@ import gettext
 from otopi import plugin
 from otopi import util
 
-from vdsm.client import ServerError
-
 from ovirt_setup_lib import dialog
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
@@ -49,22 +47,13 @@ class Plugin(plugin.PluginBase):
         super(Plugin, self).__init__(context=context)
 
     def _getMaxMemorySize(self):
-        if self.environment[ohostedcons.CoreEnv.ANSIBLE_DEPLOYMENT]:
-            with open('/proc/meminfo', 'r') as mem:
-                memAvailable = 0
-                for i in mem:
-                    sline = i.split()
-                    if str(sline[0]) in ('MemFree:', 'Buffers:', 'Cached:'):
-                        memAvailable += int(sline[1])
-            return memAvailable/1024
-
-        cli = self.environment[ohostedcons.VDSMEnv.VDS_CLI]
-        try:
-            stats = cli.Host.getStats()
-        except ServerError as e:
-            raise RuntimeError(str(e))
-
-        return max(0, int(stats['memAvailable']))
+        with open('/proc/meminfo', 'r') as mem:
+            memAvailable = 0
+            for i in mem:
+                sline = i.split()
+                if str(sline[0]) in ('MemFree:', 'Buffers:', 'Cached:'):
+                    memAvailable += int(sline[1])
+        return memAvailable/1024
 
     @plugin.event(
         stage=plugin.Stages.STAGE_INIT,
@@ -94,10 +83,6 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Stages.CUSTOMIZATION_CPU_MODEL,
             ohostedcons.Stages.CUSTOMIZATION_MAC_ADDRESS,
             ohostedcons.Stages.DIALOG_TITLES_E_VM,
-        ),
-        condition=lambda self: (
-            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE] and
-            not self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE]
         ),
     )
     def _customization(self):

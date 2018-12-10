@@ -65,10 +65,6 @@ class Plugin(plugin.PluginBase):
         before=(
             ohostedcons.Stages.DIALOG_TITLES_E_ENGINE,
         ),
-        condition=lambda self: (
-            not self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE] and
-            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
-        ),
     )
     def _customization(self):
         if (

@@ -125,25 +125,8 @@ AC_CONFIG_FILES([
 	src/plugins/gr-he-common/network/Makefile
 	src/plugins/gr-he-common/sanlock/Makefile
 	src/plugins/gr-he-common/vm/Makefile
-	src/plugins/gr-he-setup/Makefile
-	src/plugins/gr-he-setup/core/Makefile
-	src/plugins/gr-he-setup/ha/Makefile
-	src/plugins/gr-he-setup/network/Makefile
-	src/plugins/gr-he-setup/pki/Makefile
-	src/plugins/gr-he-setup/storage/Makefile
-	src/plugins/gr-he-setup/system/Makefile
-	src/plugins/gr-he-setup/vm/Makefile
-	src/plugins/gr-he-setup/libvirt/Makefile
-	src/plugins/gr-he-setup/vdsmd/Makefile
-	src/plugins/gr-he-setup/engine/Makefile
 	src/plugins/gr-he-ansiblesetup/Makefile
 	src/plugins/gr-he-ansiblesetup/core/Makefile
-	src/plugins/gr-he-rollbackupgrade/Makefile
-	src/plugins/gr-he-rollbackupgrade/core/Makefile
-	src/plugins/gr-he-upgradeappliance/Makefile
-	src/plugins/gr-he-upgradeappliance/core/Makefile
-	src/plugins/gr-he-upgradeappliance/engine/Makefile
-	src/plugins/gr-he-upgradeappliance/vm/Makefile
 	src/vdsm_hooks/Makefile
 	src/ansible/Makefile
 	src/ansible/callback_plugins/Makefile

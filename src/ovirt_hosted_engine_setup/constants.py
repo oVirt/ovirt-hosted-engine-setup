@@ -171,14 +171,6 @@ class FileLocations(object):
         OVIRT_HOSTED_ENGINE_HA,
         'vm.conf'
     )
-    README_APPLIANCE = os.path.join(
-        DOCDIR,
-        'readme.appliance'
-    )
-    README_ROLLBACK = os.path.join(
-        DOCDIR,
-        'readme.rollback'
-    )
     # TODO: Only for upgrades, remove after 3.6
     PREV_ENGINE_VM_CONF = os.path.join(
         config.SYSCONFDIR,
@@ -421,9 +413,6 @@ class CoreEnv(object):
     USER_ANSWER_FILE = 'OVEHOSTED_CORE/userAnswerFile'
     ETC_ANSWER_FILE = 'OVEHOSTED_CORE/etcAnswerFile'
     REQUIREMENTS_CHECK_ENABLED = 'OVEHOSTED_CORE/checkRequirements'
-    UPGRADING_APPLIANCE = 'OVEHOSTED_CORE/upgradingAppliance'
-    ANSIBLE_DEPLOYMENT = 'OVEHOSTED_CORE/ansibleDeployment'
-    ROLLBACK_UPGRADE = 'OVEHOSTED_CORE/rollbackUpgrade'
     RESTORE_FROM_FILE = 'OVEHOSTED_CORE/restoreFromFile'
     TEMPDIR = 'OVEHOSTED_CORE/tempDir'
     LOCAL_VM_DIR = 'OVEHOSTED_CORE/localVMDir'
@@ -433,18 +422,6 @@ class CoreEnv(object):
     )
     def DEPLOY_PROCEED(self):
         return 'OVEHOSTED_CORE/deployProceed'
-
-    @ohostedattrs(
-        answerfile=True,
-    )
-    def UPGRADE_PROCEED(self):
-        return 'OVEHOSTED_CORE/upgradeProceed'
-
-    @ohostedattrs(
-        answerfile=True,
-    )
-    def ROLLBACK_PROCEED(self):
-        return 'OVEHOSTED_CORE/rollbackProceed'
 
     @ohostedattrs(
         answerfile=True,
@@ -1195,15 +1172,12 @@ class Defaults(object):
 @util.codegen
 class Confirms(object):
     DEPLOY_PROCEED = 'DEPLOY_PROCEED'
-    UPGRADE_PROCEED = 'UPGRADE_PROCEED'
-    ROLLBACK_PROCEED = 'ROLLBACK_PROCEED'
     CPU_PROCEED = 'CPU_PROCEED'
     DISK_PROCEED = 'DISK_PROCEED'
     MEMORY_PROCEED = 'MEMORY_PROCEED'
     SCREEN_PROCEED = 'SCREEN_PROCEED'
     SETTINGS = 'SETTINGS_PROCEED'
     UPGRADE_DISK_RESIZE_PROCEED = 'UPGRADE_DISK_RESIZE_PROCEED'
-    LM_VOLUMES_UPGRADE_PROCEED = 'LM_VOLUME_UPGRADE_PROCEED'
 
 
 @util.export
@@ -1211,25 +1185,6 @@ class Confirms(object):
 class FirstHostEnv(object):
     SKIP_SHARED_STORAGE_ANSWERF = 'OVEHOSTED_FIRST_HOST/skipSharedStorageAF'
     DEPLOY_WITH_HE_35_HOSTS = 'OVEHOSTED_FIRST_HOST/deployWithHE35Hosts'
-
-
-@util.export
-@util.codegen
-class Upgrade(object):
-    BACKUP_FILE = 'OVEHOSTED_UPGRADE/backupFileName'
-    DST_BACKUP_FILE = 'OVEHOSTED_UPGRADE/dstBackupFileName'
-    RESTORE_DWH = 'OVEHOSTED_UPGRADE/restoreDwh'
-    RESTORE_REPORTS = 'OVEHOSTED_UPGRADE/restoreReports'
-    CONFIRM_UPGRADE_SUCCESS = 'OVEHOSTED_UPGRADE/confirmUpgradeSuccess'
-    CONFIRM_UPGRADE_DISK_RESIZE = 'OVEHOSTED_UPGRADE/confirmUpgradeDiskResize'
-
-    BACKUP_IMG_UUID = 'OVEHOSTED_UPGRADE/backupImgUUID'
-    BACKUP_VOL_UUID = 'OVEHOSTED_UPGRADE/backupVolUUID'
-    BACKUP_SIZE_GB = 'OVEHOSTED_UPGRADE/backupImgSizeGB'
-    EXTEND_VOLUME = 'OVEHOSTED_UPGRADE/extend_volume'
-    UPGRADE_CREATE_LM_VOLUMES = 'OVEHOSTED_UPGRADE/createLMVolumes'
-    LM_VOLUMES_UPGRADE_PROCEED = 'OVEHOSTED_UPGRADE/LMVolumesUpgradeProceed'
-    UPGRADE_ABORT_ON_UNSUPPORTED_VER = 'OVEHOSTED_UPGRADE/abortUnsupportedVer'
 
 
 @util.export

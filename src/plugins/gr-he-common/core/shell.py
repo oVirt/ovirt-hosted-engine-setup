@@ -47,9 +47,7 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_SETUP,
         priority=plugin.Stages.PRIORITY_HIGH,
         condition=lambda self: (
-            not self.environment[otopicons.BaseEnv.ABORTED] and
-            not self.environment[ohostedcons.CoreEnv.UPGRADING_APPLIANCE] and
-            not self.environment[ohostedcons.CoreEnv.ROLLBACK_UPGRADE]
+            not self.environment[otopicons.BaseEnv.ABORTED]
         ),
     )
     def _setup(self):

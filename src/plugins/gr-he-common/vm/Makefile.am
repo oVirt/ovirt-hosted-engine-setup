@@ -33,7 +33,6 @@ dist_my_PYTHON = \
 	mac.py \
 	machine.py \
 	memory.py \
-	misc.py \
 	$(NULL)
 
 clean-local: \
