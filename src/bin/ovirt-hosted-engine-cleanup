@@ -10,7 +10,7 @@ die() {
 caution() {
     if [ -z "${QUIET_MODE}" ]; then
     cat << __EOF__
-$(tput smso) This will de-configure the host to run ovirt-hosted-engine-setup from scratch. $(tput rmso)
+$(tput smso) $1 $(tput rmso)
 Caution, this operation should be used with care.
 
 Are you sure you want to proceed? [y/n]
@@ -63,7 +63,7 @@ while getopts hq option; do
     esac
 done
 
-caution
+caution "This will de-configure the host to run ovirt-hosted-engine-setup from scratch."
 
 echo "  -=== Destroy hosted-engine VM ===- "
 hosted-engine --vm-poweroff
@@ -85,7 +85,10 @@ echo "  -=== Disconnecting the hosted-engine storage domain ===- "
 hosted-engine --disconnect-storage
 
 echo "  -=== De-configure VDSM networks ===- "
-vdsm-tool restore-nets
+if ip -o a | cut -d' ' -f2 | grep ovirtmgmt; then
+    caution "A previously configured management bridge has been found on the system, this will try to de-configure it. Under certain circumstances you can loose network connection."
+    vdsm-tool restore-nets
+fi
 
 echo "  -=== Stop other services ===- "
 systemctl stop vdsmd
