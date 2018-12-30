@@ -67,6 +67,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.VMEnv.APPLIANCEMEM,
             None
         )
+        self.environment.setdefault(
+            ohostedcons.CoreEnv.MEM_REQUIREMENTS_CHECK_ENABLED,
+            True
+        )
         # fixing values from answerfiles badly generated prior than 3.6
         if type(self.environment[ohostedcons.VMEnv.MEM_SIZE_MB]) == int:
             self.environment[
@@ -142,6 +146,8 @@ class Plugin(plugin.PluginBase):
         def _check_memory_value(mem_size_mb):
             if not self.environment[
                 ohostedcons.CoreEnv.REQUIREMENTS_CHECK_ENABLED
+            ] or not self.environment[
+                ohostedcons.CoreEnv.MEM_REQUIREMENTS_CHECK_ENABLED
             ]:
                 return None
             if int(
@@ -161,6 +167,9 @@ class Plugin(plugin.PluginBase):
                     memsize=mem_size_mb,
                     maxmem=maxmem,
                 )
+        mem_size_mb_was_set = self.environment[
+            ohostedcons.VMEnv.MEM_SIZE_MB
+        ]
 
         dialog.queryEnvKey(
             dialog=self.dialog,
@@ -199,6 +208,17 @@ class Plugin(plugin.PluginBase):
         self.environment[ohostedcons.VMEnv.MEM_SIZE_MB] = int(
             self.environment[ohostedcons.VMEnv.MEM_SIZE_MB]
         )
+
+        # For the 'interactive-only' flow.
+        # set the memory size check to false if the user chose to continue.
+        if not mem_size_mb_was_set and ((
+            self.environment[ohostedcons.VMEnv.MEM_SIZE_MB]
+        ) < ohostedcons.Defaults.MINIMAL_MEM_SIZE_MB or (
+            self.environment[ohostedcons.VMEnv.MEM_SIZE_MB]
+        ) > maxmem):
+            self.environment[
+                ohostedcons.CoreEnv.MEM_REQUIREMENTS_CHECK_ENABLED
+            ] = False
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

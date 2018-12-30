@@ -59,6 +59,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.StorageEnv.ENABLE_HC_GLUSTER_SERVICE,
             None
         )
+        self.environment.setdefault(
+            ohostedcons.CoreEnv.REQUIREMENTS_CHECK_ENABLED,
+            True
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -122,11 +126,6 @@ class Plugin(plugin.PluginBase):
             ) == _('Yes').lower()
         if not self.environment[ohostedcons.CoreEnv.DEPLOY_PROCEED]:
             raise otopicontext.Abort('Aborted by user')
-
-        self.environment.setdefault(
-            ohostedcons.CoreEnv.REQUIREMENTS_CHECK_ENABLED,
-            True
-        )
 
         self.environment[ohostedcons.VMEnv.CDROM] = None
 
@@ -270,6 +269,12 @@ class Plugin(plugin.PluginBase):
             'he_cluster': self.environment[
                 ohostedcons.EngineEnv.HOST_CLUSTER_NAME
             ],
+            'he_requirements_check_enabled': self.environment[
+                ohostedcons.CoreEnv.REQUIREMENTS_CHECK_ENABLED
+            ],
+            'he_memory_requirements_check_enabled': self.environment[
+                ohostedcons.CoreEnv.MEM_REQUIREMENTS_CHECK_ENABLED
+            ]
         }
         inventory_source = 'localhost,{fqdn}'.format(
             fqdn=self.environment[
