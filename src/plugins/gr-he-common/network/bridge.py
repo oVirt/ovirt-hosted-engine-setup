@@ -144,7 +144,7 @@ class Plugin(plugin.PluginBase):
         playbook = ohostedcons.FileLocations.HE_AP_NETWORK_INTERFACES
         ah = ansible_utils.AnsibleHelper(
             playbook_name=playbook,
-            extra_vars={}
+            extra_vars={'he_just_collect_network_interfaces': True}
         )
         r = ah.run()
         self.logger.debug(r)
