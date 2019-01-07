@@ -221,6 +221,14 @@
       path: /root/DisableFenceAtStartupInSec.txt
       state: absent
     when: RESTORE_FROM_FILE is defined and RESTORE_FROM_FILE
+  - name: Restore original OvfUpdateIntervalInMinutes
+    shell: "engine-config -s OvfUpdateIntervalInMinutes=$(cat /root/OvfUpdateIntervalInMinutes.txt)"
+    environment: "{{ CMD_LANG }}"
+    changed_when: True
+  - name: Remove OvfUpdateIntervalInMinutes temporary file
+    file:
+      path: /root/OvfUpdateIntervalInMinutes.txt
+      state: absent
 - hosts: localhost
   connection: local
   vars:
