@@ -213,6 +213,9 @@ class Plugin(plugin.PluginBase):
             'he_host_name': self.environment[
                 ohostedcons.EngineEnv.APP_HOST_NAME
             ],
+            'he_host_address': self.environment[
+                ohostedcons.NetworkEnv.HOST_NAME
+            ],
             'he_local_vm_dir_path': (
                 ohostedcons.FileLocations.LOCAL_VM_DIR_PATH
             ),

@@ -100,6 +100,9 @@ class Plugin(plugin.PluginBase):
             'he_host_name': self.environment[
                 ohostedcons.EngineEnv.APP_HOST_NAME
             ],
+            'he_host_address': self.environment[
+                ohostedcons.NetworkEnv.HOST_NAME
+            ],
             'he_admin_password': self.environment[
                 ohostedcons.EngineEnv.ADMIN_PASSWORD
             ],

@@ -80,7 +80,7 @@ Requires:       glusterfs-cli >= 3.12.0
 Requires:       vdsm-python >= 4.30
 Requires(post): vdsm-python >= 4.30
 Requires:       ovirt-host >= 4.3
-Requires:       ovirt-ansible-hosted-engine-setup >= 1.0.3
+Requires:       ovirt-ansible-hosted-engine-setup >= 1.0.5
 Requires:       ovirt-ansible-engine-setup >= 1.1.5
 Requires:       ovirt-ansible-repositories >= 1.1.2
 
