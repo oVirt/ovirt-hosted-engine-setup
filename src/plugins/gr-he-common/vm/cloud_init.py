@@ -692,8 +692,8 @@ class Plugin(plugin.PluginBase):
                 password = self.dialog.queryString(
                     name='CI_ROOT_PASSWORD',
                     note=_(
-                        "Enter root password that "
-                        'will be used for the engine appliance'
+                        'Enter root password that '
+                        'will be used for the engine appliance: '
                     ),
 
                     prompt=True,
