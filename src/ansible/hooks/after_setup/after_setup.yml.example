@@ -20,7 +20,7 @@
   when: "'gluster' in groups"
 
 - name: Add additional gluster hosts to engine
-  ovirt_hosts:
+  ovirt_host:
     cluster: "{{ CLUSTER }}"
     name: "{{ host }}"
     address: "{{ host }}"

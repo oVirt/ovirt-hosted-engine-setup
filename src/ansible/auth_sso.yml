@@ -1,6 +1,5 @@
 ---
 - name: Obtain SSO token using username/password credentials
-  # TODO: remove library/ovirt_auth.py when Ansible 2.5 is out explicitly requiring it
   environment:
     OVIRT_URL: https://{{ FQDN }}/ovirt-engine/api
     OVIRT_USERNAME: admin@internal

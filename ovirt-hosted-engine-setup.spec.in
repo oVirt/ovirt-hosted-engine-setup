@@ -57,7 +57,7 @@ Requires:       libvirt-client
 Requires:       m2crypto
 Requires:       virt-install
 Requires:       python-ovirt-engine-sdk4 >= 4.2.4
-Requires:       ansible >= 2.5.2
+Requires:       ansible >= 2.7
 # default libvirt network
 Requires:       libvirt-daemon-config-network
 

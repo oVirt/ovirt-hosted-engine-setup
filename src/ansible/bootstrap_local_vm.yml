@@ -374,7 +374,7 @@
           gluster: true
         when: ENABLE_HC_GLUSTER_SERVICE is defined and ENABLE_HC_GLUSTER_SERVICE
       - name: Set VLAN ID at datacenter level
-        ovirt_networks:
+        ovirt_network:
           data_center: "{{ DATA_CENTER }}"
           name: "{{ MGMT_NETWORK }}"
           vlan_tag: "{{ vlan_id_out.stdout }}"
@@ -385,7 +385,7 @@
           src: templates/70-hosted-engine-setup.conf.j2
           dest: /etc/ovirt-host-deploy.conf.d/70-hosted-engine-setup.conf
       - name: Add host
-        ovirt_hosts:
+        ovirt_host:
           cluster: "{{ CLUSTER }}"
           name: "{{ HOST_NAME }}"
           state: present
@@ -395,7 +395,7 @@
         async: 1
         poll: 0
       - name: Wait for the host to be up
-        ovirt_hosts_facts:
+        ovirt_host_facts:
           pattern: name={{ HOST_NAME }}
           auth: "{{ ovirt_auth }}"
         register: host_result_up_check

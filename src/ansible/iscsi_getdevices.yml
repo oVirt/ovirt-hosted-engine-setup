@@ -5,7 +5,7 @@
   tasks:
   - include_tasks: auth_sso.yml
   - name: iSCSI login
-    ovirt_hosts:
+    ovirt_host:
       name: "{{ HOST_NAME }}"
       state: iscsilogin
       timeout: 30
