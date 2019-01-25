@@ -217,7 +217,6 @@ class Plugin(plugin.PluginBase):
             playbook_name=ohostedcons.FileLocations.HE_AP_CREATE_VM,
             extra_vars=target_vm_vars,
             inventory_source=inventory_source,
-            tags='full_setup',
         )
         self.logger.info(_('Creating Target VM'))
         r = ah.run()

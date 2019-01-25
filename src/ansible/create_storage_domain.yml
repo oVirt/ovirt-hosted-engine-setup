@@ -6,4 +6,3 @@
     he_create_storage_domain: true
   roles:
     - role: oVirt.hosted-engine-setup
-  tags: always

@@ -291,7 +291,6 @@ class Plugin(plugin.PluginBase):
             playbook_name=ohostedcons.FileLocations.HE_AP_BOOTSTRAP_LOCAL_VM,
             extra_vars=bootstrap_vars,
             inventory_source=inventory_source,
-            tags='full_setup',
         )
         self.logger.info(_('Starting local VM'))
         r = ah.run()
@@ -326,7 +325,6 @@ class Plugin(plugin.PluginBase):
             playbook_name=ohostedcons.FileLocations.HE_AP_INITIAL_CLEAN,
             extra_vars=bootstrap_vars,
             inventory_source=inventory_source,
-            tags='full_setup',
         )
         self.logger.info(_('Cleaning previous attempts'))
         r = ah.run()
@@ -344,7 +342,6 @@ class Plugin(plugin.PluginBase):
                 ],
             },
             inventory_source='localhost,',
-            tags='full_setup',
         )
         self.logger.info(_('Cleaning temporary resources'))
         r = ah.run()

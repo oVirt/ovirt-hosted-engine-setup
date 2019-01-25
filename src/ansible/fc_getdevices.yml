@@ -6,4 +6,3 @@
     he_setup_fc_getdevices: true
   roles:
     - role: oVirt.hosted-engine-setup
-  tags: always

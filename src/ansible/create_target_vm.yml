@@ -6,7 +6,6 @@
     he_create_target_vm: true
   roles:
     - role: oVirt.hosted-engine-setup
-  tags: always
 
 - name: Remote engine VM tasks
   hosts: engine
@@ -14,7 +13,6 @@
     he_engine_vm_configuration: true
   roles:
     - role: oVirt.hosted-engine-setup
-  tags: always
 
 - name: Final setup tasks
   hosts: localhost
@@ -23,4 +21,3 @@
     he_final_tasks: true
   roles:
     - role: oVirt.hosted-engine-setup
-  tags: always
