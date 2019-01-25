@@ -45,6 +45,11 @@ _FILTERED_VARS = (
     'ISCSI_PASSWORD',
     'ISCSI_DISCOVER_PASSWORD',
     'ROOTPWD',
+    'he_appliance_password',
+    'he_admin_password',
+    'he_iscsi_password',
+    'he_iscsi_discover_password',
+    'ansible_ssh_pass',
 )
 
 _FILTERED_REs = (
