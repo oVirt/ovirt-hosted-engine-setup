@@ -71,6 +71,8 @@ class AnsibleHelper(base.Base):
         extra_vars={},
         inventory_source='localhost,',
         raise_on_error=True,
+        tags=None,
+        skip_tags=None,
     ):
         super(AnsibleHelper, self).__init__()
         self._playbook_name = playbook_name
@@ -85,6 +87,8 @@ class AnsibleHelper(base.Base):
         self._extra_vars.update(_EXTRA_VARS_FOR_FILTERING)
         self._cb_results = {}
         self._raise_on_error = raise_on_error
+        self._tags = tags
+        self._skip_tags = skip_tags
 
     def _process_output(self, d):
         try:
@@ -115,6 +119,14 @@ class AnsibleHelper(base.Base):
                 )
             )
 
+    def _format_tags_option(self, tags, tag_option):
+        if tags and tag_option:
+            if isinstance(tags, list) or isinstance(tags, tuple):
+                tags = ','.join(tags)
+            return '%s=%s' % (tag_option, tags)
+
+        return ''
+
     def run(self):
         out_fd, out_path = tempfile.mkstemp()
         vars_fd, vars_path = tempfile.mkstemp()
@@ -123,8 +135,17 @@ class AnsibleHelper(base.Base):
             '--module-path={mp}'.format(mp=self._module_path),
             '--inventory={i}'.format(i=self._inventory_source),
             '--extra-vars=@{vf}'.format(vf=vars_path),
-            self._playbook_path,
         ]
+
+        tags = self._format_tags_option(self._tags, '--tags')
+        skip_tags = self._format_tags_option(self._skip_tags, '--skip-tags')
+        if tags:
+            ansible_playbook_cmd.append(tags)
+        if skip_tags:
+            ansible_playbook_cmd.append(skip_tags)
+
+        ansible_playbook_cmd.append(self._playbook_path)
+
         env = os.environ.copy()
         env[ohostedcons.AnsibleCallback.OTOPI_CALLBACK_OF] = out_path
         env[

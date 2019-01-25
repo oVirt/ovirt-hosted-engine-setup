@@ -6,3 +6,4 @@
     he_pre_checks_validate_hostnames: true
   roles:
     - role: oVirt.hosted-engine-setup
+  tags: always
