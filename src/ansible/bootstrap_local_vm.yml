@@ -7,7 +7,6 @@
     he_pre_checks: true
   roles:
     - role: oVirt.hosted-engine-setup
-  tags: always
 
 - name: Preper for engine setup on a local VM
   hosts: engine
@@ -15,7 +14,6 @@
     he_bootstrap_pre_install_local_engine_vm: true
   roles:
     - role: oVirt.hosted-engine-setup
-  tags: always
 
 - name: Engine setup on a local VM
   hosts: engine
@@ -32,7 +30,6 @@
     ovirt_engine_setup_admin_password: "{{ he_admin_password }}"
   roles:
     - role: oVirt.engine-setup
-  tags: always
 
 - name: Engine setup post tasks
   hosts: engine
@@ -40,7 +37,6 @@
     he_bootstrap_post_install_local_engine_vm: true
   roles:
     - role: oVirt.hosted-engine-setup
-  tags: always
 
 - name: Add host
   hosts: localhost
@@ -49,4 +45,3 @@
     he_bootstrap_local_vm_add_host: true
   roles:
     - role: oVirt.hosted-engine-setup
-  tags: always
