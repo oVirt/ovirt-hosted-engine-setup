@@ -214,7 +214,7 @@ class Plugin(plugin.PluginBase):
             ]
         )
         ah = ansible_utils.AnsibleHelper(
-            playbook_name=ohostedcons.FileLocations.HE_AP_CREATE_VM,
+            tags=ohostedcons.Const.HE_TAG_CREATE_VM,
             extra_vars=target_vm_vars,
             inventory_source=inventory_source,
         )

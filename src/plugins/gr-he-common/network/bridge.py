@@ -141,10 +141,9 @@ class Plugin(plugin.PluginBase):
     )
     def _customization(self):
         validValues = []
-        playbook = ohostedcons.FileLocations.HE_AP_NETWORK_INTERFACES
         ah = ansible_utils.AnsibleHelper(
-            playbook_name=playbook,
-            extra_vars={'he_just_collect_network_interfaces': True}
+            tags=ohostedcons.Const.HE_TAG_NETWORK_INTERFACES,
+            extra_vars={'he_just_collect_network_interfaces': True},
         )
         r = ah.run()
         self.logger.debug(r)

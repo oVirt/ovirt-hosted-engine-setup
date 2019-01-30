@@ -1,8 +1,0 @@
----
-- name: Clean temporary resources
-  hosts: localhost
-  connection: local
-  vars:
-    he_final_clean: true
-  roles:
-    - role: oVirt.hosted-engine-setup

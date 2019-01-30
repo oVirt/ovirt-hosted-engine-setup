@@ -288,7 +288,7 @@ class Plugin(plugin.PluginBase):
         self.initial_clean_up(bootstrap_vars, inventory_source)
 
         ah = ansible_utils.AnsibleHelper(
-            playbook_name=ohostedcons.FileLocations.HE_AP_BOOTSTRAP_LOCAL_VM,
+            tags=ohostedcons.Const.HE_TAG_BOOTSTRAP_LOCAL_VM,
             extra_vars=bootstrap_vars,
             inventory_source=inventory_source,
         )
@@ -322,7 +322,7 @@ class Plugin(plugin.PluginBase):
 
     def initial_clean_up(self, bootstrap_vars, inventory_source):
         ah = ansible_utils.AnsibleHelper(
-            playbook_name=ohostedcons.FileLocations.HE_AP_INITIAL_CLEAN,
+            tags=ohostedcons.Const.HE_TAG_INITIAL_CLEAN,
             extra_vars=bootstrap_vars,
             inventory_source=inventory_source,
         )
@@ -335,7 +335,7 @@ class Plugin(plugin.PluginBase):
     )
     def _cleanup(self):
         ah = ansible_utils.AnsibleHelper(
-            playbook_name=ohostedcons.FileLocations.HE_AP_FINAL_CLEAN,
+            tags=ohostedcons.Const.HE_TAG_FINAL_CLEAN,
             extra_vars={
                 'he_local_vm_dir': self.environment[
                     ohostedcons.CoreEnv.LOCAL_VM_DIR

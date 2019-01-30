@@ -1,9 +1,0 @@
----
-- name: Network interfaces
-  hosts: localhost
-  connection: local
-  vars:
-    he_pre_checks_network: true
-    he_just_collect_network_interfaces: true
-  roles:
-    - role: oVirt.hosted-engine-setup

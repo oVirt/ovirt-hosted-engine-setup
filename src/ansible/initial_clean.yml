@@ -1,8 +1,0 @@
----
-- name: Clean previous deploy attempts
-  hosts: localhost
-  connection: local
-  vars:
-    he_initial_clean: true
-  roles:
-    - role: oVirt.hosted-engine-setup

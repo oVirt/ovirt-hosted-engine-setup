@@ -1,8 +1,0 @@
----
-- name: Fibre Channel related tasks
-  hosts: localhost
-  connection: local
-  vars:
-    he_setup_fc_getdevices: true
-  roles:
-    - role: oVirt.hosted-engine-setup

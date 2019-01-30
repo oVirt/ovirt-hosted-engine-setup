@@ -1,0 +1,6 @@
+---
+- name: Trigger ovirt.hosted_engine_setup role
+  hosts: localhost
+  connection: local
+  roles:
+    - role: ovirt.hosted_engine_setup

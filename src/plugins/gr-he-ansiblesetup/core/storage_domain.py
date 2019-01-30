@@ -213,7 +213,7 @@ class Plugin(plugin.PluginBase):
             'he_iscsi_portal_port': port,
         }
         ah = ansible_utils.AnsibleHelper(
-            playbook_name=ohostedcons.FileLocations.HE_AP_ISCSI_DISCOVER,
+            tags=ohostedcons.Const.HE_TAG_ISCSI_DISCOVER,
             extra_vars=iscsi_discover_vars,
         )
         self.logger.info(_('Discovering iSCSI targets'))
@@ -316,7 +316,7 @@ class Plugin(plugin.PluginBase):
             'he_iscsi_target': target,
         }
         ah = ansible_utils.AnsibleHelper(
-            playbook_name=ohostedcons.FileLocations.HE_AP_ISCSI_GETDEVICES,
+            tags=ohostedcons.Const.HE_TAG_ISCSI_GETDEVICES,
             extra_vars=iscsi_getdevices_vars,
         )
         self.logger.info(_('Getting iSCSI LUNs list'))
@@ -348,7 +348,7 @@ class Plugin(plugin.PluginBase):
             ]
         }
         ansible_helper = ansible_utils.AnsibleHelper(
-            playbook_name=ohostedcons.FileLocations.HE_AP_FC_GETDEVICES,
+            tags=ohostedcons.Const.HE_TAG_FC_GETDEVICES,
             extra_vars=fc_getdevices_vars,
         )
         self.logger.info(_('Getting Fibre Channel LUNs list'))
@@ -756,7 +756,7 @@ class Plugin(plugin.PluginBase):
                 'he_discard': discard,
             }
             ah = ansible_utils.AnsibleHelper(
-                playbook_name=ohostedcons.FileLocations.HE_AP_CREATE_SD,
+                tags=ohostedcons.Const.HE_TAG_CREATE_SD,
                 extra_vars=storage_domain_vars,
             )
             self.logger.info(_('Creating Storage Domain'))

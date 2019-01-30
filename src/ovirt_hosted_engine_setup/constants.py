@@ -342,15 +342,7 @@ class FileLocations(object):
         'ansible',
     )
 
-    HE_AP_INITIAL_CLEAN = 'initial_clean.yml'
-    HE_AP_FINAL_CLEAN = 'final_clean.yml'
-    HE_AP_BOOTSTRAP_LOCAL_VM = 'bootstrap_local_vm.yml'
-    HE_AP_CREATE_SD = 'create_storage_domain.yml'
-    HE_AP_CREATE_VM = 'create_target_vm.yml'
-    HE_AP_ISCSI_DISCOVER = 'iscsi_discover.yml'
-    HE_AP_ISCSI_GETDEVICES = 'iscsi_getdevices.yml'
-    HE_AP_FC_GETDEVICES = 'fc_getdevices.yml'
-    HE_AP_NETWORK_INTERFACES = 'get_network_interfaces.yml'
+    HE_AP_TRIGGER_ROLE = 'trigger_role.yml'
 
 
 @util.export
@@ -404,6 +396,17 @@ class Const(object):
     VM_LIVELINESS_CHECK_TIMEOUT = 900
     ANSIBLE_R_OTOPI_PREFIX = 'otopi_'
     STORAGE_SERVER_TIMEOUT = 60
+
+    HE_TAG_INITIAL_CLEAN = 'initial_clean'
+    HE_TAG_FINAL_CLEAN = 'final_clean'
+    HE_TAG_BOOTSTRAP_LOCAL_VM = 'bootstrap_local_vm'
+    HE_TAG_CREATE_SD = 'create_storage_domain'
+    HE_TAG_CREATE_VM = 'create_target_vm'
+    HE_TAG_ISCSI_DISCOVER = 'iscsi_discover'
+    HE_TAG_ISCSI_GETDEVICES = 'iscsi_getdevices'
+    HE_TAG_FC_GETDEVICES = 'fc_getdevices'
+    HE_TAG_NETWORK_INTERFACES = 'get_network_interfaces'
+    HE_TAG_VALIDATE_HOSTNAMES = 'validate_hostnames'
 
 
 @util.export

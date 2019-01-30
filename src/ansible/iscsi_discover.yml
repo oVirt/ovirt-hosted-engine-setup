@@ -1,8 +1,0 @@
----
-- name: iSCSI related tasks
-  hosts: localhost
-  connection: local
-  vars:
-    he_setup_iscsi_discover: true
-  roles:
-    - role: oVirt.hosted-engine-setup
