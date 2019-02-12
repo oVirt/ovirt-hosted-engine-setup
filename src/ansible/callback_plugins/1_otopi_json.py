@@ -149,19 +149,30 @@ class CallbackModule(CallbackBase):
             else:
                 msg = u"ok: [{h}]".format(h=result._host.get_name())
 
-        if not (result._task.loop and 'results' in result._result):
-            if result.task_name == 'debug':
+        if result._task.action == 'debug':
+            if (
+                '_ansible_verbose_always' in result._result and
+                result._result['_ansible_verbose_always']
+            ):
                 for i in result._result:
                     if not i.startswith('_'):
-                        self.write_msg(
-                            ohostedcons.AnsibleCallback.DEBUG,
-                            u'{i}: {v}'.format(
-                                i=i,
-                                v=result._result[i]
+                        if i == 'msg':
+                            self.write_msg(
+                                ohostedcons.AnsibleCallback.INFO,
+                                u'{m}'.format(m=result._result[i])
                             )
-                        )
+                        else:
+                            self.write_msg(
+                                ohostedcons.AnsibleCallback.DEBUG,
+                                u'{i}: {v}'.format(
+                                    i=i,
+                                    v=result._result[i]
+                                )
+                            )
             else:
-                self.write_msg(ohostedcons.AnsibleCallback.INFO, msg)
+                self.write_msg(ohostedcons.AnsibleCallback.DEBUG, msg)
+        else:
+            self.write_msg(ohostedcons.AnsibleCallback.INFO, msg)
 
         register = result._task_fields['register']
         if register and register.startswith(
@@ -208,7 +219,8 @@ class CallbackModule(CallbackBase):
 
     def v2_playbook_on_task_start(self, task, is_conditional):
         task_name = task.get_name().strip()
-        if task_name != 'debug':
+        action = task._attributes['action']
+        if action != 'debug':
             self.write_msg(
                 ohostedcons.AnsibleCallback.INFO,
                 u"TASK [{t}]".format(
