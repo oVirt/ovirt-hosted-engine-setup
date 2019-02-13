@@ -510,6 +510,9 @@ class NetworkEnv(object):
     REFUSE_DEPLOYING_WITH_NM = 'OVEHOSTED_NETWORK/refuseDeployingWithNM'
     ALLOW_INVALID_BOND_MODES = 'OVEHOSTED_NETWORK/allowInvalidBondModes'
 
+    FORCE_IPV4 = 'OVEHOSTED_NETWORK/forceIPv4'
+    FORCE_IPV6 = 'OVEHOSTED_NETWORK/forceIPv6'
+
 
 @util.export
 @util.codegen
@@ -905,7 +908,6 @@ class CloudInit(object):
         return 'OVEHOSTED_VM/cloudInitISO'
 
     ROOTPWD = 'OVEHOSTED_VM/cloudinitRootPwd'
-    HOST_IP = 'OVEHOSTED_VM/cloudinitHostIP'
 
     @ohostedattrs(
         answerfile=True,
