@@ -33,6 +33,10 @@ Usage: $0
 		Generate answer file.
 	--restore-from-file=file
 		Restore an engine backup file during the deployment
+	--4
+		Force IPv4 on dual stack env
+	--6
+		Force IPv6 on dual stack env
 
 __EOF__
 	exit 1
@@ -66,6 +70,12 @@ while [ -n "$1" ]; do
 			fi
 			restore_from_file=$(realpath "${v}")
 			environment="${environment} OVEHOSTED_CORE/restoreFromFile=str:${restore_from_file}"
+		;;
+		--4)
+			environment="${environment} OVEHOSTED_NETWORK/forceIPv4=bool:True"
+		;;
+		--6)
+			environment="${environment} OVEHOSTED_NETWORK/forceIPv6=bool:True"
 		;;
 		--help)
 			usage

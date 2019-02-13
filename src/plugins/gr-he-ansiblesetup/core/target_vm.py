@@ -173,9 +173,6 @@ class Plugin(plugin.PluginBase):
             'he_vm_etc_hosts': self.environment[
                 ohostedcons.CloudInit.VM_ETC_HOSTS
             ],
-            'he_host_ip': self.environment[
-                ohostedcons.CloudInit.HOST_IP
-            ],
             'he_disk_size_GB': self.environment[
                 ohostedcons.StorageEnv.IMAGE_SIZE_GB
             ],
@@ -207,6 +204,12 @@ class Plugin(plugin.PluginBase):
             'he_cluster': self.environment[
                 ohostedcons.EngineEnv.HOST_CLUSTER_NAME
             ],
+            'he_force_ip4': self.environment[
+                ohostedcons.NetworkEnv.FORCE_IPV4
+            ],
+            'he_force_ip6': self.environment[
+                ohostedcons.NetworkEnv.FORCE_IPV6
+            ]
         }
         inventory_source = 'localhost, {fqdn}'.format(
             fqdn=self.environment[

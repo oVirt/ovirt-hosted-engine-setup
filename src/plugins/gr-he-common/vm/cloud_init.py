@@ -456,10 +456,6 @@ class Plugin(plugin.PluginBase):
             None
         )
         self.environment.setdefault(
-            ohostedcons.CloudInit.HOST_IP,
-            None
-        )
-        self.environment.setdefault(
             ohostedcons.VMEnv.AUTOMATE_VM_SHUTDOWN,
             None
         )
@@ -839,9 +835,6 @@ class Plugin(plugin.PluginBase):
                 caseSensitive=False,
                 default=_('No')
             ) == _('Yes').lower()
-        self.environment[
-            ohostedcons.CloudInit.HOST_IP
-        ] = str(self._getMyIPAddrList()[0].ip)
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

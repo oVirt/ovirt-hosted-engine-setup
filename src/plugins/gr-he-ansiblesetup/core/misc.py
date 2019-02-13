@@ -63,6 +63,14 @@ class Plugin(plugin.PluginBase):
             ohostedcons.CoreEnv.REQUIREMENTS_CHECK_ENABLED,
             True
         )
+        self.environment.setdefault(
+            ohostedcons.NetworkEnv.FORCE_IPV4,
+            False
+        )
+        self.environment.setdefault(
+            ohostedcons.NetworkEnv.FORCE_IPV6,
+            False
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -245,9 +253,6 @@ class Plugin(plugin.PluginBase):
             'he_root_ssh_pubkey': self.environment[
                 ohostedcons.CloudInit.ROOT_SSH_PUBKEY
             ],
-            'he_host_ip': self.environment[
-                ohostedcons.CloudInit.HOST_IP
-            ],
             'he_root_ssh_access': self.environment[
                 ohostedcons.CloudInit.ROOT_SSH_ACCESS
             ].lower(),
@@ -277,6 +282,12 @@ class Plugin(plugin.PluginBase):
             ],
             'he_memory_requirements_check_enabled': self.environment[
                 ohostedcons.CoreEnv.MEM_REQUIREMENTS_CHECK_ENABLED
+            ],
+            'he_force_ip4': self.environment[
+                ohostedcons.NetworkEnv.FORCE_IPV4
+            ],
+            'he_force_ip6': self.environment[
+                ohostedcons.NetworkEnv.FORCE_IPV6
             ]
         }
         inventory_source = 'localhost,{fqdn}'.format(
