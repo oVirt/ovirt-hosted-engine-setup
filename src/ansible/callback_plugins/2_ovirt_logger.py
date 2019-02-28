@@ -373,7 +373,14 @@ class CallbackModule(CallbackBase):
             self._setup_logging()
 
         self.start_time = datetime.utcnow()
+        self._finised_tasks = []
+        self._task_duration = None
+        self._task_start_time = None
         self.errors = 0
+
+    def _get_task_duration(self):
+        runtime = datetime.utcnow() - self._task_start_time
+        return runtime.seconds
 
     def v2_playbook_on_start(self, playbook):
         self.playbook = playbook
@@ -388,6 +395,7 @@ class CallbackModule(CallbackBase):
         self.logger.debug(u"ansible start {v}".format(v=data))
 
     def v2_playbook_on_task_start(self, task, is_conditional):
+        self._task_start_time = datetime.utcnow()
         self._update_vars_cache()
         data = {
             'status': "OK",
@@ -397,26 +405,63 @@ class CallbackModule(CallbackBase):
         }
         self.logger.info(u"ansible task start {v}".format(v=data))
 
+    def _get_tasks_list(self):
+        task_list = []
+        for task in self._finised_tasks:
+            task_duration = ""
+            if task["ansible_task"]:
+                if task["task_duration"] < 1:
+                    task_duration = "[ < 1 sec ]"
+                else:
+                    task_duration = "[  {:02}:{:02}  ]".format(
+                        int((task["task_duration"] // 60) % 60),
+                        int(task["task_duration"] % 60)
+                    )
+
+                if task["status"] != "OK":
+                    task_duration = "[ FAILED  ]"
+
+                task_list.append(
+                    "%s\t%s" % (task_duration, task["ansible_task"])
+                )
+        return task_list
+
     def v2_playbook_on_stats(self, stats):
         end_time = datetime.utcnow()
         runtime = end_time - self.start_time
+
+        playbook_duration = "{:02}:{:02} Minutes".format(
+            int((runtime.seconds // 60) % 60),
+            int(runtime.seconds % 60)
+        )
+
         summarize_stat = {}
         for host in stats.processed.keys():
             summarize_stat[host] = stats.summarize(host)
 
         if self.errors == 0:
-            status = "OK"
+            status = "SUCCESS"
         else:
             status = "FAILED"
+
+        title = "SUMMARY:\n"
+        columns = "Duration\tTask Name\n--------\t--------\n"
+        task_list = "\n".join(self._get_tasks_list())
+
+        summary = "%s%s%s" % (title, columns, task_list)
 
         data = {
             'status': status,
             'ansible_type': "finish",
             'ansible_playbook': self.playbook._file_name,
-            'ansible_playbook_duration': runtime.total_seconds(),
+            'ansible_playbook_duration': playbook_duration,
             'ansible_result': self.dump_obj(summarize_stat),
         }
-        self.logger.info(u"ansible stats {v}".format(v=data))
+
+        self.logger.info(u"ansible stats {v}".format(
+            v=self._pretty_logging(data)
+        ))
+        self.logger.info(summary)
 
     def v2_runner_on_ok(self, result, **kwargs):
         self._update_vars_cache()
@@ -426,8 +471,10 @@ class CallbackModule(CallbackBase):
             'ansible_playbook': self.playbook._file_name,
             'ansible_host': result._host.name,
             'ansible_task': result._task.name,
+            'task_duration': self._get_task_duration(),
         }
         self.logger.info(u"ansible ok {v}".format(v=data))
+        self._finised_tasks.append(data)
 
     def v2_runner_on_skipped(self, result, **kwargs):
         self._update_vars_cache()
@@ -470,12 +517,14 @@ class CallbackModule(CallbackBase):
             'ansible_playbook': self.playbook._file_name,
             'ansible_host': result._host.name,
             'ansible_task': result._task.name,
-            'ansible_result': self.dump_obj(result._result)
+            'ansible_result': self.dump_obj(result._result),
+            'task_duration': self._get_task_duration(),
         }
         self.errors += 1
         self.logger.error(
             u"ansible failed {v}".format(v=data)
         )
+        self._finised_tasks.append(data)
 
     def v2_runner_on_unreachable(self, result, **kwargs):
         self._update_vars_cache()
@@ -485,9 +534,11 @@ class CallbackModule(CallbackBase):
             'ansible_playbook': self.playbook._file_name,
             'ansible_host': result._host.name,
             'ansible_task': result._task.name,
-            'ansible_result': self.dump_obj(result._result)
+            'ansible_result': self.dump_obj(result._result),
+            'task_duration': self._get_task_duration(),
         }
         self.logger.error(u"ansible unreachable {v}".format(v=data))
+        self._finised_tasks.append(data)
 
     def v2_runner_on_async_failed(self, result, **kwargs):
         self._update_vars_cache()
@@ -497,10 +548,12 @@ class CallbackModule(CallbackBase):
             'ansible_playbook': self.playbook._file_name,
             'ansible_host': result._host.name,
             'ansible_task': result._task.name,
-            'ansible_result': self.dump_obj(result._result)
+            'ansible_result': self.dump_obj(result._result),
+            'task_duration': self._get_task_duration(),
         }
         self.errors += 1
         self.logger.error(u"ansible async {v}".format(v=data))
+        self._finised_tasks.append(data)
 
     def v2_playbook_on_play_start(self, play):
         self.play = play
