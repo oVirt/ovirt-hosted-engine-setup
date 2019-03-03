@@ -463,6 +463,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.StorageEnv.ENABLE_LIBGFAPI,
             None
         )
+        self.environment.setdefault(
+            ohostedcons.CloudInit.APPLY_OPENSCAP_PROFILE,
+            None
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -782,6 +786,23 @@ class Plugin(plugin.PluginBase):
                 validValues=vv_root_a,
                 caseSensitive=False,
             )
+
+            if self.environment[
+                ohostedcons.CloudInit.APPLY_OPENSCAP_PROFILE
+            ] is None:
+                self.environment[
+                    ohostedcons.CloudInit.APPLY_OPENSCAP_PROFILE
+                ] = self.dialog.queryString(
+                    name='CI_APPLY_OPENSCAP_PROFILE',
+                    note=_(
+                        'Do you want to apply a default OpenSCAP security '
+                        'profile (@VALUES@) [@DEFAULT@]: '
+                    ),
+                    prompt=True,
+                    validValues=(_('Yes'), _('No')),
+                    caseSensitive=False,
+                    default=_('No')
+                ) == _('Yes').lower()
 
         if (
             self.environment[

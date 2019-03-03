@@ -281,6 +281,9 @@ class Plugin(plugin.PluginBase):
             'he_root_ssh_access': self.environment[
                 ohostedcons.CloudInit.ROOT_SSH_ACCESS
             ].lower(),
+            'he_apply_openscap_profile': self.environment[
+                ohostedcons.CloudInit.APPLY_OPENSCAP_PROFILE
+            ],
             'he_enable_libgfapi': self.environment[
                 ohostedcons.StorageEnv.ENABLE_LIBGFAPI
             ],

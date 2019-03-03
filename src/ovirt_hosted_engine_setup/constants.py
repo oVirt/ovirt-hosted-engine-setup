@@ -925,6 +925,12 @@ class CloudInit(object):
     @ohostedattrs(
         answerfile=True,
     )
+    def APPLY_OPENSCAP_PROFILE(self):
+        return 'OVEHOSTED_VM/applyOpenScapProfile'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
     def INSTANCE_HOSTNAME(self):
         return 'OVEHOSTED_VM/cloudinitInstanceHostName'
 
