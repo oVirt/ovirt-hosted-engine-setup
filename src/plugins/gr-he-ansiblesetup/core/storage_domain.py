@@ -78,7 +78,7 @@ class Plugin(plugin.PluginBase):
             note=_(
                 'If needed, specify additional mount options for '
                 'the connection to the hosted-engine storage'
-                'domain [@DEFAULT@]: '
+                'domain (example: rsize=32768,wsize=32768) [@DEFAULT@]: '
             ),
             prompt=True,
             caseSensitive=True,
