@@ -71,6 +71,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.NetworkEnv.FORCE_IPV6,
             False
         )
+        self.environment.setdefault(
+            ohostedcons.CoreEnv.RENEW_PKI_ON_RESTORE,
+            None
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -198,6 +202,27 @@ class Plugin(plugin.PluginBase):
                 default=ohostedcons.Defaults.DEFAULT_CLUSTER_NAME,
             )
 
+        if self.environment[
+            ohostedcons.CoreEnv.RESTORE_FROM_FILE
+        ] is not None and self.environment[
+            ohostedcons.CoreEnv.RENEW_PKI_ON_RESTORE
+        ] is None:
+            self.environment[
+                ohostedcons.CoreEnv.RENEW_PKI_ON_RESTORE
+            ] = self.dialog.queryString(
+                name='ovehosted_renew_pki',
+                note=_(
+                    'Renew engine CA on restore if needed? Please notice '
+                    'that if you choose Yes, all hosts will have to be later '
+                    'manually reinstalled from the engine. '
+                    '(@VALUES@)[@DEFAULT@]: '
+                ),
+                prompt=True,
+                validValues=(_('Yes'), _('No')),
+                caseSensitive=False,
+                default=_('No')
+            ) == _('Yes').lower()
+
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
         name=ohostedcons.Stages.ANSIBLE_BOOTSTRAP_LOCAL_VM,
@@ -290,6 +315,14 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.NetworkEnv.FORCE_IPV6
             ]
         }
+
+        if self.environment[
+            ohostedcons.CoreEnv.RENEW_PKI_ON_RESTORE
+        ] is not None:
+            bootstrap_vars['he_pki_renew_on_restore'] = self.environment[
+                ohostedcons.CoreEnv.RENEW_PKI_ON_RESTORE
+            ]
+
         inventory_source = 'localhost,{fqdn}'.format(
             fqdn=self.environment[
                 ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
