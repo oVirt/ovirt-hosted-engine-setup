@@ -792,10 +792,15 @@ class Plugin(plugin.PluginBase):
                     if self.environment[
                         ohostedcons.StorageEnv.DOMAIN_TYPE
                     ] == ohostedcons.DomainTypes.NFS:
+                        # workaround for https://bugzilla.redhat.com/1688982
+                        address = storage['address']
+                        if ":" in address and address[0] != "[":
+                            address = "[{a}]".format(a=address)
+
                         self.environment[
                             ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
                         ] = '{address}:{path}'.format(
-                            address=storage['address'],
+                            address=address,
                             path=storage['path'],
                         )
                         # TODO: any way to get it from the engine
