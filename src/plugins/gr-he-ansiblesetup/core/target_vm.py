@@ -80,7 +80,7 @@ class Plugin(plugin.PluginBase):
         ):
             storage_domain_det = self.environment[
                 ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
-            ].split(':')
+            ].rsplit(':', 1)
             if len(storage_domain_det) != 2:
                 msg = _('Invalid connection path')
                 self.logger.error(msg)
