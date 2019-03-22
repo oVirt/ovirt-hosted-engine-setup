@@ -194,33 +194,16 @@ class Plugin(plugin.PluginBase):
 
     @plugin.event(
         stage=plugin.Stages.STAGE_VALIDATION,
-        name=ohostedcons.Stages.GOT_HOSTNAME_FIRST_HOST,
-    )
-    def _get_hostname_from_bridge_if(self):
-        if not self.environment[
-            ohostedcons.NetworkEnv.HOST_NAME
-        ]:
-            self.environment[
-                ohostedcons.NetworkEnv.HOST_NAME
-            ] = socket.gethostname()
-        if not self.environment[
-            ohostedcons.EngineEnv.APP_HOST_NAME
-        ]:
-            self.environment[
-                ohostedcons.EngineEnv.APP_HOST_NAME
-            ] = socket.gethostname()
-
-    @plugin.event(
-        stage=plugin.Stages.STAGE_VALIDATION,
-        after=(
-            ohostedcons.Stages.GOT_HOSTNAME_FIRST_HOST,
-        ),
     )
     def _validate_hostname_first_host(self):
         self._hostname_helper.getHostname(
             envkey=ohostedcons.NetworkEnv.HOST_NAME,
-            whichhost='HostedEngine',
-            supply_default=False,
+            whichhost='first HE',
+            prompttext=(
+                'Please provide the hostname of this host '
+                'on the management network'
+            ),
+            supply_default=True,
             validate_syntax=True,
             system=True,
             dns=True,
@@ -231,6 +214,13 @@ class Plugin(plugin.PluginBase):
             not_local=False,
             allow_empty=False,
         )
-
+        if not self.environment[
+            ohostedcons.EngineEnv.APP_HOST_NAME
+        ]:
+            self.environment[
+                ohostedcons.EngineEnv.APP_HOST_NAME
+            ] = self.environment[
+                ohostedcons.NetworkEnv.HOST_NAME
+            ]
 
 # vim: expandtab tabstop=4 shiftwidth=4
