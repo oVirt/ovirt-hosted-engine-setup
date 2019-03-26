@@ -55,7 +55,7 @@ Requires:       libvirt-client
 Requires:       m2crypto
 Requires:       virt-install
 Requires:       python-ovirt-engine-sdk4 >= 4.2.4
-Requires:       ansible >= 2.5.2
+Requires:       ansible >= 2.7
 # default libvirt network
 Requires:       libvirt-daemon-config-network
 
@@ -80,9 +80,9 @@ Requires:       glusterfs-cli >= 3.12.0
 Requires:       vdsm-python >= 4.30
 Requires(post): vdsm-python >= 4.30
 Requires:       ovirt-host >= 4.3
-Requires:       ovirt-ansible-hosted-engine-setup >= 1.0.10
-Requires:       ovirt-ansible-engine-setup >= 1.1.5
-Requires:       ovirt-ansible-repositories >= 1.1.2
+Requires:       ovirt-ansible-hosted-engine-setup >= 1.0.13
+Requires:       ovirt-ansible-engine-setup >= 1.1.9
+Requires:       ovirt-ansible-repositories >= 1.1.5
 
 Conflicts:      ovirt-engine-appliance < 4.3
 Conflicts:      ovirt-engine-appliance >= 4.4
@@ -147,6 +147,9 @@ print((
 ' > %{_sysconfdir}/ovirt-hosted-engine/virsh_auth.conf
 
 %changelog
+* Tue Mar 26 2019 Simone Tiraboschi <stirabos@redhat.com> - 2.3.7-1
+- 2.3.7-1
+
 * Mon Mar 04 2019 Simone Tiraboschi <stirabos@redhat.com> - 2.3.7-0.0.master
 - 2.3.7-0.0.master
 
