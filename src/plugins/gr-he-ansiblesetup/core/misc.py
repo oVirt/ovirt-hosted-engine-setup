@@ -361,6 +361,15 @@ class Plugin(plugin.PluginBase):
             ],
             'he_force_ip6': self.environment[
                 ohostedcons.NetworkEnv.FORCE_IPV6
+            ],
+            'he_network_test': self.environment[
+                ohostedcons.NetworkEnv.NETWORK_TEST
+            ],
+            'he_tcp_t_address': self.environment[
+                ohostedcons.NetworkEnv.NETWORK_TEST_TCP_ADDRESS
+            ],
+            'he_tcp_t_port': self.environment[
+                ohostedcons.NetworkEnv.NETWORK_TEST_TCP_PORT
             ]
         }
 

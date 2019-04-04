@@ -38,6 +38,7 @@ Requires:       bind-utils
 Requires:       genisoimage
 Requires:       libselinux-python
 Requires:       lsof
+Requires:       nmap-ncat
 Requires:       openssh-server
 Requires:       openssl
 Requires:       pyliblzma

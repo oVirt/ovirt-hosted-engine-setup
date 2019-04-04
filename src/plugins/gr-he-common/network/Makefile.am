@@ -28,6 +28,7 @@ dist_my_PYTHON = \
 	__init__.py \
 	bridge.py \
 	gateway.py \
+	network_check.py \
 	$(NULL)
 
 clean-local: \

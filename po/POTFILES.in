@@ -31,6 +31,7 @@
 ./src/plugins/gr-he-common/engine/__init__.py
 ./src/plugins/gr-he-common/network/bridge.py
 ./src/plugins/gr-he-common/network/gateway.py
+./src/plugins/gr-he-common/network/network_check.py
 ./src/plugins/gr-he-common/network/__init__.py
 ./src/plugins/gr-he-common/sanlock/__init__.py
 ./src/plugins/gr-he-common/sanlock/lockspace.py

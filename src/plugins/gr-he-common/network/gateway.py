@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2017 Red Hat, Inc.
+# Copyright (C) 2013-2019 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -32,7 +32,6 @@ from otopi import plugin
 from otopi import util
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
-from ovirt_hosted_engine_setup import util as ohostedutil
 
 
 def _(m):
@@ -80,7 +79,6 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_SETUP,
     )
     def _setup(self):
-        self.command.detect('ping')
         if (
             os.environ.get('proxy') or
             os.environ.get('http_proxy') or
@@ -107,32 +105,19 @@ class Plugin(plugin.PluginBase):
         interactive = self.environment[
             ohostedcons.NetworkEnv.GATEWAY
         ] is None
-        valid = False
-        while not valid:
-            if interactive:
-                self.environment[
-                    ohostedcons.NetworkEnv.GATEWAY
-                ] = self.dialog.queryString(
-                    name='OVEHOSTED_GATEWAY',
-                    note=_(
-                        'Please indicate a pingable gateway IP address '
-                        '[@DEFAULT@]: '
-                    ),
-                    prompt=True,
-                    caseSensitive=True,
-                    default=self._get_default_gw(),
-                )
-            valid = ohostedutil.check_is_pingable(
-                self,
-                self.environment[
-                    ohostedcons.NetworkEnv.GATEWAY
-                ]
+        if interactive:
+            self.environment[
+                ohostedcons.NetworkEnv.GATEWAY
+            ] = self.dialog.queryString(
+                name='OVEHOSTED_GATEWAY',
+                note=_(
+                    'Please indicate the gateway IP address '
+                    '[@DEFAULT@]: '
+                ),
+                prompt=True,
+                caseSensitive=True,
+                default=self._get_default_gw(),
             )
-            if not valid:
-                if not interactive:
-                    raise RuntimeError(_('Specified gateway is not pingable'))
-                else:
-                    self.logger.error(_('Specified gateway is not pingable'))
 
 
 # vim: expandtab tabstop=4 shiftwidth=4
