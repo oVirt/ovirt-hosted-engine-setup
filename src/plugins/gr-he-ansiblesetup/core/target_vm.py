@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2017 Red Hat, Inc.
+# Copyright (C) 2017-2019 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -137,6 +137,9 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.StorageEnv.DOMAIN_TYPE
             ],
             'he_gateway': self.environment[ohostedcons.NetworkEnv.GATEWAY],
+            'he_network_test': self.environment[
+                ohostedcons.NetworkEnv.NETWORK_TEST
+            ],
             'he_iscsi_target': self.environment[
                 ohostedcons.StorageEnv.ISCSI_TARGET
             ],
@@ -211,6 +214,13 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.NetworkEnv.FORCE_IPV6
             ]
         }
+        if target_vm_vars['he_network_test'] == 'tcp':
+            target_vm_vars['he_tcp_t_address'] = self.environment[
+                ohostedcons.NetworkEnv.NETWORK_TEST_TCP_ADDRESS
+            ]
+            target_vm_vars['he_tcp_t_port'] = self.environment[
+                ohostedcons.NetworkEnv.NETWORK_TEST_TCP_PORT
+            ]
         inventory_source = 'localhost, {fqdn}'.format(
             fqdn=self.environment[
                 ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN

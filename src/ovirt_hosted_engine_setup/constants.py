@@ -1,6 +1,6 @@
 #
 # ovirt-hosted-engine-setup -- ovirt hosted engine setup
-# Copyright (C) 2013-2017 Red Hat, Inc.
+# Copyright (C) 2013-2019 Red Hat, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -496,6 +496,30 @@ class NetworkEnv(object):
     )
     def GATEWAY(self):
         return 'OVEHOSTED_NETWORK/gateway'
+
+    @ohostedattrs(
+        answerfile=True,
+        summary=True,
+        description=_('Network test'),
+    )
+    def NETWORK_TEST(self):
+        return 'OVEHOSTED_NETWORK/network_test'
+
+    @ohostedattrs(
+        answerfile=True,
+        summary=True,
+        description=_('IP address for TCP network test'),
+    )
+    def NETWORK_TEST_TCP_ADDRESS(self):
+        return 'OVEHOSTED_NETWORK/network_test_tcp_address'
+
+    @ohostedattrs(
+        answerfile=True,
+        summary=True,
+        description=_('TCP port for TCP network test'),
+    )
+    def NETWORK_TEST_TCP_PORT(self):
+        return 'OVEHOSTED_NETWORK/network_test_tcp_port'
 
     FIREWALLD_SERVICES = 'OVEHOSTED_NETWORK/firewalldServices'
     FIREWALLD_SUBST = 'OVEHOSTED_NETWORK/firewalldSubst'
@@ -1062,6 +1086,8 @@ class Stages(object):
     CONFIG_STORAGE_NFS = 'ohosted.storage.nfs.configuration.available'
     CONFIG_STORAGE_HC = 'ohosted.storage.hc.configuration.available'
     CONFIG_GATEWAY = 'ohosted.networking.gateway.configuration.available'
+    CONFIG_NETWORK_TEST = \
+        'ohosted.networking.network_test.configuration.available'
     CONFIG_CLOUD_INIT_OPTIONS = 'ohosted.boot.configuration.cloud_init_options'
     CONFIG_CLOUD_INIT_VM_NETWORKING = \
         'ohosted.boot.configuration.cloud_init_vm_networking'
