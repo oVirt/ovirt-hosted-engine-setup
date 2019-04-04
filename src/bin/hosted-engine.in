@@ -184,7 +184,12 @@ return ;}
         else
             vmconf="${conf}"
         fi
-        ${VDSMHELPER} create "${vmconf}"
+        if ${VDSMHELPER} create "${vmconf}"; then
+            echo "VM in WaitForLaunch"
+        else
+            echo "VM failed to launch"
+            exit 1
+        fi
     else
         exit_not_deployed
     fi

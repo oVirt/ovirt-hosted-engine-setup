@@ -52,10 +52,19 @@ def create(args):
     xml = vm_params.get('xml')
 
     cli = ohautil.connect_vdsm_json_rpc()
-    cli.VM.create(
-        vmID=vm_params['vmId'],
-        vmParams={'xml': xml} if xml is not None else vm_params
-    )
+
+    try:
+        response = cli.VM.create(
+            vmID=vm_params['vmId'],
+            vmParams={'xml': xml} if xml is not None else vm_params
+        )
+        if response['status'] != "WaitForLaunch":
+            sys.stderr.write('VM failed to launch in the create function\n')
+            sys.exit(1)
+
+    except ServerError as e:
+        sys.stderr.write(str(e) + '\n')
+        sys.exit(1)
 
 
 @handle_server_error
