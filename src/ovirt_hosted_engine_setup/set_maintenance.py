@@ -25,9 +25,12 @@ import gettext
 import socket
 import sys
 
+from vdsm.client import ServerError
+
 from ovirt_hosted_engine_ha.client import client
 from ovirt_hosted_engine_ha.env import config
 from ovirt_hosted_engine_ha.env import config_constants as const
+from ovirt_hosted_engine_ha.lib import util as ohautil
 
 
 def _(m):
@@ -53,19 +56,23 @@ class Maintenance(object):
         m_local = (mode == 'local')
         m_global = (mode == 'global')
         if m_local:
-            # Check that we have a host where to migrate VM to.
-            _host_id = int(config.Config().get(config.ENGINE, const.HOST_ID))
-            candidates = ha_cli.get_all_host_stats()
-            candidates = [h for h in candidates
-                          if candidates[h]["score"] > 0 and
-                          candidates[h]["host-id"] != _host_id and
-                          candidates[h]["live-data"]]
-            if not candidates:
+            # Check that the engine VM is not running here
+            vm_id = config.Config().get(config.ENGINE, const.HEVMID)
+            cli = ohautil.connect_vdsm_json_rpc()
+            try:
+                vm_list = cli.Host.getVMList()
+            except ServerError as e:
                 sys.stderr.write(
-                    _("Unable to enter local maintenance mode: "
-                      "there are no available hosts capable "
-                      "of running the engine VM.\n")
+                    _("Failed communicating with VDSM: {e}").format(e=e)
                 )
+                return False
+            if vm_id in vm_list:
+                sys.stderr.write(_(
+                    "Unable to enter local maintenance mode: "
+                    "the engine VM is running on the current host, "
+                    "please migrate it before entering local "
+                    "maintenance mode.\n"
+                ))
                 return False
         try:
             ha_cli.set_maintenance_mode(
