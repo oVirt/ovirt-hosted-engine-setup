@@ -96,7 +96,7 @@ class Plugin(plugin.PluginBase):
                 ] = self.dialog.queryString(
                     name='OVEHOSTED_NETWORK_TEST',
                     note=_(
-                        'Please specify which way the network connectivity'
+                        'Please specify which way the network connectivity '
                         'should be checked (@VALUES@) [@DEFAULT@]: '
                     ),
                     validValues=(
@@ -147,7 +147,7 @@ class Plugin(plugin.PluginBase):
             tcp_t_address = self.dialog.queryString(
                 name='OVEHOSTED_NETWORK_TEST_TCP_ADDRESS',
                 note=_(
-                    'Please specify the desired destination IP address'
+                    'Please specify the desired destination IP address '
                     'of the TCP connection test: '
                 ),
                 prompt=True,
@@ -156,7 +156,7 @@ class Plugin(plugin.PluginBase):
             tcp_t_port = self.dialog.queryString(
                 name='OVEHOSTED_NETWORK_TEST_TCP_PORT',
                 note=_(
-                    'Please specify the desired destination TCP port'
+                    'Please specify the desired destination TCP port '
                     'of the TCP connection test: '
                 ),
                 prompt=True,
