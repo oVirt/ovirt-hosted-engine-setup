@@ -560,7 +560,7 @@ class Plugin(plugin.PluginBase):
                     supply_default=False,
                     prompttext=_(
                         'Please provide the FQDN you would like to use for '
-                        'the engine appliance.\n'
+                        'the engine.\n'
                         'Note: This will be the FQDN of the engine VM '
                         'you are now going to launch,\nit should not '
                         'point to the base host or to any other '
