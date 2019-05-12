@@ -90,7 +90,8 @@ class Plugin(plugin.PluginBase):
         ),
     )
     def _customization(self):
-        maxmem = int(self._getMaxMemorySize())
+        maxmem = int(self._getMaxMemorySize()) - \
+            ohostedcons.Const.HOST_RESERVED_MEMORY_MB
 
         if maxmem < ohostedcons.Defaults.MINIMAL_MEM_SIZE_MB:
             self.logger.warning(
