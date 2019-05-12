@@ -396,6 +396,7 @@ class Const(object):
     VM_LIVELINESS_CHECK_TIMEOUT = 900
     ANSIBLE_R_OTOPI_PREFIX = 'otopi_'
     STORAGE_SERVER_TIMEOUT = 60
+    HOST_RESERVED_MEMORY_MB = 512
 
     HE_TAG_INITIAL_CLEAN = 'initial_clean'
     HE_TAG_FINAL_CLEAN = 'final_clean'
