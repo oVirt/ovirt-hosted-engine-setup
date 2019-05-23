@@ -22,6 +22,7 @@
 
 
 import gettext
+import re
 import uuid
 
 from otopi import context as otopicontext
@@ -170,22 +171,36 @@ class Plugin(plugin.PluginBase):
         if self.environment[
             ohostedcons.EngineEnv.HOST_DATACENTER_NAME
         ] is None:
-            self.environment[
-                ohostedcons.EngineEnv.HOST_DATACENTER_NAME
-            ] = self.dialog.queryString(
-                name='ovehosted_datacenter_name',
-                note=_(
-                    'Please enter the name of the datacenter where you want '
-                    'to deploy this hosted-engine host. '
-                    '{restore_addition}'
-                    '[@DEFAULT@]: '
-                ).format(
-                    restore_addition=restore_addition,
-                ),
-                prompt=True,
-                caseSensitive=True,
-                default=ohostedcons.Defaults.DEFAULT_DATACENTER_NAME,
-            )
+            datacenter_name_valid = False
+            while not datacenter_name_valid:
+                self.environment[
+                    ohostedcons.EngineEnv.HOST_DATACENTER_NAME
+                ] = self.dialog.queryString(
+                    name='ovehosted_datacenter_name',
+                    note=_(
+                        'Please enter the name of the datacenter where you '
+                        'want to deploy this hosted-engine host. '
+                        '{restore_addition}'
+                        '[@DEFAULT@]: '
+                    ).format(
+                        restore_addition=restore_addition,
+                    ),
+                    prompt=True,
+                    caseSensitive=True,
+                    default=ohostedcons.Defaults.DEFAULT_DATACENTER_NAME,
+                )
+
+                if re.search("^[a-zA-Z0-9_-]+$", self.environment[
+                    ohostedcons.EngineEnv.HOST_DATACENTER_NAME
+                ]):
+                    datacenter_name_valid = True
+                else:
+                    self.logger.error(_(
+                        "Invalid Datacenter name format. Datacenter "
+                        "name may only contain letters, numbers, "
+                        "'-', or '_'.")
+                    )
+
         if self.environment[
             ohostedcons.EngineEnv.HOST_CLUSTER_NAME
         ] is None:
