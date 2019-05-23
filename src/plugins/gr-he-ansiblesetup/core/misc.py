@@ -75,6 +75,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.CoreEnv.RENEW_PKI_ON_RESTORE,
             None
         )
+        self.environment.setdefault(
+            ohostedcons.CoreEnv.PAUSE_ON_RESTORE,
+            None
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -204,24 +208,50 @@ class Plugin(plugin.PluginBase):
 
         if self.environment[
             ohostedcons.CoreEnv.RESTORE_FROM_FILE
-        ] is not None and self.environment[
-            ohostedcons.CoreEnv.RENEW_PKI_ON_RESTORE
-        ] is None:
-            self.environment[
+        ] is not None:
+            if self.environment[
                 ohostedcons.CoreEnv.RENEW_PKI_ON_RESTORE
-            ] = self.dialog.queryString(
-                name='ovehosted_renew_pki',
-                note=_(
-                    'Renew engine CA on restore if needed? Please notice '
-                    'that if you choose Yes, all hosts will have to be later '
-                    'manually reinstalled from the engine. '
-                    '(@VALUES@)[@DEFAULT@]: '
-                ),
-                prompt=True,
-                validValues=(_('Yes'), _('No')),
-                caseSensitive=False,
-                default=_('No')
-            ) == _('Yes').lower()
+            ] is None:
+                self.environment[
+                    ohostedcons.CoreEnv.RENEW_PKI_ON_RESTORE
+                ] = self.dialog.queryString(
+                    name='ovehosted_renew_pki',
+                    note=_(
+                        'Renew engine CA on restore if needed? Please notice '
+                        'that if you choose Yes, all hosts will have to be '
+                        'later manually reinstalled from the engine. '
+                        '(@VALUES@)[@DEFAULT@]: '
+                    ),
+                    prompt=True,
+                    validValues=(_('Yes'), _('No')),
+                    caseSensitive=False,
+                    default=_('No')
+                ) == _('Yes').lower()
+            if self.environment[
+                ohostedcons.CoreEnv.PAUSE_ON_RESTORE
+            ] is None:
+                self.environment[
+                    ohostedcons.CoreEnv.PAUSE_ON_RESTORE
+                ] = self.dialog.queryString(
+                    name='ovehosted_pause_on_restore',
+                    note=_(
+                        'Pause the execution after adding this host to the '
+                        'engine?\n'
+                        'You will be able to iteratively connect to '
+                        'the restored engine in order to manually '
+                        'review and remediate its configuration before '
+                        'proceeding with the deployment:\nplease ensure that '
+                        'all the datacenter hosts and storage domain are '
+                        'listed as up or in maintenance mode before '
+                        'proceeding.\nThis is normally not required when '
+                        'restoring an up to date and coherent backup. '
+                        '(@VALUES@)[@DEFAULT@]: '
+                    ),
+                    prompt=True,
+                    validValues=(_('Yes'), _('No')),
+                    caseSensitive=False,
+                    default=_('No')
+                ) == _('Yes').lower()
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
@@ -324,6 +354,12 @@ class Plugin(plugin.PluginBase):
         ] is not None:
             bootstrap_vars['he_pki_renew_on_restore'] = self.environment[
                 ohostedcons.CoreEnv.RENEW_PKI_ON_RESTORE
+            ]
+        if self.environment[
+            ohostedcons.CoreEnv.PAUSE_ON_RESTORE
+        ] is not None:
+            bootstrap_vars['he_pause_host'] = self.environment[
+                ohostedcons.CoreEnv.PAUSE_ON_RESTORE
             ]
 
         inventory_source = 'localhost,{fqdn}'.format(

@@ -420,6 +420,7 @@ class CoreEnv(object):
     MEM_REQUIREMENTS_CHECK_ENABLED = 'OVEHOSTED_CORE/memCheckRequirements'
     RESTORE_FROM_FILE = 'OVEHOSTED_CORE/restoreFromFile'
     RENEW_PKI_ON_RESTORE = 'OVEHOSTED_CORE/renewPKIonRestore'
+    PAUSE_ON_RESTORE = 'OVEHOSTED_CORE/pauseonRestore'
     TEMPDIR = 'OVEHOSTED_CORE/tempDir'
     LOCAL_VM_DIR = 'OVEHOSTED_CORE/localVMDir'
 
