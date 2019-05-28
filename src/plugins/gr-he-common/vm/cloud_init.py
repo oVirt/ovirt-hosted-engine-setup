@@ -118,8 +118,21 @@ class Plugin(plugin.PluginBase):
         )
         alist = []
 
-        addressmatchs4list = re.findall(self.IPv4RE, '\n'.join(stdout))
-        addressmatchs6list = re.findall(self.IPv6RE, '\n'.join(stdout))
+        addressmatchs4list = (
+            re.findall(self.IPv4RE, '\n'.join(stdout))
+            if not self.environment[
+                ohostedcons.NetworkEnv.FORCE_IPV6
+                ]
+            else []
+        )
+
+        addressmatchs6list = (
+            re.findall(self.IPv6RE, '\n'.join(stdout))
+            if not self.environment[
+                ohostedcons.NetworkEnv.FORCE_IPV4
+                ]
+            else []
+        )
 
         for amatch in (addressmatchs4list + addressmatchs6list):
             addr = '{a}/{pl}'.format(
