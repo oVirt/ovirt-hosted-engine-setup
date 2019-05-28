@@ -114,6 +114,8 @@ class Plugin(plugin.PluginBase):
                 'addr',
                 'show',
                 device,
+                'scope',
+                'global'
             ),
         )
         alist = []
