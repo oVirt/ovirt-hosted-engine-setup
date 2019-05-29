@@ -24,12 +24,15 @@
 import argparse
 import functools
 import sys
+import time
 
 from vdsm.client import ServerError
 
 from ovirt_hosted_engine_ha.lib import util as ohautil
 
 from ovirt_hosted_engine_setup import vmconf
+
+VNC_PORT_TIMEOUT = 30
 
 
 def handle_server_error(f):
@@ -93,6 +96,7 @@ def checkVmStatus(args):
 @handle_server_error
 def setVmTicket(args):
     cli = ohautil.connect_vdsm_json_rpc()
+    # TODO: handle also spice
     cli.VM.updateDevice(
         vmID=args.vmid,
         params={
@@ -104,21 +108,39 @@ def setVmTicket(args):
             'password': args.password,
         }
     )
-    vmstats = cli.VM.getStats(
-        vmID=args.vmid,
-    )
-    displayinfo = vmstats[0]['displayInfo']
-    vnc = [x for x in displayinfo if x['type'] == 'vnc']
-    if vnc:
+    vnc_port = None
+    delay = 1
+    t = VNC_PORT_TIMEOUT
+    while not vnc_port and t > 0:
+        t = t - delay
+        vmstats = cli.VM.getStats(
+            vmID=args.vmid,
+        )
+        displayinfo = vmstats[0]['displayInfo']
+        vnc = [x for x in displayinfo if x['type'] == 'vnc']
+        if vnc:
+            try:
+                vnc_p_i = int(vnc[0]['port'])
+            except ValueError:
+                vnc_p_i = 0
+            if vnc_p_i > 0:
+                vnc_port = vnc[0]['port']
+        if not vnc_port:
+            time.sleep(t)
+
+    if vnc_port:
         print(
             (
                 "You can now connect the hosted-engine VM with VNC at "
                 "{ip}:{port}"
             ).format(
                 ip=vnc[0]['ipAddress'],
-                port=vnc[0]['port'],
+                port=vnc_port,
             )
         )
+    else:
+        sys.stderr.write('Failed detecting VNC port\n')
+        sys.exit(1)
 
 
 def _add_vmid_argument(parser):
