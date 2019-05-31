@@ -221,9 +221,9 @@ if __name__ == "__main__":
 
     live_checker = LivelinessChecker()
     if not live_checker.isEngineUp(config['fqdn']):
-        print _('Hosted Engine is not up!')
+        print(_('Hosted Engine is not up!'))
         sys.exit(1)
-    print _('Hosted Engine is up!')
+    print(_('Hosted Engine is up!'))
 
 
 # vim: expandtab tabstop=4 shiftwidth=4

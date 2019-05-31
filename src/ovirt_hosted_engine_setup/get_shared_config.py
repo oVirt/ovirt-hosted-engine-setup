@@ -71,10 +71,10 @@ if __name__ == "__main__":
     value_and_type = get_shared_config.get_shared_config(*sys.argv)
     if not value_and_type:
         sys.exit(1)
-    print _('\n{key} : {value}, type : {config_type}\n').format(
+    print(_('\n{key} : {value}, type : {config_type}\n').format(
         key=sys.argv[0],
         value=value_and_type[0],
         config_type=value_and_type[1]
-    )
+    ))
 
 # vim: expandtab tabstop=4 shiftwidth=4

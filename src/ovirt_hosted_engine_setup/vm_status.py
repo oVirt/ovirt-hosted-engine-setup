@@ -133,32 +133,32 @@ class VmStatus(object):
                 print(glb_msg)
 
             for host_id, host_stats in all_host_stats.items():
-                print _('\n\n--== Host {hostname} (id: {host_id})'
+                print(_('\n\n--== Host {hostname} (id: {host_id})'
                         ' status ==--\n').format(
                     host_id=host_id,
                     hostname=host_stats["hostname"]
-                )
+                ))
                 for key in host_stats.keys():
                     if (key == 'engine-status' and
                             not host_stats.get('live-data', True)):
-                        print _('{key:35}: {value}').format(
+                        print(_('{key:35}: {value}').format(
                             key=self.DESCRIPTIONS.get(key, key),
                             value=_('unknown stale-data'),
-                        )
+                        ))
                     elif key != 'extra':
-                        print _('{key:35}: {value}').format(
+                        print(_('{key:35}: {value}').format(
                             key=self.DESCRIPTIONS.get(key, key),
                             value=host_stats[key],
-                        )
+                        ))
                 if 'extra' in host_stats.keys():
                     key = 'extra'
-                    print _('{key:35}:').format(
+                    print(_('{key:35}:').format(
                         key=self.DESCRIPTIONS.get(key, key)
-                    )
+                    ))
                     for line in host_stats[key].splitlines():
-                        print '\t{value}'.format(
+                        print('\t{value}'.format(
                             value=line
-                        )
+                        ))
             # Print again so it's easier to notice
             if glb_msg:
                 print(glb_msg)
