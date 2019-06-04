@@ -206,11 +206,27 @@ return ;}
     # TODO: Check first the sanlock status, and if allows:
     if [ -n "${vmid}" ] ; then
         check_vm_conf
+        local down=
+        local status=
+        status=$(${VDSMHELPER} checkVmStatus ${vmid})
+        if [[ $status == *"Down"* ]]; then
+            echo "VM exists and is down, cleaning up and restarting"
+            ${VDSMHELPER} destroy "${vmid}"
+        elif [ -n "${status}" ]; then
+            echo "VM exists and its status is ${status}"
+            exit 1
+        fi
         temp_conf="$(mktemp)"
         cp "${conf}" "${temp_conf}"
         echo "launchPaused=true">>"${temp_conf}"
-        ${VDSMHELPER} create "${temp_conf}"
-        rm -f "${temp_conf}"
+        if ${VDSMHELPER} create "${temp_conf}"; then
+            rm -f "${temp_conf}"
+            echo "VM in WaitForLaunch"
+        else
+            rm -f "${temp_conf}"
+            echo "VM failed to launch"
+            exit 1
+        fi
     else
         exit_not_deployed
     fi
