@@ -38,22 +38,17 @@ Requires:       bind-utils
 Requires:       genisoimage
 Requires:       libselinux-python
 Requires:       lsof
-Requires:       nmap-ncat
 Requires:       openssh-server
 Requires:       openssl
-Requires:       pyliblzma
 Requires:       python
 Requires:       python-dateutil
 Requires:       python-ethtool >= 0.6-3
 Requires:       python-netaddr
-Requires:       python-libguestfs
 Requires:       python-six
 Requires:       sanlock >= 2.8
 Requires:       sanlock-python >= 2.8
-Requires:       socat
 Requires:       sudo
 Requires:       libvirt-client
-Requires:       m2crypto
 Requires:       virt-install
 Requires:       python-ovirt-engine-sdk4 >= 4.2.4
 Requires:       ansible >= 2.5.2
