@@ -50,8 +50,8 @@ Requires:       sanlock-python >= 2.8
 Requires:       sudo
 Requires:       libvirt-client
 Requires:       virt-install
-Requires:       python-ovirt-engine-sdk4 >= 4.2.4
-Requires:       ansible >= 2.5.2
+Requires:       python-ovirt-engine-sdk4 >= 4.3.1
+Requires:       ansible >= 2.8.0
 # default libvirt network
 Requires:       libvirt-daemon-config-network
 
@@ -68,17 +68,17 @@ Requires:       qemu-img-rhev
 %endif
 
 
-Requires:       otopi >= 1.8
-Requires:       ovirt-host-deploy >= 1.8
+Requires:       otopi >= 1.9.0
+Requires:       ovirt-host-deploy >= 1.9.0
 Requires:       ovirt-hosted-engine-ha >= 2.4
-Requires:       ovirt-setup-lib >= 1.1
-Requires:       glusterfs-cli >= 3.12.0
-Requires:       vdsm-python >= 4.30
-Requires(post): vdsm-python >= 4.30
-Requires:       ovirt-host >= 4.3
-Requires:       ovirt-ansible-hosted-engine-setup >= 1.0.18
-Requires:       ovirt-ansible-engine-setup >= 1.1.5
-Requires:       ovirt-ansible-repositories >= 1.1.2
+Requires:       ovirt-setup-lib >= 1.3.0
+Requires:       glusterfs-cli >= 5.6
+Requires:       vdsm-python >= 4.40.0
+Requires(post): vdsm-python >= 4.40.0
+Requires:       ovirt-host >= 4.4.0
+Requires:       ovirt-ansible-hosted-engine-setup >= 1.0.20
+Requires:       ovirt-ansible-engine-setup >= 1.1.9
+Requires:       ovirt-ansible-repositories >= 1.1.5
 
 Conflicts:      ovirt-engine-appliance < 4.4
 Conflicts:      ovirt-engine-appliance >= 4.5
