@@ -133,6 +133,8 @@ class Plugin(plugin.PluginBase):
                         _('DNS query failed'))
             elif network_test == 'tcp':
                 valid = self._customize_tcp()
+            elif network_test == 'none':
+                valid = True
 
     def _customize_tcp(self):
         tcp_t_address = self.environment[
