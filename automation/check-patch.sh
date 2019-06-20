@@ -8,7 +8,6 @@ then
 # Workaround for http://bugzilla.redhat.com/1716384
 make distcheck
 fi
-exit
 
 ./automation/build-artifacts.sh
 
