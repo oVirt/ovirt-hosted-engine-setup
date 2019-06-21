@@ -69,6 +69,7 @@ Requires:       %{python_target_version}-ovirt-setup-lib >= 1.3.0
 Requires:       %{python_target_version}-six
 
 BuildRequires:  %{python_target_version}-devel
+BuildRequires:  %{python_target_version}-pytest
 
 # Non Python dependencies
 Requires:       bind-utils
@@ -85,7 +86,6 @@ Requires:       ansible >= 2.8.0
 Requires:       libvirt-daemon-config-network
 
 BuildRequires:  gettext >= 0.18.2
-BuildRequires:  pytest
 
 %if 0%{?fedora}
 Requires:       qemu-img
