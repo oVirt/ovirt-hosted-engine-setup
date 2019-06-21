@@ -72,7 +72,7 @@ maintainer-clean-local:
 	done
 
 test:
-	py.test .
+	$(PYTEST) .
 
 POTFILES.in:
 	( cd "$(srcdir)" && \
