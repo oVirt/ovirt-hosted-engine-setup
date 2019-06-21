@@ -29,6 +29,7 @@ CLEANFILES = \
 
 EXTRA_DIST = \
 	hostedengine.py \
+	hostedengine.py.in \
 	$(NULL)
 
 vdsmhookslibexecdir = $(vdsmhooksdir)/before_vm_start

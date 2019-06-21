@@ -128,6 +128,7 @@ AC_CONFIG_FILES([
 	src/plugins/gr-he-ansiblesetup/Makefile
 	src/plugins/gr-he-ansiblesetup/core/Makefile
 	src/vdsm_hooks/Makefile
+	src/vdsm_hooks/hostedengine.py
 	src/ansible/Makefile
 	src/ansible/callback_plugins/Makefile
 	templates/Makefile
