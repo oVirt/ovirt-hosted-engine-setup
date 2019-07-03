@@ -56,7 +56,7 @@ class Plugin(plugin.PluginBase):
             False
         )
         self.environment.setdefault(
-            ohostedcons.CoreEnv.SCREEN_PROCEED,
+            ohostedcons.CoreEnv.TMUX_PROCEED,
             None
         )
         ssh_connected = not os.getenv('SSH_CLIENT') is None
@@ -74,24 +74,24 @@ class Plugin(plugin.PluginBase):
                     )
                 )
                 raise context.Abort('Aborted due to missing requirement')
-        screen_used = os.getenv('TERM') == 'screen'
-        if ssh_connected and not screen_used:
+        tmux_used = os.getenv('TERM') == 'screen'
+        if ssh_connected and not tmux_used:
             interactive = self.environment[
-                ohostedcons.CoreEnv.SCREEN_PROCEED
+                ohostedcons.CoreEnv.TMUX_PROCEED
             ] is None
             if interactive:
                 self.environment[
-                    ohostedcons.CoreEnv.SCREEN_PROCEED
+                    ohostedcons.CoreEnv.TMUX_PROCEED
                 ] = self.dialog.queryString(
-                    name=ohostedcons.Confirms.SCREEN_PROCEED,
+                    name=ohostedcons.Confirms.TMUX_PROCEED,
                     note=_(
                         'It has been detected that this program is executed '
-                        'through an SSH connection without using screen.\n'
+                        'through an SSH connection without using tmux.\n'
                         'Continuing with the installation may lead to broken '
                         'installation if the network connection fails.\n'
                         'It is highly recommended to abort the installation '
-                        'and run it inside a screen session using command '
-                        '"screen".\n'
+                        'and run it inside a tmux session using command '
+                        '"tmux".\n'
                         'Do you want to continue anyway? '
                         '(@VALUES@)[@DEFAULT@]: '
                     ),
@@ -100,7 +100,7 @@ class Plugin(plugin.PluginBase):
                     caseSensitive=False,
                     default=_('No')
                 ) == _('Yes').lower()
-                if not self.environment[ohostedcons.CoreEnv.SCREEN_PROCEED]:
+                if not self.environment[ohostedcons.CoreEnv.TMUX_PROCEED]:
                     raise context.Abort('Aborted by user')
 
 

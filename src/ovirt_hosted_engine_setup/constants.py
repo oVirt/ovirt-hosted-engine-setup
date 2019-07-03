@@ -433,8 +433,8 @@ class CoreEnv(object):
     @ohostedattrs(
         answerfile=True,
     )
-    def SCREEN_PROCEED(self):
-        return 'OVEHOSTED_CORE/screenProceed'
+    def TMUX_PROCEED(self):
+        return 'OVEHOSTED_CORE/tmuxProceed'
 
     @ohostedattrs(
         answerfile=True,
@@ -1216,7 +1216,7 @@ class Confirms(object):
     CPU_PROCEED = 'CPU_PROCEED'
     DISK_PROCEED = 'DISK_PROCEED'
     MEMORY_PROCEED = 'MEMORY_PROCEED'
-    SCREEN_PROCEED = 'SCREEN_PROCEED'
+    TMUX_PROCEED = 'TMUX_PROCEED'
     SETTINGS = 'SETTINGS_PROCEED'
     UPGRADE_DISK_RESIZE_PROCEED = 'UPGRADE_DISK_RESIZE_PROCEED'
 
