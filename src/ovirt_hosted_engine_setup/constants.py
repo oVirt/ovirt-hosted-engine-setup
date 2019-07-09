@@ -434,7 +434,7 @@ class CoreEnv(object):
         answerfile=True,
     )
     def TMUX_PROCEED(self):
-        return 'OVEHOSTED_CORE/tmuxProceed'
+        return 'OVEHOSTED_CORE/screenProceed'
 
     @ohostedattrs(
         answerfile=True,
