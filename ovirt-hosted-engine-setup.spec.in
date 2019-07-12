@@ -92,7 +92,11 @@ Requires:       qemu-img
 %endif
 
 %if 0%{?rhel}
+%if 0%{?rhel} >= 8
+Requires:       qemu-img >= 15:3.1.0-20.module+el8+2888+cdc893a8
+%else
 Requires:       qemu-img-rhev
+%endif
 %endif
 
 
