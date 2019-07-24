@@ -157,7 +157,7 @@ make %{?_smp_mflags} install DESTDIR="%{buildroot}"
 %post
 touch %{_sysconfdir}/ovirt-hosted-engine/virsh_auth.conf
 chmod 600 %{_sysconfdir}/ovirt-hosted-engine/virsh_auth.conf
-python -c '
+%{python_interpreter} -c '
 from vdsm.tool.configurators import passwd
 print((
     "[credentials-vdsm]\n"
