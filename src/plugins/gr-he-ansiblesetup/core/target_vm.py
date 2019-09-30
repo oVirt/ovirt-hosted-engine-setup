@@ -212,7 +212,10 @@ class Plugin(plugin.PluginBase):
             ],
             'he_force_ip6': self.environment[
                 ohostedcons.NetworkEnv.FORCE_IPV6
-            ]
+            ],
+            'he_root_ssh_access': self.environment[
+                ohostedcons.CloudInit.ROOT_SSH_ACCESS
+            ].lower(),
         }
         if target_vm_vars['he_network_test'] == 'tcp':
             target_vm_vars['he_tcp_t_address'] = self.environment[
