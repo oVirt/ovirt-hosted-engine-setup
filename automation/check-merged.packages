@@ -1,7 +1,1 @@
-make
-autoconf
-gettext-devel
-automake
-python-ovirt-engine-sdk4
-python-pep8
-pyflakes
+check-patch.packages

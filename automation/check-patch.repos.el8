@@ -1,0 +1,5 @@
+ovirt-master-tested,https://resources.ovirt.org/repos/ovirt/tested/master/rpm/$distro
+# Provides python3-pyflakes
+epel8,https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/
+# Provides python3-isort
+el8collection,https://copr-be.cloud.fedoraproject.org/results/sbonazzo/EL8_collection/epel-8-x86_64/

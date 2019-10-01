@@ -1,0 +1,14 @@
+ansible-lint
+autoconf
+automake
+dnf
+dnf-command(builddep)
+gettext-devel
+git
+make
+otopi
+python3-ovirt-engine-sdk4
+python3-dateutil
+python3-pyflakes
+python3-pytest
+python3-isort
