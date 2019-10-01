@@ -1,0 +1,2 @@
+- name: 'PYTHON'
+  value: '/usr/bin/python2'

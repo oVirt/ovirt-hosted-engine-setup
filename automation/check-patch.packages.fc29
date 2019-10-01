@@ -8,7 +8,8 @@ git
 make
 otopi
 python3-ovirt-engine-sdk4
-python3-dateutil
-python3-pyflakes
-python3-pytest
+python-dateutil
+pyflakes
+pytest
 python3-isort
+python-pep8
