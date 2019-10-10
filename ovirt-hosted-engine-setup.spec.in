@@ -93,11 +93,15 @@ Requires:       qemu-img
 
 %if 0%{?rhel}
 %if 0%{?rhel} >= 8
+%if 0%{?centos}
+Requires:       qemu-img
+%else
 Requires:       qemu-img >= 15:3.1.0-20.module+el8+2888+cdc893a8
+%endif #centos
 %else
 Requires:       qemu-img-rhev
-%endif
-%endif
+%endif #rhel >= 8
+%endif #rhel
 
 
 Requires:       ovirt-hosted-engine-ha >= 2.4
