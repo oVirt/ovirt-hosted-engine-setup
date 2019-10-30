@@ -27,7 +27,7 @@ EXTRA_DIST = \
 	$(NULL)
 
 sbin_SCRIPTS = \
-	hosted-engine
+	hosted-engine \
 	$(NULL)
 
 scriptsdir = $(ovirthostedenginescriptsdir)
@@ -45,7 +45,9 @@ CLEANFILES = \
 	$(NULL)
 
 hosted-engine: hosted-engine.in
-	sed -e 's,[@]datadir[@],$(datadir),g' < $< > $@
+	$(SED) \
+	-e 's|@datadir[@]|$(datadir)|g' \
+	-e 's|@PYTHON[@]|$(PYTHON)|g' < $< > $@
 
 install-data-local:
 	$(MKDIR_P) $(DESTDIR)/$(sysconfdir)/ovirt-hosted-engine-setup.env.d

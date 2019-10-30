@@ -275,7 +275,7 @@ return ;}
 
     if [ -n "${vmid}" ] ; then
         check_vm_conf
-        python -m ovirt_hosted_engine_setup.vm_status $1
+        @PYTHON@ -m ovirt_hosted_engine_setup.vm_status $1
     else
         if virsh -r domstate HostedEngineLocal 1>/dev/null 2>&1; then
             exit_not_correctly_deployed
@@ -334,7 +334,7 @@ Usage: $0 --check-liveliness
 __EOF__
 return ;}
 
-    python -m ovirt_hosted_engine_setup.check_liveliness
+    @PYTHON@ -m ovirt_hosted_engine_setup.check_liveliness
 }
 
 cmd_connect_storage() {
@@ -345,7 +345,7 @@ __EOF__
 return ;}
 
     if [ -n "${vmid}" ] ; then
-        python -m ovirt_hosted_engine_setup.connect_storage_server "$@"
+        @PYTHON@ -m ovirt_hosted_engine_setup.connect_storage_server "$@"
         rc=$?
     else
         exit_not_deployed
@@ -362,7 +362,7 @@ __EOF__
 return ;}
 
     if [ -n "${vmid}" ] ; then
-        python -m ovirt_hosted_engine_setup.disconnect_storage_server "$@"
+        @PYTHON@ -m ovirt_hosted_engine_setup.disconnect_storage_server "$@"
         rc=$?
     else
         exit_not_deployed
@@ -425,7 +425,7 @@ return ;}
     fi
 
     if [ -n "${vmid}" ] ; then
-        python -m ovirt_hosted_engine_setup.set_maintenance "${mode}"
+        @PYTHON@ -m ovirt_hosted_engine_setup.set_maintenance "${mode}"
     else
         exit_not_deployed
     fi
@@ -462,7 +462,7 @@ return ;}
         exit 1
     fi
     if [ -n "${vmid}" ] ; then
-        python -m ovirt_hosted_engine_setup.set_shared_config "${key}" "${value}" "${type}"
+        @PYTHON@ -m ovirt_hosted_engine_setup.set_shared_config "${key}" "${value}" "${type}"
     else
         exit_not_deployed
     fi
@@ -489,7 +489,7 @@ return ;}
     fi
 
     if [ -n "${vmid}" ] ; then
-        python -m ovirt_hosted_engine_setup.get_shared_config "${key}" "${type}"
+        @PYTHON@ -m ovirt_hosted_engine_setup.get_shared_config "${key}" "${type}"
     else
         exit_not_deployed
     fi
@@ -508,7 +508,7 @@ __EOF__
 return ;}
 
     if [ -n "${vmid}" ] ; then
-        python -m ovirt_hosted_engine_setup.reinitialize_lockspace "$@"
+        @PYTHON@ -m ovirt_hosted_engine_setup.reinitialize_lockspace "$@"
     else
         exit_not_deployed
     fi
@@ -540,7 +540,7 @@ if [ -z "$1" ] ; then
     usage
 fi
 
-VDSMHELPER="python -m ovirt_hosted_engine_setup.vdsm_helper"
+VDSMHELPER="@PYTHON@ -m ovirt_hosted_engine_setup.vdsm_helper"
 
 cli_broker() {
     x="$1"
