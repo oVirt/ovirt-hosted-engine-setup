@@ -161,7 +161,7 @@ def parseVmConfFile(filename):
 
     # Decode xml string
     if 'xmlBase64' in params:
-        xml = base64.standard_b64decode(params['xmlBase64'])
+        xml = base64.standard_b64decode(params['xmlBase64']).decode()
         del params['xmlBase64']
         params['xml'] = xml
 
@@ -186,7 +186,7 @@ def parseVmConfFile(filename):
                 engine_xml_tree,
                 xml_declaration=True,
                 encoding='UTF-8',
-            )
+            ).decode()
 
     return params
 

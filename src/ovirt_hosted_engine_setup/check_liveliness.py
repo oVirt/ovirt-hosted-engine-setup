@@ -176,7 +176,7 @@ class LivelinessChecker(base.Base):
                     timeout=self.TIMEOUT,
                 )
             ) as urlObj:
-                content = urlObj.read()
+                content = urlObj.read().decode()
                 if content:
                     if self.DB_UP_RE.match(content) is not None:
                         isUp = True
