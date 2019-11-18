@@ -56,7 +56,9 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.NfsVersions.AUTO,
                 ohostedcons.NfsVersions.V3,
                 ohostedcons.NfsVersions.V4,
+                ohostedcons.NfsVersions.V4_0,
                 ohostedcons.NfsVersions.V4_1,
+                ohostedcons.NfsVersions.V4_2,
             ),
             default=ohostedcons.NfsVersions.AUTO,
         )

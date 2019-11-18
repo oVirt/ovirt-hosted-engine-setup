@@ -86,6 +86,7 @@ class NfsVersions(object):
     AUTO = 'auto'
     V3 = 'v3'
     V4 = 'v4'
+    V4_0 = 'v4_0'
     V4_1 = 'v4_1'
     V4_2 = 'v4_2'
 
