@@ -83,6 +83,19 @@ DOCUMENTATION = '''
         default: he_filtered_tokens_vars
 '''
 
+def _shorten_string(s, max):
+    """
+    Return a shortened version of s if it's too long: some prefix, then ...,
+    then last 3 chars.
+    E.g. for 'abcdefghijklmnop' and max=10, return: 'abcd...nop'
+    """
+    return (
+        s if len(s)<=max
+        else '{pref}...{suff}'.format(
+            pref=s[:max-6],
+            suff=s[-3:],
+        )
+    )
 
 class CallbackModule(CallbackBase):
     """
@@ -316,10 +329,10 @@ class CallbackModule(CallbackBase):
             '__doc__',
             '__hash__',
         ]
-        name = repr(obj)[:100]
+        name = _shorten_string(repr(obj), 200)
         return u'\n'.join([
             u'type: {v}'.format(v=type(obj)),
-            u'str: {v}'.format(v=str(obj)[:300]),
+            u'str: {v}'.format(v=_shorten_string(str(obj),4096)),
         ] + [
             u'{n}.{a}: {o}'.format(
                 n=name,
@@ -519,12 +532,12 @@ class CallbackModule(CallbackBase):
             'ansible_playbook': self.playbook._file_name,
             'ansible_host': result._host.name,
             'ansible_task': result._task.name,
-            'ansible_result': self.dump_obj(result._result),
+            'ansible_result': result._result,
             'task_duration': self._get_task_duration(),
         }
         self.errors += 1
         self.logger.error(
-            u"ansible failed {v}".format(v=data)
+            u"ansible failed {v}".format(v=self._pretty_logging(data))
         )
         self._finised_tasks.append(data)
 
