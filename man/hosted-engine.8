@@ -66,7 +66,7 @@ it can only be cleared by using this tool again and providing a different mode (
 .RS 7
 \fBnone\fP - Resume HA functionality. \&
 .RE
-.IP "\fB\-\-set-shared-config key value [\-\-type=<type>]\fP"
+.IP "\fB\-\-set-shared-config <key> <value> [\-\-type=<type>]\fP"
 Set the specified key in the shared storage configuration to the specified value. \&
 .RE
 .RS 7
@@ -83,7 +83,7 @@ Currently running hosts will still use the old values.
 New values for he_local will be set in the local instance of
 he configuration file on the local host.
 .RE
-.IP "\fB\-\-get-shared-config key [\-\-type=<type>]\fP"
+.IP "\fB\-\-get-shared-config <key> [\-\-type=<type>]\fP"
 Get the specified key in the shared storage configuration. \&
 .RE
 .RS 7
@@ -98,9 +98,6 @@ Remove host's metadata from the global status database.\&
 .IP "\fB\-\-reinitialize\-lockspace [\-\-force]\fP"
 Reinitialize the sanlock lockspace file. This WIPES all locks.\&
 
-
-.IP "For additional information about a specific command try:"
-hosted\-engine <command> --help\&
 
 .SH "SEE ALSO"
 .BR ovirt\-hosted\-engine\-setup (8)

@@ -61,42 +61,42 @@ Usage: $0 [--help] <command> [<command-args>]
 
     The available commands are:
         --deploy [options]
-            run ovirt-hosted-engine deployment
+            run ovirt-hosted-engine deployment.
         --vm-start
             start VM on this host
-        --vm-start-paused
-            start VM on this host with qemu paused
+        --vm-start-paused.
+            start VM on this host with qemu paused.
         --vm-shutdown
-            gracefully shutdown the VM on this host
+            gracefully shutdown the VM on this host.
         --vm-poweroff
-            forcefully poweroff the VM on this host
+            forcefully poweroff the VM on this host.
         --vm-status [--json]
             VM status according to the HA agent. If --json is given, the
-            output will be in machine-readable (JSON) format
+            output will be in machine-readable (JSON) format.
         --add-console-password [--password=<password>]
-            Create a temporary password for vnc/spice connection.  If
+            Create a temporary password for vnc/spice connection. If
             --password is given, the password will be set to the value
-            provided.  Otherwise, if it is set,  the environment variable
-            OVIRT_HOSTED_ENGINE_CONSOLE_PASSWORD will be used.  As a last
+            provided. Otherwise, if it is set, the environment variable
+            OVIRT_HOSTED_ENGINE_CONSOLE_PASSWORD will be used. As a last
             resort, the password will be read interactively.
-        --config-append=file
+        --config-append=<file>
             Load extra configuration files or answer file.
         --check-deployed
-            Check whether the hosted engine has been deployed already
+            Check whether the hosted engine has been deployed already.
         --check-liveliness
-            Checks liveliness page of engine
+            Checks liveliness page of engine.
         --connect-storage
-            Connect the hosted engine storage domain
+            Connect the hosted engine storage domain.
         --disconnect-storage
-            Disconnect the hosted engine storage domain
+            Disconnect the hosted engine storage domain.
         --console
-            Open the configured serial console
+            Open the configured serial console.
         --set-maintenance --mode=<mode>
-            Set maintenance status to the specified mode (global/local/none)
-        --set-shared-config key value [--type=<type>]
+            Set maintenance status to the specified mode (global/local/none).
+        --set-shared-config <key> <value> [--type=<type>]
             Set specified key to the specified value. If the key is duplicated
             in several files a type must be provided.
-        --get-shared-config key [--type=<type>]
+        --get-shared-config <key> [--type=<type>]
             Get specified key's value. If the key is duplicated in several
             files a type must be provided.
         --reinitialize-lockspace
@@ -106,9 +106,6 @@ Usage: $0 [--help] <command> [<command-args>]
             Remove the metadata for the current host's agent from the global
             status database. This makes all other hosts forget about this
             host.
-
-    For additional information about a specific command try:
-        $@ <command> --help
 
 __EOF__
     exit $rc
@@ -143,12 +140,12 @@ Usage: $0 --deploy [args]
         Load extra configuration files.
     --generate-answer=<file>
         Generate answer file.
-    --restore-from-file=file
-         Restore an engine backup file during the deployment
+    --restore-from-file=<file>
+        Restore an engine backup file during the deployment.
     --4
-        Force IPv4 on dual stack env
+        Force IPv4 on dual stack env.
     --6
-        Force IPv6 on dual stack env
+        Force IPv6 on dual stack env.
 __EOF__
 return ;}
 
@@ -268,8 +265,7 @@ Usage: $0 --vm-status [--json]
     Report the status of the engine VM according to the HA agent.
     Available only after deployment has completed.
 
-    If --json is given, the output will be in machine-readable (JSON) format
-
+    If --json is given, the output will be in machine-readable (JSON) format.
 __EOF__
 return ;}
 
@@ -290,8 +286,8 @@ Usage: $0 --add-console-password [--password=<password>]
     Create a temporary password for vnc/spice connection.
 
     If --password is given, the password will be set to the value provided.
-    Otherwise, if it is set,  the environment variable
-    OVIRT_HOSTED_ENGINE_CONSOLE_PASSWORD will be used.  As a last resort, the
+    Otherwise, if it is set, the environment variable
+    OVIRT_HOSTED_ENGINE_CONSOLE_PASSWORD will be used. As a last resort, the
     password will be read interactively.
     Available only after deployment has completed.
 __EOF__
@@ -340,7 +336,7 @@ return ;}
 cmd_connect_storage() {
     [ "$1" == "--help" ] && { cat << __EOF__
 Usage: $0 --connect-storage
-    Connect the storage domain
+    Connect the storage domain.
 __EOF__
 return ;}
 
@@ -357,7 +353,7 @@ return ;}
 cmd_disconnect_storage() {
     [ "$1" == "--help" ] && { cat << __EOF__
 Usage: $0 --disconnect-storage
-    Disconnect the storage domain
+    Disconnect the storage domain.
 __EOF__
 return ;}
 
@@ -404,7 +400,7 @@ return ;}
 cmd_set_maintenance() {
     [ "$1" == "--help" ] && { cat << __EOF__
 Usage: $0 --set-maintenance --mode=<mode>
-    Set maintenance status to the specified mode.  Valid values are:
+    Set maintenance status to the specified mode. Valid values are:
     'global', 'local', and 'none'.
     Available only after deployment has completed.
 __EOF__
@@ -433,7 +429,7 @@ return ;}
 
 cmd_set_shared_config() {
     [ "$1" == "--help" ] && { cat << __EOF__
-Usage: $0 --set-shared-config key value [--type=<type>]
+Usage: $0 --set-shared-config <key> <value> [--type=<type>]
     Set shared storage configuration.
     Valid types are: he_local, he_shared, ha, broker.
     Available only after deployment has completed.
@@ -470,7 +466,7 @@ return ;}
 
 cmd_get_shared_config() {
     [ "$1" == "--help" ] && { cat << __EOF__
-Usage: $0 --get-shared-config key [--type=<type>]
+Usage: $0 --get-shared-config <key> [--type=<type>]
     Get shared storage configuration.
     Valid types are: he_local, he_shared, ha, broker.
     Available only after deployment has completed.
