@@ -419,7 +419,7 @@ class Plugin(plugin.PluginBase):
             ]['ansible_facts']['virtual_size']
             self.environment[
                 ohostedcons.StorageEnv.OVF_SIZE_GB
-            ] = int(vsize)/1024/1024/1024
+            ] = int(vsize)//1024//1024//1024+1
         except KeyError:
             raise RuntimeError(_('Unable to get appliance disk size'))
 

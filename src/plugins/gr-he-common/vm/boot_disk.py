@@ -136,9 +136,9 @@ class Plugin(plugin.PluginBase):
             disk = tree.find('Section/Disk')
             self.environment[
                 ohostedcons.StorageEnv.OVF_SIZE_GB
-            ] = int(
+            ] = int(float(
                 disk.attrib['{http://schemas.dmtf.org/ovf/envelope/1/}size']
-            )
+            ))+1
             try:
                 self.environment[
                     ohostedcons.StorageEnv.IMAGE_DESC
