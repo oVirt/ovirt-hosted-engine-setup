@@ -175,6 +175,9 @@ print((
 ' > %{_sysconfdir}/ovirt-hosted-engine/virsh_auth.conf
 
 %changelog
+* Wed Jan 22 2020 Lev Veyde <lveyde@redhat.com> - 2.4.1-1
+- 2.4.1-1
+
 * Mon Nov 25 2019 Evgeny Slutsky <eslutsky@redhat.com> - 2.4.1-0.0.master
 - 2.4.1-0.0.master
 
