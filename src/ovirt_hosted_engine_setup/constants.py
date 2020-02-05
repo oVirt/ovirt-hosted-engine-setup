@@ -154,11 +154,6 @@ class FileLocations(object):
         '%s.conf' % OVIRT_HOSTED_ENGINE_SETUP,
     )
 
-    OVIRT_HOST_DEPLOY_CONF = os.path.join(
-        config.SYSCONFDIR,
-        'ovirt-host-deploy.conf.d',
-    )
-
     ENGINE_VM_TEMPLATE = os.path.join(
         config.DATADIR,
         OVIRT_HOSTED_ENGINE_SETUP,
