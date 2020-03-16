@@ -169,8 +169,8 @@ return ;}
         local down=
         local status=
         status=$(${VDSMHELPER} checkVmStatus ${vmid})
-        if [[ $status == *"Down"* ]]; then
-            echo "VM exists and is down, cleaning up and restarting"
+        if [[ $status == *"Down"* || $status == *"Paused"* ]]; then
+            echo "VM exists and is ${status}, cleaning up and restarting"
             ${VDSMHELPER} destroy "${vmid}"
         elif [ -n "${status}" ]; then
             echo "VM exists and its status is ${status}"
