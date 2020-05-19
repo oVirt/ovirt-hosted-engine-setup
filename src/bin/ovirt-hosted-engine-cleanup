@@ -100,6 +100,7 @@ fi
 echo "  -=== Stop other services ===- "
 systemctl stop vdsmd
 systemctl stop supervdsmd
+systemctl stop libvirtd-tls.socket
 systemctl stop libvirtd
 systemctl stop momd
 systemctl stop sanlock
@@ -129,5 +130,5 @@ do
    echo "! error removing $f"
 done
 
-echo "  -=== Removing IP Rules   ===- "
+echo "  -=== Removing IP Rules ===- "
 remove_ip_rules
