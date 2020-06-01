@@ -701,16 +701,16 @@ class Plugin(plugin.PluginBase):
         if self.environment[
             ohostedcons.CloudInit.GENERATE_ISO
         ] == ohostedcons.Const.CLOUD_INIT_GENERATE:
+            attemps = 0
             while self.environment[
                 ohostedcons.CloudInit.ROOTPWD
-            ] is None:
+            ] is None and attemps < ohostedcons.Const.MAX_DIALOG_ATTEMPTS:
                 password = self.dialog.queryString(
                     name='CI_ROOT_PASSWORD',
                     note=_(
                         'Enter root password that '
                         'will be used for the engine appliance: '
                     ),
-
                     prompt=True,
                     hidden=True,
                     default='',
@@ -732,6 +732,9 @@ class Plugin(plugin.PluginBase):
                         self.logger.error(_('Passwords do not match'))
                 else:
                     self.logger.error(_('Password is empty'))
+                    attemps += 1
+            if attemps == ohostedcons.Const.MAX_DIALOG_ATTEMPTS:
+                raise RuntimeError('Maximum retry count has been reached')
 
             while self.environment[
                 ohostedcons.CloudInit.ROOT_SSH_PUBKEY

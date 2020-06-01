@@ -393,6 +393,7 @@ class Const(object):
     ANSIBLE_R_OTOPI_PREFIX = 'otopi_'
     STORAGE_SERVER_TIMEOUT = 60
     HOST_RESERVED_MEMORY_MB = 512
+    MAX_DIALOG_ATTEMPTS = 1000
 
     HE_TAG_INITIAL_CLEAN = 'initial_clean'
     HE_TAG_FINAL_CLEAN = 'final_clean'
