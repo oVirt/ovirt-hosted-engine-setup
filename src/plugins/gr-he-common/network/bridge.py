@@ -144,6 +144,9 @@ class Plugin(plugin.PluginBase):
         ah = ansible_utils.AnsibleHelper(
             tags=ohostedcons.Const.HE_TAG_NETWORK_INTERFACES,
             extra_vars={'he_just_collect_network_interfaces': True},
+            user_extra_vars=self.environment.get(
+                ohostedcons.CoreEnv.ANSIBLE_USER_EXTRA_VARS
+            ),
         )
         r = ah.run()
         self.logger.debug(r)

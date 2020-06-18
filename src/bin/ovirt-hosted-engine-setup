@@ -37,6 +37,15 @@ Usage: $0
 		Force IPv4 on dual stack env
 	--6
 		Force IPv6 on dual stack env
+	--ansible-extra-vars=DATA
+		Pass '--extra-vars=DATA' to all ansible calls.
+		DATA can be anything that ansible can accept - var=value,
+		@file, JSON/YAML.
+		Please note: Using this option is supported only
+		with specific values as documented elsewhere.
+		Passing arbitrary values might conflict with existing
+		variables.
+
 
 __EOF__
 	exit 1
@@ -76,6 +85,9 @@ while [ -n "$1" ]; do
 		;;
 		--6)
 			environment="${environment} OVEHOSTED_NETWORK/forceIPv6=bool:True"
+		;;
+		--ansible-extra-vars=*)
+			environment="${environment} OVEHOSTED_CORE/ansibleUserExtraVars=str:${v}"
 		;;
 		--help)
 			usage

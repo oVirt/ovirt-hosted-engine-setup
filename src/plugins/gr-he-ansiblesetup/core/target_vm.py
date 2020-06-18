@@ -232,6 +232,9 @@ class Plugin(plugin.PluginBase):
         ah = ansible_utils.AnsibleHelper(
             tags=ohostedcons.Const.HE_TAG_CREATE_VM,
             extra_vars=target_vm_vars,
+            user_extra_vars=self.environment.get(
+                ohostedcons.CoreEnv.ANSIBLE_USER_EXTRA_VARS
+            ),
             inventory_source=inventory_source,
         )
         self.logger.info(_('Creating Target VM'))

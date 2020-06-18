@@ -69,6 +69,7 @@ class AnsibleHelper(base.Base):
         playbook_name=ohostedcons.FileLocations.HE_AP_TRIGGER_ROLE,
         custom_path=None,
         extra_vars={},
+        user_extra_vars=None,
         inventory_source='localhost,',
         raise_on_error=True,
         tags=None,
@@ -85,6 +86,7 @@ class AnsibleHelper(base.Base):
         self._inventory_source = inventory_source
         self._extra_vars = extra_vars
         self._extra_vars.update(_EXTRA_VARS_FOR_FILTERING)
+        self._user_extra_vars = user_extra_vars
         self._cb_results = {}
         self._raise_on_error = raise_on_error
         self._tags = tags
@@ -136,6 +138,10 @@ class AnsibleHelper(base.Base):
             '--inventory={i}'.format(i=self._inventory_source),
             '--extra-vars=@{vf}'.format(vf=vars_path),
         ]
+        if self._user_extra_vars:
+            ansible_playbook_cmd.append(
+                '--extra-vars={}'.format(self._user_extra_vars)
+            )
 
         tags = self._format_tags_option(self._tags, '--tags')
         skip_tags = self._format_tags_option(self._skip_tags, '--skip-tags')

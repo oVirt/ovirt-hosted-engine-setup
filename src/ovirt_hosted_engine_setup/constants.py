@@ -442,6 +442,7 @@ class CoreEnv(object):
     SKIP_TTY_CHECK = 'OVEHOSTED_CORE/skipTTYCheck'
     NODE_SETUP = 'OVEHOSTED_CORE/nodeSetup'
     MISC_REACHED = 'OVEHOSTED_CORE/miscReached'
+    ANSIBLE_USER_EXTRA_VARS = 'OVEHOSTED_CORE/ansibleUserExtraVars'
 
 
 @util.export

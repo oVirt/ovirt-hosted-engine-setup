@@ -397,6 +397,9 @@ class Plugin(plugin.PluginBase):
         ah = ansible_utils.AnsibleHelper(
             tags=ohostedcons.Const.HE_TAG_BOOTSTRAP_LOCAL_VM,
             extra_vars=bootstrap_vars,
+            user_extra_vars=self.environment.get(
+                ohostedcons.CoreEnv.ANSIBLE_USER_EXTRA_VARS
+            ),
             inventory_source=inventory_source,
         )
         self.logger.info(_('Starting local VM'))
@@ -431,6 +434,9 @@ class Plugin(plugin.PluginBase):
         ah = ansible_utils.AnsibleHelper(
             tags=ohostedcons.Const.HE_TAG_INITIAL_CLEAN,
             extra_vars=bootstrap_vars,
+            user_extra_vars=self.environment.get(
+                ohostedcons.CoreEnv.ANSIBLE_USER_EXTRA_VARS
+            ),
             inventory_source=inventory_source,
         )
         self.logger.info(_('Cleaning previous attempts'))
@@ -448,6 +454,9 @@ class Plugin(plugin.PluginBase):
                     ohostedcons.CoreEnv.LOCAL_VM_DIR
                 ],
             },
+            user_extra_vars=self.environment.get(
+                ohostedcons.CoreEnv.ANSIBLE_USER_EXTRA_VARS
+            ),
             inventory_source='localhost,',
         )
         self.logger.info(_('Cleaning temporary resources'))

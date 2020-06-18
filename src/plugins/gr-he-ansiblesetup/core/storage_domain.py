@@ -217,6 +217,9 @@ class Plugin(plugin.PluginBase):
         ah = ansible_utils.AnsibleHelper(
             tags=ohostedcons.Const.HE_TAG_ISCSI_DISCOVER,
             extra_vars=iscsi_discover_vars,
+            user_extra_vars=self.environment.get(
+                ohostedcons.CoreEnv.ANSIBLE_USER_EXTRA_VARS
+            ),
         )
         self.logger.info(_('Discovering iSCSI targets'))
         r = ah.run()
@@ -320,6 +323,9 @@ class Plugin(plugin.PluginBase):
         ah = ansible_utils.AnsibleHelper(
             tags=ohostedcons.Const.HE_TAG_ISCSI_GETDEVICES,
             extra_vars=iscsi_getdevices_vars,
+            user_extra_vars=self.environment.get(
+                ohostedcons.CoreEnv.ANSIBLE_USER_EXTRA_VARS
+            ),
         )
         self.logger.info(_('Getting iSCSI LUNs list'))
         r = ah.run()
@@ -352,6 +358,9 @@ class Plugin(plugin.PluginBase):
         ansible_helper = ansible_utils.AnsibleHelper(
             tags=ohostedcons.Const.HE_TAG_FC_GETDEVICES,
             extra_vars=fc_getdevices_vars,
+            user_extra_vars=self.environment.get(
+                ohostedcons.CoreEnv.ANSIBLE_USER_EXTRA_VARS
+            ),
         )
         self.logger.info(_('Getting Fibre Channel LUNs list'))
         r = ansible_helper.run()
@@ -760,6 +769,9 @@ class Plugin(plugin.PluginBase):
             ah = ansible_utils.AnsibleHelper(
                 tags=ohostedcons.Const.HE_TAG_CREATE_SD,
                 extra_vars=storage_domain_vars,
+                user_extra_vars=self.environment.get(
+                    ohostedcons.CoreEnv.ANSIBLE_USER_EXTRA_VARS
+                ),
             )
             self.logger.info(_('Creating Storage Domain'))
             try:
