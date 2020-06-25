@@ -93,6 +93,7 @@ class Plugin(plugin.PluginBase):
         maxmem = int(self._getMaxMemorySize()) - \
             ohostedcons.Const.HOST_RESERVED_MEMORY_MB
 
+        default_proceed_value = _('No')
         if maxmem < ohostedcons.Defaults.MINIMAL_MEM_SIZE_MB:
             self.logger.warning(
                 _(
@@ -103,6 +104,7 @@ class Plugin(plugin.PluginBase):
                     maxmem=maxmem,
                 )
             )
+            default_proceed_value = _('Abort')
 
         default = ohostedcons.Defaults.MINIMAL_MEM_SIZE_MB
         default_msg = _('minimum requirement')
@@ -198,6 +200,7 @@ class Plugin(plugin.PluginBase):
                         'Continue with specified memory size?'
                     ),
                     'is_error': False,
+                    'default': default_proceed_value,
                 },
             ),
             default=default,
