@@ -121,6 +121,7 @@ FILES+=" /etc/pki/libvirt/private/*.pem"
 FILES+=" /etc/pki/ovirt-vmconsole/*.pem"
 FILES+=" /var/cache/libvirt/*"
 FILES+=" /var/run/ovirt-hosted-engine-ha/*"
+FILES+=" /var/tmp/localvm*"
 
 for f in $FILES
 do
