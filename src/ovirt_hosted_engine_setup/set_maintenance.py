@@ -66,7 +66,7 @@ class Maintenance(object):
                     _("Failed communicating with VDSM: {e}").format(e=e)
                 )
                 return False
-            if vm_id in vm_list:
+            if vm_id in [ item['vmId'] for item in vm_list ]:
                 sys.stderr.write(_(
                     "Unable to enter local maintenance mode: "
                     "the engine VM is running on the current host, "
