@@ -3,4 +3,6 @@
   hosts: localhost
   connection: local
   roles:
-    - role: ovirt.hosted_engine_setup
+    - role: hosted_engine_setup
+  collections:
+    - ovirt.ovirt
