@@ -25,9 +25,11 @@ VM cloud-init configuration plugin.
 
 import ethtool
 import gettext
+import io
 import netaddr
 import os
 import re
+import tarfile
 import tempfile
 
 from otopi import constants as otopicons
@@ -403,6 +405,44 @@ class Plugin(plugin.PluginBase):
             ))
         return tz
 
+    def _get_fqdn_from_backup_file(self):
+        try:
+            with tarfile.open(
+                self.environment[
+                    ohostedcons.CoreEnv.RESTORE_FROM_FILE
+                ],
+                'r'
+            ) as tar:
+                buf = tar.extractfile('./files').read()
+                filesio = io.BytesIO(buf)
+                with tarfile.open(
+                    None,
+                    'r',
+                    fileobj=filesio
+                ) as files:
+                    conffiles_re = re.compile(
+                        '^etc/ovirt-engine/engine.conf.d/.*conf$'
+                    )
+                    fqdn_re = re.compile('^ENGINE_FQDN=(?P<fqdn>\\S*).*')
+                    for file in sorted(files, key=lambda f: f.name):
+                        if conffiles_re.search(file.name):
+                            f = files.extractfile(file.name)
+                            content = f.read().decode('utf-8')
+                            lines = content.splitlines()
+                            for l in lines:
+                                # This is only a partial parsing,
+                                # the full implementation is in
+                                # the engine pythonlib.
+                                match = fqdn_re.match(l)
+                                if match:
+                                    engine_fqdn = match.group('fqdn')
+        except Exception as e:
+            raise RuntimeError(
+                _('Unable to fech FQDN from backup file: {err}')
+                .format(err=str(e))
+            )
+        return engine_fqdn
+
     @plugin.event(
         stage=plugin.Stages.STAGE_BOOT,
         before=(
@@ -569,40 +609,54 @@ class Plugin(plugin.PluginBase):
             if not self.environment[
                 ohostedcons.CloudInit.INSTANCE_HOSTNAME
             ]:
-                instancehname = self._hostname_helper.getHostname(
-                    envkey=None,
-                    whichhost='CI_INSTANCE_HOSTNAME',
-                    supply_default=False,
-                    prompttext=_(
-                        'Please provide the FQDN you would like to use for '
-                        'the engine.\n'
-                        'Note: This will be the FQDN of the engine VM '
-                        'you are now going to launch,\nit should not '
-                        'point to the base host or to any other '
-                        'existing machine.\n'
-                        'Engine VM FQDN: '
-                    ),
-                    dialog_name='CI_INSTANCE_HOSTNAME',
-                    validate_syntax=True,
-                    system=True,
-                    dns=False,
-                    local_non_loopback=False,
-                    reverse_dns=False,
-                    not_local=True,
-                    not_local_text=_(
-                        'Please input the hostname for the engine VM, '
-                        'not for this host.'
-                    ),
-                    allow_empty=False,
-                )
-                if instancehname:
+                if self.environment[
+                    ohostedcons.CoreEnv.RESTORE_FROM_FILE
+                ]is not None:
                     self.environment[
                         ohostedcons.CloudInit.INSTANCE_HOSTNAME
-                    ] = instancehname
+                    ] = self._get_fqdn_from_backup_file()
+                    self.logger.info(_(
+                        'Using Engine VM FQDN {v} from backup file.').format(
+                        v=self.environment[
+                            ohostedcons.CloudInit.INSTANCE_HOSTNAME
+                            ]
+                        )
+                    )
                 else:
-                    self.environment[
-                        ohostedcons.CloudInit.INSTANCE_HOSTNAME
-                    ] = False
+                    instancehname = self._hostname_helper.getHostname(
+                        envkey=None,
+                        whichhost='CI_INSTANCE_HOSTNAME',
+                        supply_default=False,
+                        prompttext=_(
+                            'Please provide the FQDN you would like to use '
+                            'for the engine.\n'
+                            'Note: This will be the FQDN of the engine VM '
+                            'you are now going to launch,\nit should not '
+                            'point to the base host or to any other '
+                            'existing machine.\n'
+                            'Engine VM FQDN: '
+                        ),
+                        dialog_name='CI_INSTANCE_HOSTNAME',
+                        validate_syntax=True,
+                        system=True,
+                        dns=False,
+                        local_non_loopback=False,
+                        reverse_dns=False,
+                        not_local=True,
+                        not_local_text=_(
+                            'Please input the hostname for the engine VM, '
+                            'not for this host.'
+                        ),
+                        allow_empty=False,
+                    )
+                    if instancehname:
+                        self.environment[
+                            ohostedcons.CloudInit.INSTANCE_HOSTNAME
+                        ] = instancehname
+                    else:
+                        self.environment[
+                            ohostedcons.CloudInit.INSTANCE_HOSTNAME
+                        ] = False
 
             if (
                 self.environment[
