@@ -583,7 +583,7 @@ class CallbackModule(CallbackBase):
     def v2_on_any(self, *args, **kwargs):
         msg = u"ansible on_any args "
         for arg in args:
-            msg += u"{a}".format(a=arg)
+            msg += u"{a} ".format(a=arg)
         msg += u" kwargs "
         for key in kwargs:
             msg += u"{k}:{v} ".format(k=key, v=kwargs[key])
