@@ -450,6 +450,12 @@ class Plugin(plugin.PluginBase):
         ah = ansible_utils.AnsibleHelper(
             tags=ohostedcons.Const.HE_TAG_FINAL_CLEAN,
             extra_vars={
+                'he_appliance_password': self.environment[
+                    ohostedcons.CloudInit.ROOTPWD
+                ],
+                'he_fqdn': self.environment[
+                    ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
+                ],
                 'he_local_vm_dir': self.environment[
                     ohostedcons.CoreEnv.LOCAL_VM_DIR
                 ],
