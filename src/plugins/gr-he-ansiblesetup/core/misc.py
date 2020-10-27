@@ -401,6 +401,7 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.CoreEnv.ANSIBLE_USER_EXTRA_VARS
             ),
             inventory_source=inventory_source,
+            raise_on_error=False,
         )
         self.logger.info(_('Starting local VM'))
         r = ah.run()
@@ -429,6 +430,9 @@ class Plugin(plugin.PluginBase):
         # TODO: get the CPU models list from /ovirt-engine/api/clusterlevels
         # once wrapped by ansible facts and filter it by host CPU architecture
         # in order to let the user choose the cluster CPU type in advance
+
+        if r['ansible-playbook_rc'] != 0:
+            raise RuntimeError(_('Failed executing ansible-playbook'))
 
     def initial_clean_up(self, bootstrap_vars, inventory_source):
         ah = ansible_utils.AnsibleHelper(

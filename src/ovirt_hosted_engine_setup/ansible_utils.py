@@ -218,6 +218,7 @@ class AnsibleHelper(base.Base):
                         self._process_output(buffer)
                         buffer = ''
             rc = proc.poll()
+            self._cb_results['ansible-playbook_rc'] = rc
             self.logger.debug('ansible-playbook rc: {rc}'.format(rc=rc))
             while True:
                 output = out_fh.readline()
