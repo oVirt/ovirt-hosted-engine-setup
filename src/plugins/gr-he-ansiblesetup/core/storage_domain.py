@@ -332,15 +332,29 @@ class Plugin(plugin.PluginBase):
         self.logger.debug(r)
         available_luns = []
         if (
-            'otopi_iscsi_devices' in r and
-            'ansible_facts' in r['otopi_iscsi_devices'] and
-            'ovirt_host_storages' in r['otopi_iscsi_devices']['ansible_facts']
+            'otopi_iscsi_devices' in r
         ):
-            available_luns = r[
-                'otopi_iscsi_devices'
-            ][
-                'ansible_facts'
-            ]['ovirt_host_storages']
+            if (
+                'ansible_facts' in r['otopi_iscsi_devices'] and
+                'ovirt_host_storages' in r[
+                    'otopi_iscsi_devices'
+                ][
+                    'ansible_facts'
+                ]
+            ):
+                available_luns = r[
+                    'otopi_iscsi_devices'
+                ][
+                    'ansible_facts'
+                ]['ovirt_host_storages']
+            elif (
+                'ovirt_host_storages' in r['otopi_iscsi_devices']
+            ):
+                available_luns = r[
+                    'otopi_iscsi_devices'
+                ][
+                    'ovirt_host_storages'
+                ]
         return self._select_lun(available_luns)
 
     def _query_fc_lunid(self):
@@ -379,6 +393,7 @@ class Plugin(plugin.PluginBase):
         return self._select_lun(available_luns)
 
     def _select_lun(self, available_luns):
+        self.logger.debug(available_luns)
         if len(available_luns) == 0:
             msg = _('Cannot find any LUN on the selected target')
             self.logger.error(msg)
