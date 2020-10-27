@@ -381,15 +381,19 @@ class Plugin(plugin.PluginBase):
         self.logger.debug(r)
         available_luns = []
         if (
-            'otopi_fc_devices' in r and
-            'ansible_facts' in r['otopi_fc_devices'] and
-            'ovirt_host_storages' in r['otopi_fc_devices']['ansible_facts']
+            'otopi_fc_devices' in r
         ):
-            available_luns = r[
-                'otopi_fc_devices'
-            ][
-                'ansible_facts'
-            ]['ovirt_host_storages']
+            if (
+                'ansible_facts' in r['otopi_fc_devices'] and
+                'ovirt_host_storages' in r['otopi_fc_devices']['ansible_facts']
+            ):
+                available_luns = r['otopi_fc_devices'][
+                    'ansible_facts'
+                ]['ovirt_host_storages']
+            elif (
+                'ovirt_host_storages' in r['otopi_fc_devices']
+            ):
+                available_luns = r['otopi_fc_devices']['ovirt_host_storages']
         return self._select_lun(available_luns)
 
     def _select_lun(self, available_luns):
