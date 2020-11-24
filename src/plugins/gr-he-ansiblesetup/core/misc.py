@@ -165,7 +165,7 @@ class Plugin(plugin.PluginBase):
                 'Please note that if you are restoring a backup that contains '
                 'info about other hosted-engine hosts,\n'
                 'this value should exactly match the value used in the '
-                'environment you are going to restore. '
+                'environment you are going to restore.\n'
             )
 
         if self.environment[
@@ -178,10 +178,10 @@ class Plugin(plugin.PluginBase):
                 ] = self.dialog.queryString(
                     name='ovehosted_datacenter_name',
                     note=_(
-                        'Please enter the name of the datacenter where you '
-                        'want to deploy this hosted-engine host. '
+                        '\nPlease enter the name of the data center where you '
+                        'want to deploy this hosted-engine host.\n'
                         '{restore_addition}'
-                        '[@DEFAULT@]: '
+                        'Data center [@DEFAULT@]: '
                     ).format(
                         restore_addition=restore_addition,
                     ),
@@ -209,10 +209,10 @@ class Plugin(plugin.PluginBase):
             ] = self.dialog.queryString(
                 name='ovehosted_cluster_name',
                 note=_(
-                    'Please enter the name of the cluster where you want '
-                    'to deploy this hosted-engine host. '
+                    '\nPlease enter the name of the cluster where you want '
+                    'to deploy this hosted-engine host.\n'
                     '{restore_addition}'
-                    '[@DEFAULT@]: '
+                    'Cluster [@DEFAULT@]: '
                 ).format(
                     restore_addition=restore_addition,
                 ),
@@ -232,10 +232,11 @@ class Plugin(plugin.PluginBase):
                 ] = self.dialog.queryString(
                     name='ovehosted_renew_pki',
                     note=_(
-                        'Renew engine CA on restore if needed? Please notice '
+                        '\nRenew engine CA on restore if needed?\n'
+                        'Please notice '
                         'that if you choose Yes, all hosts will have to be '
-                        'later manually reinstalled from the engine. '
-                        '(@VALUES@)[@DEFAULT@]: '
+                        'later manually reinstalled from the engine.\n'
+                        'Renew CA if needed? (@VALUES@)[@DEFAULT@]: '
                     ),
                     prompt=True,
                     validValues=(_('Yes'), _('No')),
@@ -250,17 +251,14 @@ class Plugin(plugin.PluginBase):
                 ] = self.dialog.queryString(
                     name='ovehosted_pause_on_restore',
                     note=_(
-                        'Pause the execution after adding this host to the '
+                        '\nPause the execution after adding this host to the '
                         'engine?\n'
-                        'You will be able to iteratively connect to '
+                        'You will be able to connect to '
                         'the restored engine in order to manually '
-                        'review and remediate its configuration before '
-                        'proceeding with the deployment:\nplease ensure that '
-                        'all the datacenter hosts and storage domain are '
-                        'listed as up or in maintenance mode before '
-                        'proceeding.\nThis is normally not required when '
-                        'restoring an up to date and coherent backup. '
-                        '(@VALUES@)[@DEFAULT@]: '
+                        'review and remediate its configuration.\n'
+                        'This is normally not required when '
+                        'restoring an up to date and coherent backup.\n'
+                        'Pause after adding the host? (@VALUES@)[@DEFAULT@]: '
                     ),
                     prompt=True,
                     validValues=(_('Yes'), _('No')),

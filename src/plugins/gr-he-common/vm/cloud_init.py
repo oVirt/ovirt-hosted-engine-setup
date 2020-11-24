@@ -235,8 +235,8 @@ class Plugin(plugin.PluginBase):
                     name='CI_VM_STATIC_NETWORKING',
                     note=_(
                         'How should the engine VM network '
-                        'be configured '
-                        '(@VALUES@)[@DEFAULT@]? '
+                        'be configured? '
+                        '(@VALUES@)[@DEFAULT@]: '
                     ),
                     prompt=True,
                     validValues=(_('DHCP'), _('Static')),
@@ -680,7 +680,7 @@ class Plugin(plugin.PluginBase):
                     note=_(
                         'Please provide the domain name you would like to '
                         'use for the engine appliance.\n'
-                        'Engine VM domain: [@DEFAULT@]'
+                        'Engine VM domain [@DEFAULT@]: '
                     ),
                     prompt=True,
                     default=default_domain,
@@ -796,9 +796,15 @@ class Plugin(plugin.PluginBase):
                 pubkey = self.dialog.queryString(
                     name='CI_ROOT_SSH_PUBKEY',
                     note=_(
-                        "Enter ssh public key for the root user that "
-                        'will be used for the engine appliance '
-                        '(leave it empty to skip): '
+                        "\nYou may provide an SSH public key, that will be "
+                        "added by the deployment script to the "
+                        "authorized_keys file of the root user in the engine "
+                        "appliance.\n"
+                        "This should allow you passwordless login to the "
+                        "engine machine after deployment.\n"
+                        "If you provide no key, authorized_keys will not be "
+                        "touched.\n"
+                        "SSH public key []: "
                     ),
                     prompt=True,
                     hidden=False,
@@ -848,7 +854,7 @@ class Plugin(plugin.PluginBase):
                 key=ohostedcons.CloudInit.ROOT_SSH_ACCESS,
                 name='CI_ROOT_SSH_ACCESS',
                 note=_(
-                    'Do you want to enable ssh access for the root user '
+                    'Do you want to enable ssh access for the root user? '
                     '(@VALUES@) [@DEFAULT@]: '
                 ),
                 prompt=True,
@@ -868,7 +874,7 @@ class Plugin(plugin.PluginBase):
                     name='CI_APPLY_OPENSCAP_PROFILE',
                     note=_(
                         'Do you want to apply a default OpenSCAP security '
-                        'profile (@VALUES@) [@DEFAULT@]: '
+                        'profile? (@VALUES@) [@DEFAULT@]: '
                     ),
                     prompt=True,
                     validValues=(_('Yes'), _('No')),
@@ -917,16 +923,16 @@ class Plugin(plugin.PluginBase):
             ] = self.dialog.queryString(
                 name='CI_VM_ETC_HOST',
                 note=_(
-                    'Add lines for the appliance itself and for this host '
+                    '\nAdd lines for the appliance itself and for this host '
                     'to /etc/hosts on the engine VM?\n'
                     'Note: ensuring that this host could resolve the '
-                    'engine VM hostname is still up to you\n'
-                    '(@VALUES@)[@DEFAULT@] '
+                    'engine VM hostname is still up to you.\n'
+                    'Add lines to /etc/hosts? (@VALUES@)[@DEFAULT@]: '
                 ),
                 prompt=True,
                 validValues=(_('Yes'), _('No')),
                 caseSensitive=False,
-                default=_('No')
+                default=_('Yes')
             ) == _('Yes').lower()
 
 

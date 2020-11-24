@@ -79,7 +79,7 @@ class Plugin(plugin.PluginBase):
                 ] = self.dialog.queryString(
                     name='ovehosted_vmenv_mac',
                     note=_(
-                        'You may specify a unicast MAC address for the VM or '
+                        'Please specify a unicast MAC address for the VM, or '
                         'accept a randomly generated default [@DEFAULT@]: '
                     ),
                     prompt=True,

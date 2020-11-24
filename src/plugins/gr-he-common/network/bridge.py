@@ -140,6 +140,7 @@ class Plugin(plugin.PluginBase):
         ),
     )
     def _customization(self):
+        self.logger.info(_('Checking available network interfaces:'))
         validValues = []
         ah = ansible_utils.AnsibleHelper(
             tags=ohostedcons.Const.HE_TAG_NETWORK_INTERFACES,
@@ -171,7 +172,7 @@ class Plugin(plugin.PluginBase):
                 name='ovehosted_bridge_if',
                 note=_(
                     'Please indicate a nic to set '
-                    '{bridge} bridge on: (@VALUES@) [@DEFAULT@]: '
+                    '{bridge} bridge on (@VALUES@) [@DEFAULT@]: '
                 ).format(
                     bridge=self.environment[
                         ohostedcons.NetworkEnv.BRIDGE_NAME

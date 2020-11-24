@@ -105,8 +105,8 @@ class Plugin(plugin.PluginBase):
                 ] = self.dialog.queryString(
                     name='ovehosted_vmenv_cpu',
                     note=_(
-                        'Please specify the number of virtual CPUs for the VM '
-                        '(Defaults to {default_msg}): [@DEFAULT@]: '
+                        'Please specify the number of virtual CPUs for the VM. '
+                        'The default is the {default_msg} [@DEFAULT@]: '
                     ).format(default_msg=default_msg),
                     prompt=True,
                     default=default,

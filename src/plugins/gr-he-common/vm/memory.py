@@ -181,8 +181,8 @@ class Plugin(plugin.PluginBase):
             key=ohostedcons.VMEnv.MEM_SIZE_MB,
             name='ovehosted_vmenv_mem',
             note=_(
-                'Please specify the memory size of the VM in MB '
-                '(Defaults to {default_msg}): [@DEFAULT@]: '
+                'Please specify the memory size of the VM in MB. '
+                'The default is the {default_msg} [@DEFAULT@]: '
             ).format(
                 default_msg=default_msg,
             ),

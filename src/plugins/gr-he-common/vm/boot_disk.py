@@ -376,12 +376,14 @@ class Plugin(plugin.PluginBase):
                     ova_path = self.dialog.queryString(
                         name='OVEHOSTED_VMENV_OVF_ANSIBLE',
                         note=_(
-                            'If you want to deploy with a custom engine '
-                            'appliance image,\n'
+                            '\nIf you want to deploy with a custom engine '
+                            'appliance image, '
                             'please specify the path to '
-                            'the OVA archive you would like to use\n'
-                            '(leave it empty to skip, the setup will use '
-                            '{rpmname} rpm installing it if missing): '
+                            'the OVA archive you would like to use.\n'
+                            'Entering no value will use '
+                            'the image from the {rpmname} rpm, installing it '
+                            'if needed.\n'
+                            'Appliance image path []: '
                         ).format(rpmname=self._appliance_rpm_name),
                         prompt=True,
                         caseSensitive=True,
