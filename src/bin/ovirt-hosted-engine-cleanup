@@ -95,6 +95,7 @@ echo "  -=== De-configure VDSM networks ===- "
 if ip -o a | cut -d' ' -f2 | grep ovirtmgmt; then
     caution "A previously configured management bridge has been found on the system, this will try to de-configure it. Under certain circumstances you can loose network connection."
     vdsm-tool restore-nets
+    vdsm-tool clear-nets --exclude-net ovirtmgmt
 fi
 
 echo "  -=== Stop other services ===- "
@@ -107,6 +108,9 @@ systemctl stop sanlock
 
 echo "  -=== De-configure external daemons ===- "
 vdsm-tool remove-config
+
+echo "  -=== De-configure OVN ===- "
+vdsm-tool ovn-unconfigure
 
 echo "  -=== Removing configuration files ===- "
 FILES="/etc/init/libvirtd.conf"
