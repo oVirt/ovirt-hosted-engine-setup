@@ -78,7 +78,7 @@ Requires:       openssh-server
 Requires:       openssl
 Requires:       sanlock >= 2.8
 Requires:       sudo
-Requires:       libvirt-client
+Requires:       libvirt-client >= 6.6.0-9
 Requires:       virt-install
 Requires:       ansible >= 2.8.0
 # default libvirt network
