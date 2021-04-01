@@ -35,9 +35,14 @@ get_HE_procs() {
 }
 
 remove_ip_rules(){
-    for rule in $(ip rule | grep 10*  | cut -d':' -f1)
+    for rule in $(ip rule | grep ^10[0-1]: | cut -d':' -f1)
     do
         ip rule del prio $rule
+    done
+
+    for rule in $(ip -6 rule | grep ^10[0-1]: | cut -d':' -f1)
+    do
+        ip -6 rule del prio $rule
     done
 }
 
