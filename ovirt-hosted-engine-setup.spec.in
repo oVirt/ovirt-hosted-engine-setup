@@ -136,7 +136,7 @@ make %{?_smp_mflags} install DESTDIR="%{buildroot}"
 
 %files -f %{name}.lang
 %license COPYING
-%doc README
+%doc README.md
 %doc readme.appliance
 %doc readme.rollback
 %dir %{_sysconfdir}/ovirt-hosted-engine-setup.env.d

@@ -42,6 +42,7 @@ EXTRA_DIST = \
 	readme.appliance \
 	readme.rollback \
 	COPYING \
+	README.md \
 	$(NULL)
 
 SUBDIRS = \
