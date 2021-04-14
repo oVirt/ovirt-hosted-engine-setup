@@ -173,6 +173,11 @@ print((
 ' > %{_sysconfdir}/ovirt-hosted-engine/virsh_auth.conf
 
 %changelog
+* Wed Apr 14 2021 Asaf Rachmani <arachman@redhat.com> - 2.5.0-1
+- 2.5.0-1
+
+# This version built accidentally instead of 2.4.10-0.0.master,
+# therfore, we'll move forward with 2.5.x
 * Thu Nov 26 2020 Asaf Rachmani <arachman@redhat.com> - 2.5.0-0.0.master
 - 2.5.0-0.0.master
 
