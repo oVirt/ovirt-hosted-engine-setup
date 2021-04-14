@@ -26,6 +26,7 @@ target
 check
 src/bin/hosted-engine
 src/ovirt_hosted_engine_setup/config.py
+src/vdsm_hooks/hostedengine.py
 ovirt-hosted-engine-setup-*.tar.gz
 src/vdsm_hooks/50_hostedengine
 *.iml

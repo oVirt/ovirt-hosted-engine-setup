@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: devel@ovirt.org\n"
-"POT-Creation-Date: 2021-04-06 14:18+0200\n"
+"POT-Creation-Date: 2021-07-08 16:48+0200\n"
 "PO-Revision-Date: 2016-12-03 11:20-0200\n"
 "Last-Translator: Wesley Morais de Oliveira\n"
 "Language-Team: \n"
@@ -47,17 +47,17 @@ msgstr ""
 msgid "ovirt-hosted-engine-setup"
 msgstr "ovirt-hosted-engine-setup"
 
-#: src/ovirt_hosted_engine_setup/ansible_utils.py:115
+#: src/ovirt_hosted_engine_setup/ansible_utils.py:116
 #, python-brace-format
 msgid "Unknown data type: {t}"
 msgstr ""
 
-#: src/ovirt_hosted_engine_setup/ansible_utils.py:118
+#: src/ovirt_hosted_engine_setup/ansible_utils.py:119
 #, python-brace-format
 msgid "Failed decoding json data: {e} - \"{d}\""
 msgstr ""
 
-#: src/ovirt_hosted_engine_setup/ansible_utils.py:236
+#: src/ovirt_hosted_engine_setup/ansible_utils.py:237
 #: src/plugins/gr-he-ansiblesetup/core/misc.py:433
 msgid "Failed executing ansible-playbook"
 msgstr ""
@@ -604,48 +604,48 @@ msgstr "Por favor especifique a senha de portal iSCSI: "
 msgid "Discovering iSCSI targets"
 msgstr ""
 
-#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:232
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:230
 #, fuzzy
 msgid "Unable to find any target"
 msgstr "Não é possível adquirir o certificado CA"
 
-#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:264
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:262
 #, python-brace-format
 msgid ""
 "\t[{index}]\t{target}\n"
 "\t\tTPGT: {tpgt}, portals:\n"
 msgstr ""
 
-#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:272
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:270
 #, python-brace-format
 msgid "\t\t\t{portal}:{port}\n"
 msgstr ""
 
-#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:281
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:279
 #, fuzzy, python-brace-format
 msgid ""
 "The following targets have been found:\n"
 "{target_list}"
 msgstr "As seguintes VMs foram encontradas: {vms}"
 
-#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:290
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:288
 #, fuzzy
 msgid "Please select a target (@VALUES@) [@DEFAULT@]: "
 msgstr "Por favor selecione uma appliance (@VALUES@) [@DEFAULT@]: "
 
-#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:330
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:328
 msgid "Getting iSCSI LUNs list"
 msgstr ""
 
-#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:379
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:377
 msgid "Getting Fibre Channel LUNs list"
 msgstr ""
 
-#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:402
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:400
 msgid "Cannot find any LUN on the selected target"
 msgstr "Não posso encontrar qualquer LUN no alvo selecionado"
 
-#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:430
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:428
 #, fuzzy, python-brace-format
 msgid ""
 "\t[{i}]\t{id}\t{capacityGiB}GiB\t{vendorID}\t{productID}\n"
@@ -654,7 +654,7 @@ msgstr ""
 "\t[{i}]\t{guid}\t{capacityGiB}GiB\t{vendorID}\t{productID}\n"
 "\t\tstatus: {status}, caminhos: {ap} ativos"
 
-#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:445
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:443
 #, python-brace-format
 msgid ""
 "The following luns have been found on the requested target:\n"
@@ -663,60 +663,64 @@ msgstr ""
 "Os seguintes luns foram encontrados no destino solicitado:\n"
 "{lun_list}"
 
-#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:454
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:452
 msgid "Please select the destination LUN (@VALUES@) [@DEFAULT@]: "
 msgstr "Por favor selecione a LUN de destino (@VALUES@) [@DEFAULT@]: "
 
-#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:611
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:609
 msgid ""
 "Please specify the storage you would like to use (@VALUES@)[@DEFAULT@]: "
 msgstr ""
 "Por favor especifique o armazenamento que você gostaria de usar (@VALUES@)"
 "[@DEFAULT@]: "
 
-#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:664
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:662
 #, fuzzy, python-brace-format
 msgid "Invalid connection path: {p}"
 msgstr "Tipo de Domínio inválido: \"{dtype}\""
 
-#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:709
-#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:730
-#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:749
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:707
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:728
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:747
 #, fuzzy
 msgid "Unable to get target list"
 msgstr "Incapaz de obter o caminho do disco"
 
-#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:725
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:723
 #, python-brace-format
 msgid "iSCSI discard after delete is {v}"
 msgstr ""
 
-#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:726
-#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:745
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:724
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:743
 msgid "enabled"
 msgstr ""
 
-#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:726
-#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:745
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:724
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:743
 msgid "disabled"
 msgstr ""
 
-#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:744
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:742
 #, python-brace-format
 msgid "FC discard after delete is {v}"
 msgstr ""
 
-#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:755
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:753
 msgid "Currently not implemented"
 msgstr ""
 
-#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:795
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:793
 msgid "Creating Storage Domain"
 msgstr "Criando Domínio de Armazenamento"
 
-#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:862
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:877
 #, python-brace-format
 msgid "iSCSI connected paths: {n}"
+msgstr ""
+
+#: src/plugins/gr-he-ansiblesetup/core/storage_domain.py:923
+msgid "There was some problem with the storage domain, please try again"
 msgstr ""
 
 #: src/plugins/gr-he-ansiblesetup/core/target_vm.py:85

@@ -13,7 +13,7 @@ and a **backup** of it is hosted on [GitHub:ovirt-hosted-engine-setup](https://g
 Patches are welcome!
 
 Please submit patches to [gerrit.ovirt.org:ovirt-hosted-engine-setup](https://gerrit.ovirt.org/#/admin/projects/ovirt-hosted-engine-setup).
-If you are not familiar with the review process for Gerritt patches you can read about [Working with oVirt Gerrit](https://ovirt.org/develop/dev-process/working-with-gerrit.html)
+If you are not familiar with the review process for Gerrit patches you can read about [Working with oVirt Gerrit](https://ovirt.org/develop/dev-process/working-with-gerrit.html)
 on the [oVirt](https://ovirt.org/) website.
 
 **NOTE**: We might not notice pull requests that you create on Github, because we only use Github for backups.
