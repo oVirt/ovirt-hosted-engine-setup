@@ -802,9 +802,26 @@ class Plugin(plugin.PluginBase):
             self.logger.debug(
                 'Create storage domain results {r}'.format(r=r)
             )
+            # We had very few reports [1] where 'Activate Storage Domain'
+            # finished successfully and returned to us
+            # 'otopi_storage_domain_details' that includes 'storagedomain',
+            # but not 'available'. According to Storage team, this can
+            # indeed happen and is not considered a bug.
+            # I failed to reproduce this, so just add this to the existing
+            # 'if' below.
+            # The user will then get a generic error and prompt to configure
+            # storage again. They'll likely have to manually remove and clean
+            # the storage domain and try again with same creds, after finding
+            # and fixing the root cause for a missing 'available'.
+            # It's not very helpful, but still better than failing the restore
+            # and having to start from scratch.
+            # [1] https://bugzilla.redhat.com/show_bug.cgi?id=1662657
             if (
                 'otopi_storage_domain_details' in r and
-                'storagedomain' in r['otopi_storage_domain_details']
+                'storagedomain' in r['otopi_storage_domain_details'] and
+                'available' in r[
+                    'otopi_storage_domain_details'
+                ]['storagedomain']
             ):
                 storage_domain = r[
                     'otopi_storage_domain_details'
@@ -902,6 +919,13 @@ class Plugin(plugin.PluginBase):
             else:
                 if not interactive:
                     raise RuntimeError('Failed creating storage domain')
+            if not created:
+                self.logger.error(
+                    _(
+                        'There was some problem with the storage domain, '
+                        'please try again'
+                    )
+                )
 
 
 # vim: expandtab tabstop=4 shiftwidth=4
