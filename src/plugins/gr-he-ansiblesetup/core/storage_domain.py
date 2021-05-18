@@ -225,9 +225,7 @@ class Plugin(plugin.PluginBase):
         r = ah.run()
         self.logger.debug(r)
         try:
-            values = r[
-                'otopi_iscsi_targets'
-            ]['json']['discovered_targets']['iscsi_details']
+            values = r['otopi_iscsi_targets']['iscsi_targets_struct']
         except KeyError:
             raise RuntimeError(_('Unable to find any target'))
         self.logger.debug(values)
@@ -300,7 +298,7 @@ class Plugin(plugin.PluginBase):
             f_targets[int(s_target)-1]['target'],
             f_targets[int(s_target)-1]['tpgt'],
             ','.join([x['address'] for x in apl]),
-            ','.join([x['port'] for x in apl]),
+            ','.join([str(x['port']) for x in apl]),
         )
 
     def _query_iscsi_lunid(self, username, password, portal, port, target):

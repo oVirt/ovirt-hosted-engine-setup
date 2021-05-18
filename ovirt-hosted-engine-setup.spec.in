@@ -108,7 +108,7 @@ Requires:       glusterfs-cli >= 5.6
 Requires:       vdsm-python >= 4.40.0
 Requires(post): vdsm-python >= 4.40.0
 Requires:       ovirt-host >= 4.4.0
-Requires:       ovirt-ansible-collection >= 1.2.0
+Requires:       ovirt-ansible-collection >= 1.4.3
 
 Conflicts:      ovirt-engine-appliance < 4.4
 Conflicts:      ovirt-engine-appliance >= 4.5
