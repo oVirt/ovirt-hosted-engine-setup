@@ -80,7 +80,7 @@ Requires:       sanlock >= 2.8
 Requires:       sudo
 Requires:       libvirt-client >= 6.6.0-9
 Requires:       virt-install
-Requires:       ansible >= 2.8.0
+Requires:       ansible >= 2.9.21, ansible < 2.10.0
 # default libvirt network
 Requires:       libvirt-daemon-config-network
 
@@ -173,6 +173,9 @@ print((
 ' > %{_sysconfdir}/ovirt-hosted-engine/virsh_auth.conf
 
 %changelog
+* Tue Jun 08 2021 Asaf Rachmani <arachman@redhat.com> - 2.5.1-1
+- 2.5.1-1
+
 * Wed Apr 14 2021 Asaf Rachmani <arachman@redhat.com> - 2.5.1-0.0.master
 - 2.5.1-0.0.master
 
