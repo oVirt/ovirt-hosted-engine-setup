@@ -23,11 +23,8 @@ export PYTHONPATH="${PREFIX}/lib/python2.7/site-packages"
 
 ANSIBLE_LOG=exported-artifacts/tests/filter-test-ansible-output-$(date -u +%Y%m%d%H%M%S).log
 
-# TODO remove this test once we build otopi for python3
-if python -c 'from otopi import util' > /dev/null 2>&1; then
-	ansible-playbook --inventory=localhost, -vvvvvv tests/ansible/playbooks/test_filtering.yml > "${ANSIBLE_LOG}" 2>&1
-	if grep 'secret_data' $HE_ANSIBLE_LOG_PATH; then
-		echo Found non-filtered secrets in the log ^^^
-		exit 1
-	fi
+ansible-playbook --inventory=localhost, -vvvvvv tests/ansible/playbooks/test_filtering.yml > "${ANSIBLE_LOG}" 2>&1
+if grep 'secret_data' $HE_ANSIBLE_LOG_PATH; then
+	echo Found non-filtered secrets in the log ^^^
+	exit 1
 fi
