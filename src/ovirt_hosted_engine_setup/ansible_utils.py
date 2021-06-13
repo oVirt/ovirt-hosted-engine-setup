@@ -46,6 +46,7 @@ _FILTERED_VARS = (
     'ISCSI_DISCOVER_PASSWORD',
     'ROOTPWD',
     'he_appliance_password',
+    'he_hashed_appliance_password',
     'he_admin_password',
     'he_iscsi_password',
     'he_iscsi_discover_password',
