@@ -385,8 +385,14 @@ __EOF__
 return ;}
 
     status=$(${VDSMHELPER} checkVmStatus ${vmid})
-    if [[ $status == *"Up"* ]]; then
-        echo "The engine VM is running on this host"
+    if [ -n "${status}" ]; then
+        if [[ $status == *"Up"* ]]; then
+            echo "The engine VM is running on this host"
+        else
+            echo "The engine VM is on this host but its status is ${status}"
+            echo "Trying anyway to connect to its console:"
+            echo
+        fi
         hasOvirtVmconsole=$(virsh -r dumpxml ${vmid} | grep -c "/var/run/ovirt-vmconsole-console")
         if [ $hasOvirtVmconsole -eq 0 ]; then
             exec /usr/bin/virsh \
@@ -399,9 +405,6 @@ return ;}
                 UNIX-CONNECT:/var/run/ovirt-vmconsole-console/${vmid}.sock \
                 STDIO,raw,echo=0,escape=29
         fi
-    elif [ -n "${status}" ]; then
-        echo "The engine VM is on this host but its status is ${status}"
-        exit 1
     else
         echo "The engine VM is not on this host"
     fi
