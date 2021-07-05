@@ -396,7 +396,7 @@ return ;}
         else
             echo "Escape character is ^]"
             exec /usr/bin/socat \
-                UNIX-CONNECT:/var/run/ovirt-vmconsole-console/${vmid}.sock,user=ovirt-vmconsole \
+                UNIX-CONNECT:/var/run/ovirt-vmconsole-console/${vmid}.sock \
                 STDIO,raw,echo=0,escape=29
         fi
     elif [ -n "${status}" ]; then
