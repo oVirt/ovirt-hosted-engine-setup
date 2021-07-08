@@ -159,6 +159,9 @@ print((
 ' > %{_sysconfdir}/ovirt-hosted-engine/virsh_auth.conf
 
 %changelog
+* Thu Jul 08 2021 Sandro Bonazzola <sbonazzo@redhat.com> - 2.5.3-0.0.master
+- 2.5.3-0.0.master
+
 * Thu Jul 08 2021 Sandro Bonazzola <sbonazzo@redhat.com> - 2.5.2-1
 - 2.5.2-1
 - Drop RHEL 7 support in spec file
