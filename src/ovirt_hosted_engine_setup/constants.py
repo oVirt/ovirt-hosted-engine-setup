@@ -955,6 +955,12 @@ class CloudInit(object):
     @ohostedattrs(
         answerfile=True,
     )
+    def ENABLE_FIPS(self):
+        return 'OVEHOSTED_VM/enableFips'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
     def INSTANCE_HOSTNAME(self):
         return 'OVEHOSTED_VM/cloudinitInstanceHostName'
 

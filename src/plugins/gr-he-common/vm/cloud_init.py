@@ -522,6 +522,10 @@ class Plugin(plugin.PluginBase):
             ohostedcons.CloudInit.APPLY_OPENSCAP_PROFILE,
             None
         )
+        self.environment.setdefault(
+            ohostedcons.CloudInit.ENABLE_FIPS,
+            None
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_SETUP,
@@ -878,6 +882,25 @@ class Plugin(plugin.PluginBase):
                     note=_(
                         'Do you want to apply a default OpenSCAP security '
                         'profile? (@VALUES@) [@DEFAULT@]: '
+                    ),
+                    prompt=True,
+                    validValues=(_('Yes'), _('No')),
+                    caseSensitive=False,
+                    default=_('No')
+                ) == _('Yes').lower()
+
+            if self.environment[
+                ohostedcons.CloudInit.ENABLE_FIPS
+            ] is None and self.environment[
+                ohostedcons.CloudInit.APPLY_OPENSCAP_PROFILE
+            ] is False:
+                self.environment[
+                    ohostedcons.CloudInit.ENABLE_FIPS
+                ] = self.dialog.queryString(
+                    name='CI_ENABLE_FIPS',
+                    note=_(
+                        'Do you want to enable FIPS? '
+                        '(@VALUES@) [@DEFAULT@]: '
                     ),
                     prompt=True,
                     validValues=(_('Yes'), _('No')),

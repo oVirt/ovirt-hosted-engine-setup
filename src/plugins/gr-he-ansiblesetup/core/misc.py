@@ -327,6 +327,9 @@ class Plugin(plugin.PluginBase):
             'he_apply_openscap_profile': self.environment[
                 ohostedcons.CloudInit.APPLY_OPENSCAP_PROFILE
             ],
+            'he_enable_fips': self.environment[
+                ohostedcons.CloudInit.ENABLE_FIPS
+            ],
             'he_enable_libgfapi': self.environment[
                 ohostedcons.StorageEnv.ENABLE_LIBGFAPI
             ],
