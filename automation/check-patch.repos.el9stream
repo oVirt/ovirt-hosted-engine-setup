@@ -1,0 +1,3 @@
+ovirt-master-tested,https://resources.ovirt.org/repos/ovirt/tested/master/rpm/el9/
+# Provides python3-isort python3-pyflakes
+el9collection,https://download.copr.fedorainfracloud.org/results/sbonazzo/EL9Collection/centos-stream-9-$basearch/

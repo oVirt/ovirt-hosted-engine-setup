@@ -1,21 +1,38 @@
 #!/bin/bash -ex
 
-# ensure ansible is installed or it will fail on ansible-lint on CentOS Stream 9
-# note that on CentOS Stream 9 we have ansible-core-2.11 and on 8 we have ansible-2.9.
-dnf install -y /usr/bin/ansible
+# mock runner is not setting up the system correctly
+# https://issues.redhat.com/browse/CPDEVOPS-242
+if [[ "$(rpm --eval "%dist")" == ".el8" ]]; then
+	readarray -t pkgs < automation/check-patch.packages.el8stream
+else
+	readarray -t pkgs < automation/check-patch.packages
+fi
+dnf install -y "${pkgs[@]}"
+
+if [[ "$(rpm --eval "%dist")" == ".el9" ]]; then
+# ensure ansible-lint is not installed for CentOS Stream 9
+# we are going to use ansible 2.11 with CentOS Stream 9 and we'll handle ansible
+# in a different way.
+dnf remove -y ansible-lint || true
+fi
 
 # ensure packages are really updated.
 dnf distrosync -y
 
 autopoint
 autoreconf -ivf
+if [[ "$(rpm --eval "%dist")" == ".el8" ]]; then
 ./configure
+else
+# On CentOS Stream 9 ansible will be handled differently due to ansible 2.11
+./configure --disable-ansible-syntax-check
+fi
 make test
+
 # make distcheck skipped due to bug afflicting automake.
 # fc29: https://bugzilla.redhat.com/1716384
 # fc30: https://bugzilla.redhat.com/1757854
 # el8:  https://bugzilla.redhat.com/1759942
-# make distcheck
 
 ./automation/build-artifacts.sh
 
