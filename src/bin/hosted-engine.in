@@ -42,8 +42,13 @@ exit_not_correctly_deployed() {
 
 check_vm_conf() {
     if [ ! -r "${conf}" ] ; then
-        echo The hosted engine configuration has not been retrieved from shared storage.\
-             Please ensure that ovirt-ha-agent is running and the storage server is reachable.
+        echo The hosted engine configuration has not been retrieved from shared storage yet,
+        if ! systemctl is-active --quiet ovirt-ha-agent 1>/dev/null 2>&1; then
+            echo please ensure that ovirt-ha-agent service is running.
+        else
+            echo for more details please check sanlock status.
+        fi
+        echo
         exit 1
     fi
 }
