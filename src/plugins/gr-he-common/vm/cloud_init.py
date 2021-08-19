@@ -641,7 +641,7 @@ class Plugin(plugin.PluginBase):
                             'you are now going to launch,\nit should not '
                             'point to the base host or to any other '
                             'existing machine.\n'
-                            'Engine VM FQDN: '
+                            'Engine VM FQDN'
                         ),
                         dialog_name='CI_INSTANCE_HOSTNAME',
                         validate_syntax=True,
