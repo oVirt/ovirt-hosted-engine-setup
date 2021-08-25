@@ -7,6 +7,7 @@
 
 SUFFIX=".$(date -u +%Y%m%d%H%M%S).git$(git rev-parse --short HEAD)"
 
+autopoint
 autoreconf -ivf
 ./configure
 make dist

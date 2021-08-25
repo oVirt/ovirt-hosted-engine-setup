@@ -86,7 +86,7 @@ Requires:       qemu-img
 Requires:       qemu-img
 %else
 Requires:       qemu-img >= 15:3.1.0-20.module+el8+2888+cdc893a8
-%endif #centos
+%endif
 
 
 Requires:       ovirt-hosted-engine-ha >= 2.4
@@ -109,6 +109,7 @@ Hosted Engine setup tool for oVirt project.
 %configure \
         --docdir="%{_docdir}/%{name}-%{version}" \
         --disable-python-syntax-check \
+        --disable-ansible-syntax-check \
         %{?conf}
 make %{?_smp_mflags}
 

@@ -1,5 +1,6 @@
 #!/bin/bash -e
 
+autopoint
 autoreconf -ivf
 ./configure
 # make distcheck skipped due to bug afflicting automake.

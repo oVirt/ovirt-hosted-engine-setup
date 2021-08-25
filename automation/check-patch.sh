@@ -1,5 +1,13 @@
 #!/bin/bash -ex
 
+# ensure ansible is installed or it will fail on ansible-lint on CentOS Stream 9
+# note that on CentOS Stream 9 we have ansible-core-2.11 and on 8 we have ansible-2.9.
+dnf install -y /usr/bin/ansible
+
+# ensure packages are really updated.
+dnf distrosync -y
+
+autopoint
 autoreconf -ivf
 ./configure
 make test
@@ -19,7 +27,6 @@ mkdir -p exported-artifacts/tests
 export HE_ANSIBLE_LOG_PATH=exported-artifacts/tests/filter-test-$(date -u +%Y%m%d%H%M%S).log
 export ANSIBLE_STDOUT_CALLBACK=2_ovirt_logger
 export ANSIBLE_CALLBACK_PLUGINS=src/ansible
-export PYTHONPATH="${PREFIX}/lib/python2.7/site-packages"
 
 ANSIBLE_LOG=exported-artifacts/tests/filter-test-ansible-output-$(date -u +%Y%m%d%H%M%S).log
 
