@@ -301,7 +301,15 @@ class Plugin(plugin.PluginBase):
             ','.join([str(x['port']) for x in apl]),
         )
 
-    def _query_iscsi_lunid(self, username, password, portal, port, target):
+    def _query_iscsi_lunid(
+        self,
+        username,
+        password,
+        portal,
+        port,
+        target,
+        tpgt
+    ):
         iscsi_getdevices_vars = {
             'he_fqdn': self.environment[
                 ohostedcons.NetworkEnv.OVIRT_HOSTED_ENGINE_FQDN
@@ -317,6 +325,7 @@ class Plugin(plugin.PluginBase):
             'he_iscsi_portal_addr': portal,
             'he_iscsi_portal_port': port,
             'he_iscsi_target': target,
+            'he_iscsi_tpgt': tpgt,
         }
         ah = ansible_utils.AnsibleHelper(
             tags=ohostedcons.Const.HE_TAG_ISCSI_GETDEVICES,
@@ -715,7 +724,8 @@ class Plugin(plugin.PluginBase):
                             password=iscsi_password,
                             portal=iscsi_portal,
                             port=iscsi_port,
-                            target=iscsi_target
+                            target=iscsi_target,
+                            tpgt=iscsi_tpgt
                         )
                         lunid = lun['id']
                         discard = lun['discard_max_size'] > 0
