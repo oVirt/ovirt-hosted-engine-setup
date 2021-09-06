@@ -66,7 +66,13 @@ Requires:       sanlock >= 2.8
 Requires:       sudo
 Requires:       libvirt-client >= 6.6.0-9
 Requires:       virt-install
+%if 0%{?rhel} < 9
+# On CentOS Stream 9 we are going to use ansible 2.11
+# The whole way of consuming anisble roles is going to change
+# skipping ansible dependencies until we have something working.
 Requires:       ansible >= 2.9.21, ansible < 2.10.0
+Requires:       ovirt-ansible-collection >= 1.5.4
+%endif
 # default libvirt network
 Requires:       libvirt-daemon-config-network
 
@@ -76,28 +82,21 @@ BuildRequires:  gettext >= 0.18.2
 Requires:       qemu-img
 %endif
 
-%if 0%{?rhel}
-%if 0%{?rhel} >= 8
 %if 0%{?centos}
 Requires:       qemu-img
 %else
 Requires:       qemu-img >= 15:3.1.0-20.module+el8+2888+cdc893a8
 %endif #centos
-%else
-Requires:       qemu-img-rhev
-%endif #rhel >= 8
-%endif #rhel
 
 
 Requires:       ovirt-hosted-engine-ha >= 2.4
 Requires:       glusterfs-cli >= 5.6
-Requires:       vdsm-python >= 4.40.0
-Requires(post): vdsm-python >= 4.40.0
-Requires:       ovirt-host >= 4.4.0
-Requires:       ovirt-ansible-collection >= 1.5.4
+Requires:       vdsm-python >= 4.50.0
+Requires(post): vdsm-python >= 4.50.0
+Requires:       ovirt-host >= 4.5.0
 
-Conflicts:      ovirt-engine-appliance < 4.4
-Conflicts:      ovirt-engine-appliance >= 4.5
+Conflicts:      ovirt-engine-appliance < 4.5
+Conflicts:      ovirt-engine-appliance >= 4.6
 
 
 %description
