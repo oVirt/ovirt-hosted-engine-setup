@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: devel@ovirt.org\n"
-"POT-Creation-Date: 2021-07-08 16:48+0200\n"
+"POT-Creation-Date: 2021-09-07 11:57+0200\n"
 "PO-Revision-Date: 2016-12-03 11:20-0200\n"
 "Last-Translator: Wesley Morais de Oliveira\n"
 "Language-Team: \n"
@@ -58,7 +58,7 @@ msgid "Failed decoding json data: {e} - \"{d}\""
 msgstr ""
 
 #: src/ovirt_hosted_engine_setup/ansible_utils.py:237
-#: src/plugins/gr-he-ansiblesetup/core/misc.py:433
+#: src/plugins/gr-he-ansiblesetup/core/misc.py:436
 msgid "Failed executing ansible-playbook"
 msgstr ""
 
@@ -334,12 +334,12 @@ msgstr "Tipo de console"
 msgid "Restart engine VM after engine-setup"
 msgstr "Reiniciar a VM do engine e depois executar engine-setup"
 
-#: src/ovirt_hosted_engine_setup/constants.py:994
+#: src/ovirt_hosted_engine_setup/constants.py:1000
 #, fuzzy
 msgid "Engine VM timezone"
 msgstr "VM do Engine está ativa"
 
-#: src/ovirt_hosted_engine_setup/constants.py:1030
+#: src/ovirt_hosted_engine_setup/constants.py:1036
 msgid "CPU Type"
 msgstr "Tipo de CPU"
 
@@ -410,20 +410,22 @@ msgstr ""
 #: src/plugins/gr-he-ansiblesetup/core/misc.py:267
 #: src/plugins/gr-he-common/core/shell.py:99
 #: src/plugins/gr-he-common/core/shell.py:102
-#: src/plugins/gr-he-common/vm/cloud_init.py:577
-#: src/plugins/gr-he-common/vm/cloud_init.py:579
-#: src/plugins/gr-he-common/vm/cloud_init.py:580
-#: src/plugins/gr-he-common/vm/cloud_init.py:705
-#: src/plugins/gr-he-common/vm/cloud_init.py:707
-#: src/plugins/gr-he-common/vm/cloud_init.py:708
-#: src/plugins/gr-he-common/vm/cloud_init.py:734
-#: src/plugins/gr-he-common/vm/cloud_init.py:736
-#: src/plugins/gr-he-common/vm/cloud_init.py:737
-#: src/plugins/gr-he-common/vm/cloud_init.py:883
-#: src/plugins/gr-he-common/vm/cloud_init.py:886
-#: src/plugins/gr-he-common/vm/cloud_init.py:936
-#: src/plugins/gr-he-common/vm/cloud_init.py:938
-#: src/plugins/gr-he-common/vm/cloud_init.py:939
+#: src/plugins/gr-he-common/vm/cloud_init.py:581
+#: src/plugins/gr-he-common/vm/cloud_init.py:583
+#: src/plugins/gr-he-common/vm/cloud_init.py:584
+#: src/plugins/gr-he-common/vm/cloud_init.py:709
+#: src/plugins/gr-he-common/vm/cloud_init.py:711
+#: src/plugins/gr-he-common/vm/cloud_init.py:712
+#: src/plugins/gr-he-common/vm/cloud_init.py:738
+#: src/plugins/gr-he-common/vm/cloud_init.py:740
+#: src/plugins/gr-he-common/vm/cloud_init.py:741
+#: src/plugins/gr-he-common/vm/cloud_init.py:887
+#: src/plugins/gr-he-common/vm/cloud_init.py:890
+#: src/plugins/gr-he-common/vm/cloud_init.py:906
+#: src/plugins/gr-he-common/vm/cloud_init.py:909
+#: src/plugins/gr-he-common/vm/cloud_init.py:959
+#: src/plugins/gr-he-common/vm/cloud_init.py:961
+#: src/plugins/gr-he-common/vm/cloud_init.py:962
 #: src/plugins/gr-he-common/vm/cpu.py:134
 #: src/plugins/gr-he-common/vm/cpu.py:137
 #: src/plugins/gr-he-common/vm/image.py:144
@@ -438,12 +440,14 @@ msgstr "Sim"
 #: src/plugins/gr-he-ansiblesetup/core/misc.py:266
 #: src/plugins/gr-he-common/core/shell.py:99
 #: src/plugins/gr-he-common/core/shell.py:101
-#: src/plugins/gr-he-common/vm/cloud_init.py:577
-#: src/plugins/gr-he-common/vm/cloud_init.py:705
-#: src/plugins/gr-he-common/vm/cloud_init.py:734
-#: src/plugins/gr-he-common/vm/cloud_init.py:883
-#: src/plugins/gr-he-common/vm/cloud_init.py:885
-#: src/plugins/gr-he-common/vm/cloud_init.py:936
+#: src/plugins/gr-he-common/vm/cloud_init.py:581
+#: src/plugins/gr-he-common/vm/cloud_init.py:709
+#: src/plugins/gr-he-common/vm/cloud_init.py:738
+#: src/plugins/gr-he-common/vm/cloud_init.py:887
+#: src/plugins/gr-he-common/vm/cloud_init.py:889
+#: src/plugins/gr-he-common/vm/cloud_init.py:906
+#: src/plugins/gr-he-common/vm/cloud_init.py:908
+#: src/plugins/gr-he-common/vm/cloud_init.py:959
 #: src/plugins/gr-he-common/vm/cpu.py:134
 #: src/plugins/gr-he-common/vm/cpu.py:136
 #: src/plugins/gr-he-common/vm/image.py:144
@@ -508,25 +512,25 @@ msgid ""
 "Pause after adding the host? (@VALUES@)[@DEFAULT@]: "
 msgstr ""
 
-#: src/plugins/gr-he-ansiblesetup/core/misc.py:404
+#: src/plugins/gr-he-ansiblesetup/core/misc.py:407
 msgid "Starting local VM"
 msgstr ""
 
-#: src/plugins/gr-he-ansiblesetup/core/misc.py:416
+#: src/plugins/gr-he-ansiblesetup/core/misc.py:419
 #, fuzzy
 msgid "Failed getting local_vm_dir"
 msgstr "Falhou ao obter as informações da tarefa: {m}"
 
-#: src/plugins/gr-he-ansiblesetup/core/misc.py:426
+#: src/plugins/gr-he-ansiblesetup/core/misc.py:429
 #, fuzzy
 msgid "Unable to get appliance disk size"
 msgstr "Falha ao ler a memória da appliance"
 
-#: src/plugins/gr-he-ansiblesetup/core/misc.py:444
+#: src/plugins/gr-he-ansiblesetup/core/misc.py:447
 msgid "Cleaning previous attempts"
 msgstr ""
 
-#: src/plugins/gr-he-ansiblesetup/core/misc.py:470
+#: src/plugins/gr-he-ansiblesetup/core/misc.py:473
 msgid "Cleaning temporary resources"
 msgstr ""
 
@@ -864,7 +868,7 @@ msgid "Confirm engine admin password: "
 msgstr "Confirmar senha de administrador: "
 
 #: src/plugins/gr-he-common/engine/ca.py:119
-#: src/plugins/gr-he-common/vm/cloud_init.py:789
+#: src/plugins/gr-he-common/vm/cloud_init.py:793
 msgid "Passwords do not match"
 msgstr "Senhas não coincidem"
 
@@ -894,7 +898,7 @@ msgstr ""
 "Engine FQDN: "
 
 #: src/plugins/gr-he-common/engine/fqdn.py:108
-#: src/plugins/gr-he-common/vm/cloud_init.py:650
+#: src/plugins/gr-he-common/vm/cloud_init.py:654
 msgid "Please input the hostname for the engine VM, not for this host."
 msgstr ""
 "Por favor insira o nome do host para a VM do engine, não para este host."
@@ -1161,7 +1165,7 @@ msgstr ""
 msgid "Unable to fech FQDN from backup file: {err}"
 msgstr ""
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:572
+#: src/plugins/gr-he-common/vm/cloud_init.py:576
 msgid ""
 "Would you like to use cloud-init to customize the appliance on the first "
 "boot (@VALUES@)[@DEFAULT@]? "
@@ -1169,7 +1173,7 @@ msgstr ""
 "Gostaria de usar cloud-init para personalizar a appliance na primeira "
 "inicialização (@VALUES@)[@DEFAULT@]? "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:584
+#: src/plugins/gr-he-common/vm/cloud_init.py:588
 msgid ""
 "Would you like to generate on-fly a cloud-init ISO image (of no-cloud type)\n"
 "or do you have an existing one (@VALUES@)[@DEFAULT@]? "
@@ -1177,32 +1181,32 @@ msgstr ""
 "Gostaria de gerar uma imagem ISO on-fly cloud-init (do tipo no-cloud )\n"
 "ou você já tem uma existente (@VALUES@)[@DEFAULT@]? "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:590
-#: src/plugins/gr-he-common/vm/cloud_init.py:592
-#: src/plugins/gr-he-common/vm/cloud_init.py:593
+#: src/plugins/gr-he-common/vm/cloud_init.py:594
+#: src/plugins/gr-he-common/vm/cloud_init.py:596
+#: src/plugins/gr-he-common/vm/cloud_init.py:597
 msgid "Generate"
 msgstr "Gerar"
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:590
+#: src/plugins/gr-he-common/vm/cloud_init.py:594
 msgid "Existing"
 msgstr "Existente"
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:619
+#: src/plugins/gr-he-common/vm/cloud_init.py:623
 #, python-brace-format
 msgid "Using Engine VM FQDN {v} from backup file."
 msgstr ""
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:626
+#: src/plugins/gr-he-common/vm/cloud_init.py:630
 msgid "Using domain name from backup file."
 msgstr ""
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:634
+#: src/plugins/gr-he-common/vm/cloud_init.py:638
 #, fuzzy
 msgid ""
 "Please provide the FQDN you would like to use for the engine.\n"
 "Note: This will be the FQDN of the engine VM you are now going to launch,\n"
 "it should not point to the base host or to any other existing machine.\n"
-"Engine VM FQDN: "
+"Engine VM FQDN"
 msgstr ""
 "Por favor forneça o FQDN que você gostaria de usar para o engine.\n"
 "Nota: Este será o FQDN da VM do engine que você está lançando,\n"
@@ -1210,7 +1214,7 @@ msgstr ""
 "existente.\n"
 "VM engine FQDN: (deixe em branco para pular): "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:684
+#: src/plugins/gr-he-common/vm/cloud_init.py:688
 #, fuzzy
 msgid ""
 "Please provide the domain name you would like to use for the engine "
@@ -1221,7 +1225,7 @@ msgstr ""
 "appliance do engine.\n"
 "VM engine Domínio: [@DEFAULT@]"
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:700
+#: src/plugins/gr-he-common/vm/cloud_init.py:704
 msgid ""
 "Automatically execute engine-setup on the engine appliance on first boot "
 "(@VALUES@)[@DEFAULT@]? "
@@ -1229,7 +1233,7 @@ msgstr ""
 "Executar automaticamente o engine-setup na appliance do engine na primeira "
 "inicialização (@VALUES@)[@DEFAULT@]? "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:729
+#: src/plugins/gr-he-common/vm/cloud_init.py:733
 msgid ""
 "Automatically restart the engine VM as a monitored service after engine-"
 "setup (@VALUES@)[@DEFAULT@]? "
@@ -1237,23 +1241,23 @@ msgstr ""
 "Reiniciar automaticamente a VM do engine como um serviço monitorado após o "
 "engine-setup (@VALUES@)[@DEFAULT@]? "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:768
+#: src/plugins/gr-he-common/vm/cloud_init.py:772
 #, fuzzy
 msgid "Enter root password that will be used for the engine appliance: "
 msgstr ""
 "Digite a senha de root que será usado para a appliance do engine (deixá-la "
 "vazia para pular): "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:779
+#: src/plugins/gr-he-common/vm/cloud_init.py:783
 msgid "Confirm appliance root password: "
 msgstr "Confirmar senha de root da appliance: "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:791
+#: src/plugins/gr-he-common/vm/cloud_init.py:795
 #, fuzzy
 msgid "Password is empty"
 msgstr "Senhas não coincidem"
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:802
+#: src/plugins/gr-he-common/vm/cloud_init.py:806
 msgid ""
 "\n"
 "You may provide an SSH public key, that will be added by the deployment "
@@ -1265,23 +1269,23 @@ msgid ""
 "SSH public key []: "
 msgstr ""
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:834
+#: src/plugins/gr-he-common/vm/cloud_init.py:838
 #, fuzzy
 msgid "The ssh key is not valid."
 msgstr "O certificado CA não é válido: {ex}"
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:845
+#: src/plugins/gr-he-common/vm/cloud_init.py:849
 #, fuzzy
 msgid "Skipping appliance root ssh public key"
 msgstr "Ignorando senha de root da appliance"
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:860
+#: src/plugins/gr-he-common/vm/cloud_init.py:864
 #, fuzzy
 msgid ""
 "Do you want to enable ssh access for the root user? (@VALUES@) [@DEFAULT@]: "
 msgstr "Por favor especifique o nome de destino (@VALUES@) [@DEFAULT@]: "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:879
+#: src/plugins/gr-he-common/vm/cloud_init.py:883
 #, fuzzy
 msgid ""
 "Do you want to apply a default OpenSCAP security profile? (@VALUES@) "
@@ -1290,7 +1294,12 @@ msgstr ""
 "Respondendo \"Não\" abortará a configuração.\n"
 "Continuar? (@VALUES@) [@DEFAULT@]: "
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:899
+#: src/plugins/gr-he-common/vm/cloud_init.py:902
+#, fuzzy
+msgid "Do you want to enable FIPS? (@VALUES@) [@DEFAULT@]: "
+msgstr "Por favor especifique o nome de destino (@VALUES@) [@DEFAULT@]: "
+
+#: src/plugins/gr-he-common/vm/cloud_init.py:922
 msgid ""
 "The oVirt engine appliance is not configured with a default password, please "
 "consider configuring it via cloud-init"
@@ -1298,7 +1307,7 @@ msgstr ""
 "A appliance do ovirt engine não está configurada com uma senha padrão, por "
 "favor considere configurá-la via cloud-init"
 
-#: src/plugins/gr-he-common/vm/cloud_init.py:929
+#: src/plugins/gr-he-common/vm/cloud_init.py:952
 #, fuzzy
 msgid ""
 "\n"
