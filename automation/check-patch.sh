@@ -53,3 +53,14 @@ if grep 'secret_data' "$HE_ANSIBLE_LOG_PATH"; then
 	echo Found non-filtered secrets in the log ^^^
 	exit 1
 fi
+
+echo -e "\n\n =====  Testing RPM Dependencies =====\n"
+# Restoring sane yum environment screwed up by mock-runner
+rm -f /etc/yum.conf
+dnf reinstall -y system-release dnf dnf-conf
+sed -i -re 's#^(reposdir *= *).*$#\1/etc/yum.repos.d#' '/etc/dnf/dnf.conf'
+echo "deltarpm=False" >> /etc/dnf/dnf.conf
+rm -f /etc/yum/yum.conf
+
+dnf install -y https://resources.ovirt.org/pub/yum-repo/ovirt-release-master.rpm
+dnf --downloadonly install ./exported-artifacts/*noarch.rpm
