@@ -91,8 +91,8 @@ Requires:       qemu-img >= 15:3.1.0-20.module+el8+2888+cdc893a8
 
 Requires:       ovirt-hosted-engine-ha >= 2.4
 Requires:       glusterfs-cli >= 5.6
-Requires:       vdsm-python >= 4.50.0
-Requires(post): vdsm-python >= 4.50.0
+Requires:       vdsm-python >= 4.50
+Requires(post): vdsm-python >= 4.50
 Requires:       ovirt-host >= 4.5.0
 
 Conflicts:      ovirt-engine-appliance < 4.5
