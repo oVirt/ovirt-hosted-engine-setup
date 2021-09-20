@@ -22,10 +22,10 @@
 VM machine configuration plugin.
 """
 
-
 import gettext
-import platform
 import uuid
+
+import distro
 
 from otopi import plugin
 from otopi import util
@@ -45,7 +45,7 @@ class Plugin(plugin.PluginBase):
 
     def __init__(self, context):
         super(Plugin, self).__init__(context=context)
-        self._distribution = platform.linux_distribution(
+        self._distribution = distro.linux_distribution(
             full_distribution_name=0
         )[0]
 
