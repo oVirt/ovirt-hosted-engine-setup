@@ -531,7 +531,6 @@ class Plugin(plugin.PluginBase):
         stage=plugin.Stages.STAGE_SETUP,
     )
     def _setup(self):
-        self.command.detect('genisoimage')
         self.command.detect('ssh-keygen')
         self._hostname_helper = osetuphostname.Hostname(plugin=self)
         self.command.detect('ping')
