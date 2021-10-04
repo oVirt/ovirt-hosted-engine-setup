@@ -138,7 +138,7 @@ class Plugin(plugin.PluginBase):
             else []
         )
 
-        for amatch in (addressmatchs4list + addressmatchs6list):
+        for amatch in (addressmatchs6list + addressmatchs4list):
             addr = '{a}/{pl}'.format(
                 a=amatch[0],
                 pl=amatch[1],
