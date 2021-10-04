@@ -59,7 +59,6 @@ BuildRequires:  %{python_target_version}-pytest
 
 # Non Python dependencies
 Requires:       bind-utils
-Requires:       genisoimage
 Requires:       lsof
 Requires:       openssh-server
 Requires:       openssl
