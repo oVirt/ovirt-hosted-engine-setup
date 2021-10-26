@@ -1,5 +1,5 @@
 srpm:
-	dnf -y install git autoconf automake make gettext-devel
+	dnf -y install git autoconf automake make gettext-devel gcc
 	$(eval SUFFIX=$(shell sh -c " echo '.$$(date -u +%Y%m%d%H%M%S).git$$(git rev-parse --short HEAD)'"))
 	mkdir -p tmp.repos/SOURCES
 	autopoint
