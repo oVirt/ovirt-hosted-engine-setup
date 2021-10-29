@@ -77,6 +77,9 @@ Requires:       ovirt-ansible-collection >= 1.6.5
 Requires:       libvirt-daemon-config-network
 
 BuildRequires:  gettext >= 0.18.2
+# gcc is needed by gettext
+# TODO: figure out how to configure gettext to not require gcc.
+BuildRequires:  gcc
 
 %if 0%{?fedora}
 Requires:       qemu-img
