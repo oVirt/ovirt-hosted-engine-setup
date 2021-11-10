@@ -217,6 +217,12 @@ class Plugin(plugin.PluginBase):
             ],
             not_local=False,
             allow_empty=False,
+            v6=self.environment[
+                ohostedcons.NetworkEnv.FORCE_IPV6
+            ],
+            v4=self.environment[
+                ohostedcons.NetworkEnv.FORCE_IPV4
+            ],
         )
         if not self.environment[
             ohostedcons.EngineEnv.APP_HOST_NAME
