@@ -105,7 +105,7 @@ class Plugin(plugin.PluginBase):
                     try:
                         netaddr.IPAddress(a)
                         valid &= True
-                    except ValueError as ve:
+                    except netaddr.core.AddrFormatError as ve:
                         self.logger.error(_(
                             'Invalid IP address: {a} - {ve}'
                         ).format(
