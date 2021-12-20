@@ -63,4 +63,4 @@ echo "deltarpm=False" >> /etc/dnf/dnf.conf
 rm -f /etc/yum/yum.conf
 
 dnf install -y https://resources.ovirt.org/pub/yum-repo/ovirt-release-master.rpm
-dnf --downloadonly install ./exported-artifacts/*noarch.rpm
+dnf --downloadonly install -y ./exported-artifacts/*noarch.rpm
