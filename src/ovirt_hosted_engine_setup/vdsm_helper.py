@@ -96,7 +96,6 @@ def checkVmStatus(args):
 @handle_server_error
 def setVmTicket(args):
     cli = ohautil.connect_vdsm_json_rpc()
-    # TODO: handle also spice
     cli.VM.updateDevice(
         vmID=args.vmid,
         params={

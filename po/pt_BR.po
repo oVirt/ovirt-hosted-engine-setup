@@ -1561,23 +1561,6 @@ msgstr "Continuar com o tamanho de memória especificado?"
 #~ "\tremote-viewer vnc://{host}:{displayPort}\n"
 #~ "Use a senha temporária \"{password}\" para conectar ao console vnc.\n"
 
-#~ msgid ""
-#~ "You can also graphically connect to the VM from your system with the "
-#~ "following command:\n"
-#~ "\tremote-viewer --spice-ca-file={ca_cert_filename} spice://{host}?tls-"
-#~ "port={displaySecurePort} --spice-host-subject=\"{subject}\"\n"
-#~ "Use temporary password \"{password}\" to connect to spice console.\n"
-#~ "Please download {ca_cert} from this host to your client system.\n"
-#~ msgstr ""
-#~ "Você também pode conectar graficamente à VM de seu sistema com o seguinte "
-#~ "comando:\n"
-#~ "\tremote-viewer --spice-ca-file={ca_cert_filename} spice://{host}?tls-"
-#~ "port={displaySecurePort} --spice-host-subject=\"{subject}\"\n"
-#~ "Use a senha temporária \"{password}\" para conectar ao console spice.\n"
-#~ "Por favor faça o download {ca_cert} deste host para o seu sistema "
-#~ "cliente.\n"
-#~ "\n"
-
 #~ msgid "Unsuppored console type \"{console}\" requested"
 #~ msgstr "Tipo de console não suportado \"{console}\" requerido"
 
@@ -2451,9 +2434,6 @@ msgstr "Continuar com o tamanho de memória especificado?"
 
 #~ msgid "Error parsing libvirt certificate"
 #~ msgstr "Erro ao analisar certificado libvirt"
-
-#~ msgid "Generating libvirt-spice certificates"
-#~ msgstr "Gerando certificado libvirt-spice"
 
 #~ msgid "Username should not be longer than %i characters."
 #~ msgstr "Nome de usuário não deve ser maior do que %i caracteres."

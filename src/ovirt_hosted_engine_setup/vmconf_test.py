@@ -124,16 +124,6 @@ EXPECTED_VM_CONF_DICT = {
     'smp': '4',
     'memSize': '4096',
     'maxVCpus': '4',
-    'spiceSecureChannels': (
-        'smain,'
-        'sdisplay,'
-        'sinputs,'
-        'scursor,'
-        'splayback,'
-        'srecord,'
-        'ssmartcard,'
-        'susbredir'
-    ),
     'vmName': 'HostedEngine',
     'display': 'vnc',
     'xml': '<?xml version="1.0" encoding="UTF-8"?><domain type="kvm" '

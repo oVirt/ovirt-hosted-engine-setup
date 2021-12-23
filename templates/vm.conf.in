@@ -9,7 +9,6 @@ devices={device:console,specParams:{},type:console,deviceId:@CONSOLE_UUID@,alias
 devices={device:@VIDEO_DEVICE@,alias:video0,type:video}
 devices={device:@GRAPHICS_DEVICE@,type:graphics}
 vmName=@NAME@
-spiceSecureChannels=smain,sdisplay,sinputs,scursor,splayback,srecord,ssmartcard,susbredir
 smp=@VCPUS@
 maxVCpus=@MAXVCPUS@
 cpuType=@CPU_TYPE@
