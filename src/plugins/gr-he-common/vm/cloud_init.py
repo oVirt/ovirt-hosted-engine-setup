@@ -554,6 +554,10 @@ class Plugin(plugin.PluginBase):
             None
         )
         self.environment.setdefault(
+            ohostedcons.CloudInit.OPENSCAP_PROFILE_NAME,
+            None
+        )
+        self.environment.setdefault(
             ohostedcons.CloudInit.ENABLE_FIPS,
             None
         )
@@ -920,7 +924,7 @@ class Plugin(plugin.PluginBase):
                 ] = self.dialog.queryString(
                     name='CI_APPLY_OPENSCAP_PROFILE',
                     note=_(
-                        'Do you want to apply a default OpenSCAP security '
+                        'Do you want to apply an OpenSCAP security '
                         'profile? (@VALUES@) [@DEFAULT@]: '
                     ),
                     prompt=True,
@@ -929,11 +933,34 @@ class Plugin(plugin.PluginBase):
                     default=_('No')
                 ) == _('Yes').lower()
 
+            if (
+                self.environment[
+                    ohostedcons.CloudInit.APPLY_OPENSCAP_PROFILE
+                ] and self.environment[
+                    ohostedcons.CloudInit.OPENSCAP_PROFILE_NAME
+                ] is None
+            ):
+                self.environment[
+                    ohostedcons.CloudInit.OPENSCAP_PROFILE_NAME
+                ] = self.dialog.queryString(
+                    name='CI_OPENSCAP_PROFILE_NAME',
+                    note=_(
+                        'Please provide the security profile you '
+                        'would like to use (@VALUES@) [@DEFAULT@]: '
+                    ),
+                    prompt=True,
+                    validValues=(_('stig'), _('pci-dss')),
+                    caseSensitive=False,
+                    default='stig',
+                )
+
+            # Skipping this question when OPENSCAP_PROFILE_NAME is stig since
+            # FIPS is enabled by default in a stig profile
             if self.environment[
                 ohostedcons.CloudInit.ENABLE_FIPS
             ] is None and self.environment[
-                ohostedcons.CloudInit.APPLY_OPENSCAP_PROFILE
-            ] is False:
+                ohostedcons.CloudInit.OPENSCAP_PROFILE_NAME
+            ] != 'stig':
                 self.environment[
                     ohostedcons.CloudInit.ENABLE_FIPS
                 ] = self.dialog.queryString(
