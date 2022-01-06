@@ -271,20 +271,6 @@ class FileLocations(object):
         'vdsm',
         'vdsm.conf'
     )
-    LIBVIRT_SPICE_SERVER_CERT = os.path.join(
-        SYSCONFDIR,
-        'pki',
-        'vdsm',
-        'libvirt-spice',
-        'server-cert.pem'
-    )
-    LIBVIRT_SPICE_CA_CERT = os.path.join(
-        SYSCONFDIR,
-        'pki',
-        'vdsm',
-        'libvirt-spice',
-        'ca-cert.pem'
-    )
     LIBVIRT_PKI = os.path.join(
         SYSCONFDIR,
         'pki',
@@ -1017,12 +1003,6 @@ class VDSMEnv(object):
     )
     def PKI_SUBJECT(self):
         return 'OVEHOSTED_VDSM/pkiSubject'
-
-    @ohostedattrs(
-        answerfile=True,
-    )
-    def SPICE_SUBJECT(self):
-        return 'OVEHOSTED_VDSM/spicePkiSubject'
 
     @ohostedattrs(
         answerfile=True,
