@@ -933,23 +933,21 @@ class Plugin(plugin.PluginBase):
                     default=_('No')
                 ) == _('Yes').lower()
 
-            if (
-                self.environment[
-                    ohostedcons.CloudInit.APPLY_OPENSCAP_PROFILE
-                ] and self.environment[
-                    ohostedcons.CloudInit.OPENSCAP_PROFILE_NAME
-                ] is None
-            ):
-                self.environment[
-                    ohostedcons.CloudInit.OPENSCAP_PROFILE_NAME
-                ] = self.dialog.queryString(
+            if self.environment[
+                ohostedcons.CloudInit.APPLY_OPENSCAP_PROFILE
+            ]:
+                dialog.queryEnvKey(
+                    dialog=self.dialog,
+                    logger=self.logger,
+                    env=self.environment,
+                    key=ohostedcons.CloudInit.OPENSCAP_PROFILE_NAME,
                     name='CI_OPENSCAP_PROFILE_NAME',
                     note=_(
                         'Please provide the security profile you '
                         'would like to use (@VALUES@) [@DEFAULT@]: '
                     ),
                     prompt=True,
-                    validValues=(_('stig'), _('pci-dss')),
+                    validValues=('stig', 'pci-dss'),
                     caseSensitive=False,
                     default='stig',
                 )
