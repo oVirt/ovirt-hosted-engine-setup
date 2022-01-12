@@ -327,9 +327,9 @@ class Plugin(plugin.PluginBase):
             'he_apply_openscap_profile': self.environment[
                 ohostedcons.CloudInit.APPLY_OPENSCAP_PROFILE
             ],
-            'he_openscap_profile_name': self.environment[
+            'he_openscap_profile_name': str(self.environment[
                 ohostedcons.CloudInit.OPENSCAP_PROFILE_NAME
-            ].lower(),
+            ]).lower(),
             'he_enable_fips': self.environment[
                 ohostedcons.CloudInit.ENABLE_FIPS
             ],
