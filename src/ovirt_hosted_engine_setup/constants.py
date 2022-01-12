@@ -941,6 +941,12 @@ class CloudInit(object):
     @ohostedattrs(
         answerfile=True,
     )
+    def OPENSCAP_PROFILE_NAME(self):
+        return 'OVEHOSTED_VM/OpenScapProfileName'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
     def ENABLE_FIPS(self):
         return 'OVEHOSTED_VM/enableFips'
 
