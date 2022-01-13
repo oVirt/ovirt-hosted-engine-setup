@@ -32,12 +32,8 @@ jobs:
     - run: automation/check-patch.sh
       # TODO: Split to separate steps?
 
-    - name: archive artifacts
-      # https://github.com/actions/upload-artifact#too-many-uploads-resulting-in-429-responses
-      run: tar czf exported-artifacts.tar.gz exported-artifacts
-
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
         name: artifacts
-        path: exported-artifacts.tar.gz
+        path: exported-artifacts
