@@ -29,7 +29,6 @@ fi
 
 rpmbuild \
     -D "_topdir $PWD/tmp.repos" \
-    -D "release_suffix ${SUFFIX}" \
     -ta ovirt-hosted-engine-setup-*.tar.gz
 
 mv ./*.tar.gz exported-artifacts

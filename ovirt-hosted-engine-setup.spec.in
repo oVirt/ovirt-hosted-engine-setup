@@ -164,6 +164,9 @@ print((
 ' > %{_sysconfdir}/ovirt-hosted-engine/virsh_auth.conf
 
 %changelog
+* Mon Jan 24 2022 Asaf Rachmani <arachman@redhat.com> - 2.6.1-1
+- 2.6.1-1
+
 * Wed Nov 17 2021 Asaf Rachmani <arachman@redhat.com> - 2.6.1-0.0.master
 - 2.6.1-0.0.master
 
