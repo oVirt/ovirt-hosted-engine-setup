@@ -156,7 +156,7 @@ class AnsibleHelper(base.Base):
         env = os.environ.copy()
         env[ohostedcons.AnsibleCallback.OTOPI_CALLBACK_OF] = out_path
         env[
-            'ANSIBLE_CALLBACK_WHITELIST'
+            'ANSIBLE_CALLBACKS_ENABLED'
         ] = '{com},{log}'.format(
             com=ohostedcons.AnsibleCallback.CALLBACK_NAME,
             log=ohostedcons.AnsibleCallback.LOGGER_CALLBACK_NAME,
