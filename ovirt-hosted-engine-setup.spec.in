@@ -71,9 +71,7 @@ Requires:       virt-install
 # On CentOS Stream 9 we are going to use ansible 2.11
 # The whole way of consuming anisble roles is going to change
 # skipping ansible dependencies until we have something working.
-Requires:       ansible >= 2.9.21, ansible < 2.10.0
-# Conflicts ansible-core >= 2.10 since it provides ansible
-Conflicts:      ansible-core >= 2.10.0
+Requires:       ansible-core >= 2.12
 Requires:       ovirt-ansible-collection >= 1.6.7
 %endif
 # default libvirt network
