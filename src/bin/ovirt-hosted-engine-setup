@@ -34,9 +34,9 @@ Usage: $0
 	--restore-from-file=file
 		Restore an engine backup file during the deployment
 	--4
-		Run the deployment using IPv4.
+		Force IPv4 on dual stack env
 	--6
-		Run the deployment using IPv6.
+		Force IPv6 on dual stack env
 	--ansible-extra-vars=DATA
 		Pass '--extra-vars=DATA' to all ansible calls.
 		DATA can be anything that ansible can accept - var=value,
