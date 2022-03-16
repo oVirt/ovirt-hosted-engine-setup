@@ -56,6 +56,7 @@ Requires:       %{python_target_version}-six
 
 BuildRequires:  %{python_target_version}-devel
 BuildRequires:  %{python_target_version}-pytest
+BuildRequires:  gettext-devel
 
 # Non Python dependencies
 Requires:       bind-utils
