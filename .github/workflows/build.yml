@@ -1,0 +1,36 @@
+name: build
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: centos-stream-8
+            shortcut: cs8
+            container-name: el8stream
+          - name: centos-stream-9
+            shortcut: cs9
+            container-name: el9stream
+    name: ${{ matrix.name }}
+    container:
+      image: quay.io/ovirt/buildcontainer:${{ matrix.container-name }}
+    steps:
+    - uses: actions/checkout@v2
+
+    - run: automation/check-patch.sh
+      # TODO: Split to separate steps?
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: artifacts
+        path: exported-artifacts
