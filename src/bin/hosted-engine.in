@@ -148,9 +148,9 @@ Usage: $0 --deploy [args]
     --restore-from-file=<file>
         Restore an engine backup file during the deployment.
     --4
-        Run the deployment using IPv4.
+        Force IPv4 on dual stack env.
     --6
-        Run the deployment using IPv6.
+        Force IPv6 on dual stack env.
     --ansible-extra-vars=DATA
         Pass '--extra-vars=DATA' to all ansible calls.
         DATA can be anything that ansible can accept - var=value,
@@ -163,13 +163,7 @@ Usage: $0 --deploy [args]
 __EOF__
 return ;}
 
-    if [[ "$@" == *--4* && "$@" == *--6* ]] ; then
-        echo "--6 and --4 options cannot be specified together"
-    elif [[ "$@" == *--4* || "$@" == *--6* ]] ; then
-        exec @datadir@/ovirt-hosted-engine-setup/scripts/ovirt-hosted-engine-setup "$@"
-    else
-        echo "--6 or --4 option must be specified when using 'hosted-engine --deploy'"
-    fi
+    exec @datadir@/ovirt-hosted-engine-setup/scripts/ovirt-hosted-engine-setup "$@"
 }
 
 cmd_vm_start() {
