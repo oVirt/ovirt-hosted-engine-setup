@@ -155,8 +155,12 @@ class AnsibleHelper(base.Base):
 
         env = os.environ.copy()
         env[ohostedcons.AnsibleCallback.OTOPI_CALLBACK_OF] = out_path
+        # TODO: Remove ANSIBLE_CALLBACK_WHITELIST once we can require ansible
+        # 2.11 everywhere.
         env[
             'ANSIBLE_CALLBACKS_ENABLED'
+        ] = env[
+            'ANSIBLE_CALLBACK_WHITELIST'
         ] = '{com},{log}'.format(
             com=ohostedcons.AnsibleCallback.CALLBACK_NAME,
             log=ohostedcons.AnsibleCallback.LOGGER_CALLBACK_NAME,
