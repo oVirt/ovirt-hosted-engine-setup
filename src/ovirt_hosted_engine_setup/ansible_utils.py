@@ -32,6 +32,7 @@ import time
 
 from otopi import base
 
+from ansible.constants import AnsibleCallback
 from ovirt_hosted_engine_setup import constants as ohostedcons
 
 
@@ -97,20 +98,20 @@ class AnsibleHelper(base.Base):
         try:
             data = json.loads(d)
             if (
-                ohostedcons.AnsibleCallback.TYPE in data and
-                ohostedcons.AnsibleCallback.BODY in data
+                AnsibleCallback.TYPE in data and
+                AnsibleCallback.BODY in data
             ):
-                t = data[ohostedcons.AnsibleCallback.TYPE]
-                b = data[ohostedcons.AnsibleCallback.BODY]
-                if t == ohostedcons.AnsibleCallback.DEBUG:
+                t = data[AnsibleCallback.TYPE]
+                b = data[AnsibleCallback.BODY]
+                if t == AnsibleCallback.DEBUG:
                     self.logger.debug(b)
-                elif t == ohostedcons.AnsibleCallback.WARNING:
+                elif t == AnsibleCallback.WARNING:
                     self.logger.warning(b)
-                elif t == ohostedcons.AnsibleCallback.ERROR:
+                elif t == AnsibleCallback.ERROR:
                     self.logger.error(b)
-                elif t == ohostedcons.AnsibleCallback.INFO:
+                elif t == AnsibleCallback.INFO:
                     self.logger.info(b)
-                elif t == ohostedcons.AnsibleCallback.RESULT:
+                elif t == AnsibleCallback.RESULT:
                     self._cb_results = b
                 else:
                     self.logger.error(_('Unknown data type: {t}').format(t=t))
@@ -154,16 +155,16 @@ class AnsibleHelper(base.Base):
         ansible_playbook_cmd.append(self._playbook_path)
 
         env = os.environ.copy()
-        env[ohostedcons.AnsibleCallback.OTOPI_CALLBACK_OF] = out_path
+        env[AnsibleCallback.OTOPI_CALLBACK_OF] = out_path
         env[
             'ANSIBLE_CALLBACKS_ENABLED'
         ] = '{com},{log}'.format(
-            com=ohostedcons.AnsibleCallback.CALLBACK_NAME,
-            log=ohostedcons.AnsibleCallback.LOGGER_CALLBACK_NAME,
+            com=AnsibleCallback.CALLBACK_NAME,
+            log=AnsibleCallback.LOGGER_CALLBACK_NAME,
         )
         env[
             'ANSIBLE_STDOUT_CALLBACK'
-        ] = ohostedcons.AnsibleCallback.CALLBACK_NAME
+        ] = AnsibleCallback.CALLBACK_NAME
 
         dname = os.path.splitext(self._playbook_name)[0]
         if self._tags:

@@ -29,7 +29,8 @@ import io
 import json
 import os
 
-from ovirt_hosted_engine_setup import constants as ohostedcons
+from ..constants import AnsibleCallback
+from ..constants import Const as ansiblecons
 
 from ansible.plugins.callback import CallbackBase
 
@@ -38,19 +39,19 @@ class CallbackModule(CallbackBase):
 
     CALLBACK_VERSION = 2.0
     CALLBACK_TYPE = 'stdout'
-    CALLBACK_NAME = ohostedcons.AnsibleCallback.CALLBACK_NAME
+    CALLBACK_NAME = AnsibleCallback.CALLBACK_NAME
     CALLBACK_NEEDS_WHITELIST = True
 
     def __init__(self):
         super(CallbackModule, self).__init__()
         self.cb_results = {}
         OTOPI_CALLBACK_OF = os.environ.get(
-            ohostedcons.AnsibleCallback.OTOPI_CALLBACK_OF
+            AnsibleCallback.OTOPI_CALLBACK_OF
         )
         if not OTOPI_CALLBACK_OF:
             self._display.error(
                 u'Unable to find {ek}'.format(
-                    ek=ohostedcons.AnsibleCallback.OTOPI_CALLBACK_OF
+                    ek=AnsibleCallback.OTOPI_CALLBACK_OF
                 )
             )
             self._fd = None
@@ -59,8 +60,8 @@ class CallbackModule(CallbackBase):
 
     def write_msg(self, data_type, body):
         payload = {
-            ohostedcons.AnsibleCallback.TYPE: data_type,
-            ohostedcons.AnsibleCallback.BODY: body,
+            AnsibleCallback.TYPE: data_type,
+            AnsibleCallback.BODY: body,
         }
 
         if self._fd:
@@ -84,16 +85,16 @@ class CallbackModule(CallbackBase):
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
         level = 'fatal'
-        msg_type = ohostedcons.AnsibleCallback.ERROR
+        msg_type = AnsibleCallback.ERROR
         if ignore_errors:
             level = 'ignored'
-            msg_type = ohostedcons.AnsibleCallback.DEBUG
+            msg_type = AnsibleCallback.DEBUG
 
         delegated_vars = result._result.get(
             '_ansible_delegated_vars',
             None
         )
-        self.write_msg(ohostedcons.AnsibleCallback.DEBUG, result._result)
+        self.write_msg(AnsibleCallback.DEBUG, result._result)
         if 'exception' in result._result:
             error = result._result['exception'].strip().split('\n')[-1]
             self.write_msg(msg_type, error)
@@ -158,25 +159,25 @@ class CallbackModule(CallbackBase):
                     if not i.startswith('_'):
                         if i == 'msg':
                             self.write_msg(
-                                ohostedcons.AnsibleCallback.INFO,
+                                AnsibleCallback.INFO,
                                 u'{m}'.format(m=result._result[i])
                             )
                         else:
                             self.write_msg(
-                                ohostedcons.AnsibleCallback.DEBUG,
+                                AnsibleCallback.DEBUG,
                                 u'{i}: {v}'.format(
                                     i=i,
                                     v=result._result[i]
                                 )
                             )
             else:
-                self.write_msg(ohostedcons.AnsibleCallback.DEBUG, msg)
+                self.write_msg(AnsibleCallback.DEBUG, msg)
         else:
-            self.write_msg(ohostedcons.AnsibleCallback.INFO, msg)
+            self.write_msg(AnsibleCallback.INFO, msg)
 
         register = result._task_fields['register']
         if register and register.startswith(
-            ohostedcons.Const.ANSIBLE_R_OTOPI_PREFIX
+            ansiblecons.ANSIBLE_R_OTOPI_PREFIX
         ):
             self.cb_results[register] = {}
             for r in result._result:
@@ -187,7 +188,7 @@ class CallbackModule(CallbackBase):
             self._process_items(result)
         else:
             msg = u"skipping: [{h}]".format(h=result._host.get_name())
-            self.write_msg(ohostedcons.AnsibleCallback.INFO, msg)
+            self.write_msg(AnsibleCallback.INFO, msg)
 
     def v2_runner_on_unreachable(self, result):
         delegated_vars = result._result.get(
@@ -195,7 +196,7 @@ class CallbackModule(CallbackBase):
         )
         if delegated_vars:
             self.write_msg(
-                ohostedcons.AnsibleCallback.ERROR,
+                AnsibleCallback.ERROR,
                 u"fatal: [{h1} -> {h2}]: UNREACHABLE! => {r}".format(
                     h1=result._host.get_name(),
                     h2=delegated_vars['ansible_host'],
@@ -204,7 +205,7 @@ class CallbackModule(CallbackBase):
             )
         else:
             self.write_msg(
-                ohostedcons.AnsibleCallback.ERROR,
+                AnsibleCallback.ERROR,
                 u"fatal: [{h}]: UNREACHABLE! => {r}".format(
                     h=result._host.get_name(),
                     r=self._dump_results(result._result)
@@ -213,7 +214,7 @@ class CallbackModule(CallbackBase):
 
     def v2_runner_on_no_hosts(self, task):
         self.write_msg(
-            ohostedcons.AnsibleCallback.WARNING,
+            AnsibleCallback.WARNING,
             u"skipping: no hosts matched"
         )
 
@@ -222,14 +223,14 @@ class CallbackModule(CallbackBase):
         action = task._attributes['action']
         if action != 'debug':
             self.write_msg(
-                ohostedcons.AnsibleCallback.INFO,
+                AnsibleCallback.INFO,
                 u"TASK [{t}]".format(
                     t=task_name
                 )
             )
         else:
             self.write_msg(
-                ohostedcons.AnsibleCallback.DEBUG,
+                AnsibleCallback.DEBUG,
                 u"TASK [{t}]".format(
                     t=task_name
                 )
@@ -242,7 +243,7 @@ class CallbackModule(CallbackBase):
         else:
             msg = u"PLAY [{p}]".format(p=name)
 
-        self.write_msg(ohostedcons.AnsibleCallback.DEBUG, msg)
+        self.write_msg(AnsibleCallback.DEBUG, msg)
 
     def v2_playbook_item_on_ok(self, result):
         delegated_vars = result._result.get(
@@ -270,7 +271,7 @@ class CallbackModule(CallbackBase):
 
         msg += u" => (item={i})".format(i=result._result['item'])
 
-        self.write_msg(ohostedcons.AnsibleCallback.INFO, msg)
+        self.write_msg(AnsibleCallback.INFO, msg)
 
     def v2_playbook_item_on_failed(self, result):
         delegated_vars = result._result.get(
@@ -279,11 +280,11 @@ class CallbackModule(CallbackBase):
         )
         if 'exception' in result._result:
             error = result._result['exception'].strip().split('\n')[-1]
-            self.write_msg(ohostedcons.AnsibleCallback.DEBUG, error)
+            self.write_msg(AnsibleCallback.DEBUG, error)
             del result._result['exception']
         if delegated_vars:
             self.write_msg(
-                ohostedcons.AnsibleCallback.ERROR,
+                AnsibleCallback.ERROR,
                 u"failed: [{h1} -> {h2}] => (item={i}) => {r}".format(
                     h1=result._host.get_name(),
                     h2=delegated_vars['ansible_host'],
@@ -293,7 +294,7 @@ class CallbackModule(CallbackBase):
             )
         else:
             self.write_msg(
-                ohostedcons.AnsibleCallback.ERROR,
+                AnsibleCallback.ERROR,
                 u"failed: [{h}] => (item={i}) => {r}".format(
                     h=result._host.get_name(),
                     i=result._result['item'],
@@ -306,12 +307,12 @@ class CallbackModule(CallbackBase):
             h=result._host.get_name(),
             i=result._result['item']
         )
-        self.write_msg(ohostedcons.AnsibleCallback.INFO, msg)
+        self.write_msg(AnsibleCallback.INFO, msg)
 
     def v2_playbook_on_stats(self, stats):
         hosts = sorted(stats.processed.keys())
         if self.cb_results:
-            self.write_msg(ohostedcons.AnsibleCallback.RESULT, self.cb_results)
+            self.write_msg(AnsibleCallback.RESULT, self.cb_results)
         for h in hosts:
             t = stats.summarize(h)
 
@@ -323,4 +324,4 @@ class CallbackModule(CallbackBase):
                 s="skipped: {n}".format(n=t['skipped']),
                 f="failed: {n}".format(n=t['failures']),
             )
-            self.write_msg(ohostedcons.AnsibleCallback.DEBUG, msg)
+            self.write_msg(AnsibleCallback.DEBUG, msg)

@@ -1218,19 +1218,4 @@ class FirstHostEnv(object):
     DEPLOY_WITH_HE_35_HOSTS = 'OVEHOSTED_FIRST_HOST/deployWithHE35Hosts'
 
 
-@util.export
-@util.codegen
-class AnsibleCallback(object):
-    DEBUG = 'OVEHOSTED_AC/debug'
-    WARNING = 'OVEHOSTED_AC/warning'
-    ERROR = 'OVEHOSTED_AC/error'
-    INFO = 'OVEHOSTED_AC/info'
-    RESULT = 'OVEHOSTED_AC/result'
-    TYPE = 'OVEHOSTED_AC/type'
-    BODY = 'OVEHOSTED_AC/body'
-    OTOPI_CALLBACK_OF = 'OTOPI_CALLBACK_OF'
-    CALLBACK_NAME = '1_otopi_json'
-    LOGGER_CALLBACK_NAME = '2_ovirt_logger'
-
-
 # vim: expandtab tabstop=4 shiftwidth=4
