@@ -29,7 +29,7 @@ export ANSIBLE_CALLBACK_PLUGINS=src/ansible
 
 ANSIBLE_LOG=exported-artifacts/tests/filter-test-ansible-output-$(date -u +%Y%m%d%H%M%S).log
 
-dnf install -y ansible
+dnf install -y ansible-core
 ansible-playbook --inventory=localhost, -vvvvvv tests/ansible/playbooks/test_filtering.yml > "${ANSIBLE_LOG}" 2>&1
 if grep 'secret_data' "$HE_ANSIBLE_LOG_PATH"; then
 	echo Found non-filtered secrets in the log ^^^
