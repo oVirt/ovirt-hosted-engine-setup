@@ -37,8 +37,6 @@ from datetime import datetime
 
 from ansible.plugins.callback import CallbackBase
 
-from dateutil import tz
-
 __metaclass__ = type
 
 
@@ -96,6 +94,30 @@ def _shorten_string(s, max):
             suff=s[-3:],
         )
     )
+
+
+# Used to provide an alternative to dateutil.tz.tzlocal
+def _get_tz_from_os():
+    import subprocess
+
+    p = subprocess.Popen(
+        args=(
+            '/bin/date',
+            '+%z',
+        ),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        close_fds=True,
+    )
+    stdout, stderr = p.communicate()
+    stdout = stdout.decode('utf-8', 'replace').splitlines()
+    stderr = stderr.decode('utf-8', 'replace').splitlines()
+    if p.returncode != 0:
+        tz = 'UnknownTZ'
+    else:
+        tz = stdout[0].rstrip('\n')
+    return tz
+
 
 class CallbackModule(CallbackBase):
     """
@@ -200,10 +222,10 @@ class CallbackModule(CallbackBase):
         def converter(self, timestamp):
             return datetime.fromtimestamp(
                 timestamp,
-                tz.tzlocal()
+                self._tzlocal
             )
 
-        def formatTime(self, record, datefmt=None):
+        def _formatTime_dateutil(self, record, datefmt=None):
             ct = self.converter(record.created)
             if datefmt:
                 s = ct.strftime(datefmt, ct)
@@ -214,6 +236,24 @@ class CallbackModule(CallbackBase):
                     ct.strftime('%z')
                 )
             return s
+
+        def _formatTimeOS(self, record, datefmt=None):
+            # Ignore datefmt if we do not have dateutil
+            ct = datetime.fromtimestamp(record.created)
+            return "%s,%03d%s" % (
+                ct.strftime('%Y-%m-%d %H:%M:%S'),
+                record.msecs,
+                self._os_tz
+            )
+
+        try:
+            # If we have dateutil, use that.
+            from dateutil import tz
+            _tzlocal = tz.tzlocal()
+            formatTime = _formatTime_dateutil
+        except ImportError:
+            _os_tz = _get_tz_from_os()
+            formatTime = _formatTimeOS
 
         def _get_filtered_tokens(self):
             res = []
