@@ -28,9 +28,11 @@ from __future__ import print_function
 import io
 import json
 import os
+import sys
 
-from ..constants import AnsibleCallback
-from ..constants import Const as ansiblecons
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+from constants import AnsibleCallback
+from constants import Const as ansiblecons
 
 from ansible.plugins.callback import CallbackBase
 
