@@ -23,6 +23,7 @@
 %global         vdsmhooksdir %{_libexecdir}/vdsm/hooks
 
 %global         python_interpreter %{__python3}
+%global         python38_target_version python38
 %global         python_target_version python3
 %global         python_sitelib %{python3_sitelib}
 
@@ -41,13 +42,15 @@ BuildArch:      noarch
 # Python dependencies
 
 Requires:       %{python_target_version}
+Requires:       %{python38_target_version}
 
 Requires:       %{python_target_version}-ethtool >= 0.6-3
 Requires:       %{python_target_version}-ovirt-engine-sdk4 >= 4.3.1
 Requires:       %{python_target_version}-sanlock
 Requires:       %{python_target_version}-libselinux
 
-Requires:       %{python_target_version}-dateutil
+# ansible-core-2.12 requires all libraries to be built with Python 3.8
+Requires:       %{python38_target_version}-dateutil
 Requires:       %{python_target_version}-distro
 Requires:       %{python_target_version}-netaddr
 Requires:       %{python_target_version}-otopi >= 1.9.0
