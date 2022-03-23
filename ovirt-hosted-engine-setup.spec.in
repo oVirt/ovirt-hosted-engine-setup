@@ -42,7 +42,10 @@ BuildArch:      noarch
 # Python dependencies
 
 Requires:       %{python_target_version}
+%if 0%{?rhel} < 9
+# On RHEL 9 it uses Python 3.9 platform support.
 Requires:       %{python38_target_version}
+%endif
 
 Requires:       %{python_target_version}-ethtool >= 0.6-3
 Requires:       %{python_target_version}-ovirt-engine-sdk4 >= 4.3.1
