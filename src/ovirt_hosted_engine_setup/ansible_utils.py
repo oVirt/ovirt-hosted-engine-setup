@@ -32,8 +32,9 @@ import time
 
 from otopi import base
 
-from ansible.constants import AnsibleCallback
 from ovirt_hosted_engine_setup import constants as ohostedcons
+
+from ansible.constants import AnsibleCallback
 
 
 def _(m):
