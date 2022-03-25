@@ -166,7 +166,9 @@ def parseVmConfFile(filename):
         params['xml'] = xml
 
         if params.get('launchPaused', False):
-            engine_xml_tree = ovfenvelope.etree_.fromstring(xml.encode('utf-8'))
+            engine_xml_tree = ovfenvelope.etree_.fromstring(
+                xml.encode('utf-8')
+            )
             metadata = engine_xml_tree.xpath("//metadata")[0]
             ns = metadata.nsmap['ovirt-vm']
             vm = metadata.find('{%s}vm' % ns)

@@ -40,6 +40,7 @@ from ansible.constants import AnsibleCallback
 def _(m):
     return gettext.dgettext(message=m, domain='ovirt-hosted-engine-setup')
 
+
 # TODO do this nicely
 _FILTERED_VARS = (
     'ADMIN_PASSWORD',
