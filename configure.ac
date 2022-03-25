@@ -68,7 +68,7 @@ AX_LN_SR
 AC_ARG_VAR([PYFLAKES], [path to pyflakes utility])
 AC_CHECK_PROGS([PYFLAKES], [pyflakes])
 AC_ARG_VAR([PEP8], [path to pep8 utility])
-AC_CHECK_PROGS([PEP8], [pep8])
+AC_CHECK_PROGS([PEP8], [pycodestyle-3 pep8])
 AC_ARG_VAR([PYTEST], [path to py.test utility])
 AC_CHECK_PROGS([PYTEST], [py.test py.test-3])
 AC_ARG_VAR([ISORT], [path to isort utility])
