@@ -29,6 +29,10 @@ dist_ansible_DATA = \
 	trigger_role.yml \
 	$(NULL)
 
+dist_ansible_PYTHON = \
+	constants.py \
+	$(NULL)
+
 SUBDIRS = \
 	callback_plugins \
 	$(NULL)
