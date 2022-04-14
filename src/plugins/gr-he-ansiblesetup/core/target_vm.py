@@ -106,6 +106,9 @@ class Plugin(plugin.PluginBase):
             'he_admin_password': self.environment[
                 ohostedcons.EngineEnv.ADMIN_PASSWORD
             ],
+            'he_admin_username': self.environment[
+                ohostedcons.EngineEnv.ADMIN_USERNAME
+            ],
             'he_appliance_password': self.environment[
                 ohostedcons.CloudInit.ROOTPWD
             ],
