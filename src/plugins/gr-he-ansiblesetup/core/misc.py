@@ -459,6 +459,13 @@ class Plugin(plugin.PluginBase):
         except KeyError:
             raise RuntimeError(_('Unable to get appliance disk size'))
 
+        if 'otopi_he_admin_username' in r:
+            self.environment[
+                ohostedcons.EngineEnv.ADMIN_USERNAME
+            ] = r[
+                'otopi_he_admin_username'
+            ]['ansible_facts']['he_admin_username']
+
         # TODO: get the CPU models list from /ovirt-engine/api/clusterlevels
         # once wrapped by ansible facts and filter it by host CPU architecture
         # in order to let the user choose the cluster CPU type in advance

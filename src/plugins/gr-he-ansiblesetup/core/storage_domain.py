@@ -209,6 +209,9 @@ class Plugin(plugin.PluginBase):
             'he_admin_password': self.environment[
                 ohostedcons.EngineEnv.ADMIN_PASSWORD
             ],
+            'he_admin_username': self.environment[
+                ohostedcons.EngineEnv.ADMIN_USERNAME
+            ],
             'he_iscsi_discover_username': discover_username,
             'he_iscsi_discover_password': discover_password,
             'he_iscsi_portal_addr': portal,
@@ -320,6 +323,9 @@ class Plugin(plugin.PluginBase):
             'he_admin_password': self.environment[
                 ohostedcons.EngineEnv.ADMIN_PASSWORD
             ],
+            'he_admin_username': self.environment[
+                ohostedcons.EngineEnv.ADMIN_USERNAME
+            ],
             'he_iscsi_username': username,
             'he_iscsi_password': password,
             'he_iscsi_portal_addr': portal,
@@ -374,7 +380,10 @@ class Plugin(plugin.PluginBase):
             ],
             'he_admin_password': self.environment[
                 ohostedcons.EngineEnv.ADMIN_PASSWORD
-            ]
+            ],
+            'he_admin_username': self.environment[
+                ohostedcons.EngineEnv.ADMIN_USERNAME
+            ],
         }
         ansible_helper = ansible_utils.AnsibleHelper(
             tags=ohostedcons.Const.HE_TAG_FC_GETDEVICES,
@@ -774,6 +783,9 @@ class Plugin(plugin.PluginBase):
                 ],
                 'he_admin_password': self.environment[
                     ohostedcons.EngineEnv.ADMIN_PASSWORD
+                ],
+                'he_admin_username': self.environment[
+                    ohostedcons.EngineEnv.ADMIN_USERNAME
                 ],
                 'he_local_vm_dir': self.environment[
                     ohostedcons.CoreEnv.LOCAL_VM_DIR
