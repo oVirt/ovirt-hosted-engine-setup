@@ -29,6 +29,8 @@ from otopi import context as otopicontext
 from otopi import plugin
 from otopi import util
 
+from ovirt_setup_lib import dialog
+
 from ovirt_hosted_engine_setup import ansible_utils
 from ovirt_hosted_engine_setup import constants as ohostedcons
 
@@ -78,6 +80,10 @@ class Plugin(plugin.PluginBase):
         )
         self.environment.setdefault(
             ohostedcons.CoreEnv.PAUSE_ON_RESTORE,
+            None
+        )
+        self.environment.setdefault(
+            ohostedcons.CoreEnv.ENABLE_KEYCLOAK,
             None
         )
 
@@ -266,6 +272,22 @@ class Plugin(plugin.PluginBase):
                     default=_('No')
                 ) == _('Yes').lower()
 
+        if self.environment[
+            ohostedcons.CoreEnv.ENABLE_KEYCLOAK
+        ] is None:
+            self.environment[
+                ohostedcons.CoreEnv.ENABLE_KEYCLOAK
+            ] = dialog.queryBoolean(
+                dialog=self.dialog,
+                name='ovehosted_enable_keycloak',
+                note=_(
+                    '\nConfigure Keycloak integration on the engine'
+                    '(@VALUES@) [@DEFAULT@]: '
+                ),
+                prompt=True,
+                default=True,
+            )
+
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
         name=ohostedcons.Stages.ANSIBLE_BOOTSTRAP_LOCAL_VM,
@@ -388,6 +410,12 @@ class Plugin(plugin.PluginBase):
         ] is not None:
             bootstrap_vars['he_pause_host'] = self.environment[
                 ohostedcons.CoreEnv.PAUSE_ON_RESTORE
+            ]
+        if self.environment[
+            ohostedcons.CoreEnv.ENABLE_KEYCLOAK
+        ] is not None:
+            bootstrap_vars['he_enable_keycloak'] = self.environment[
+                ohostedcons.CoreEnv.ENABLE_KEYCLOAK
             ]
 
         inventory_source = 'localhost,{fqdn}'.format(

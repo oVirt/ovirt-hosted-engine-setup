@@ -430,6 +430,12 @@ class CoreEnv(object):
     MISC_REACHED = 'OVEHOSTED_CORE/miscReached'
     ANSIBLE_USER_EXTRA_VARS = 'OVEHOSTED_CORE/ansibleUserExtraVars'
 
+    @ohostedattrs(
+        answerfile=True,
+    )
+    def ENABLE_KEYCLOAK(self):
+        return 'OVEHOSTED_CORE/enableKeycloak'
+
 
 @util.export
 @util.codegen
