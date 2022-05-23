@@ -30,11 +30,11 @@ import subprocess
 import tempfile
 import time
 
+from he_ansible.constants import AnsibleCallback
+
 from otopi import base
 
 from ovirt_hosted_engine_setup import constants as ohostedcons
-
-from ansible.constants import AnsibleCallback
 
 
 def _(m):

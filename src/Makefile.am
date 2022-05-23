@@ -26,5 +26,5 @@ SUBDIRS = \
 	ovirt_hosted_engine_setup \
 	plugins \
 	vdsm_hooks \
-	ansible \
+	he_ansible \
 	$(NULL)

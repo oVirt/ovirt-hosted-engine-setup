@@ -25,7 +25,7 @@ mkdir -p exported-artifacts/tests
 HE_ANSIBLE_LOG_PATH=exported-artifacts/tests/filter-test-$(date -u +%Y%m%d%H%M%S).log
 export HE_ANSIBLE_LOG_PATH
 export ANSIBLE_STDOUT_CALLBACK=2_ovirt_logger
-export ANSIBLE_CALLBACK_PLUGINS=src/ansible
+export ANSIBLE_CALLBACK_PLUGINS=src/he_ansible
 
 ANSIBLE_LOG=exported-artifacts/tests/filter-test-ansible-output-$(date -u +%Y%m%d%H%M%S).log
 
