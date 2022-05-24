@@ -321,7 +321,7 @@ class FileLocations(object):
     HOSTED_ENGINE_ANSIBLE_PATH = os.path.join(
         config.DATADIR,
         OVIRT_HOSTED_ENGINE_SETUP,
-        'ansible',
+        'he_ansible',
     )
 
     HE_AP_TRIGGER_ROLE = 'trigger_role.yml'

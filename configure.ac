@@ -84,7 +84,7 @@ ovirthostedengineplugindir="\$(pkgdatadir)/plugins"
 ovirthostedenginelibrarydir="\$(pkgdatadir)/library"
 ovirthostedenginetemplatedir="\$(pkgdatadir)/templates"
 ovirthostedenginescriptsdir="\$(pkgdatadir)/scripts"
-ovirthostedengineansibledir="\$(pkgdatadir)/ansible"
+ovirthostedengineansibledir="\$(pkgdatadir)/he_ansible"
 ovirthostedenginelibdir="\$(pythondir)/ovirt_hosted_engine_setup"
 vdsmhooksdir="\$(libexecdir)/vdsm/hooks"
 APPLIANCE_RPM_PREFIX="ovirt-engine"
@@ -123,8 +123,8 @@ AC_CONFIG_FILES([
 	src/plugins/gr-he-ansiblesetup/core/Makefile
 	src/vdsm_hooks/Makefile
 	src/vdsm_hooks/hostedengine.py
-	src/ansible/Makefile
-	src/ansible/callback_plugins/Makefile
+	src/he_ansible/Makefile
+	src/he_ansible/callback_plugins/Makefile
 	templates/Makefile
 	tests/Makefile
 ])

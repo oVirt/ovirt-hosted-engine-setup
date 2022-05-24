@@ -37,8 +37,8 @@ build/Makefile
 compile
 man/Makefile
 src/Makefile
-src/ansible/Makefile
-src/ansible/callback_plugins/Makefile
+src/he_ansible/Makefile
+src/he_ansible/callback_plugins/Makefile
 src/bin/Makefile
 src/ovirt_hosted_engine_setup/Makefile
 src/ovirt_hosted_engine_setup/ovf/Makefile
