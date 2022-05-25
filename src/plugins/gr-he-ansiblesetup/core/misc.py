@@ -164,15 +164,28 @@ class Plugin(plugin.PluginBase):
     )
     def _customization(self):
         restore_addition = ''
+        supply_default = True
+
         if self.environment[
             ohostedcons.CoreEnv.RESTORE_FROM_FILE
         ] is not None:
             restore_addition = _(
-                'Please note that if you are restoring a backup that contains '
-                'info about other hosted-engine hosts,\n'
-                'this value should exactly match the value used in the '
-                'environment you are going to restore.\n'
+                'Please note:\n'
+                'If you are restoring a backup of a hosted-engine, this value '
+                'should be the {what} of the HostedEngine VM and hosts. This '
+                'can be useful for moving an existing hosted-engine setup to '
+                'new storage which will be attached to the existing {what} of '
+                'HostedEngine.\n'
+                'If you are restoring a backup of a hosted-engine, this value '
+                'should be the {what} of the HostedEngine VM and hosts.\n'
+                'If you are migrating from a standalone engine to a '
+                'hosted-engine, this value should be the target {what} '
+                'you wish to add the HostedEngine VM and this host to.\n'
+                'The default, for new deployments, is "Default", but is not '
+                'supplied here, because you are restoring from a backup - '
+                'please make sure that the value you supply is correct.\n'
             )
+            supply_default = False
 
         if self.environment[
             ohostedcons.EngineEnv.HOST_DATACENTER_NAME
@@ -187,13 +200,24 @@ class Plugin(plugin.PluginBase):
                         '\nPlease enter the name of the data center where you '
                         'want to deploy this hosted-engine host.\n'
                         '{restore_addition}'
-                        'Data center [@DEFAULT@]: '
+                        '{prompt}: '
                     ).format(
-                        restore_addition=restore_addition,
+                        restore_addition=restore_addition.format(
+                            what=_('data center'),
+                        ),
+                        prompt=(
+                            _('Data center [@DEFAULT@]')
+                            if supply_default
+                            else _('Data center')
+                        ),
                     ),
                     prompt=True,
                     caseSensitive=True,
-                    default=ohostedcons.Defaults.DEFAULT_DATACENTER_NAME,
+                    default=(
+                        ohostedcons.Defaults.DEFAULT_DATACENTER_NAME
+                        if supply_default
+                        else None
+                    ),
                 )
 
                 if re.search("^[a-zA-Z0-9_-]+$", self.environment[
@@ -218,13 +242,24 @@ class Plugin(plugin.PluginBase):
                     '\nPlease enter the name of the cluster where you want '
                     'to deploy this hosted-engine host.\n'
                     '{restore_addition}'
-                    'Cluster [@DEFAULT@]: '
+                    '{prompt}: '
                 ).format(
-                    restore_addition=restore_addition,
+                    restore_addition=restore_addition.format(
+                        what=_('cluster'),
+                    ),
+                    prompt=(
+                        _('Cluster [@DEFAULT@]')
+                        if supply_default
+                        else _('Cluster')
+                    ),
                 ),
                 prompt=True,
                 caseSensitive=True,
-                default=ohostedcons.Defaults.DEFAULT_CLUSTER_NAME,
+                default=(
+                    ohostedcons.Defaults.DEFAULT_CLUSTER_NAME
+                    if supply_default
+                    else None
+                ),
             )
 
         if self.environment[
