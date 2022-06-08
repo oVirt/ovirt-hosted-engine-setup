@@ -103,5 +103,35 @@ class Plugin(plugin.PluginBase):
                 if not self.environment[ohostedcons.CoreEnv.TMUX_PROCEED]:
                     raise context.Abort('Aborted by user')
 
+        if (
+            not self.environment[ohostedcons.NetworkEnv.FORCE_IPV4]
+            and not self.environment[ohostedcons.NetworkEnv.FORCE_IPV6]
+        ):
+            self.logger.warning(
+                _('It has been detected that either --4 or --6 '
+                  'options were not used.\n '
+                  'On a dual stack environment, IPv6 will be selected '
+                  'and due to a limitation, hosted-engine will be deployed '
+                  'as IPv6 only.\n '
+                  'Make sure that DNS returns only IPv6 '
+                  'or change Java and imageio address resolution.')
+                # TODO: add a page link for changing Java and imageio config
+            )
+            self.environment[
+                ohostedcons.CoreEnv.FORCE_IP_PROCEED
+            ] = self.dialog.queryString(
+                name=ohostedcons.Confirms.FORCE_IP_PROCEED,
+                note=_(
+                    'Do you want to continue anyway? '
+                    '(@VALUES@)[@DEFAULT@]: '
+                ),
+                prompt=True,
+                validValues=(_('Yes'), _('No')),
+                caseSensitive=False,
+                default=_('No')
+            ) == _('Yes').lower()
+            if not self.environment[ohostedcons.CoreEnv.FORCE_IP_PROCEED]:
+                raise context.Abort('Aborted by user')
+
 
 # vim: expandtab tabstop=4 shiftwidth=4
