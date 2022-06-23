@@ -84,6 +84,7 @@ class CallbackModule(CallbackBase):
                 )
         else:
             self._display.display(str(body))
+        sys.stderr.write(str(body)+'\n')
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
         level = 'fatal'
