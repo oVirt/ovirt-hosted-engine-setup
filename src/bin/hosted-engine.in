@@ -544,7 +544,7 @@ return ;}
 
     if [ -n "${vmid}" ] ; then
         check_vm_conf
-        exec @datadir@/ovirt-hosted-engine-ha/ovirt-ha-agent --cleanup "$@"
+        exec /usr/libexec/ovirt-hosted-engine-ha/ovirt-ha-agent --cleanup "$@"
     else
         exit_not_deployed
     fi
