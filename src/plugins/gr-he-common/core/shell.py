@@ -120,11 +120,11 @@ class Plugin(plugin.PluginBase):
                 key=ohostedcons.CoreEnv.FORCE_IP_PROCEED,
                 name='FORCE_IP_PROCEED',
                 note=_(
-                    '\nIt has been detected that either --4 or --6 '
-                    'options were not used.\n'
-                    'On a dual stack environment, IPv6 will be selected.\n'
-                    'If you want to use IPv6, make sure that DNS returns '
-                    'only IPv6.\n'
+                    '\nIf you run "hosted-engine --deploy" without the '
+                    '"--4" or "--6" option in a dual-stack environment, '
+                    'the default is IPv6.\n'
+                    'You must ensure that your DNS returns only '
+                    'IPv6 addresses.\n'
                     'See: https://ovirt.org/documentation/installing_ovirt'
                     '_as_a_self-hosted_engine_using_the_command_line/'
                     'index.html#Deploying_the_Self-Hosted_Engine_Using_'
