@@ -29,6 +29,8 @@ from otopi import context
 from otopi import plugin
 from otopi import util
 
+from ovirt_setup_lib import dialog
+
 from ovirt_hosted_engine_setup import constants as ohostedcons
 
 
@@ -57,6 +59,10 @@ class Plugin(plugin.PluginBase):
         )
         self.environment.setdefault(
             ohostedcons.CoreEnv.TMUX_PROCEED,
+            None
+        )
+        self.environment.setdefault(
+            ohostedcons.CoreEnv.FORCE_IP_PROCEED,
             None
         )
         ssh_connected = not os.getenv('SSH_CLIENT') is None
@@ -103,5 +109,34 @@ class Plugin(plugin.PluginBase):
                 if not self.environment[ohostedcons.CoreEnv.TMUX_PROCEED]:
                     raise context.Abort('Aborted by user')
 
+        if (
+            not self.environment[ohostedcons.NetworkEnv.FORCE_IPV4]
+            and not self.environment[ohostedcons.NetworkEnv.FORCE_IPV6]
+        ):
+            dialog.queryEnvKey(
+                dialog=self.dialog,
+                logger=self.logger,
+                env=self.environment,
+                key=ohostedcons.CoreEnv.FORCE_IP_PROCEED,
+                name='FORCE_IP_PROCEED',
+                note=_(
+                    '\nIf you run "hosted-engine --deploy" without the '
+                    '"--4" or "--6" option in a dual-stack environment, '
+                    'the default is IPv6.\n'
+                    'You must ensure that your DNS returns only '
+                    'IPv6 addresses.\n'
+                    'See: https://ovirt.org/documentation/installing_ovirt'
+                    '_as_a_self-hosted_engine_using_the_command_line/'
+                    'index.html#Deploying_the_Self-Hosted_Engine_Using_'
+                    'the_CLI_install_RHVM\n'
+                    'Do you want to continue anyway? (@VALUES@)[@DEFAULT@]: '
+                ),
+                prompt=True,
+                validValues=(_('Yes'), _('No')),
+                caseSensitive=False,
+                default=_('No'),
+            )
+            if self.environment[ohostedcons.CoreEnv.FORCE_IP_PROCEED] == 'no':
+                raise context.Abort('Aborted by user')
 
 # vim: expandtab tabstop=4 shiftwidth=4

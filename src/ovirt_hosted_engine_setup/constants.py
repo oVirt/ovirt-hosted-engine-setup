@@ -422,6 +422,12 @@ class CoreEnv(object):
     @ohostedattrs(
         answerfile=True,
     )
+    def FORCE_IP_PROCEED(self):
+        return 'OVEHOSTED_CORE/forceIpProceed'
+
+    @ohostedattrs(
+        answerfile=True,
+    )
     def CONFIRM_SETTINGS(self):
         return 'OVEHOSTED_CORE/confirmSettings'
 
@@ -1215,6 +1221,7 @@ class Confirms(object):
     TMUX_PROCEED = 'TMUX_PROCEED'
     SETTINGS = 'SETTINGS_PROCEED'
     UPGRADE_DISK_RESIZE_PROCEED = 'UPGRADE_DISK_RESIZE_PROCEED'
+    FORCE_IP_PROCEED = 'FORCE_IP_PROCEED'
 
 
 @util.export
