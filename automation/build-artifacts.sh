@@ -12,11 +12,7 @@ autoreconf -ivf
 ./configure --disable-ansible-syntax-check
 make dist
 
-if [ -x /usr/bin/dnf ] ; then
-    dnf builddep -y ovirt-hosted-engine-setup.spec
-else
-    yum-builddep ovirt-hosted-engine-setup.spec
-fi
+dnf builddep -y ovirt-hosted-engine-setup.spec
 
 rpmbuild \
     -D "_topdir $PWD/tmp.repos" \
