@@ -13,7 +13,7 @@ autoreconf -ivf
 make dist
 
 if [ -x /usr/bin/dnf ] ; then
-    dnf builddep ovirt-hosted-engine-setup.spec
+    dnf builddep -y ovirt-hosted-engine-setup.spec
 else
     yum-builddep ovirt-hosted-engine-setup.spec
 fi
