@@ -71,8 +71,8 @@ Requires:       sanlock >= 2.8
 Requires:       sudo
 Requires:       libvirt-client >= 6.6.0-9
 Requires:       virt-install
-Requires:       ansible-core >= 2.12, ansible-core < 2.13
-Conflicts:	ansible-core >= 2.13
+Requires:       ansible-core >= 2.12
+Conflicts:      ansible-core >= 2.13
 Requires:       ovirt-ansible-collection >= 2.0.0
 # default libvirt network
 Requires:       libvirt-daemon-config-network
