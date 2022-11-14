@@ -24,24 +24,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      # Requried for python3-isort on cs8
-      - name: Prepare CentOS Stream 8 environment
-        if: ${{ matrix.shortcut == 'cs8' }}
-        run: |
-          dnf copr enable -y sbonazzo/EL8_collection
-
-      # Requried for python3-isort on cs9
-      - name: Prepare CentOS Stream 9 environment
-        if: ${{ matrix.shortcut == 'cs9' }}
-        run: |
-          dnf copr enable -y sbonazzo/EL9Collection
-
       - name: Install testing dependencies
         run: |
-          dnf install -y --setopt=tsflags=nodocs \
-            python3-isort \
-            python3-pycodestyle \
-            python3-pyflakes
+          pip3 install isort pycodestyle pyflakes
 
       # TODO: Split to separate steps?
       - run: automation/check-patch.sh
