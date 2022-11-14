@@ -34,6 +34,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))  # noqa: E402
 from constants import AnsibleCallback
 from constants import Const as ansiblecons
 
+from ansible import constants as C
 from ansible.plugins.callback import CallbackBase
 
 
@@ -222,8 +223,11 @@ class CallbackModule(CallbackBase):
 
     def v2_playbook_on_task_start(self, task, is_conditional):
         task_name = task.get_name().strip()
-        action = task._attributes['action']
-        if action != 'debug':
+
+        action = task.action
+        if action not in C._ACTION_DEBUG:
+            # TODO: _ACTION_DEBUG is also private. Any official way to know?
+            # Alternatively, check and fallback if it's gone
             self.write_msg(
                 AnsibleCallback.INFO,
                 u"TASK [{t}]".format(
