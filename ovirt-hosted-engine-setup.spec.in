@@ -72,14 +72,9 @@ Requires:       sudo
 Requires:       libvirt-client >= 6.6.0-9
 Requires:       virt-install
 
-Requires:       ansible-core >= 2.12
-# ansible-core 2.13 uses Python 3.9, and many modules are missing a Python 3.9
-# build on el8. TODO: Provide them? Instead of or in addition to Python 3.8?
-%if 0%{?rhel} < 9
-Conflicts:      ansible-core >= 2.13
-%endif
+Requires:       ansible-core >= 2.13
 
-Requires:       ovirt-ansible-collection >= 2.0.0
+Requires:       ovirt-ansible-collection >= 3.0.0
 # default libvirt network
 Requires:       libvirt-daemon-config-network
 
