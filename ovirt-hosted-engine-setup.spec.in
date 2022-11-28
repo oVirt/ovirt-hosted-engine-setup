@@ -164,6 +164,9 @@ print((
 ' > %{_sysconfdir}/ovirt-hosted-engine/virsh_auth.conf
 
 %changelog
+* Mon Nov 28 2022 Martin Perina <mperina@redhat.com> - 2.7.1-0.0.master
+- 2.7.1-0.0.master
+
 * Mon Nov 28 2022 Martin Perina <mperina@redhat.com> - 2.7.0-1
 - 2.7.0-1
 
