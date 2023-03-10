@@ -22,16 +22,19 @@ jobs:
     container:
       image: quay.io/ovirt/buildcontainer:${{ matrix.container-name }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install testing dependencies
         run: |
           pip3 install isort pycodestyle pyflakes
 
+      - name: Mark git repo as safe
+        run: git config --global --add safe.directory $(pwd)
+
       # TODO: Split to separate steps?
       - run: automation/check-patch.sh
 
       - name: Upload artifacts
-        uses: ovirt/upload-rpms-action@v2
+        uses: ovirt/upload-rpms-action@main
         with:
           directory: exported-artifacts
