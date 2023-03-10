@@ -31,8 +31,8 @@ import pprint
 import re
 
 
-from collections import Callable
 from collections import defaultdict
+from collections.abc import Callable
 from datetime import datetime
 
 from ansible.plugins.callback import CallbackBase
