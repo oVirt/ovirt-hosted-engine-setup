@@ -32,8 +32,8 @@ Summary:        oVirt Hosted Engine setup tool
 Name:           @PACKAGE_NAME@
 Version:        @PACKAGE_RPM_VERSION@
 Release:        @PACKAGE_RPM_RELEASE@%{?release_suffix}%{?dist}
-License:        LGPLv2+
-URL:            http://www.ovirt.org
+License:        LGPL-2.0-or-later
+URL:            https://www.ovirt.org/
 Source:         https://github.com/oVirt/%{name}/releases/download/%{name}-%{package_version}/%{name}-%{package_version}.tar.gz
 Group:          Applications/System
 
@@ -168,6 +168,9 @@ print((
 ' > %{_sysconfdir}/ovirt-hosted-engine/virsh_auth.conf
 
 %changelog
+* Wed Nov 29 2023 Sandro Bonazzola <sandro.bonazzola@gmail.com> - 2.7.1-1
+- 2.7.1-1
+
 * Mon Nov 28 2022 Martin Perina <mperina@redhat.com> - 2.7.1-0.0.master
 - 2.7.1-0.0.master
 
