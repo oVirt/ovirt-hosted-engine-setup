@@ -168,6 +168,9 @@ print((
 ' > %{_sysconfdir}/ovirt-hosted-engine/virsh_auth.conf
 
 %changelog
+* Wed Nov 29 2023 Sandro Bonazzola <sandro.bonazzola@gmail.com> - 2.7.2-0.0.master
+- 2.7.2-0.0.master
+
 * Wed Nov 29 2023 Sandro Bonazzola <sandro.bonazzola@gmail.com> - 2.7.1-1
 - 2.7.1-1
 
