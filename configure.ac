@@ -77,7 +77,7 @@ AC_ARG_VAR([RPMBUILD], [path to rpmbuild utility])
 AC_CHECK_PROGS([RPMBUILD], [rpmbuild])
 AC_ARG_VAR([ANSIBLE_LINT], [path to ansible-lint utility])
 AC_CHECK_PROGS([ANSIBLE_LINT], [ansible-lint])
-AM_PATH_PYTHON([2.6],, [AC_MSG_ERROR([Cannot find python])])
+AM_PATH_PYTHON([3.6],, [AC_MSG_ERROR([Cannot find python])])
 
 otopiplugindir="\$(datadir)/otopi/plugins"
 ovirthostedengineplugindir="\$(pkgdatadir)/plugins"
