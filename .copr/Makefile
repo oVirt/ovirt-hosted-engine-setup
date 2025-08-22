@@ -1,7 +1,7 @@
 .PHONY: installdeps git_cfg_safe srpm
 
 installdeps:
-	dnf -y install git autoconf automake make gettext-devel gcc
+	dnf -y install git autoconf automake make gettext-devel gcc python3-devel
 
 git_cfg_safe:
 	# Workaround for CVE-2022-24765 fix:
