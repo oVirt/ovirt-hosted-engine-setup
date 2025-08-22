@@ -12,17 +12,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: centos-stream-8
-            shortcut: cs8
-            container-name: el8stream
           - name: centos-stream-9
             shortcut: cs9
             container-name: el9stream
+          - name: centos-stream-10
+            shortcut: cs10
+            container-name: el10stream
     name: ${{ matrix.name }}
     container:
       image: quay.io/ovirt/buildcontainer:${{ matrix.container-name }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
 
       - name: Install testing dependencies
         run: |
@@ -31,8 +31,11 @@ jobs:
       - name: Mark git repo as safe
         run: git config --global --add safe.directory $(pwd)
 
-      # TODO: Split to separate steps?
-      - run: automation/check-patch.sh
+      - name: Install build dependencies
+        run: dnf install -y gettext-devel python3-pytest
+
+      - name: Run automation/check-patch.sh
+        run: automation/check-patch.sh
 
       - name: Upload artifacts
         uses: ovirt/upload-rpms-action@main
