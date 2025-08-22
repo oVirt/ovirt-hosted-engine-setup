@@ -26,8 +26,8 @@ import re
 import socket
 
 
-from six.moves.urllib.error import URLError
-from six.moves.urllib.request import urlopen
+from urllib.error import URLError
+from urllib.request import urlopen
 
 from otopi import base
 from otopi import util
