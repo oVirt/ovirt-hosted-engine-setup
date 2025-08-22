@@ -2,12 +2,7 @@
 
 autopoint
 autoreconf -ivf
-if [[ "$(rpm --eval "%dist")" == ".el8" ]]; then
-./configure
-else
-# On CentOS Stream 9 ansible will be handled differently due to ansible 2.11
 ./configure --disable-ansible-syntax-check
-fi
 make test
 
 # make distcheck skipped due to bug afflicting automake.
