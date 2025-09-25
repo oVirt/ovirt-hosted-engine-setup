@@ -116,7 +116,7 @@ class Plugin(plugin.PluginBase):
             ohostedcons.Const.HA_NOTIF_SMTP_DEST_EMAILS: (
                 ohostedcons.NotificationsEnv.DEFAULT_DEST_EMAIL),
         }
-        self._cfg = configparser.SafeConfigParser()
+        self._cfg = configparser.ConfigParser()
         self._cfg.add_section('email')
 
         interactions = (
