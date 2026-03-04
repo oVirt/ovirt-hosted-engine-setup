@@ -22,6 +22,7 @@
 
 
 import gettext
+import netaddr
 import re
 import uuid
 
@@ -433,6 +434,25 @@ class Plugin(plugin.PluginBase):
                 ohostedcons.NetworkEnv.NETWORK_TEST_TCP_PORT
             ]
         }
+
+        # If a static CIDR is provided for the Hosted Engine VM,
+        # then we force connection to the host with same IP version
+        # Otherwise we end up in a situation where the IPv6 only
+        # HE VM tries to connect to the host with an IPv4 address
+        if self.environment[ohostedcons.CloudInit.VM_STATIC_CIDR]:
+            ip = netaddr.IPNetwork(
+                self.environment[ohostedcons.CloudInit.VM_STATIC_CIDR]
+            )
+            if ip.version == 6:
+                if self.environment[ohostedcons.NetworkEnv.FORCE_IPV4]:
+                    raise RuntimeError(
+                        _('Cannot force IPv4 when HE static IP is IPv6'))
+                bootstrap_vars['he_force_ip6'] = True
+            else:
+                if self.environment[ohostedcons.NetworkEnv.FORCE_IPV6]:
+                    raise RuntimeError(
+                        _('Cannot force IPv6 when HE static IP is IPv4'))
+                bootstrap_vars['he_force_ip4'] = True
 
         if self.environment[
             ohostedcons.CoreEnv.RENEW_PKI_ON_RESTORE
