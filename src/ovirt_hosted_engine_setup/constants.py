@@ -114,6 +114,7 @@ class VDSMConstants(object):
     ISCSI_DOMAIN = 3
     POSIXFS_DOMAIN = 6
     GLUSTERFS_DOMAIN = 7
+    NVMEOF_DOMAIN = 12
     DATA_DOMAIN = 1
 
 
@@ -128,6 +129,7 @@ class StorageDomainType(object):
     CIFS = "CIFS"
     SHAREDFS = "SHAREDFS"
     GLUSTERFS = "GLUSTERFS"
+    NVMEOF = "NVMEOF"
 
 
 @util.export

@@ -551,7 +551,9 @@ class Plugin(plugin.PluginBase):
             or self.environment[ohostedcons.StorageEnv.ISCSI_USER] is not None
             or self.environment[ohostedcons.StorageEnv.ISCSI_PASSWORD] is not None
             or self.environment[ohostedcons.StorageEnv.ISCSI_TARGET] is not None
-            or self.environment[ohostedcons.StorageEnv.ISCSI_TARGET] is not None
+            or self.environment[ohostedcons.StorageEnv.NVMEOF_NQN] is not None
+            or self.environment[ohostedcons.StorageEnv.NVMEOF_ADDR] is not None
+            or self.environment[ohostedcons.StorageEnv.NVMEOF_PORT] is not None
         ):
             interactive = False
         while not created:
