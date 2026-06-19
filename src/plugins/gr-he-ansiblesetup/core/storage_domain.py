@@ -426,15 +426,16 @@ class Plugin(plugin.PluginBase):
         self.logger.debug(r)
         available_luns = []
         if "otopi_nvmeof_devices" in r:
-            if (
-                "ansible_facts" in r["otopi_nvmeof_devices"]
-                and "ovirt_host_storages" in r["otopi_nvmeof_devices"]["ansible_facts"]
-            ):
-                available_luns = r["otopi_nvmeof_devices"]["ansible_facts"][
+            if "ansible_facts" in r["otopi_nvmeof_devices"]:
+                nvmeof_devices = r["otopi_nvmeof_devices"]
+                if "ovirt_host_storages" in nvmeof_devices["ansible_facts"]:
+                    available_luns = nvmeof_devices["ansible_facts"][
+                        "ovirt_host_storages"
+                    ]
+            elif "ovirt_host_storages" in r["otopi_nvmeof_devices"]:
+                available_luns = r["otopi_nvmeof_devices"][
                     "ovirt_host_storages"
                 ]
-            elif "ovirt_host_storages" in r["otopi_nvmeof_devices"]:
-                available_luns = r["otopi_nvmeof_devices"]["ovirt_host_storages"]
         return self._select_lun(available_luns)
 
     def _select_lun(self, available_luns):
@@ -527,8 +528,12 @@ class Plugin(plugin.PluginBase):
         self.environment.setdefault(ohostedcons.StorageEnv.NVMEOF_NQN, None)
         self.environment.setdefault(ohostedcons.StorageEnv.NVMEOF_ADDR, None)
         self.environment.setdefault(ohostedcons.StorageEnv.NVMEOF_PORT, None)
-        self.environment.setdefault(ohostedcons.StorageEnv.NVMEOF_HOST_NQN, None)
-        self.environment.setdefault(ohostedcons.StorageEnv.NVMEOF_DHCHAP_KEY, None)
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.NVMEOF_HOST_NQN, None
+        )
+        self.environment.setdefault(
+            ohostedcons.StorageEnv.NVMEOF_DHCHAP_KEY, None
+        )
 
     @plugin.event(
         stage=plugin.Stages.STAGE_CLOSEUP,
@@ -578,10 +583,18 @@ class Plugin(plugin.PluginBase):
             iscsi_target = self.environment[ohostedcons.StorageEnv.ISCSI_TARGET]
             lunid = self.environment[ohostedcons.StorageEnv.LUN_ID]
             discard = self.environment[ohostedcons.StorageEnv.DISCARD_SUPPORT]
-            nvmeof_nqn = self.environment[ohostedcons.StorageEnv.NVMEOF_NQN]
-            nvmeof_address = self.environment[ohostedcons.StorageEnv.NVMEOF_ADDR]
-            nvmeof_port = self.environment[ohostedcons.StorageEnv.NVMEOF_PORT]
-            nvmeof_host_nqn = self.environment[ohostedcons.StorageEnv.NVMEOF_HOST_NQN]
+            nvmeof_nqn = self.environment[
+                ohostedcons.StorageEnv.NVMEOF_NQN
+            ]
+            nvmeof_address = self.environment[
+                ohostedcons.StorageEnv.NVMEOF_ADDR
+            ]
+            nvmeof_port = self.environment[
+                ohostedcons.StorageEnv.NVMEOF_PORT
+            ]
+            nvmeof_host_nqn = self.environment[
+                ohostedcons.StorageEnv.NVMEOF_HOST_NQN
+            ]
             nvmeof_dhchap_key = self.environment[
                 ohostedcons.StorageEnv.NVMEOF_DHCHAP_KEY
             ]
@@ -920,24 +933,26 @@ class Plugin(plugin.PluginBase):
                             )
                         )
                         lun0 = storage["volume_group"]["logical_units"][0]
-                        self.environment[ohostedcons.StorageEnv.NVMEOF_ADDR] = ",".join(
-                            [
-                                x["address"]
-                                for x in storage["volume_group"]["logical_units"]
-                            ]
+                        addrs = ",".join(
+                            x["address"]
+                            for x in storage["volume_group"]["logical_units"]
+                        )
+                        ports = ",".join(
+                            str(x["port"])
+                            for x in storage["volume_group"]["logical_units"]
                         )
                         self.environment[
+                            ohostedcons.StorageEnv.NVMEOF_ADDR
+                        ] = addrs
+                        self.environment[
                             ohostedcons.StorageEnv.STORAGE_DOMAIN_CONNECTION
-                        ] = self.environment[ohostedcons.StorageEnv.NVMEOF_ADDR]
-                        self.environment[ohostedcons.StorageEnv.NVMEOF_PORT] = ",".join(
-                            [
-                                str(x["port"])
-                                for x in storage["volume_group"]["logical_units"]
-                            ]
-                        )
-                        self.environment[ohostedcons.StorageEnv.NVMEOF_NQN] = lun0[
-                            "nqn"
-                        ]
+                        ] = addrs
+                        self.environment[
+                            ohostedcons.StorageEnv.NVMEOF_PORT
+                        ] = ports
+                        self.environment[
+                            ohostedcons.StorageEnv.NVMEOF_NQN
+                        ] = lun0["nqn"]
                         self.environment[ohostedcons.StorageEnv.LUN_ID] = lun0["id"]
                 else:
                     if not interactive:
