@@ -1,5 +1,4 @@
 # oVirt Hosted Engine Setup
-[![Copr build status](https://copr.fedorainfracloud.org/coprs/ovirt/ovirt-master-snapshot/package/ovirt-hosted-engine-setup/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/ovirt/ovirt-master-snapshot/package/ovirt-hosted-engine-setup/)
 
 Welcome to the oVirt Hosted Engine Setup source repository.
 

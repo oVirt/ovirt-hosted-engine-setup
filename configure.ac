@@ -22,17 +22,18 @@ define([VERSION_MAJOR], [2])
 define([VERSION_MINOR], [7])
 define([VERSION_FIX], [3])
 define([VERSION_NUMBER], VERSION_MAJOR[.]VERSION_MINOR[.]VERSION_FIX)
-define([VERSION_RELEASE], [0.0])
-define([VERSION_SUFFIX], [master])
 
 AC_INIT(
     [ovirt-hosted-engine-setup],
-    [VERSION_NUMBER[-]VERSION_RELEASE[.]VERSION_SUFFIX],
+    [VERSION_NUMBER],
     [devel@ovirt.org],
     [],
     [http://www.ovirt.org])
 PACKAGE_RPM_VERSION="VERSION_NUMBER"
-PACKAGE_RPM_RELEASE="VERSION_RELEASE.VERSION_SUFFIX"
+AC_ARG_VAR([PACKAGE_RPM_RELEASE],
+    [RPM release field (default: 0.master)])
+AS_IF([test -z "$PACKAGE_RPM_RELEASE"],
+    [PACKAGE_RPM_RELEASE="0.master"])
 AC_SUBST([PACKAGE_RPM_VERSION])
 AC_SUBST([PACKAGE_RPM_RELEASE])
 

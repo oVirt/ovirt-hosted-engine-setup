@@ -1,43 +1,123 @@
 ---
 name: build
+
 on:
   push:
+    branches: [master]
+    tags: ['*']
   pull_request:
+    branches: [master]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
         include:
+          - name: almalinux-9
+            shortcut: el9
+            container-name: almalinux9
+          - name: almalinux-10
+            shortcut: el10
+            container-name: almalinux10
           - name: centos-stream-9
-            shortcut: cs9
+            shortcut: el9s
             container-name: el9stream
           - name: centos-stream-10
-            shortcut: cs10
+            shortcut: el10s
             container-name: el10stream
-    name: ${{ matrix.name }}
+
+    name: Build and test on ${{ matrix.name }}
     container:
       image: quay.io/ovirt/buildcontainer:${{ matrix.container-name }}
+
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout sources
+        uses: actions/checkout@v7
 
-      - name: Install testing dependencies
-        run: |
-          pip3 install isort pycodestyle pyflakes
-
-      - name: Mark git repo as safe
-        run: git config --global --add safe.directory $(pwd)
+      - name: Mark repository as safe
+        run: git config --global --add safe.directory "$(pwd)"
 
       - name: Install build dependencies
-        run: dnf install -y gettext-devel python3-pytest
+        run: dnf install -y autoconf automake gettext-devel git make rpm-build python3-pytest python3-devel gcc libtool
 
-      - name: Run automation/check-patch.sh
-        run: automation/check-patch.sh
+      - name: Install Python syntax check tools
+        run: pip3 install isort pycodestyle pyflakes
+
+      - name: Set build environment
+        run: |
+          TAG=$(git tag --points-at HEAD | head -1)
+          if [[ -n "$TAG" ]]; then
+            if [[ "$TAG" =~ -([0-9]+)$ ]]; then
+              echo "PACKAGE_RPM_RELEASE=${BASH_REMATCH[1]}" >> $GITHUB_ENV
+            else
+              echo "PACKAGE_RPM_RELEASE=1" >> $GITHUB_ENV
+            fi
+          else
+            echo "RELEASE_SUFFIX=.$(date --utc +%Y%m%d%H%M%S).git$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          fi
+
+      - name: Bootstrap
+        run: |
+          autopoint
+          autoreconf -ivf
+
+      - name: Configure
+        run: ./configure --disable-ansible-syntax-check
+
+      - name: Run checks
+        run: make -j test
+
+      - name: Build RPM
+        run: make -j rpm
+
+      - name: Collect artifacts
+        run: |
+          mkdir -p exported-artifacts
+          find tmp.repos -iname \*rpm -exec mv "{}" exported-artifacts/ \;
+          mv ./*tar.gz exported-artifacts/
 
       - name: Upload artifacts
-        uses: ovirt/upload-rpms-action@main
+        uses: actions/upload-artifact@v7
         with:
-          directory: exported-artifacts
+          name: rpm-${{ matrix.shortcut }}
+          path: exported-artifacts
+
+  test-ansible:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    name: Ansible callback filter test
+    container:
+      image: quay.io/ovirt/buildcontainer:almalinux9
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v7
+
+      - name: Install dependencies
+        run: dnf install -y ansible-core
+
+      - name: Run ansible callback filter test
+        run: |
+          mkdir -p exported-artifacts/tests
+          export HE_ANSIBLE_LOG_PATH=exported-artifacts/tests/filter-test-$(date -u +%Y%m%d%H%M%S).log
+          export ANSIBLE_STDOUT_CALLBACK=2_ovirt_logger
+          export ANSIBLE_CALLBACK_PLUGINS=src/he_ansible
+          ansible-playbook --inventory=localhost, -vvvvvv tests/ansible/playbooks/test_filtering.yml
+          if grep 'secret_data' "$HE_ANSIBLE_LOG_PATH"; then
+            echo "Found non-filtered secrets in the log ^^^"
+            exit 1
+          fi
+
+  publish-rpms:
+    permissions:
+      artifact-metadata: read
+    needs: [build, test-ansible]
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+    uses: ovirt/ovirt-workflows/.github/workflows/publish-rpms.yml@main
+    secrets: inherit
