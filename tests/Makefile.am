@@ -26,4 +26,5 @@ dist_noinst_SCRIPTS = \
 
 EXTRA_DIST = \
 	answers \
+	ansible_utils_test.py \
 	$(NULL)

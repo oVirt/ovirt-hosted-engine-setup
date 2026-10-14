@@ -222,14 +222,20 @@ class AnsibleHelper(base.Base):
                         self._process_output(buffer)
                         buffer = ''
             rc = proc.poll()
-            self._cb_results['ansible-playbook_rc'] = rc
             self.logger.debug('ansible-playbook rc: {rc}'.format(rc=rc))
+            # A RESULT line read below replaces _cb_results, so store the
+            # return code only after the callback file is drained.
             while True:
                 output = out_fh.readline()
                 if output == '':
                     break
-                if output:
-                    self._process_output(output)
+                buffer += output
+                if buffer[-1] == '\n':
+                    self._process_output(buffer)
+                    buffer = ''
+            if buffer:
+                self._process_output(buffer)
+            self._cb_results['ansible-playbook_rc'] = rc
             self.logger.debug('ansible-playbook stdout:')
             for ln in proc.stdout:
                 self.logger.debug(ln)
