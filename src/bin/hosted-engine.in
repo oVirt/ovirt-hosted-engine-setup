@@ -153,8 +153,10 @@ Usage: $0 --deploy [args]
         Force IPv6 on dual stack env.
     --ansible-extra-vars=DATA
         Pass '--extra-vars=DATA' to all ansible calls.
-        DATA can be anything that ansible can accept - var=value,
-        @file, JSON/YAML.
+        DATA can be a single var=value or @file, a YAML/JSON
+        file with the variables.
+        Only the last --ansible-extra-vars is used, so to set
+        several variables put them in a file and pass @file.
         Please note: Using this option is supported only
         with specific values as documented elsewhere.
         Passing arbitrary values might conflict with existing
