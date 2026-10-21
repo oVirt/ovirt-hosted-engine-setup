@@ -74,9 +74,6 @@ Requires:       ovirt-ansible-collection >= 3.0.0
 Requires:       libvirt-daemon-config-network
 
 BuildRequires:  gettext >= 0.18.2
-# gcc is needed by gettext
-# TODO: figure out how to configure gettext to not require gcc.
-BuildRequires:  gcc
 
 Requires:       ovirt-hosted-engine-ha >= 2.4
 # No GlusterFS in EL10+
