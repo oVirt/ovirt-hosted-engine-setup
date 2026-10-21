@@ -42,8 +42,8 @@ AC_CONFIG_SRCDIR([src/ovirt_hosted_engine_setup/__init__.py])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([1.9 tar-pax])
 
-AM_GNU_GETTEXT([external])
-AM_GNU_GETTEXT_REQUIRE_VERSION([0.19.6])
+AM_GNU_GETTEXT_VERSION([0.19.6])
+AM_PO_SUBDIRS
 
 AC_ARG_ENABLE(
 	[python-syntax-check],
