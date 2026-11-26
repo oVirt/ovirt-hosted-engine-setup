@@ -29,3 +29,10 @@ portal=@PORTAL@
 user=@USER@
 password=@PASSWORD@
 port=@PORT@
+
+# The following are used only for NVMe-oF storage
+nvmeof_address=@NVMEOF_ADDR@
+nvmeof_port=@NVMEOF_PORT@
+nvmeof_nqn=@NVMEOF_NQN@
+nvmeof_host_nqn=@NVMEOF_HOST_NQN@
+nvmeof_dhchap_key=@NVMEOF_DHCHAP_KEY@

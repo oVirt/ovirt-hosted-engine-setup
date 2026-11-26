@@ -164,6 +164,21 @@ class Plugin(plugin.PluginBase):
             'he_lun_id': self.environment[
                 ohostedcons.StorageEnv.LUN_ID
             ],
+            'he_nvmeof_address': self.environment[
+                ohostedcons.StorageEnv.NVMEOF_ADDR
+            ],
+            'he_nvmeof_port': self.environment[
+                ohostedcons.StorageEnv.NVMEOF_PORT
+            ],
+            'he_nvmeof_nqn': self.environment[
+                ohostedcons.StorageEnv.NVMEOF_NQN
+            ],
+            'he_nvmeof_host_nqn': self.environment[
+                ohostedcons.StorageEnv.NVMEOF_HOST_NQN
+            ],
+            'he_nvmeof_dhchap_key': self.environment[
+                ohostedcons.StorageEnv.NVMEOF_DHCHAP_KEY
+            ],
             'he_cdrom_uuid': self.environment[ohostedcons.VMEnv.CDROM_UUID],
             'he_nic_uuid': self.environment[ohostedcons.VMEnv.NIC_UUID],
             'he_maxvcpus': self.environment[ohostedcons.VMEnv.MAXVCPUS],
