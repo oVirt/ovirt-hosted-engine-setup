@@ -227,13 +227,39 @@ class Plugin(plugin.PluginBase):
         shutil.rmtree(tmpdir)
         return valid
 
+    @staticmethod
+    def _is_qcow2(path):
+        try:
+            with open(path, 'rb') as f:
+                return f.read(4) == b'QFI\xfb'
+        except OSError:
+            return False
+
     def _check_ovf(self, path):
         if not os.path.exists(path):
             self.logger.error(_('The specified file does not exists'))
             success = False
+        elif self._is_qcow2(path):
+            # The ansible role copies a qcow2 appliance as is and finds
+            # it by its extension, and uses default vCPUs and memory
+            if not path.endswith('.qcow2'):
+                self.logger.error(
+                    _('A qcow2 appliance image must have a .qcow2 extension')
+                )
+                success = False
+            else:
+                success = True
         else:
             # Decode ovf file content
-            tar = tarfile.open(path, 'r:gz')
+            try:
+                tar = tarfile.open(path, 'r:gz')
+            except (tarfile.TarError, OSError) as e:
+                self.logger.debug(
+                    'Error opening OVA archive',
+                    exc_info=True,
+                )
+                self.logger.error(e)
+                return False
             try:
                 ovf_xml = None
                 self.logger.info(
@@ -379,7 +405,8 @@ class Plugin(plugin.PluginBase):
                             '\nIf you want to deploy with a custom engine '
                             'appliance image, '
                             'please specify the path to '
-                            'the OVA archive you would like to use.\n'
+                            'the OVA archive or qcow2 image you would '
+                            'like to use.\n'
                             'Entering no value will use '
                             'the image from the {rpmname} rpm, installing it '
                             'if needed.\n'
@@ -402,16 +429,16 @@ class Plugin(plugin.PluginBase):
                 if interactive:
                     self.logger.error(
                         _(
-                            'The specified OVF archive is not a valid OVF '
-                            'archive.'
+                            'The specified file is not a valid OVA '
+                            'archive or qcow2 image.'
                         )
                     )
                 else:
                     raise RuntimeError(
                         _(
-                            'The specified OVF archive is not '
-                            'readable. Please ensure that {filepath} '
-                            'could be read'
+                            'The specified appliance image is not '
+                            'valid. Please ensure that {filepath} '
+                            'is a readable OVA archive or qcow2 image'
                         ).format(
                             filepath=self.environment[
                                 ohostedcons.VMEnv.OVF
